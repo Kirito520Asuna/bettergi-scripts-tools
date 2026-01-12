@@ -47,7 +47,7 @@ java -jar xxxx.jar
 #### 3.部署docker
 
 ```shell
-docker pull ghcr.io/kirito520asuna/bettergi-script-tools:latest
+docker pull ghcr.io/kirito520asuna/bettergi-scripts-tools:latest
 docker run -d -p 8081:8081 -v /path/to/application-prod.yml:/app/application-prod.yml --name bettergi-script-tools ghcr.io/kirito520asuna/bettergi-script-tools:latest
 ```
 
@@ -61,7 +61,7 @@ version: '3.8'
 
 services:
   bettergi-script-tools:
-    image: ghcr.io/kirito520asuna/bettergi-script-tools:latest
+    image: ghcr.io/kirito520asuna/bettergi-scripts-tools:latest
     container_name: bettergi-script-tools
     ports:
       - "8081:8081"

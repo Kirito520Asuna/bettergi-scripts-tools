@@ -54,6 +54,7 @@ public class Main {
             return (Long) Optional.empty().orElseGet(() -> null);
         }
     }
+
     public static void main(String[] args) {
         LocalDateTime startTime = LocalDateTime.of(2026, 1, 12, 14, 51, 28);
         LocalDateTime endTime = LocalDateTime.of(2026, 1, 12, 18, 51, 28);
@@ -67,8 +68,10 @@ public class Main {
         cronDto.setCronExpression(cronExpression);
         cronDto.setStartTimestamp(start);
         cronDto.setEndTimestamp(end);
-
-        String post = HttpUtil.post("http://localhost:8081/bgi/api/cron/next-timestamp", JSONUtil.toJsonStr(cronDto));
+        String p = "http://";
+        p+="localhost:8081";
+        //p=+"192.168.3.170:8081";
+        String post = HttpUtil.post(p + "/bgi/cron/next-timestamp", JSONUtil.toJsonStr(cronDto));
         System.err.println(post);
         System.err.println(JSONUtil.toBean(post, Result.class));
     }
