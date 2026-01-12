@@ -12,6 +12,7 @@
     <artifactId>bgi-tools</artifactId>
 
     <properties>
+        <cron.version>9.2.1</cron.version>
     </properties>
 
     <dependencyManagement>
@@ -28,6 +29,12 @@
 
 
     <dependencies>
+        <!-- Maven -->
+        <dependency>
+            <groupId>com.cronutils</groupId>
+            <artifactId>cron-utils</artifactId>
+            <version>${cron.version}</version>   <!-- 2025年底最新版本，建议检查最新版 -->
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-json</artifactId>
