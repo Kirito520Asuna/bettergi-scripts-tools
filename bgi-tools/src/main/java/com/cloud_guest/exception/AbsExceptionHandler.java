@@ -30,9 +30,10 @@ public interface AbsExceptionHandler {
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     @ResponseBody
     @JsonView(BasicJsonView.BaseView.class)
-    default Result notValidExceptionHandler(HttpServletRequest req, Exception e) {
+    default Result notValidExceptionHandler(HttpServletRequest req, MethodArgumentNotValidException  e) {
         ApiCode validateFailed = ApiCode.VALIDATE_FAILED;
-        return Result.result(validateFailed.getCode(), validateFailed.getMessage());
+        String errorMessage = e.getBindingResult().getFieldError().getDefaultMessage();
+        return Result.result(validateFailed.getCode(),errorMessage);
     }
 
 
