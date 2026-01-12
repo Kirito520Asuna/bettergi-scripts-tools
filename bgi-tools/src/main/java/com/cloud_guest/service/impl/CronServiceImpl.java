@@ -40,8 +40,8 @@ public class CronServiceImpl implements CronService {
         ExecutionTime executionTime = ExecutionTime.forCron(cron);
 
         // long → Instant → ZonedDateTime
-        ZonedDateTime from = ZonedDateTime.ofInstant(Instant.ofEpochMilli(startTimeMs), ZoneId.systemDefault());
-        ZonedDateTime to = ZonedDateTime.ofInstant(Instant.ofEpochMilli(endTimeMs), ZoneId.systemDefault());
+        ZonedDateTime from = ZonedDateTime.ofInstant(Instant.ofEpochMilli(startTimeMs), ZoneId.of("Asia/Shanghai"));
+        ZonedDateTime to = ZonedDateTime.ofInstant(Instant.ofEpochMilli(endTimeMs), ZoneId.of("Asia/Shanghai"));
 
         // 寻找下一个执行时间
         Optional<ZonedDateTime> next = executionTime.nextExecution(from);
