@@ -1,0 +1,486 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+name: Java Jar To Zip Publish
+run-name: "[${{ (github.event_name == 'push' || ((github.event.inputs.push_to_registry || github.event.inputs.push_to_github_release) == true)) && '正式版' || '测试版' }}] Jar ${{ github.event.inputs.tag_name || github.ref_name || 'v-manual' }}  version"
+
+on:
+  push:
+    branches:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: '输入 Release 标签 (eg: v0.35.1, v0.36.5-alpha.1)'
+        required: false
+        type: string
+        default: 'v-manual'
+      skip_tests:
+        description: '是否跳过测试 (true/false)'
+        required: true
+        type: boolean
+        default: false
+      java_version:
+        description: '输入 Java 版本 (如 8, 11, 17)'
+        required: true
+        default: '8'
+      jar_dir_prefix:
+        description: 'JAR 文件前缀 (如 bgi-tools 或留空)'
+        default: ''
+      draft:
+        description: '是否为草稿 Release (true/false)'
+        type: boolean
+        default: false
+      prerelease:
+        description: '是否为预发布 Release (true/false)'
+        type: boolean
+        default: false
+      push_to_registry:
+        description: '是否推送到镜像仓库'
+        required: true
+        type: boolean
+        default: true
+      push_to_github_release:
+        description: '是否推送到Github Release'
+        required: true
+        type: boolean
+        default: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      #releases: write
+      actions: read
+    steps:
+      - name: 1.调试触发信息
+        run: |
+          echo "Event Name: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Tag Name: ${{ github.event.inputs.tag_name || github.ref_name }}"
+          echo "Skip Tests: ${{ github.event.inputs.skip_tests || true }}"
+          echo "Java Version: ${{ github.event.inputs.java_version ||secrets.JAVA_VERSION|| '8' }}"
+          echo "Jar Dir Prefix: ${{ github.event.inputs.jar_dir_prefix || 'bgi-tools' }}"
+          echo "Draft: ${{ github.event.inputs.draft || false }}"
+          echo "Prerelease: ${{ github.event.inputs.prerelease || false }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "SHA: ${{ github.sha }}"
+
+      - name: 2.检出代码
+        uses: actions/checkout@v4
+
+      - name: 3.设置输入值
+        run: |
+          
+          AUTO=false
+          
+          TAG_NAME="${{ github.event.inputs.tag_name || github.ref_name }}"
+
+          SKIP_TESTS="${{ github.event.inputs.skip_tests || true }}"
+          JAVA_VERSION="${{ github.event.inputs.java_version ||secrets.JAVA_VERSION|| '8' }}"
+          JAR_DIR_PREFIX="${{ github.event.inputs.jar_dir_prefix || 'bgi-tools' }}"
+          DRAFT="${{ github.event.inputs.draft || false }}"
+          PRERELEASE="${{ github.event.inputs.prerelease || false }}" 
+          PUSH_TO_REGISTRY="${{ env.AUTO ||github.event.inputs.push_to_registry }}"
+          PUSH_TO_GITHUB_RELEASE="${{ env.AUTO ||github.event.inputs.push_to_github_release }}"
+                    # 判断是否为自动触发（TAG_NAME以'v'开头）
+          if [[ "$TAG_NAME" == v* ]]; then
+              AUTO=true
+              PUSH_TO_REGISTRY=$AUTO
+              PUSH_TO_GITHUB_RELEASE=$AUTO
+          fi
+          echo "AUTO=$AUTO" >> $GITHUB_ENV
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          echo "SKIP_TESTS=$SKIP_TESTS" >> $GITHUB_ENV
+          echo "JAVA_VERSION=$JAVA_VERSION" >> $GITHUB_ENV
+          echo "JAR_DIR_PREFIX=$JAR_DIR_PREFIX" >> $GITHUB_ENV
+          echo "DRAFT=$DRAFT" >> $GITHUB_ENV
+          echo "PRERELEASE=$PRERELEASE" >> $GITHUB_ENV
+          echo "PUSH_TO_REGISTRY=$PUSH_TO_REGISTRY" >> $GITHUB_ENV
+          echo "PUSH_TO_GITHUB_RELEASE=$PUSH_TO_GITHUB_RELEASE" >> $GITHUB_ENV
+          echo "设置的输入值: AUTO=$AUTO ,TAG_NAME=$TAG_NAME, SKIP_TESTS=$SKIP_TESTS, JAVA_VERSION=$JAVA_VERSION, JAR_DIR_PREFIX=$JAR_DIR_PREFIX, DRAFT=$DRAFT, PRERELEASE=$PRERELEASE,PUSH_TO_REGISTRY=$PUSH_TO_REGISTRY,PUSH_TO_GITHUB_RELEASE=$PUSH_TO_GITHUB_RELEASE"
+
+      - name: 4.验证版本号
+        run: |
+          echo "当前版本号: $TAG_NAME"
+          if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+            echo "❌ 错误：版本格式必须符合语义化版本规范 (例如: v1.2.3, v1.2.3-alpha, v1.2.3+build.123)"
+            exit 1
+          fi
+          echo "版本号验证通过"
+
+      - name: 5.设置 Java 环境 version=${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: 6.缓存 Maven 依赖
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: 7.使用 Maven 构建并生成 JAR
+        run: |
+          if [ ${{ env.SKIP_TESTS }} ]; then
+            echo "跳过测试"
+            echo "mvn clean package -B -DskipTests -Dquickly"
+            mvn clean package -B -DskipTests -Dquickly
+          else
+            echo "mvn clean package -B -Dquickly"
+            mvn clean package -B -Dquickly
+          fi
+          echo "Maven 构建完成"
+          echo "匹配的 JAR 文件 (*/target/*.jar):"
+          find . -type f -path "*/target/*.jar"
+          echo "匹配的 JAR 文件 (*/${{ env.JAR_DIR_PREFIX  }}/target/*.jar):"
+          find . -type f -path "*/${{ env.JAR_DIR_PREFIX  }}/target/*.jar" || echo "未找到匹配的 JAR 文件"
+
+      - name: 8.列出匹配的 JAR 文件
+        run: |
+          if [ "${{ env.JAR_DIR_PREFIX  }}" = "" ]; then
+            echo "匹配的 JAR 文件 (*/target/*.jar):"
+            find . -type f -path "*/target/*.jar" || echo "未找到匹配的 JAR 文件"
+          else
+            echo "匹配的 JAR 文件 (*/${{ env.JAR_DIR_PREFIX  }}/target/*.jar):"
+            find . -type f -path "*/${{ env.JAR_DIR_PREFIX  }}/target/*.jar" || echo "未找到匹配的 JAR 文件"
+            echo "匹配的 JAR 文件 (*/${{ env.JAR_DIR_PREFIX  }}/*/target/*.jar):"
+            find . -type f -path "*/${{ env.JAR_DIR_PREFIX  }}/*/target/*.jar" || echo "未找到匹配的 JAR 文件"  
+          fi
+
+      - name: 9.打包所有 JAR 文件成 ZIP
+        run: |
+          if [ "${{ env.JAR_DIR_PREFIX }}" = "" ]; then
+            find . -type f -path "*/target/*.jar" -exec zip -j jars-${{ env.TAG_NAME }}.zip {} +
+          else
+            find . -type f \( -path "*/${{ env.JAR_DIR_PREFIX }}/target/*.jar" -o -path "*/${{ env.JAR_DIR_PREFIX }}/*/target/*.jar" \) -print0 | xargs -0 -I {} zip -j "jars-${{ env.TAG_NAME }}.zip" {}
+          fi
+          # -j: 仅打包文件，不保留目录结构
+          # +: 尽量将多个文件放入一个 zip 命令，减少调用次数
+        shell: bash
+
+      - name: 10.验证 ZIP 文件
+        run: |
+          ls -la jars-${{ env.TAG_NAME}}.zip
+          echo "ZIP 文件内容:"
+          unzip -l jars-${{ env.TAG_NAME }}.zip
+
+      - name: 11.解压 ZIP 文件
+        run: |
+          mkdir -p extracted-jars
+          unzip jars-${{ env.TAG_NAME }}.zip -d extracted-jars
+          echo "解压后的文件:"
+          ls -la extracted-jars
+
+      - name: 12. 将 JAR 文件转换为独立 EXE（捆绑私有 JRE，完全独立运行）
+        run: |
+          # ============ 下载 Launch4j ============
+          wget --tries=5 --timeout=60 \
+            https://pilotfiber.dl.sourceforge.net/project/launch4j/launch4j-3/3.50/launch4j-3.50-linux-x64.tgz?viasf=1 \
+            -O /tmp/launch4j.tgz || \
+          wget --tries=5 \
+            https://sourceforge.net/projects/launch4j/files/launch4j-3/3.50/launch4j-3.50-linux-x64.tgz/download \
+            -O /tmp/launch4j.tgz
+
+          tar -xzf /tmp/launch4j.tgz -C /tmp
+
+          sudo apt-get update
+          sudo apt-get install -y mingw-w64 g++-mingw-w64-i686 gcc-mingw-w64-i686 binutils-mingw-w64-i686
+
+          ln -sf /usr/bin/i686-w64-mingw32-windres /tmp/launch4j/bin/windres
+          ln -sf /usr/bin/i686-w64-mingw32-ld /tmp/launch4j/bin/ld
+
+          # ============ 下载并捆绑私有 JRE（安全提取 jre 子目录） ============
+          echo "📦 正在下载 Adoptium Temurin Java 8 最新 JDK (Windows x64，用于提取 jRE)"
+
+          sudo apt-get install -y jq  # 用于 API 解析
+
+          API_URL="https://api.adoptium.net/v3/assets/latest/${{ env.JAVA_VERSION }}/hotspot?image_type=jdk&os=windows&arch=x64&vendor=adoptium"
+
+          DOWNLOAD_URL=$(curl -s "$API_URL" | jq -r '.[0].binary.package.link')
+
+          #if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then
+          #  echo "⚠️ API 未返回链接，使用兜底版本（2026年1月最新 jdk8u482-b07）"
+          #  DOWNLOAD_URL="https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u482-b07/OpenJDK8U-jdk_x64_windows_hotspot_8u482b07.zip"
+          #fi
+
+          echo "✅ 下载链接: $DOWNLOAD_URL"
+          wget -q "$DOWNLOAD_URL" -O /tmp/jdk.zip
+
+          # 生成随机临时目录解压，避免 /tmp 污染
+          TEMP_EXTRACT_DIR=$(mktemp -d /tmp/jdk_extract_XXXXXX)
+          echo "🗂️ 解压到临时目录: $TEMP_EXTRACT_DIR"
+
+          unzip -q /tmp/jdk.zip -d "$TEMP_EXTRACT_DIR"
+
+          # 找到解压后的唯一根目录（JDK 包总是只有一个子目录）
+          JDK_ROOT_DIR=$(find "$TEMP_EXTRACT_DIR" -mindepth 1 -maxdepth 1 -type d | head -1)
+
+          if [ -z "$JDK_ROOT_DIR" ]; then
+            echo "❌ 未找到 JDK 根目录"
+            ls -la "$TEMP_EXTRACT_DIR"
+            exit 1
+          fi
+
+          # 找到 jre 子目录（Java 8 固定叫 jre）
+          JRE_SOURCE_DIR="$JDK_ROOT_DIR/jre"
+
+          if [ ! -d "$JRE_SOURCE_DIR" ]; then
+            echo "❌ JDK 根目录下未找到 jre 子目录（结构异常）"
+            ls -la "$JDK_ROOT_DIR"
+            exit 1
+          fi
+
+          # 移动到目标位置，重命名为标准 jre
+          mkdir -p extracted-jars
+          mv "$JRE_SOURCE_DIR" extracted-jars/jre
+
+          echo "✅ 私有 JRE 已成功提取并捆绑到 extracted-jars/jre/ （大小: $(du -sh extracted-jars/jre | cut -f1)）"
+
+          # 清理临时文件
+          rm -rf "$TEMP_EXTRACT_DIR" /tmp/jdk.zip
+
+          # ============ 版本处理 ============
+          RAW_TAG=${TAG_NAME#v}
+          RAW_TAG=${RAW_TAG:-0.0.1}
+          CLEAN_VERSION=$(echo "$RAW_TAG" | sed 's/[^0-9.]//g' | sed 's/^\.*//; s/\.*$//; s/\.\.+/\./g')
+          CLEAN_VERSION=${CLEAN_VERSION:-0.0.1}
+
+          IFS='.' read -r -a parts <<< "$CLEAN_VERSION"
+          major=${parts[0]:-0} minor=${parts[1]:-0} patch=${parts[2]:-0} build=${parts[3]:-0}
+          FILE_VERSION="$major.$minor.$patch.$build"
+          TXT_VERSION="${TAG_NAME:-v$major.$minor.$patch}"
+          echo "🛠️ 版本: FileVersion=$FILE_VERSION, TxtVersion=$TXT_VERSION"
+
+          # ============ 生成独立 EXE ============
+          mkdir -p extracted-jars
+
+          for jar_file in extracted-jars/*.jar; do
+            [ -f "$jar_file" ] || { echo "❌ 未找到 JAR 文件"; exit 1; }
+            jar_name=$(basename "$jar_file" .jar)
+            exe_file="extracted-jars/${jar_name}.exe"
+
+            abs_jar=$(realpath "$jar_file")
+            abs_exe=$(realpath -m "$exe_file")
+
+            main_class=$(unzip -p "$jar_file" META-INF/MANIFEST.MF | grep '^Main-Class:' | sed 's/^Main-Class: *//' | tr -d '\r')
+            [ -z "$main_class" ] && echo "⚠️ $jar_file 无 Main-Class，跳过" && continue
+
+            config_file="/tmp/launch4j_${jar_name}_config.xml"
+            cat > "$config_file" << EOF
+          <launch4jConfig>
+            <dontWrapJar>false</dontWrapJar>
+            <headerType>console</headerType>
+            <jar>$abs_jar</jar>
+            <outfile>$abs_exe</outfile>
+            <errTitle>Bgi-tools Error</errTitle>
+            <classPath>
+              <mainClass>$main_class</mainClass>
+            </classPath>
+            <jre>
+              <path>jre</path>                               <!-- 关键：使用同目录的 jre 文件夹 -->
+              <minVersion>${{ env.JAVA_VERSION }}.0</minVersion>
+              <maxVersion>${{ env.JAVA_VERSION }}.999</maxVersion>
+              <requiresJdk>false</requiresJdk>
+              <jdkPreference>preferBundled</jdkPreference>    <!-- 优先使用捆绑的 JRE -->
+            </jre>
+            <versionInfo>
+              <fileVersion>$FILE_VERSION</fileVersion>
+              <txtFileVersion>$TXT_VERSION</txtFileVersion>
+              <productVersion>$FILE_VERSION</productVersion>
+              <txtProductVersion>$TXT_VERSION</txtProductVersion>
+              <fileDescription>Bgi-tools Standalone (Java ${{ env.JAVA_VERSION }})</fileDescription>
+              <copyright>Copyright (c) 2023-2026</copyright>
+              <productName>Bgi-tools</productName>
+              <internalName>${jar_name}</internalName>
+              <originalFilename>${jar_name}.exe</originalFilename>
+            </versionInfo>
+          </launch4jConfig>
+          EOF
+
+            echo "✅ 正在生成完全独立 EXE: $exe_file (带私有 JRE)"
+            java -Djava.awt.headless=true -jar /tmp/launch4j/launch4j.jar "$config_file"
+
+            if [ -f "$exe_file" ]; then
+              echo "🎉🎉🎉 成功生成独立运行 EXE: $exe_file (大小: $(du -h "$exe_file" | cut -f1))"
+            else
+              echo "❌ 生成失败"
+              cat /tmp/launch4j/launch4j.log 2>/dev/null || true
+            fi
+          done
+
+          echo "=== 最终打包目录内容 ==="
+          ls -lh extracted-jars/
+          du -sh extracted-jars/jre extracted-jars/*.exe
+
+          # 清理临时文件
+          rm -rf /tmp/launch4j /tmp/launch4j.tgz /tmp/jre.zip /tmp/jdk-* /tmp/launch4j_*_config.xml
+        shell: bash
+          
+      - name: 13. 打包仅含 EXE + JRE + 配置文件的独立运行包
+        run: |
+          # 创建临时打包目录
+          mkdir -p standalone-package
+
+          # 复制 EXE 和 jre 文件夹
+          cp extracted-jars/*.exe standalone-package/ 2>/dev/null || echo "无 EXE"
+          cp -r extracted-jars/jre standalone-package/ 2>/dev/null || echo "无 jre"
+
+          # 关键：复制 application-prod.yml 到打包目录（与 EXE 同级）
+          if [ -f src/main/resources/application-prod.yml ]; then
+            cp src/main/resources/application-prod.yml standalone-package/
+            echo "✅ 已包含 application-prod.yml 配置文件"
+          else
+            echo "⚠️ 未找到 src/main/resources/application-prod.yml，使用默认模板创建"
+            cat > standalone-package/application-prod.yml << 'EOF'
+          server:
+            port: 27601
+            servlet:
+              context-path: /bgi
+          
+          ws:
+            url: ws://localhost:8081/ws # 可忽略，程序内部自动计算
+            access-token-name: access-token
+          EOF
+          fi
+          
+          # 打成 ZIP
+          cd standalone-package
+          zip -r ../Bgi-tools-Windows-${{ env.TAG_NAME }}.zip ./*
+          cd ..
+          
+          echo "✅ 独立运行包打包完成（包含 EXE + jre + application-prod.yml）"
+          ls -lh Bgi-tools-Windows-${{ env.TAG_NAME }}.zip
+          du -sh Bgi-tools-Windows-${{ env.TAG_NAME }}.zip     
+
+      - name: 14. 上传到 GitHub Release（包含独立 EXE 包）
+        uses: softprops/action-gh-release@v2
+        if: ${{ github.event_name == 'push' || inputs.push_to_github_release == true }}
+        with:
+          name: ${{ env.TAG_NAME }}
+          tag_name: ${{ env.TAG_NAME }}
+          files: |
+            jars-${{ env.TAG_NAME }}.zip
+            extracted-jars/*.jar
+            extracted-jars/*.exe
+            Bgi-tools-Windows-${{ env.TAG_NAME }}.zip
+          body: |
+            **Release 信息**
+            - 标签: ${{ env.TAG_NAME }}
+            - Java 版本: ${{ env.JAVA_VERSION}}
+            **Bgi-tools ${{ env.TAG_NAME }} 发布**
+
+            ### 🏆 推荐下载（完全独立运行，无需安装 Java）
+            - **Bgi-tools-Windows-${{ env.TAG_NAME }}.zip**  
+              → 解压后直接双击 `.exe` 文件运行（已内置 Java 运行时）
+
+            ### 📦 其他文件
+            - `jars-${{ env.TAG_NAME }}.zip`：原始 JAR 包
+            - 单个 `.jar` 文件：供开发者使用
+            - 单个 `.exe` 文件：仅 EXE（需系统已安装 Java ${{ env.JAVA_VERSION}}）
+
+            **系统要求**：Windows 10/11 x64  
+            **运行方式**：推荐使用独立包，双击即跑
+
+            如有问题欢迎反馈！
+          draft: ${{ env.DRAFT == true || false }}
+          prerelease: ${{ env.PRERELEASE == true || false }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+
+      # 在步骤 之后添加新的 artifact 上传步骤
+      - name: Upload JAR files as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jar-files
+          path: extracted-jars/*.jar
+
+      - name: 上传独立 EXE 包作为 Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bgi-tools-Windows-Standalone
+          path: Bgi-tools-Windows-${{ env.TAG_NAME }}.zip
+
+  build-and-push:
+    if: ${{ github.event_name == 'push' || inputs.push_to_registry == true }}
+    runs-on: ubuntu-latest
+    needs: build-and-release  # 添加依赖关系
+    permissions:
+      contents: read
+      packages: write
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 下载之前工作流的构建产物
+      - name: Download JAR artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: jar-files
+          path: ./
+
+      - name: List downloaded files
+        run: ls -la ./
+
+      # 设置 Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # 登录到 GitHub Container Registry
+      - name: Log in to Container Registry
+        #        if: ${{ inputs.push_to_registry == true }}
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 提取 Docker 镜像元数据
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ github.ref_name }}
+            type=raw,value=latest
+
+
+      # 构建并推送 Docker 镜像
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name == 'push' || inputs.push_to_registry == true }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            JAR_FILE_PATH=./*.jar
+
+      # 验证构建的镜像
+      - name: Verify Docker image
+        run: |
+          docker images
+          if [ "${{ github.event_name == 'push' || inputs.push_to_registry == true }}" ]; then
+            echo "Docker image pushed successfully"
+          else
+            echo "Docker image built locally only"
+          fi
+       
