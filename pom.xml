@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.cloud-guest</groupId>
     <artifactId>bettergi-scripts-tools</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
     <!--    <packaging>pom</packaging>-->
 
@@ -37,7 +37,6 @@
     </properties>
     <modules>
         <module>framework-knife4j</module>
-        <module>ws-service</module>
     </modules>
 
     <dependencyManagement>

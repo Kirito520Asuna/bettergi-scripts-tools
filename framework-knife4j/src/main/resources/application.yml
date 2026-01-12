@@ -1,0 +1,61 @@
+# 自定义open API公共描述信息
+api:
+  authorization: token
+  common:
+    version: 3.0.0
+    title: SecuityAPI
+    description: SecuityAPI
+    termsOfService:
+    license: 未经许可不得转载
+    licenseUrl: xxx.license.com
+    externalDocDesc:
+    externalDocUrl:
+    contact:
+      name: kirito-asuna
+      url:
+      email:
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+# 请注意使用group名时如果配置了GroupedOpenApi引用自动配置时组名不能重复
+  open:
+    default-group-configs:
+      enable: true
+      api: true
+      jwt: true
+      other: true
+  group-configs:
+    - group: "api"
+      paths-to-match: "/api/**"
+    - group: "jwt"
+      paths-to-match: "/jwt/**"
+    - group: "other"
+      paths-to-exclude:
+        - "/swagger-resources/**"
+        - "/v2/api-docs"
+        - "/v3/api-docs"
+        - "/api/**"
+        - "/jwt/**"
+  swagger-ui:
+    operations-sorter: alpha
+    path: /swagger-ui.html
+    tags-sorter: alpha
+# Authorization 在knife4j中失效==>替代方案 使用knife4j中全局参数设置Authorization
+knife4j:
+  cors: true
+  enable: true
+  setting:
+    enable-dynamic-parameter: true
+  #swagger
+  basic:
+    enable: false
+    username: root
+    password: root
+
+#cors: true - 开启跨域资源共享（CORS），允许不同域名的请求访问。
+#enable: true - 启用knife4j。
+#setting: enable-dynamic-parameter: true - 开启动态参数功能，允许在运行时动态修改API接口参数。
+#basic: enable: true - 开启基本认证，使用用户名和密码进行认证。
+#username: root - 用户名为root。
+#password: root - 密码为root。
