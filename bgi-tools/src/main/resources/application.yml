@@ -1,0 +1,67 @@
+server:
+  servlet:
+      context-path: /bgi
+  port: 8081
+
+spring:
+  application:
+    name: bgi
+  config:
+    import:
+      - optional:file:./application-prod.yml
+  profiles:
+    active: prod
+
+api:
+  authorization: token
+  common:
+    version: 3.0.0
+    title: SecuityAPI
+    description: SecuityAPI
+    termsOfService:
+    license: 未经许可不得转载
+    licenseUrl: xxx.license.com
+    externalDocDesc:
+    externalDocUrl:
+    contact:
+      name: kirito-asuna
+      url:
+      email:
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  # 请注意使用group名时如果配置了GroupedOpenApi引用自动配置时组名不能重复
+  open:
+    default-group-configs:
+      enable: true
+      api: true
+      jwt: true
+      other: true
+  group-configs:
+      - group: "api"
+        paths-to-match: "/api/**"
+      - group: "jwt"
+        paths-to-match: "/jwt/**"
+      - group: "other"
+        paths-to-exclude:
+          - "/swagger-resources/**"
+          - "/v2/api-docs"
+          - "/v3/api-docs"
+          - "/api/**"
+          - "/jwt/**"
+  swagger-ui:
+    operations-sorter: alpha
+    path: /swagger-ui.html
+    tags-sorter: alpha
+#Authorization 在knife4j中失效==>替代方案 使用knife4j中全局参数设置Authorization
+knife4j:
+  cors: true
+  enable: true
+  setting:
+    enable-dynamic-parameter: true
+  #swagger
+  basic:
+    enable: false
+    username: root
+    password: root

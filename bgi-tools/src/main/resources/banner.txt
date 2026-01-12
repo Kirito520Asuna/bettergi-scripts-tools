@@ -1,0 +1,11 @@
+${AnsiColor.BRIGHT_WHITE}  .   ____          _            __ _ _
+${AnsiColor.BRIGHT_WHITE} /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+${AnsiColor.BRIGHT_WHITE}( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+${AnsiColor.BRIGHT_WHITE} \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+${AnsiColor.BRIGHT_WHITE}  '  |____| .__|_| |_|_| |_\__, | / / / /
+${AnsiColor.BRIGHT_WHITE} =========|_|==============|___/=/_/_/_/
+${AnsiColor.BRIGHT_GREEN}:: Spring Boot ::                ${AnsiColor.BRIGHT_WHITE}(v${spring-boot.version})
+${AnsiColor.BRIGHT_GREEN}:: Spring Profiles Active ::     ${AnsiColor.BRIGHT_WHITE}(${spring.profiles.active:default})
+${AnsiColor.BRIGHT_GREEN}:: Spring Application Name ::    ${AnsiColor.BRIGHT_WHITE}(${spring.application.name:default})
+${AnsiColor.BRIGHT_GREEN}:: Swagger Address ::    ${AnsiColor.BRIGHT_WHITE}(http://127.0.0.1:${server.port:8080}${server.servlet.context-path:/}/doc.html)
+
