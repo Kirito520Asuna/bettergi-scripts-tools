@@ -13,6 +13,7 @@
 
     <properties>
         <cron.version>9.2.1</cron.version>
+        <guava.version>30.0-jre</guava.version>
     </properties>
 
     <dependencyManagement>
@@ -29,6 +30,12 @@
 
 
     <dependencies>
+        <!--guava工具集-->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
         <!-- Maven -->
         <dependency>
             <groupId>com.cronutils</groupId>
