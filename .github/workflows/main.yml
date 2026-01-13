@@ -328,7 +328,7 @@ jobs:
           # 清理临时文件
           rm -rf /tmp/launch4j /tmp/launch4j.tgz /tmp/jre.zip /tmp/jdk-* /tmp/launch4j_*_config.xml
         shell: bash
-          
+
       - name: 13. 打包仅含 EXE + JRE + 配置文件的独立运行包
         run: |
           # 创建临时打包目录
@@ -436,12 +436,36 @@ jobs:
       - name: List downloaded files
         run: ls -la ./
 
+      - name: 配置
+        run: |
+          DOCKER_FILE_NAME="Dockerfile"
+          if [ -f "$DOCKER_FILE_NAME" ]; then
+              echo "$DOCKER_FILE_NAME already exists"
+              cat "$DOCKER_FILE_NAME"
+          else
+              cat > "$DOCKER_FILE_NAME" << EOF
+              FROM eclipse-temurin:${{ env.JAVA_VERSION }-jre-alpine
+              VOLUME /tmp
+              COPY *.jar /app/app.jar
+              ENTRYPOINT ["java","-jar","/app/app.jar"]
+              EOF
+              if [ -f "$DOCKER_FILE_NAME" ]; then
+                echo "$DOCKER_FILE_NAME created successfully"
+                cat "$DOCKER_FILE_NAME"
+              else
+              echo "Error: $DOCKER_FILE_NAME creation failed"
+              exit 1
+              fi
+          fi          
+          
+          echo "DOCKER_FILE_NAME=$DOCKER_FILE_NAME" >> $GITHUB_ENV
+
       # 设置 Docker Buildx
-      - name: Set up Docker Buildx
+      - name: 设置 Docker Buildx
         uses: docker/setup-buildx-action@v2
 
       # 登录到 GitHub Container Registry
-      - name: Log in to Container Registry
+      - name: 登录 Log in to Container Registry
         #        if: ${{ inputs.push_to_registry == true }}
         uses: docker/login-action@v2
         with:
@@ -450,7 +474,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # 提取 Docker 镜像元数据
-      - name: Extract Docker metadata
+      - name: 提取 Docker 镜像元数据
         id: meta
         uses: docker/metadata-action@v4
         with:
@@ -458,10 +482,11 @@ jobs:
           tags: |
             type=raw,value=${{ github.ref_name }}
             type=raw,value=latest
-
+      
+      
 
       # 构建并推送 Docker 镜像
-      - name: Build and push Docker image
+      - name: 构建并推送 Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -472,10 +497,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
+            JAVA_VERSION=${{ env.JAVA_VERSION }}
             JAR_FILE_PATH=./*.jar
 
       # 验证构建的镜像
-      - name: Verify Docker image
+      - name: 验证构建 Docker image
         run: |
           docker images
           if [ "${{ github.event_name == 'push' || inputs.push_to_registry == true }}" ]; then
