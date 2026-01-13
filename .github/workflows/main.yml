@@ -444,7 +444,7 @@ jobs:
               cat "$DOCKER_FILE_NAME"
           else
               cat > "$DOCKER_FILE_NAME" << EOF
-              FROM eclipse-temurin:${{ env.JAVA_VERSION }-jre-alpine
+              FROM eclipse-temurin:${{ env.JAVA_VERSION }}-jre-alpine
               VOLUME /tmp
               COPY *.jar /app/app.jar
               ENTRYPOINT ["java","-jar","/app/app.jar"]
@@ -490,7 +490,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./Dockerfile
+          file: ./${{ env.DOCKER_FILE_NAME}}
           push: ${{ github.event_name == 'push' || inputs.push_to_registry == true }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
