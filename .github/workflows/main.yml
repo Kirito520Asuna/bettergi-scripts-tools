@@ -503,6 +503,7 @@ jobs:
           file: ./${{ env.DOCKER_FILE_NAME}}
           push: ${{ needs.build-and-release.outputs.push_to_registry == 'true' }}
           #push: ${{ github.event_name == 'push' || inputs.push_to_registry == true }}
+          load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -526,33 +527,28 @@ jobs:
       # ============ 新增：保存并上传 Docker 镜像 ============
       - name: 保存 Docker 镜像为 tar 文件
         run: |
-          # 获取刚才构建的镜像的完整名称和标签
+          # 取得第一个 tag（通常是最主要的那个）
           IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)
-          echo "正在保存镜像: $IMAGE_TAG"
+          echo "正在保存的镜像标签: $IMAGE_TAG"
 
-          # === 优化文件名生成逻辑 ===
-          # 1. 将所有斜杠 / 替换为 -
-          # 2. 将所有冒号 : 替换为 - (这是修复错误的关键)
-          # 3. 确保文件名合法
-          SAFE_IMAGE_NAME=$(echo "$IMAGE_TAG" | tr '/' '-' | tr ':' '-')
-          TAR_FILE_NAME="${SAFE_IMAGE_NAME}.tar"
+          # 使用最安全的文件名策略：版本号 + 时间戳
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          TAR_FILE_NAME="docker-${{ env.TAG_NAME }}-${TIMESTAMP}.tar"
 
-          echo "保存为文件: $TAR_FILE_NAME"
+          echo "最终安全文件名: $TAR_FILE_NAME"
 
-          # 检查镜像是否存在，避免直接报错
-          if ! docker image inspect "$IMAGE_TAG" &> /dev/null; then
-            echo "❌ 错误: 镜像 $IMAGE_TAG 不存在，无法保存。"
-            echo "当前本地镜像列表:"
-            docker images --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}"
+          # 检查镜像是否存在
+          if ! docker image inspect "$IMAGE_TAG" >/dev/null 2>&1; then
+            echo "❌ 镜像 $IMAGE_TAG 不存在！当前本地镜像列表："
+            docker images
             exit 1
           fi
 
+          # 保存镜像
           docker save "$IMAGE_TAG" -o "$TAR_FILE_NAME"
 
-          # 将文件名保存到环境变量，供下一步骤使用
+          # 记录给下一步使用
           echo "TAR_FILE_NAME=$TAR_FILE_NAME" >> $GITHUB_ENV
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-
       - name: 上传 Docker 镜像 tar 文件为 Artifact
         uses: actions/upload-artifact@v4
         with:
