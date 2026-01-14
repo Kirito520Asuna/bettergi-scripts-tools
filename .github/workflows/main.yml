@@ -452,7 +452,7 @@ jobs:
               cat "$DOCKER_FILE_NAME"
           else
               cat > "$DOCKER_FILE_NAME" << EOF
-              FROM eclipse-temurin:${{ env.JAVA_VERSION }}-jre-alpine
+              FROM eclipse-temurin:${{ needs.build-and-release.outputs.java_version }}-jre-alpine
               VOLUME /tmp
               COPY *.jar /app/app.jar
               ENTRYPOINT ["java","-jar","/app/app.jar"]
@@ -474,7 +474,7 @@ jobs:
 
       # 登录到 GitHub Container Registry
       - name: 登录 Log in to Container Registry
-        if: ${{ needs.build-and-release.outputs.push_to_github_release == 'true' }}
+        if: ${{ needs.build-and-release.outputs.push_to_registry == 'true' }}
         #if: ${{ github.event_name == 'push' || inputs.push_to_registry == true }}
         uses: docker/login-action@v2
         with:
@@ -496,12 +496,12 @@ jobs:
       # 构建并推送 Docker 镜像
       - name: 构建并推送 Docker image
         uses: docker/build-push-action@v4
-        #if: ${{ needs.build-and-release.outputs.push_to_github_release == 'true' }}
+        #if: ${{ needs.build-and-release.outputs.push_to_registry == 'true' }}
         #if: ${{ github.event_name == 'push' || inputs.push_to_registry == true }}
         with:
           context: .
           file: ./${{ env.DOCKER_FILE_NAME}}
-          push: ${{ needs.build-and-release.outputs.push_to_github_release == 'true' }}
+          push: ${{ needs.build-and-release.outputs.push_to_registry == 'true' }}
           #push: ${{ github.event_name == 'push' || inputs.push_to_registry == true }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -516,7 +516,7 @@ jobs:
         run: |
           docker images
           #if [ "${{ github.event_name == 'push' || inputs.push_to_registry == true }}" ]; then
-          if [ "${{ needs.build-and-release.outputs.push_to_github_release == 'true' }}" ]; then
+          if [ "${{ needs.build-and-release.outputs.push_to_registry == 'true' }}" ]; then
             echo "Docker image pushed successfully"
           else
             echo "Docker image built locally only"
@@ -529,15 +529,26 @@ jobs:
           # 获取刚才构建的镜像的完整名称和标签
           IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)
           echo "正在保存镜像: $IMAGE_TAG"
-          
-          # 使用 docker save 将镜像保存为 tar 文件
-          # 文件名包含标签名，例如 my-image-v1.2.3.tar
-          # tr '/' '-' 将镜像名中的斜杠替换为连字符，以符合文件名规范
-          TAR_FILE_NAME=$(echo "$IMAGE_TAG" | tr '/' '-').tar
+
+          # === 优化文件名生成逻辑 ===
+          # 1. 将所有斜杠 / 替换为 -
+          # 2. 将所有冒号 : 替换为 - (这是修复错误的关键)
+          # 3. 确保文件名合法
+          SAFE_IMAGE_NAME=$(echo "$IMAGE_TAG" | tr '/' '-' | tr ':' '-')
+          TAR_FILE_NAME="${SAFE_IMAGE_NAME}.tar"
+
           echo "保存为文件: $TAR_FILE_NAME"
-          
+
+          # 检查镜像是否存在，避免直接报错
+          if ! docker image inspect "$IMAGE_TAG" &> /dev/null; then
+            echo "❌ 错误: 镜像 $IMAGE_TAG 不存在，无法保存。"
+            echo "当前本地镜像列表:"
+            docker images --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}"
+            exit 1
+          fi
+
           docker save "$IMAGE_TAG" -o "$TAR_FILE_NAME"
-          
+
           # 将文件名保存到环境变量，供下一步骤使用
           echo "TAR_FILE_NAME=$TAR_FILE_NAME" >> $GITHUB_ENV
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
