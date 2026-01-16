@@ -6,7 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 name: Java Jar To Zip Publish
-run-name: "[${{ (github.event_name == 'push' || ((inputs.push_to_registry || inputs.push_to_github_release) == true)) && '正式版' || '测试版' }}] ${{ github.event.repository.name }} ${{ github.event.inputs.tag_name || github.ref_name || 'v-manual' }}  version"
+run-name: "[${{ (github.event_name == 'push' || ((inputs.push_to_docker_registry || inputs.push_to_github_release) == true)) && '正式版' || '测试版' }}] ${{ github.event.repository.name }} ${{ github.event.inputs.tag_name || github.ref_name || 'v-manual' }}  version"
 
 on:
   push:
@@ -39,8 +39,8 @@ on:
         description: '是否为预发布 Release (true/false)'
         type: boolean
         default: false
-      push_to_registry:
-        description: '是否推送到镜像仓库'
+      push_to_docker_registry:
+        description: '是否推送到docker镜像仓库'
         required: true
         type: boolean
         default: true
@@ -62,7 +62,7 @@ jobs:
       tag_name: ${{ steps.set_vars.outputs.tag_name }}
       java_version: ${{ steps.set_vars.outputs.java_version }}
       jar_dir_prefix: ${{ steps.set_vars.outputs.jar_dir_prefix }}
-      push_to_registry: ${{ steps.set_vars.outputs.push_to_registry }}
+      push_to_docker_registry: ${{ steps.set_vars.outputs.push_to_docker_registry }}
       push_to_github_release: ${{ steps.set_vars.outputs.push_to_github_release }}
     permissions:
       contents: write
@@ -109,23 +109,23 @@ jobs:
           
           # 默认值
           AUTO=false
-          PUSH_TO_REGISTRY=false
+          PUSH_TO_DOCKER_REGISTRY=false
           PUSH_TO_GITHUB_RELEASE=false
           
           # 核心判断逻辑
           if [[ "$EVENT_NAME" == "push" ]] && [[ "$TAG_NAME" == v* ]]; then
             # push 到 v 开头的 tag/分支 → 视为正式自动发布
             AUTO=true
-            PUSH_TO_REGISTRY=true
+            PUSH_TO_DOCKER_REGISTRY=true
             PUSH_TO_GITHUB_RELEASE=true
           elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             # 手动触发 → 完全尊重用户输入
-            [[ "${{ inputs.push_to_registry }}" == "true" ]] && PUSH_TO_REGISTRY=true
+            [[ "${{ inputs.push_to_docker_registry }}" == "true" ]] && PUSH_TO_DOCKER_REGISTRY=true
             [[ "${{ inputs.push_to_github_release }}" == "true" ]] && PUSH_TO_GITHUB_RELEASE=true
             # AUTO 保持 false（手动不是自动）
           else
             # 其他事件（如 pull_request、schedule 等）→ 默认不 push
-            PUSH_TO_REGISTRY=false
+            PUSH_TO_DOCKER_REGISTRY=false
             PUSH_TO_GITHUB_RELEASE=false
           fi
 
@@ -137,14 +137,14 @@ jobs:
           echo "JAR_DIR_PREFIX=$JAR_DIR_PREFIX" >> $GITHUB_ENV
           echo "DRAFT=$DRAFT" >> $GITHUB_ENV
           echo "PRERELEASE=$PRERELEASE" >> $GITHUB_ENV
-          echo "PUSH_TO_REGISTRY=$PUSH_TO_REGISTRY" >> $GITHUB_ENV
+          echo "PUSH_TO_DOCKER_REGISTRY=$PUSH_TO_DOCKER_REGISTRY" >> $GITHUB_ENV
           echo "PUSH_TO_GITHUB_RELEASE=$PUSH_TO_GITHUB_RELEASE" >> $GITHUB_ENV
           
           # ─────────────── 新增：只为 outputs 设置小写版本 ───────────────
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
           echo "java_version=$JAVA_VERSION" >> $GITHUB_OUTPUT
           echo "jar_dir_prefix=$JAR_DIR_PREFIX" >> $GITHUB_OUTPUT
-          echo "push_to_registry=$PUSH_TO_REGISTRY" >> $GITHUB_OUTPUT
+          echo "push_to_docker_registry=$PUSH_TO_DOCKER_REGISTRY" >> $GITHUB_OUTPUT
           echo "push_to_github_release=$PUSH_TO_GITHUB_RELEASE" >> $GITHUB_OUTPUT
 
           # 调试输出（强烈推荐保留）
@@ -157,7 +157,7 @@ jobs:
           echo "  JAR_DIR_PREFIX         : $JAR_DIR_PREFIX"
           echo "  DRAFT                  : $DRAFT"
           echo "  PRERELEASE             : $PRERELEASE"
-          echo "  PUSH_TO_REGISTRY       : $PUSH_TO_REGISTRY"
+          echo "  PUSH_TO_DOCKER_REGISTRY       : $PUSH_TO_DOCKER_REGISTRY"
           echo "  PUSH_TO_GITHUB_RELEASE : $PUSH_TO_GITHUB_RELEASE"
           echo "═══════════════════════════════════════════"
 
@@ -518,8 +518,8 @@ jobs:
 
       # 登录到 GitHub Container Registry
       - name: 登录 Log in to Container Registry
-        if: ${{ needs.build-and-release.outputs.push_to_registry == 'true' }}
-        #if: ${{ github.event_name == 'push' || inputs.push_to_registry == true }}
+        if: ${{ needs.build-and-release.outputs.push_to_docker_registry == 'true' }}
+        #if: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
         uses: docker/login-action@v2
         with:
           registry: ${{ env.REGISTRY }}
@@ -540,13 +540,13 @@ jobs:
       # 构建并推送 Docker 镜像
       - name: 构建并推送 Docker image
         uses: docker/build-push-action@v4
-        #if: ${{ needs.build-and-release.outputs.push_to_registry == 'true' }}
-        #if: ${{ github.event_name == 'push' || inputs.push_to_registry == true }}
+        #if: ${{ needs.build-and-release.outputs.push_to_docker_registry == 'true' }}
+        #if: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
         with:
           context: .
           file: ./${{ env.DOCKER_FILE_NAME}}
-          push: ${{ needs.build-and-release.outputs.push_to_registry == 'true' }}
-          #push: ${{ github.event_name == 'push' || inputs.push_to_registry == true }}
+          push: ${{ needs.build-and-release.outputs.push_to_docker_registry == 'true' }}
+          #push: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
           load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -560,8 +560,8 @@ jobs:
       - name: 验证构建 Docker image
         run: |
           docker images
-          #if [ "${{ github.event_name == 'push' || inputs.push_to_registry == true }}" ]; then
-          if [ "${{ needs.build-and-release.outputs.push_to_registry == 'true' }}" ]; then
+          #if [ "${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}" ]; then
+          if [ "${{ needs.build-and-release.outputs.push_to_docker_registry == 'true' }}" ]; then
             echo "Docker image pushed successfully"
           else
             echo "Docker image built locally only"
