@@ -88,24 +88,48 @@ jobs:
       - name: 3.设置输入值
         id: set_vars
         run: |
-          # 初始化变量
-          AUTO=false
-          
-          TAG_NAME="${{ github.event.inputs.tag_name || github.ref_name }}"
+          # ─────────────── 初始化默认值 ───────────────
+          TAG_NAME="${{ github.event.inputs.tag_name || github.ref_name || 'v-manual' }}"
 
-          SKIP_TESTS="${{ github.event.inputs.skip_tests || true }}"
-          JAVA_VERSION="${{ github.event.inputs.java_version ||secrets.JAVA_VERSION|| '8' }}"
-          JAR_DIR_PREFIX="${{ github.event.inputs.jar_dir_prefix || 'bgi-tools' }}"
-          DRAFT="${{ github.event.inputs.draft || false }}"
-          PRERELEASE="${{ github.event.inputs.prerelease || false }}" 
-          PUSH_TO_REGISTRY="${{ github.event_name == 'push' || env.AUTO ||github.event.inputs.push_to_registry }}"
-          PUSH_TO_GITHUB_RELEASE="${{ github.event_name == 'push' || env.AUTO ||github.event.inputs.push_to_github_release }}"
-                    # 判断是否为自动触发（TAG_NAME以'v'开头）
-          if [[ "$TAG_NAME" == v* ]]; then
-              AUTO=true
-              PUSH_TO_REGISTRY=$AUTO
-              PUSH_TO_GITHUB_RELEASE=$AUTO
+          # 处理布尔值时要小心：workflow_dispatch 的 inputs 是字符串，需要转换
+          SKIP_TESTS="${{ inputs.skip_tests || 'false' }}"   # 先取输入，默认 false（字符串）
+          if [[ "$SKIP_TESTS" == "true" || "$SKIP_TESTS" == "1" ]]; then
+            SKIP_TESTS=true
+          else
+            SKIP_TESTS=false
           fi
+
+          JAVA_VERSION="${{ inputs.java_version || secrets.JAVA_VERSION || '8' }}"
+          JAR_DIR_PREFIX="${{ inputs.jar_dir_prefix || 'bgi-tools' }}"
+          DRAFT="${{ inputs.draft || 'false' }}"
+          PRERELEASE="${{ inputs.prerelease || 'false' }}"
+
+          # ─────────────── 事件类型（提前替换） ───────────────
+          EVENT_NAME="${{ github.event_name }}"
+          
+          # 默认值
+          AUTO=false
+          PUSH_TO_REGISTRY=false
+          PUSH_TO_GITHUB_RELEASE=false
+          
+          # 核心判断逻辑
+          if [[ "$EVENT_NAME" == "push" ]] && [[ "$TAG_NAME" == v* ]]; then
+            # push 到 v 开头的 tag/分支 → 视为正式自动发布
+            AUTO=true
+            PUSH_TO_REGISTRY=true
+            PUSH_TO_GITHUB_RELEASE=true
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            # 手动触发 → 完全尊重用户输入
+            [[ "${{ inputs.push_to_registry }}" == "true" ]] && PUSH_TO_REGISTRY=true
+            [[ "${{ inputs.push_to_github_release }}" == "true" ]] && PUSH_TO_GITHUB_RELEASE=true
+            # AUTO 保持 false（手动不是自动）
+          else
+            # 其他事件（如 pull_request、schedule 等）→ 默认不 push
+            PUSH_TO_REGISTRY=false
+            PUSH_TO_GITHUB_RELEASE=false
+          fi
+
+          # ─────────────── 写入环境变量 ───────────────
           echo "AUTO=$AUTO" >> $GITHUB_ENV
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
           echo "SKIP_TESTS=$SKIP_TESTS" >> $GITHUB_ENV
@@ -115,7 +139,27 @@ jobs:
           echo "PRERELEASE=$PRERELEASE" >> $GITHUB_ENV
           echo "PUSH_TO_REGISTRY=$PUSH_TO_REGISTRY" >> $GITHUB_ENV
           echo "PUSH_TO_GITHUB_RELEASE=$PUSH_TO_GITHUB_RELEASE" >> $GITHUB_ENV
-          echo "设置的输入值: AUTO=$AUTO ,TAG_NAME=$TAG_NAME, SKIP_TESTS=$SKIP_TESTS, JAVA_VERSION=$JAVA_VERSION, JAR_DIR_PREFIX=$JAR_DIR_PREFIX, DRAFT=$DRAFT, PRERELEASE=$PRERELEASE,PUSH_TO_REGISTRY=$PUSH_TO_REGISTRY,PUSH_TO_GITHUB_RELEASE=$PUSH_TO_GITHUB_RELEASE"
+          
+          # ─────────────── 新增：只为 outputs 设置小写版本 ───────────────
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "java_version=$JAVA_VERSION" >> $GITHUB_OUTPUT
+          echo "jar_dir_prefix=$JAR_DIR_PREFIX" >> $GITHUB_OUTPUT
+          echo "push_to_registry=$PUSH_TO_REGISTRY" >> $GITHUB_OUTPUT
+          echo "push_to_github_release=$PUSH_TO_GITHUB_RELEASE" >> $GITHUB_OUTPUT
+
+          # 调试输出（强烈推荐保留）
+          echo "═══════════════════════════════════════════"
+          echo "最终设置值："
+          echo "  AUTO                   : $AUTO"
+          echo "  TAG_NAME               : $TAG_NAME"
+          echo "  SKIP_TESTS             : $SKIP_TESTS"
+          echo "  JAVA_VERSION           : $JAVA_VERSION"
+          echo "  JAR_DIR_PREFIX         : $JAR_DIR_PREFIX"
+          echo "  DRAFT                  : $DRAFT"
+          echo "  PRERELEASE             : $PRERELEASE"
+          echo "  PUSH_TO_REGISTRY       : $PUSH_TO_REGISTRY"
+          echo "  PUSH_TO_GITHUB_RELEASE : $PUSH_TO_GITHUB_RELEASE"
+          echo "═══════════════════════════════════════════"
 
       - name: 4.验证版本号
         run: |
@@ -293,7 +337,7 @@ jobs:
             <headerType>console</headerType>
             <jar>$abs_jar</jar>
             <outfile>$abs_exe</outfile>
-            <errTitle>Bgi-tools Error</errTitle>
+            <errTitle>${{ github.event.repository.name }} Error</errTitle>
             <classPath>
               <mainClass>$main_class</mainClass>
             </classPath>
@@ -309,9 +353,9 @@ jobs:
               <txtFileVersion>$TXT_VERSION</txtFileVersion>
               <productVersion>$FILE_VERSION</productVersion>
               <txtProductVersion>$TXT_VERSION</txtProductVersion>
-              <fileDescription>Bgi-tools Standalone (Java ${{ env.JAVA_VERSION }})</fileDescription>
+              <fileDescription>${{ github.event.repository.name }} Standalone (Java ${{ env.JAVA_VERSION }})</fileDescription>
               <copyright>Copyright (c) 2023-2026</copyright>
-              <productName>Bgi-tools</productName>
+              <productName>${{ github.event.repository.name }}</productName>
               <internalName>${jar_name}</internalName>
               <originalFilename>${jar_name}.exe</originalFilename>
             </versionInfo>
@@ -366,12 +410,12 @@ jobs:
           
           # 打成 ZIP
           cd standalone-package
-          zip -r ../Bgi-tools-Windows-${{ env.TAG_NAME }}.zip ./*
+          zip -r ../${{ github.event.repository.name }}-Windows-${{ env.TAG_NAME }}.zip ./*
           cd ..
           
           echo "✅ 独立运行包打包完成（包含 EXE + jre + application-prod.yml）"
-          ls -lh Bgi-tools-Windows-${{ env.TAG_NAME }}.zip
-          du -sh Bgi-tools-Windows-${{ env.TAG_NAME }}.zip     
+          ls -lh ${{ github.event.repository.name }}-Windows-${{ env.TAG_NAME }}.zip
+          du -sh ${{ github.event.repository.name }}-Windows-${{ env.TAG_NAME }}.zip     
 
       - name: 14. 上传到 GitHub Release（包含独立 EXE 包）
         uses: softprops/action-gh-release@v2
@@ -384,15 +428,15 @@ jobs:
             jars-${{ env.TAG_NAME }}.zip
             extracted-jars/*.jar
             extracted-jars/*.exe
-            Bgi-tools-Windows-${{ env.TAG_NAME }}.zip
+            ${{ github.event.repository.name }}-Windows-${{ env.TAG_NAME }}.zip
           body: |
             **Release 信息**
             - 标签: ${{ env.TAG_NAME }}
             - Java 版本: ${{ env.JAVA_VERSION}}
-            **Bgi-tools ${{ env.TAG_NAME }} 发布**
+            **${{ github.event.repository.name }} ${{ env.TAG_NAME }} 发布**
 
             ### 🏆 推荐下载（完全独立运行，无需安装 Java）
-            - **Bgi-tools-Windows-${{ env.TAG_NAME }}.zip**  
+            - **${{ github.event.repository.name }}-Windows-${{ env.TAG_NAME }}.zip**  
               → 解压后直接双击 `.exe` 文件运行（已内置 Java 运行时）
 
             ### 📦 其他文件
@@ -419,8 +463,8 @@ jobs:
       - name: 上传独立 EXE 包作为 Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Bgi-tools-Windows-Standalone
-          path: Bgi-tools-Windows-${{ env.TAG_NAME }}.zip
+          name: ${{ github.event.repository.name }}-Windows-Standalone
+          path: ${{ github.event.repository.name }}-Windows-${{ env.TAG_NAME }}.zip
 
   build-and-push:
     runs-on: ubuntu-latest
@@ -533,7 +577,7 @@ jobs:
 
           # 使用最安全的文件名策略：版本号 + 时间戳
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-          TAR_FILE_NAME="docker-${{ env.TAG_NAME }}-${TIMESTAMP}.tar"
+          TAR_FILE_NAME="docker-${{ needs.build-and-release.outputs.tag_name }}-${TIMESTAMP}.tar"
 
           echo "最终安全文件名: $TAR_FILE_NAME"
 
@@ -554,13 +598,13 @@ jobs:
       - name: 创建 Docker 使用说明文档 (README-Docker-Usage.md)
         run: |
           cat <<EOF > README-Docker-Usage.md
-          # Bgi-tools Docker 镜像使用说明
+          # ${{ github.event.repository.name }} Docker 镜像使用说明
 
-          **当前镜像版本**：${{ env.TAG_NAME }}  
+          **当前镜像版本**：${{ needs.build-and-release.outputs.tag_name}}  
           **构建时间**：$(date '+%Y年%m月%d日 %H:%M:%S') (HKT)  
-          **镜像标签示例**：ghcr.io/${{ github.repository }}:${{ env.TAG_NAME }} 或 :latest
+          **镜像标签示例**：ghcr.io/${{ github.repository }}:${{ needs.build-and-release.outputs.tag_name }} 或 :latest
 
-          这是一个**完整的 Docker 镜像导出包**（.tar 文件），包含 Bgi-tools 应用及运行环境。  
+          这是一个**完整的 Docker 镜像导出包**（.tar 文件），包含 ${{ github.event.repository.name }} 应用及运行环境。  
           支持完全离线部署，无需联网拉取镜像，非常适合内网服务器、测试机或快速分发。
 
           ## 1. 导入镜像
@@ -572,28 +616,28 @@ jobs:
           docker load -i $TAR_FILE_NAME
 
           # 成功后会显示类似：
-          # Loaded image: ghcr.io/${{ github.repository }}:${{ env.TAG_NAME }}
+          # Loaded image: ghcr.io/${{ github.repository }}:${{ needs.build-and-release.outputs.tag_name }}
           # Loaded image: ghcr.io/${{ github.repository }}:latest
           \`\`\`
 
           \`\`\`bash
           # 查看已导入的镜像
-          docker images | grep bettergi-scripts-tools
+          docker images | grep ${{ github.event.repository.name }}
           \`\`\`
 
           ## 2. 启动容器（推荐方式）
 
           \`\`\`bash
           docker run -d \\
-            --name bgi-tools \\
-            -p 27601:27601 \\
-            -v \$(pwd)/config:/app/config \\           # 可选：挂载配置文件目录
+            --name ${{ github.event.repository.name }}\\
+            -p 8081:8081 \\
+            -v \$(pwd)/${{ github.event.repository.name }}:/app \\           # 可选：挂载配置文件目录
             --restart unless-stopped \\
-            ghcr.io/${{ github.repository }}:${{ env.TAG_NAME }}
+            ghcr.io/${{ github.repository }}:${{needs.build-and-release.outputs.tag_name }}
           \`\`\`
 
-          - **默认端口**：27601（可在 application-prod.yml 中修改）  
-          - **访问地址**：http://你的服务器IP:27601/bgi  
+          - **默认端口**：8081（可在 application-prod.yml 中修改）  
+          - **访问地址**：http://你的服务器IP:8081/bgi  
           - **配置文件挂载建议**：  
             在当前目录创建 config 文件夹，将 application-prod.yml 放入其中
 
@@ -601,13 +645,13 @@ jobs:
 
           \`\`\`bash
           # 查看实时日志
-          docker logs -f bgi-tools
+          docker logs -f ${{ github.event.repository.name }}
 
           # 进入容器内部（调试用）
-          docker exec -it bgi-tools /bin/sh
+          docker exec -it ${{ github.event.repository.name }} /bin/sh
 
           # 停止并删除容器
-          docker stop bgi-tools && docker rm bgi-tools
+          docker stop ${{ github.event.repository.name }} && docker rm ${{ github.event.repository.name }}
           \`\`\`
 
           ## 4. 注意事项
@@ -617,7 +661,7 @@ jobs:
           - 如遇端口冲突、网络问题，请检查：
             - 防火墙设置
             - 端口映射是否正确
-            - 是否有其他程序占用 27601 端口
+            - 是否有其他程序占用 8081 端口
           - 问题反馈：欢迎在 GitHub Issues 留言
 
           **祝使用愉快！**  
@@ -636,4 +680,4 @@ jobs:
           path: |
             ${{ env.TAR_FILE_NAME }}
             README-Docker-Usage.md
-         # retention-days: 5 # 设置保留天数为5天
+          # retention-days: 5 # 设置保留天数为5天
