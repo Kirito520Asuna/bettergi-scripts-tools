@@ -43,12 +43,12 @@ on:
         description: '是否推送到docker镜像仓库'
         required: true
         type: boolean
-        default: true
+        default: false
       push_to_github_release:
         description: '是否推送到Github Release'
         required: true
         type: boolean
-        default: true
+        default: false
 
 env:
   REGISTRY: ghcr.io
