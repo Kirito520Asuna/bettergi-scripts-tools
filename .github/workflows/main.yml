@@ -55,7 +55,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-release:
+  build-and-release-jar:
     runs-on: ubuntu-latest
     # 定义 outputs 以便后续 job 使用
     outputs:
@@ -419,7 +419,7 @@ jobs:
 
       - name: 14. 上传到 GitHub Release（包含独立 EXE 包）
         uses: softprops/action-gh-release@v2
-        if: ${{ needs.build-and-release.outputs.push_to_github_release == 'true' }}
+        if: ${{ needs.build-and-release-jar.outputs.push_to_github_release == 'true' }}
         #if: ${{ github.event_name == 'push' || inputs.push_to_github_release == true }}
         with:
           name: ${{ env.TAG_NAME }}
@@ -466,9 +466,9 @@ jobs:
           name: ${{ github.event.repository.name }}-Windows-Standalone
           path: ${{ github.event.repository.name }}-Windows-${{ env.TAG_NAME }}.zip
 
-  build-and-push:
+  build-and-push-docker:
     runs-on: ubuntu-latest
-    needs: build-and-release  # 添加依赖关系
+    needs: build-and-release-jar  # 添加依赖关系
     permissions:
       contents: read
       packages: write
@@ -496,7 +496,7 @@ jobs:
               cat "$DOCKER_FILE_NAME"
           else
               cat > "$DOCKER_FILE_NAME" << EOF
-              FROM eclipse-temurin:${{ needs.build-and-release.outputs.java_version }}-jre-alpine
+              FROM eclipse-temurin:${{ needs.build-and-release-jar.outputs.java_version }}-jre-alpine
               VOLUME /tmp
               COPY *.jar /app/app.jar
               ENTRYPOINT ["java","-jar","/app/app.jar"]
@@ -518,7 +518,7 @@ jobs:
 
       # 登录到 GitHub Container Registry
       - name: 登录 Log in to Container Registry
-        if: ${{ needs.build-and-release.outputs.push_to_docker_registry == 'true' }}
+        if: ${{ needs.build-and-release-jar.outputs.push_to_docker_registry == 'true' }}
         #if: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
         uses: docker/login-action@v2
         with:
@@ -540,12 +540,12 @@ jobs:
       # 构建并推送 Docker 镜像
       - name: 构建并推送 Docker image
         uses: docker/build-push-action@v4
-        #if: ${{ needs.build-and-release.outputs.push_to_docker_registry == 'true' }}
+        #if: ${{ needs.build-and-release-jar.outputs.push_to_docker_registry == 'true' }}
         #if: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
         with:
           context: .
           file: ./${{ env.DOCKER_FILE_NAME}}
-          push: ${{ needs.build-and-release.outputs.push_to_docker_registry == 'true' }}
+          push: ${{ needs.build-and-release-jar.outputs.push_to_docker_registry == 'true' }}
           #push: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
           load: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -553,7 +553,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            JAVA_VERSION=${{needs.build-and-release.outputs.java_version}}
+            JAVA_VERSION=${{needs.build-and-release-jar.outputs.java_version}}
             JAR_FILE_PATH=./*.jar
 
       # 验证构建的镜像
@@ -561,7 +561,7 @@ jobs:
         run: |
           docker images
           #if [ "${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}" ]; then
-          if [ "${{ needs.build-and-release.outputs.push_to_docker_registry == 'true' }}" ]; then
+          if [ "${{ needs.build-and-release-jar.outputs.push_to_docker_registry == 'true' }}" ]; then
             echo "Docker image pushed successfully"
           else
             echo "Docker image built locally only"
@@ -577,7 +577,7 @@ jobs:
 
           # 使用最安全的文件名策略：版本号 + 时间戳
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-          TAR_FILE_NAME="docker-${{ needs.build-and-release.outputs.tag_name }}-${TIMESTAMP}.tar"
+          TAR_FILE_NAME="docker-${{ needs.build-and-release-jar.outputs.tag_name }}-${TIMESTAMP}.tar"
 
           echo "最终安全文件名: $TAR_FILE_NAME"
 
@@ -600,9 +600,9 @@ jobs:
           cat <<EOF > README-Docker-Usage.md
           # ${{ github.event.repository.name }} Docker 镜像使用说明
 
-          **当前镜像版本**：${{ needs.build-and-release.outputs.tag_name}}  
+          **当前镜像版本**：${{ needs.build-and-release-jar.outputs.tag_name}}  
           **构建时间**：$(date '+%Y年%m月%d日 %H:%M:%S') (HKT)  
-          **镜像标签示例**：ghcr.io/${{ github.repository }}:${{ needs.build-and-release.outputs.tag_name }} 或 :latest
+          **镜像标签示例**：ghcr.io/${{ github.repository }}:${{ needs.build-and-release-jar.outputs.tag_name }} 或 :latest
 
           这是一个**完整的 Docker 镜像导出包**（.tar 文件），包含 ${{ github.event.repository.name }} 应用及运行环境。  
           支持完全离线部署，无需联网拉取镜像，非常适合内网服务器、测试机或快速分发。
@@ -616,7 +616,7 @@ jobs:
           docker load -i $TAR_FILE_NAME
 
           # 成功后会显示类似：
-          # Loaded image: ghcr.io/${{ github.repository }}:${{ needs.build-and-release.outputs.tag_name }}
+          # Loaded image: ghcr.io/${{ github.repository }}:${{ needs.build-and-release-jar.outputs.tag_name }}
           # Loaded image: ghcr.io/${{ github.repository }}:latest
           \`\`\`
 
@@ -633,7 +633,7 @@ jobs:
             -p 8081:8081 \\
             -v \$(pwd)/${{ github.event.repository.name }}:/app \\           # 可选：挂载配置文件目录
             --restart unless-stopped \\
-            ghcr.io/${{ github.repository }}:${{needs.build-and-release.outputs.tag_name }}
+            ghcr.io/${{ github.repository }}:${{needs.build-and-release-jar.outputs.tag_name }}
           \`\`\`
 
           - **默认端口**：8081（可在 application-prod.yml 中修改）  
