@@ -419,7 +419,7 @@ jobs:
 
       - name: 14. 上传到 GitHub Release（包含独立 EXE 包）
         uses: softprops/action-gh-release@v2
-        if: ${{ env.push_to_github_release }}
+        if: ${{ needs.build-and-release-jar.outputs.push_to_github_release == 'true' }}
         #if: ${{ github.event_name == 'push' || inputs.push_to_github_release == true }}
         with:
           name: ${{ env.TAG_NAME }}
