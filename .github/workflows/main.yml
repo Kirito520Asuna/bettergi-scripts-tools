@@ -351,10 +351,6 @@ jobs:
               <maxVersion>${{ env.JAVA_VERSION }}.999</maxVersion>
               <requiresJdk>false</requiresJdk>
               <jdkPreference>preferBundled</jdkPreference>
-          
-              <!-- 错误提示（强烈推荐自定义） -->
-              <errTitle>${{ github.event.repository.name }} 需要 Java ${{ env.JAVA_VERSION }}</errTitle>
-              <errMsg>启动失败：找不到 Java 运行时！\n\n请尝试以下任一方式：\n1. 将 jre 文件夹放在本程序同目录\n2. 安装 Java ${{ env.JAVA_VERSION }} 并设置 JAVA_HOME 环境变量</errMsg>
             </jre>
             <versionInfo>
               <fileVersion>$FILE_VERSION</fileVersion>
