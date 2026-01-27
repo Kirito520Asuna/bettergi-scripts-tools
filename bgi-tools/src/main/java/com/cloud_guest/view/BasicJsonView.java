@@ -12,5 +12,6 @@ public class BasicJsonView {
     public interface BaseView {}
     public interface WsProxyView{}
     public interface WsProxyViewV1{}
+    public interface OcrBytesView{}
 
 }
