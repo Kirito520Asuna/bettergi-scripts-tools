@@ -33,6 +33,8 @@ public interface AbsExceptionHandler {
     default Result notValidExceptionHandler(HttpServletRequest req, MethodArgumentNotValidException  e) {
         ApiCode validateFailed = ApiCode.VALIDATE_FAILED;
         String errorMessage = e.getBindingResult().getFieldError().getDefaultMessage();
+        // 打印异常堆栈信息
+        e.printStackTrace();
         return Result.result(validateFailed.getCode(),errorMessage);
     }
 
