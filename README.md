@@ -158,3 +158,65 @@ Content-Type: application/json
   "endTimestamp": 1
 }
 ```
+### 3.Ocr
+```http request
+###
+POST http://localhost:8081/bgi/ocr/bytes
+Content-Type: application/json
+
+{
+"bytes": []
+}
+
+###
+POST http://localhost:8081/bgi/api/ocr/bytes
+Content-Type: application/json
+
+{
+"bytes": []
+}
+
+###
+POST http://localhost:8081/bgi/jwt/ocr/bytes
+Content-Type: application/json
+
+{
+"bytes": []
+}
+```
+### bgi 第三方OCR识别实例
+```js
+(async function () {
+    const json = {
+        x: 1322,
+        y: 411,
+        w: 96,
+        h: 53,
+    }
+    let fullRegion = captureGameRegion();
+
+// 方法1：DeriveCrop（推荐，自动处理坐标转换和内存）
+    let subRegion = fullRegion.DeriveCrop(json.x, json.y, json.w, json.h);
+    let mat = subRegion.SrcMat
+    const bytes = Array.from(mat.ToBytes());
+    // POST http://localhost:8081/bgi/ocr/bytes
+    //     Content-Type: application/json
+    //
+    // {
+    //     "bytes": []
+    // }
+    log.info(`bytes:{key}`, JSON.stringify(...bytes))
+    let body = {
+        bytes: []
+    }
+    body.bytes = bytes
+    log.info(`body:{key}`, JSON.stringify(body))
+    const httpResponse = await http.request("POST", "http://localhost:8081/bgi/ocr/bytes", JSON.stringify(body), JSON.stringify({
+        "Content-Type": "application/json"
+    }));
+    log.info(`响应：{1}`, JSON.stringify(httpResponse))
+    // 用完释放
+    subRegion.Dispose();
+    fullRegion.Dispose();
+})()
+```
