@@ -254,57 +254,69 @@ jobs:
           ln -sf /usr/bin/i686-w64-mingw32-windres /tmp/launch4j/bin/windres
           ln -sf /usr/bin/i686-w64-mingw32-ld /tmp/launch4j/bin/ld
 
-          # ============ 下载并捆绑私有 JRE（安全提取 jre 子目录） ============
-          echo "📦 正在下载 Adoptium Temurin Java 8 最新 JDK (Windows x64，用于提取 jRE)"
+          # ============ 下载 Windows x64 JDK 用于提取/捆绑运行时 ============
+          echo "📦 正在下载 Adoptium Temurin Java ${{ env.JAVA_VERSION }} Windows x64 JDK"
 
-          sudo apt-get install -y jq  # 用于 API 解析
+          sudo apt-get install -y jq
 
           API_URL="https://api.adoptium.net/v3/assets/latest/${{ env.JAVA_VERSION }}/hotspot?image_type=jdk&os=windows&arch=x64&vendor=adoptium"
 
-          DOWNLOAD_URL=$(curl -s "$API_URL" | jq -r '.[0].binary.package.link')
+          DOWNLOAD_URL=$(curl -s -f "$API_URL" | jq -r '.[0].binary.package.link // empty')
 
-          #if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then
-          #  echo "⚠️ API 未返回链接，使用兜底版本（2026年1月最新 jdk8u482-b07）"
-          #  DOWNLOAD_URL="https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u482-b07/OpenJDK8U-jdk_x64_windows_hotspot_8u482b07.zip"
-          #fi
+          if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then
+            echo "❌ Adoptium API 未返回有效下载链接"
+            echo "请检查版本 ${{ env.JAVA_VERSION }} 是否存在，或网络问题"
+            exit 1
+          fi
 
-          echo "✅ 下载链接: $DOWNLOAD_URL"
-          wget -q "$DOWNLOAD_URL" -O /tmp/jdk.zip
+          echo "下载链接: $DOWNLOAD_URL"
+          wget -q --show-progress "$DOWNLOAD_URL" -O /tmp/jdk.zip || { echo "下载失败"; exit 1; }
 
-          # 生成随机临时目录解压，避免 /tmp 污染
+          # 解压到临时目录
           TEMP_EXTRACT_DIR=$(mktemp -d /tmp/jdk_extract_XXXXXX)
-          echo "🗂️ 解压到临时目录: $TEMP_EXTRACT_DIR"
-
           unzip -q /tmp/jdk.zip -d "$TEMP_EXTRACT_DIR"
 
-          # 找到解压后的唯一根目录（JDK 包总是只有一个子目录）
           JDK_ROOT_DIR=$(find "$TEMP_EXTRACT_DIR" -mindepth 1 -maxdepth 1 -type d | head -1)
 
           if [ -z "$JDK_ROOT_DIR" ]; then
-            echo "❌ 未找到 JDK 根目录"
+            echo "❌ 未找到解压后的 JDK 根目录"
             ls -la "$TEMP_EXTRACT_DIR"
             exit 1
           fi
 
-          # 找到 jre 子目录（Java 8 固定叫 jre）
-          JRE_SOURCE_DIR="$JDK_ROOT_DIR/jre"
+          echo "JDK 根目录: $JDK_ROOT_DIR"
+          ls -la "$JDK_ROOT_DIR" | head -n 8
 
-          if [ ! -d "$JRE_SOURCE_DIR" ]; then
-            echo "❌ JDK 根目录下未找到 jre 子目录（结构异常）"
-            ls -la "$JDK_ROOT_DIR"
-            exit 1
+          # ============ 根据版本处理运行时 ============
+          mkdir -p extracted-jars
+
+          JAVA_VER_NUM=$((10#${{ env.JAVA_VERSION }}))
+
+          if (( JAVA_VER_NUM <= 8 )); then
+            JRE_SOURCE_DIR="$JDK_ROOT_DIR/jre"
+            if [ ! -d "$JRE_SOURCE_DIR" ]; then
+              echo "❌ JDK 8 模式下未找到 jre 子目录"
+              ls -la "$JDK_ROOT_DIR"
+              exit 1
+            fi
+            mv "$JRE_SOURCE_DIR" extracted-jars/jre
+            echo "✅ 已提取 JDK 8 私有 JRE"
+          else
+            # JDK 9+ 直接使用整个 JDK 作为运行时，重命名为 jre
+            mv "$JDK_ROOT_DIR" extracted-jars/jre
+            echo "✅ 使用完整 JDK 作为捆绑运行时（Java ${{ env.JAVA_VERSION }}）"
+            echo "  → 运行时目录结构示例："
+            ls -la extracted-jars/jre | head -n 8
           fi
 
-          # 移动到目标位置，重命名为标准 jre
-          mkdir -p extracted-jars
-          mv "$JRE_SOURCE_DIR" extracted-jars/jre
-
-          echo "✅ 私有 JRE 已成功提取并捆绑到 extracted-jars/jre/ （大小: $(du -sh extracted-jars/jre | cut -f1)）"
+          # 显示大小统计
+          echo "捆绑运行时大小："
+          du -sh extracted-jars/jre
 
           # 清理临时文件
           rm -rf "$TEMP_EXTRACT_DIR" /tmp/jdk.zip
 
-          # ============ 版本处理 ============
+          # ============ 版本信息处理 ============
           RAW_TAG=${TAG_NAME#v}
           RAW_TAG=${RAW_TAG:-0.0.1}
           CLEAN_VERSION=$(echo "$RAW_TAG" | sed 's/[^0-9.]//g' | sed 's/^\.*//; s/\.*$//; s/\.\.+/\./g')
@@ -314,13 +326,11 @@ jobs:
           major=${parts[0]:-0} minor=${parts[1]:-0} patch=${parts[2]:-0} build=${parts[3]:-0}
           FILE_VERSION="$major.$minor.$patch.$build"
           TXT_VERSION="${TAG_NAME:-v$major.$minor.$patch}"
-          echo "🛠️ 版本: FileVersion=$FILE_VERSION, TxtVersion=$TXT_VERSION"
+          echo "版本信息: FileVersion=$FILE_VERSION, TxtVersion=$TXT_VERSION"
 
-          # ============ 生成独立 EXE ============
-          mkdir -p extracted-jars
-
+          # ============ 为每个 JAR 生成独立 EXE ============
           for jar_file in extracted-jars/*.jar; do
-            [ -f "$jar_file" ] || { echo "❌ 未找到 JAR 文件"; exit 1; }
+            [ -f "$jar_file" ] || { echo "❌ 未找到任何 JAR 文件"; exit 1; }
             jar_name=$(basename "$jar_file" .jar)
             exe_file="extracted-jars/${jar_name}.exe"
 
@@ -328,7 +338,10 @@ jobs:
             abs_exe=$(realpath -m "$exe_file")
 
             main_class=$(unzip -p "$jar_file" META-INF/MANIFEST.MF | grep '^Main-Class:' | sed 's/^Main-Class: *//' | tr -d '\r')
-            [ -z "$main_class" ] && echo "⚠️ $jar_file 无 Main-Class，跳过" && continue
+            if [ -z "$main_class" ]; then
+              echo "⚠️ $jar_file 无 Main-Class，跳过生成 EXE"
+              continue
+            fi
 
             config_file="/tmp/launch4j_${jar_name}_config.xml"
             cat > "$config_file" << EOF
@@ -341,16 +354,12 @@ jobs:
             <classPath>
               <mainClass>$main_class</mainClass>
             </classPath>
-
             <jre>
-              <!-- 搜索顺序：1. 同目录 jre → 2. JAVA_HOME → 3. 系统 PATH -->
-              <path>jre;%JAVA_HOME%;%PATH%</path>
-              <!-- 不需要额外写，Launch4j 会自动 fallback -->
-          
+              <path>jre</path>
               <minVersion>${{ env.JAVA_VERSION }}.0</minVersion>
               <maxVersion>${{ env.JAVA_VERSION }}.999</maxVersion>
-              <requiresJdk>false</requiresJdk>
               <jdkPreference>preferBundled</jdkPreference>
+              <requiresJdk>false</requiresJdk>
             </jre>
             <versionInfo>
               <fileVersion>$FILE_VERSION</fileVersion>
@@ -358,7 +367,7 @@ jobs:
               <productVersion>$FILE_VERSION</productVersion>
               <txtProductVersion>$TXT_VERSION</txtProductVersion>
               <fileDescription>${{ github.event.repository.name }} Standalone (Java ${{ env.JAVA_VERSION }})</fileDescription>
-              <copyright>Copyright (c) 2023-2026</copyright>
+              <copyright>Copyright (c) 2023-$(date +%Y)</copyright>
               <productName>${{ github.event.repository.name }}</productName>
               <internalName>${jar_name}</internalName>
               <originalFilename>${jar_name}.exe</originalFilename>
@@ -366,24 +375,28 @@ jobs:
           </launch4jConfig>
           EOF
 
-            echo "✅ 正在生成完全独立 EXE: $exe_file (带私有 JRE)"
+            echo "生成 EXE 配置: $config_file"
+            echo "正在生成独立 EXE: $exe_file"
+
             java -Djava.awt.headless=true -jar /tmp/launch4j/launch4j.jar "$config_file"
 
             if [ -f "$exe_file" ]; then
-              echo "🎉🎉🎉 成功生成独立运行 EXE: $exe_file (大小: $(du -h "$exe_file" | cut -f1))"
+              echo "🎉 成功生成: $exe_file (大小: $(du -h "$exe_file" | cut -f1))"
             else
               echo "❌ 生成失败"
               cat /tmp/launch4j/launch4j.log 2>/dev/null || true
+              exit 1
             fi
           done
 
-          echo "=== 最终打包目录内容 ==="
+          echo "=== 最终 extracted-jars 目录内容 ==="
           ls -lh extracted-jars/
-          du -sh extracted-jars/jre extracted-jars/*.exe
+          du -sh extracted-jars/jre extracted-jars/*.exe 2>/dev/null || true
 
-          # 清理临时文件
-          rm -rf /tmp/launch4j /tmp/launch4j.tgz /tmp/jre.zip /tmp/jdk-* /tmp/launch4j_*_config.xml
+          # 清理 Launch4j 临时文件
+          rm -rf /tmp/launch4j /tmp/launch4j.tgz /tmp/launch4j_*_config.xml
         shell: bash
+
 
       - name: 13. 打包仅含 EXE + JRE + 配置文件的独立运行包
         run: |
