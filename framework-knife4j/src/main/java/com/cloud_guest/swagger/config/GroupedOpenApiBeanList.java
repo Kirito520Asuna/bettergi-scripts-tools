@@ -1,4 +1,4 @@
-package com.minimalism.swagger.config;
+package com.cloud_guest.swagger.config;
 
 import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;

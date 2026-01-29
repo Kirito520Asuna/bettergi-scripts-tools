@@ -1,4 +1,4 @@
-package com.minimalism.swagger.abs;
+package com.cloud_guest.swagger.abs;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;

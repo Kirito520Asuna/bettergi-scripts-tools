@@ -1,7 +1,7 @@
-package com.minimalism.swagger.config;
+package com.cloud_guest.swagger.config;
 
 import cn.hutool.extra.spring.SpringUtil;
-import com.minimalism.swagger.abs.AbsSwagger;
+import com.cloud_guest.swagger.abs.AbsSwagger;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;

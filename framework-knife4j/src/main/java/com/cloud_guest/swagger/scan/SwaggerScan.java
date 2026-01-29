@@ -1,4 +1,4 @@
-package com.minimalism.swagger.scan;
+package com.cloud_guest.swagger.scan;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
