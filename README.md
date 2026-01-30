@@ -157,6 +157,50 @@ Content-Type: application/json
   "startTimestamp": 1,
   "endTimestamp": 1
 }
+
+###
+POST http://localhost:8081/bgi/cron/next-timestamp/all
+Content-Type: application/json
+
+{
+  "cronList": [
+      {
+      "key": "",
+      "cronExpression": "",
+      "startTimestamp": 1,
+      "endTimestamp": 1
+    }
+  ]
+}
+###
+POST http://localhost:8081/bgi/api/cron/next-timestamp/all
+Content-Type: application/json
+
+{
+  "cronList": [
+      {
+      "key": "",
+      "cronExpression": "",
+      "startTimestamp": 1,
+      "endTimestamp": 1
+    }
+  ]
+}
+
+###
+POST http://localhost:8081/bgi/jwt/cron/next-timestamp/all
+Content-Type: application/json
+
+{
+  "cronList": [
+      {
+      "key": "",
+      "cronExpression": "",
+      "startTimestamp": 1,
+      "endTimestamp": 1
+    }
+  ]
+}
 ```
 ### 3.Ocr
 ```http request
