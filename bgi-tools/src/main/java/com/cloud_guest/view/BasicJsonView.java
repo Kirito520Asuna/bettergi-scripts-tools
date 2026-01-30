@@ -13,5 +13,7 @@ public class BasicJsonView {
     public interface WsProxyView{}
     public interface WsProxyViewV1{}
     public interface OcrBytesView{}
+    public interface NextCronTimestampView{}
+    public interface NextCronTimestampALLView{}
 
 }

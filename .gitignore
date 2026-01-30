@@ -77,3 +77,4 @@ gradle-app.setting
 /.idea/
 *.iml
 */.flattened-pom.xml
+/.flattened-pom.xml

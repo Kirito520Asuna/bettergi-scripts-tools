@@ -1,6 +1,8 @@
 package com.cloud_guest.service.impl;
 
+import com.cloud_guest.domain.CronDto;
 import com.cloud_guest.service.CronService;
+import com.cloud_guest.vo.CronVo;
 import com.cronutils.model.Cron;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
@@ -11,7 +13,10 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @Author yan
@@ -48,9 +53,21 @@ public class CronServiceImpl implements CronService {
 
         // 如果存在且在 endTime 之前/等于，返回对应的毫秒时间戳
         return next.filter(candidate -> !candidate.isAfter(to))
-                .map(ZonedDateTime::toInstant)
-                .map(Instant::toEpochMilli).orElseGet(null);
+                .map(zdt -> Long.valueOf(zdt.toInstant().toEpochMilli())).orElse(null);
 
 
+    }
+
+    @Override
+    public List<CronVo> findNearestExecutionAfterAll(List<CronDto> cronList) {
+        List<CronVo> cronVoList = cronList.stream().map(item -> {
+            Long next = findNearestExecutionAfter(item.getCronExpression(), item.getStartTimestamp(), item.getEndTimestamp());
+            CronVo cronVo = new CronVo();
+            cronVo.setKey(item.getKey())
+                    .setNext(next)
+                    .setOk(next != null);
+            return cronVo;
+        }).collect(Collectors.toList());
+        return cronVoList;
     }
 }

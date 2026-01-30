@@ -1,6 +1,12 @@
 package com.cloud_guest.service;
 
 
+import com.cloud_guest.domain.CronDto;
+import com.cloud_guest.vo.CronVo;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @Author yan
  * @Date 2026/1/12 18:15:13
@@ -19,4 +25,6 @@ public interface CronService {
             String cronExpression,  // cron表达式字符串，定义了定时任务的执行规则
             long startTimeMs,      // 开始时间，毫秒级时间戳
             long endTimeMs);       // 结束时间，毫秒级时间戳
+
+    List<CronVo> findNearestExecutionAfterAll(List<CronDto> cronList);
 }
