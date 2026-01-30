@@ -2,6 +2,8 @@ package com.cloud_guest.domain;
 
 import com.cloud_guest.aop.validator.NotEmptyList;
 import com.cloud_guest.view.BasicJsonView;
+import com.fasterxml.jackson.annotation.JsonView;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +21,8 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CronListDto {
+    @JsonView(BasicJsonView.NextCronTimestampALLView.class)
     @NotEmptyList(message = "cronList不能为空", groups = {BasicJsonView.NextCronTimestampALLView.class})
+    @Schema(description = "cronList", required = true)
     private ArrayList<CronDto> cronList = new ArrayList<>();
 }
