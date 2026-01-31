@@ -35,6 +35,7 @@ public interface AbsSysLog extends AbsAop {
     }
 
     default Object aroundSysLog(ProceedingJoinPoint joinPoint) throws Throwable {
+        long start = System.currentTimeMillis();
         String traceId = ThreadMdcUtil.getTraceId();
         //获取是否有注解
         SysLog sysLog = getSysLog(joinPoint);
@@ -95,16 +96,33 @@ public interface AbsSysLog extends AbsAop {
         } finally {
             boolean openResultLog = ObjectUtil.isNotEmpty(sysLog) && sysLog.result();
             if (openResultLog) {
+                long end = System.currentTimeMillis();
+                long totalMilliseconds = end - start;
+                String timeFormat = formatDuration(totalMilliseconds);
                 String resultStr = around == null ? "返回值为空" : JSONUtil.toJsonStr(around, JSON_CONFIG);
+
                 log().info("\n====================================响应内容====================================\n" +
                                 "==>TRACE_ID : {} <==\n" +
+                                "==>耗时 : {} <==\n" +
                                 "==>响应 : {} <==\n" +
                                 "================================================================================",
-                        traceId, resultStr);
+                        traceId, timeFormat, resultStr);
             }
         }
     }
+    /**
+     * 将毫秒数转换为时分秒格式
+     */
+    default String formatDuration(long milliseconds) {
+        long hours = milliseconds / 3600000;
+        long remainingAfterHours = milliseconds % 3600000;
+        long minutes = remainingAfterHours / 60000;
+        long remainingAfterMinutes = remainingAfterHours % 60000;
+        long seconds = remainingAfterMinutes / 1000;
+        long millis = remainingAfterMinutes % 1000;
 
+        return String.format("%02dh %02dm %02ds %03dms", hours, minutes, seconds, millis);
+    }
     @Override
     default int getOrder() {
         return AopConstants.SysLogOrder;
