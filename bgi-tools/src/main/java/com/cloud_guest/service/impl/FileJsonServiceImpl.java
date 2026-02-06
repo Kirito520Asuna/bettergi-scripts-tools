@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Author yan
@@ -22,6 +23,7 @@ import java.util.List;
 public class FileJsonServiceImpl implements FileJsonService {
     @Value("${spring.redis.mode:none}")
     private String redisMode;
+    public static final String REDIS_FILE_JSON_KEY = "redis:file:json:";
 
     @Override
     public String save(String filename, byte[] bytes) {
@@ -38,7 +40,7 @@ public class FileJsonServiceImpl implements FileJsonService {
                 LocalCacheUtils.put(id, JSONUtil.toJsonStr(cache));
             } else {
                 RedisService bean = SpringUtil.getBean(RedisService.class);
-                bean.save(id, JSONUtil.toJsonStr(cache));
+                bean.save(REDIS_FILE_JSON_KEY + id, JSONUtil.toJsonStr(cache));
             }
             return id;
         } finally {
@@ -53,7 +55,7 @@ public class FileJsonServiceImpl implements FileJsonService {
             o = (String) LocalCacheUtils.get(id);
         } else {
             RedisService bean = SpringUtil.getBean(RedisService.class);
-            o = (String) bean.get(id);
+            o = (String) bean.get(REDIS_FILE_JSON_KEY + id);
         }
         Cache<String> cache = JSONUtil.toBean(o, Cache.class);
         return cache;
@@ -65,6 +67,9 @@ public class FileJsonServiceImpl implements FileJsonService {
             LocalCacheUtils.removeList(ids);
         } else {
             RedisService bean = SpringUtil.getBean(RedisService.class);
+            ids = ids.stream()
+                    .map(id -> REDIS_FILE_JSON_KEY + id)
+                    .collect(Collectors.toList());
             bean.delList(ids);
         }
         return true;

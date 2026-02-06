@@ -86,7 +86,7 @@ spring:
   redis:
     mode: none # none:不使用redis，single:使用单体,cluster:使用集群，sentinel:使用哨兵
     #单体
-    host: localhost
+    host: 127.0.0.1
     port: 6379
     database: 0
     #哨兵
