@@ -17,6 +17,7 @@
         <swagger.core.version>2.2.20</swagger.core.version>
         <swagger.version>1.6.16</swagger.version>
         <rapidocr.version>0.0.7</rapidocr.version>
+        <commons-jexl3.version>3.1</commons-jexl3.version>
 
         <workingDirectory>../frontend</workingDirectory>
         <workingNodeDirectory>${workingDirectory}/node</workingNodeDirectory>
@@ -56,6 +57,11 @@
 
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-jexl3</artifactId>
+            <version>${commons-jexl3.version}</version>
+        </dependency>
         <!-- RapidOCR 依赖 -->
         <!--  rapidocr这个必须要引入     -->
         <!--  可前往maven中央仓库https://central.sonatype.com/artifact/io.github.mymonstercat/rapidocr/versions，查看版本      -->
