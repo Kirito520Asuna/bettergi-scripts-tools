@@ -2,6 +2,7 @@ package com.cloud_guest.controller;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.log.SysLog;
@@ -22,8 +23,10 @@ import javax.annotation.Resource;
 import javax.validation.constraints.NotBlank;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.cloud_guest.result.Result.ok;
@@ -62,8 +65,24 @@ public class AnalysisController {
     @SysLog
     @Operation(summary = "查询JSON")
     @GetMapping("json/file")
-    public Result<Cache<String>> info(@RequestParam String id) {
-        return Result.ok(fileJsonService.find(id));
+    public Result<Cache> info(@RequestParam String id) {
+        Cache cache = new Cache();
+        Cache<String> cacheFind = fileJsonService.find(id);
+        String data = cacheFind.getData();
+        String type = cacheFind.getType();
+        cache.setType(type);
+
+        if ("json".equals(type)) {
+            boolean typeJSONArray = JSONUtil.isTypeJSONArray(data);
+            if (typeJSONArray){
+                cache.setData(JSONUtil.toList(data, ArrayList.class));
+            }else {
+                cache.setData(JSONUtil.toBean(data, Map.class));
+            }
+        }else {
+            cache.setData(data);
+        }
+        return Result.ok(cache);
     }
 
     @SysLog

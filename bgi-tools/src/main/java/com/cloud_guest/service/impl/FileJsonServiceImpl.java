@@ -2,6 +2,7 @@ package com.cloud_guest.service.impl;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.json.JSONUtil;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.service.FileJsonService;
 import com.cloud_guest.utils.LocalCacheUtils;
@@ -27,7 +28,7 @@ public class FileJsonServiceImpl implements FileJsonService {
             Cache<String> cache = new Cache<>();
             cache.setType("json");
             cache.setData(json);
-            LocalCacheUtils.put(id, cache);
+            LocalCacheUtils.put(id, JSONUtil.toJsonStr(cache));
             return id;
         } finally {
             FileUtil.del(path);
@@ -36,7 +37,8 @@ public class FileJsonServiceImpl implements FileJsonService {
 
     @Override
     public Cache<String> find(String id) {
-        Cache<String> cache = (Cache<String>) LocalCacheUtils.get(id);
+        String o = (String)LocalCacheUtils.get(id);
+        Cache<String> cache = JSONUtil.toBean(o, Cache.class);
         return cache;
     }
 

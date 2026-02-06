@@ -62,6 +62,10 @@ server:
 spring:
   application:
     name: bgi
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
   config:
     import:
       - optional:file:./application-prod.yml
