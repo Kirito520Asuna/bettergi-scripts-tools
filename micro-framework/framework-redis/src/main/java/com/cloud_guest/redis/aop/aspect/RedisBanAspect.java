@@ -7,7 +7,6 @@ import com.cloud_guest.redis.aop.ban.Ban;
 import com.cloud_guest.redis.ban.BanConfiguration;
 import com.cloud_guest.redis.ban.BanType;
 import com.cloud_guest.redis.ban.SimpleBanManager;
-import com.cloud_guest.redis.config.RedisConfiguration;
 import com.cloud_guest.redis.config.RedissonConfig;
 import com.cloud_guest.redis.exception.BanException;
 import javax.servlet.http.HttpServletRequest;

@@ -37,8 +37,9 @@
         <flatten-maven-plugin.version>1.2.7</flatten-maven-plugin.version>
     </properties>
     <modules>
-        <module>framework-knife4j</module>
-        <module>framework-redis</module>
+<!--        <module>framework-knife4j</module>
+        <module>framework-redis</module>-->
+        <module>micro-framework</module>
         <module>bgi-tools</module>
     </modules>
 
