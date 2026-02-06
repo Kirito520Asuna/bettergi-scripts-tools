@@ -1,33 +1,3 @@
-server:
-  servlet:
-      context-path: /bgi
-  port: 8081
-
-
-spring:
-#  redis:
-#    mode: single
-  application:
-    name: bgi
-  config:
-    import:
-      - optional:file:./application-prod.yml
-  profiles:
-    active: prod
-
-#  mvc:
-#    # 推荐开启这个，让 /** 映射优先级低于静态资源
-#    static-path-pattern: /static/ui/**   # 可选，如果你想把静态资源路径改成 /static/ 开头
-#    # throw-exception-if-no-handler-found: true   # 可选，404 时抛异常方便调试
-#  web:
-#    resources:
-#      static-locations:
-#        - classpath:/static/
-    # 默认已经包含 classpath:/static/，通常不需要额外配置
-    # 如果你把 dist 放在其他位置，可以加
-    # static-locations: classpath:/static/,classpath:/public/
-bgi-tools:
-  version: 0.0.3
 api:
   authorization: token
   common:
@@ -55,17 +25,17 @@ springdoc:
       jwt: true
       other: true
   group-configs:
-      - group: "api"
-        paths-to-match: "/api/**"
-      - group: "jwt"
-        paths-to-match: "/jwt/**"
-      - group: "other"
-        paths-to-exclude:
-          - "/swagger-resources/**"
-          - "/v2/api-docs"
-          - "/v3/api-docs"
-          - "/api/**"
-          - "/jwt/**"
+    - group: "api"
+      paths-to-match: "/api/**"
+    - group: "jwt"
+      paths-to-match: "/jwt/**"
+    - group: "other"
+      paths-to-exclude:
+        - "/swagger-resources/**"
+        - "/v2/api-docs"
+        - "/v3/api-docs"
+        - "/api/**"
+        - "/jwt/**"
   swagger-ui:
     operations-sorter: alpha
     path: /swagger-ui.html
@@ -82,13 +52,55 @@ knife4j:
     username: root
     password: root
 
-#logging:
-#  charset:
-#    console: UTF-8
-#    file: UTF-8
-#  file:
-#    name: ./logs/bgi.log
-#  logback:
-#    rollingpolicy:
-#      max-file-size: 10MB  # 单个日志文件最大大小
-#      max-history: 30      # 保留的历史日志文件数量
+
+server:
+  servlet:
+    context-path: /bgi
+  port: 8081
+
+
+spring:
+  application:
+    name: bgi
+  config:
+    import:
+      - optional:file:./application-prod.yml
+  profiles:
+    active: prod
+    #  mvc:
+    #    # 推荐开启这个，让 /** 映射优先级低于静态资源
+    #    static-path-pattern: /static/ui/**   # 可选，如果你想把静态资源路径改成 /static/ 开头
+    #    # throw-exception-if-no-handler-found: true   # 可选，404 时抛异常方便调试
+    #  web:
+    #    resources:
+    #      static-locations:
+    #        - classpath:/static/
+    # 默认已经包含 classpath:/static/，通常不需要额外配置
+    # 如果你把 dist 放在其他位置，可以加
+    # static-locations: classpath:/static/,classpath:/public/
+#redis
+  redis:
+    mode: none # none:不使用redis，single:使用单体,cluster:使用集群，sentinel:使用哨兵
+    #单体
+    host: localhost
+    port: 6379
+    database: 0
+    #哨兵
+    sentinel:
+      master: mymaster   # 哨兵 master-set 名称
+      nodes:
+        - 192.168.6.128:26379
+        - 192.168.6.128:26380
+    #集群
+    cluster:
+      nodes:
+        - 192.168.6.128:7000
+        - 192.168.6.128:7001
+    #安全
+    username:  #默认为空
+    password:  #默认为空
+
+bgi-tools:
+  version: 0.0.3
+
+
