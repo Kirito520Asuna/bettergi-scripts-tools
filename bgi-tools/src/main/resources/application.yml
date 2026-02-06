@@ -5,6 +5,8 @@ server:
 
 
 spring:
+#  redis:
+#    mode: single
   application:
     name: bgi
   config:

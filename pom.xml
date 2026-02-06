@@ -38,6 +38,7 @@
     </properties>
     <modules>
         <module>framework-knife4j</module>
+        <module>framework-redis</module>
         <module>bgi-tools</module>
     </modules>
 

@@ -123,11 +123,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.cloud-guest</groupId>
-            <artifactId>framework-knife4j</artifactId>
-            <version>${revision}</version>
-        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
@@ -135,6 +131,17 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.cloud-guest</groupId>
+            <artifactId>framework-knife4j</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.cloud-guest</groupId>
+            <artifactId>framework-redis</artifactId>
+            <version>${revision}</version>
         </dependency>
     </dependencies>
 
