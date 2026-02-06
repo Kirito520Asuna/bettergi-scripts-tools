@@ -62,7 +62,7 @@ public class AnalysisController {
         return ok(id);
     }
 
-    @SysLog
+    @SysLog(result = false)
     @Operation(summary = "查询JSON")
     @GetMapping("json/file")
     public Result<Cache> info(@RequestParam String id) {
