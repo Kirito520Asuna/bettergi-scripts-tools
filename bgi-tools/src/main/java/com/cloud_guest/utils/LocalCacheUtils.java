@@ -50,6 +50,7 @@ public class LocalCacheUtils {
         }
         if (map != null) {
             LOCAL_CACHE_MAP.putAll(map);
+            log.info("加载本地缓存成功");
         }
     }
 
@@ -63,6 +64,7 @@ public class LocalCacheUtils {
         //保存缓存
         String localCacheJson = JSONUtil.toJsonStr(LOCAL_CACHE_MAP);
         FileUtil.writeUtf8String(localCacheJson, localCacheJsonFilePath);
+        log.info("保存本地缓存成功");
     }
 
     /**

@@ -63,7 +63,7 @@ public class RedisBanAspect implements AbsRedisAspect {
     //@Around("execution(* com..*Controller.*(..))")
     @Around("execution(* com..*Controller.*(..))")
     public Object checkGlobalBan(ProceedingJoinPoint joinPoint) throws Throwable {
-        log.info("[{}]执行全局检查", System.currentTimeMillis());
+        log.debug("[{}]执行全局检查", System.currentTimeMillis());
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         if (requestAttributes == null) {
             log.debug("内部自调 没有请求上下文，放行");

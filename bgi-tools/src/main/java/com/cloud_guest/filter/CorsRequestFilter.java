@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsRequestFilter extends OncePerRequestFilter implements AbsBean {
+    private CorsProperties cors;
+
     @Override
     public void init() {
         log().debug("[Filter]-[Cors]-[init] {}", getClass().getName());
@@ -42,12 +44,13 @@ public class CorsRequestFilter extends OncePerRequestFilter implements AbsBean {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         Map<String, Object> headerMap = Maps.newLinkedHashMap();
-
-        CorsProperties cors = new CorsProperties();
-        try {
-            cors = SpringUtil.getBean(CorsProperties.class);
-        }catch (Exception e) {
-            log().warn("[warn]-[Filter]-[Cors] {}", e.getMessage());
+        if (cors == null) {
+            cors = new CorsProperties();
+            try {
+                cors = SpringUtil.getBean(CorsProperties.class);
+            } catch (Exception e) {
+                log().warn("[warn]-[Filter]-[Cors] {}", e.getMessage());
+            }
         }
         String allowedOrigin = cors.getAllowedOrigin();
         String[] allowedMethods = cors.AllowedMethods();
@@ -107,12 +110,12 @@ public class CorsRequestFilter extends OncePerRequestFilter implements AbsBean {
                 response.setHeader(entry.getKey(), String.valueOf(entry.getValue()));
             }
         }
-        log().info("headerMap: {}", headerMap);
+        //log().info("headerMap: {}", headerMap);
         if (StrUtil.equalsIgnoreCase("OPTIONS", request.getMethod())) {
-            log().info("OPTIONS ....");
+            //log().info("OPTIONS ....");
             response.setStatus(HttpServletResponse.SC_OK);
         } else {
-            log().info("not OPTIONS ....");
+            //log().info("not OPTIONS ....");
             chain.doFilter(request, response);
         }
     }

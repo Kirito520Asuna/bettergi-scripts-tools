@@ -36,18 +36,22 @@ public class CorsProperties implements BeanProperties {
     private String allowedHeader;
     private Boolean allowCredentials;
     private Long maxAge;
+    private CorsGatewayProperties gatewayCorsProperties;
 
     public String[] AllowedMethods() {
         String[] origins;
         if (StrUtil.isNotBlank(allowedMethods)) {
             origins = allowedMethods.split(",");
         } else {
-            CorsGatewayProperties bean;
-            try {
-                bean = SpringUtil.getBean(CorsGatewayProperties.class);
-            } catch (Exception e) {
-                log().warn(e.getMessage());
-                bean = new CorsGatewayProperties();
+            CorsGatewayProperties bean = gatewayCorsProperties;
+            if (bean == null) {
+                try {
+                    bean = SpringUtil.getBean(CorsGatewayProperties.class);
+                } catch (Exception e) {
+                    log().warn(e.getMessage());
+                    bean = new CorsGatewayProperties();
+                }
+                gatewayCorsProperties = bean;
             }
             Boolean defaultFilter = ObjectUtils.defaultIfEmpty(bean.getDefaultFilter(), true);
             Boolean webFilter = ObjectUtils.defaultIfEmpty(bean.getWebFilter(), false);
