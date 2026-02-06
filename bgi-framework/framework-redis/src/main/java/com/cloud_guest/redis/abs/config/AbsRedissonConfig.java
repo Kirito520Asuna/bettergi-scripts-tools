@@ -123,8 +123,12 @@ public interface AbsRedissonConfig {
                 sentinelServersConfig
                         .setMasterName(sentinel.getMaster())
                         .addSentinelAddress(sentinelNodes.toArray(new String[0]));
-                sentinelServersConfig.setPassword(sentinel.getPassword());
-                sentinelServersConfig.setUsername(sentinel.getUsername());
+                if (redisProperties.getPassword() != null&& redisProperties.getPassword().trim() != "") {
+                    sentinelServersConfig.setPassword(sentinel.getPassword());
+                }
+                if (redisProperties.getUsername() != null&& redisProperties.getUsername().trim() != "") {
+                    sentinelServersConfig.setUsername(sentinel.getUsername());
+                }
                 baseConfig = sentinelServersConfig;
                 break;
             case single: // 单机模式 传递默认default
@@ -141,8 +145,12 @@ public interface AbsRedissonConfig {
                 baseConfig = singleServerConfig;
                 break;
         }
-        baseConfig.setUsername(redisProperties.getUsername());
-        baseConfig.setPassword(redisProperties.getPassword());
+        if (redisProperties.getUsername() != null && redisProperties.getUsername().trim() != "") {
+            baseConfig.setUsername(redisProperties.getUsername());
+        }
+        if (redisProperties.getPassword() != null&& redisProperties.getPassword().trim() != "") {
+            baseConfig.setPassword(redisProperties.getPassword());
+        }
 
         return Redisson.create(config);
     }
