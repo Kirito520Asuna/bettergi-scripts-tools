@@ -76,7 +76,7 @@ gradle-app.setting
 
 /.idea/
 *.iml
-*/.flattened-pom.xml
+**/.flattened-pom.xml
 /.flattened-pom.xml
 */package-lock.json
 */node_modules

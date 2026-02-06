@@ -39,7 +39,7 @@
     <modules>
 <!--        <module>framework-knife4j</module>
         <module>framework-redis</module>-->
-        <module>micro-framework</module>
+        <module>bgi-framework</module>
         <module>bgi-tools</module>
     </modules>
 

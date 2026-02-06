@@ -9,7 +9,7 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>micro-framework</artifactId>
+    <artifactId>bgi-framework</artifactId>
     <packaging>pom</packaging>
 
     <modules>
