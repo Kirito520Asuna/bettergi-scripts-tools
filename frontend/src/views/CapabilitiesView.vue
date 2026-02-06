@@ -131,12 +131,11 @@ export default {
     const ocrResult = ref('')
     const cronExpression = ref('0 0 * * * ?')
     // const timeRange = ref([])
-    const defaultTime = new Date(2000, 1, 1, 12, 0, 0)
+    // const defaultTime = new Date(2000, 1, 1, 12, 0, 0)
 
-    const startTime = ref(defaultTime)
-    const endTime = ref(defaultTime)
-    const startTimestamp = ref(new Date(startTime.value).getTime())
-    const endTimestamp = ref(new Date(endTime.value).getTime())
+    const startTime = ref(new Date(Date.now()))
+    const endTime = ref(new Date(Date.now() + 86400000))
+
     const cronList = ref([
       {
         key: 'task1',
@@ -203,12 +202,15 @@ export default {
         //   console.error('时间戳值无效，请检查输入');
         //   return;
         // }
-
+        const startTimestamp = new Date(startTime.value).getTime()
+        const endTimestamp = new Date(endTime.value).getTime()
+        // console.log('startTimestamp', startTimestamp)
+        // console.log('endTimestamp', endTimestamp)
         // const [start, end] = timeRange.value || [new Date(), new Date(Date.now() + 86400000)]
         const response = await service.post("/cron/next-timestamp", {
           cronExpression: cronExpression.value,
-          startTimestamp: startTimestamp.value,
-          endTimestamp: endTimestamp.value,
+          startTimestamp: startTimestamp,
+          endTimestamp: endTimestamp,
         })
         cronResult.value = JSON.stringify(response.data, null, 2)
       } catch (error) {
