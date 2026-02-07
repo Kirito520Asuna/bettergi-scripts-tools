@@ -44,7 +44,13 @@
 <script>
 import {ref, onMounted} from "vue";
 import router from "@router/router";
+const iconAsMap = new Map();
 
+iconAsMap.set('Markdown',
+    (`<svg viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<path fill="#444444" d="M25.674 9.221h-19.348c-0.899 0-1.63 0.731-1.63 1.63v10.869c0 0.899 0.731 1.63 1.63 1.63h19.348c0.899 0 1.63-0.731 1.63-1.63v-10.869c0-0.899-0.731-1.63-1.63-1.63zM17.413 20.522l-2.826 0.003v-4.239l-2.12 2.717-2.12-2.717v4.239h-2.826v-8.478h2.826l2.12 2.826 2.12-2.826 2.826-0.003v8.478zM21.632 21.229l-3.512-4.943h2.119v-4.239h2.826v4.239h2.119l-3.553 4.943z"></path>
+</svg>`.trim())
+);
 
 const currentRoute = ref(router.currentRoute)
 export default {
@@ -119,18 +125,7 @@ export default {
       featureGroup.value.push(homeJson);
 
     });
-    const iconAsMap = new Map();
 
-    iconAsMap.set('Markdown',
-        (`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-              fill="#ff3366"
-              stroke="#ff3366"
-              strokeWidth="1.5"
-          />
-        </svg>`.trim())
-    );
     // 获取图标
     const getIcon = (item) => {
       // 优先使用 meta.icon，没有则根据类型给默认 emoji

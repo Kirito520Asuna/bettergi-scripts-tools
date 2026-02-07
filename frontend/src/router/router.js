@@ -29,8 +29,8 @@ const routes = [
     }
     ,
     {
-        path: '/md',
-        name: 'md',
+        path: '/Markdown',
+        name: 'Markdown',
         component: () => import('@main/views/MarkdownView'),
         meta: {
             isRoot: true,
@@ -38,7 +38,6 @@ const routes = [
             desc: 'Markdown渲染',
             asSubParentTitle: 'Markdown渲染',
             icon: 'Markdown'
-            // icon: 'icon-home'
         },
     }
     // 其他路由...
