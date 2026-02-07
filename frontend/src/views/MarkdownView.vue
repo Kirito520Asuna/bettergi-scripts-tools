@@ -269,33 +269,34 @@ onUnmounted(() => {
 }
 
 .rendered-content {
-  line-height: 2.7;
+  /*line-height: 2.7;*/
 }
 
 .rendered-content :deep(pre),
 .rendered-content :deep(pre code),
 .rendered-content :deep(code) {
-  line-height: 3 !important;       /* 推荐 1.4 ~ 1.6，代码最舒适 */
+ /* line-height: 3 !important;       !* 推荐 1.4 ~ 1.6，代码最舒适 *!*/
   white-space: pre-wrap !important;  /* 保留换行，但允许自动换行 */
-  //word-break: break-all;             /* 长行强制断行，避免横向溢出 */
-  margin: 0.8em 0 !important;        /* 上下外边距减小 */
-  padding: 0.9em 1.1em !important;   /* 上下内边距减小，左右稍宽一点好看 */
-  /*background: #f6f8fa;*/
-  background: linear-gradient(135deg, rgba(253, 74, 253, 0.27), #68e3dd) !important; /* 添加渐变背景 */
-  border-radius: 8px;
-  overflow-x: auto;
-  font-size: 0.94em;                 /* 字体略小一点，节省高度 */
+  margin: 0.4em 0 !important;        /* 上下外边距减小 */
+  padding: 0.1em 0.5em !important;   /* 上下内边距减小，左右稍宽一点好看 */
+  background: #ececea;
+  /*background: linear-gradient(135deg, rgba(242, 197, 92), rgb(242, 197, 92)) !important; !* 添加渐变背景 *!*/
+  border-radius: 10px;
+  /*overflow-x: auto;*/
+  font-size: 0.94em; /* 字体略小一点，节省高度*/
+  color: rgb(252, 123, 153);
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
 }
 /* 如果你用了 hljs 的类，也可以针对它设置 */
 .rendered-content :deep(.hljs) {
-  line-height: 3 !important;
+  /*line-height: 3 !important;*/
+  color: rgb(186, 112, 7);
 }
 
-/* 防止其他地方的 line-height 继承干扰 */
+/*!* 防止其他地方的 line-height 继承干扰 *!
 .rendered-content :deep(pre *) {
   line-height: 3 !important;
-}
+}*/
 .loading,
 .error {
   text-align: center;
