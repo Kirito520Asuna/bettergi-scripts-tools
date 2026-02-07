@@ -28,6 +28,19 @@ const routes = [
             // icon: 'icon-home'
         },
     }
+    ,
+    {
+        path: '/md',
+        name: 'md',
+        component: () => import('@main/views/MarkdownView'),
+        meta: {
+            isRoot: true,
+            title: 'Markdown渲染',
+            desc: 'Markdown渲染',
+            asSubParentTitle: 'Markdown渲染',
+            // icon: 'icon-home'
+        },
+    }
     // 其他路由...
 ]
 

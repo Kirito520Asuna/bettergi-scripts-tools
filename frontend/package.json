@@ -11,7 +11,11 @@
   },
   "dependencies": {
     "axios": "^1.7.7",
+    "dompurify": "^3.3.1",
     "element-plus": "^2.13.2",
+    "highlight.js": "^11.11.1",
+    "markdown-it": "^14.1.0",
+    "mermaid": "^11.12.2",
     "vue": "^3.5.12",
     "vue-router": "^4.4.5"
   },
