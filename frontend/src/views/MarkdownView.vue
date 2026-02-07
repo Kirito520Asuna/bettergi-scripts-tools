@@ -217,9 +217,10 @@ onUnmounted(() => {
 <style scoped>
 .markdown-container {
   padding: 20px;
-  max-width: 960px;
+/*  max-width: 960px;*/
   margin: 0 auto;
-  background: linear-gradient(135deg, rgba(84, 197, 243, 0.67), rgba(86, 197, 204, 0.66)) !important; /* 添加渐变背景 */
+  background: #fadbd8;
+  /*background: linear-gradient(135deg, rgba(84, 197, 243, 0.67), rgba(86, 197, 204, 0.66)) !important; !* 添加渐变背景 *!*/
 }
 
 .upload-area {
@@ -270,7 +271,7 @@ onUnmounted(() => {
   border-radius: 10px;
   /*overflow-x: auto;*/
   font-size: 0.94em; /* 字体略小一点，节省高度*/
-  color: rgb(252, 123, 153);
+  color: rgb(255, 0, 107);
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
 }
 /* 如果你用了 hljs 的类，也可以针对它设置 */
