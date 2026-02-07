@@ -47,22 +47,8 @@ const md = new MarkdownIt({
   linkify: true,
   typographer: true,
   breaks: true,
-/*  highlight: function (str, lang) {
-    // 特殊处理 Mermaid 代码块
-    if (lang && lang.toLowerCase() === 'mermaid') {
-      return `<div class="mermaid">${md.utils.escapeHtml(str.trim())}</div>`
-    }
-    // 普通代码高亮
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return '<pre class="hljs"><code>' +
-            hljs.highlight(str, {language: lang, ignoreIllegals: true}).value +
-            '</code></pre>';
-      } catch (__) {
-      }
-    }
-    return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
-  }*/
+  // 显式开启表格（其实默认已开）
+  table: true,
 
   highlight: function (str, lang) {
     // Mermaid 处理（保持原样）
@@ -80,7 +66,7 @@ const md = new MarkdownIt({
     }
 
     // 默认 fallback：保持原始格式，用 pre code 包裹
-    return '<pre class="hljs"><code>' + md.utils.escapeHtml(str.trim()) + '</code></pre>';
+    return md.utils.escapeHtml(str.trim()) ;
   }
 })
 
@@ -380,7 +366,82 @@ onUnmounted(() => {
   fill: #6b7280 !important;
   font-weight: normal !important;
 }
+/* Markdown 表格样式 - 美化 + 响应式 + 横向滚动 */
+.rendered-content :deep(table) {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: separate;          /* 必须改为 separate 才能实现圆角 */
+  border-spacing: 0;                  /* 去除单元格间距 */
+  margin: 1.5em 0;
+  font-size: 0.95em;
+  overflow-x: auto;
+  display: block;
+  border-radius: 12px;                /* 表格整体圆角 */
+  overflow: hidden;                   /* 让内部内容不溢出圆角 */
+  /*border: 1px solid #000000;          !* 外边框黑色 *!*/
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* 可选：轻微阴影增加立体感 */
+}
 
+.rendered-content :deep(table thead th),
+.rendered-content :deep(table thead td) {
+  background: rgb(177, 182, 189);               /* 表头浅灰背景 */
+/*  background: linear-gradient(135deg, rgb(124, 123, 123), rgb(255, 255, 255)) !important;*/
+  color: #1e293b;
+/*  font-weight: 600;*/
+  text-align: left;
+  padding: 0.75em 1em;
+ /* border-bottom: 2px solid #cbd5e1;*/
+  border-bottom: 1px solid #000000;   /* 表头下边线黑色 */
+}
+
+.rendered-content :deep(table tbody tr) {
+  border-bottom: 1px solid #000000;   /* 行间分隔线黑色 */
+  transition: background 0.2s;
+  background: linear-gradient(135deg, rgb(198, 51, 159), rgb(255, 255, 255)) !important;
+}
+
+.rendered-content :deep(table tbody tr:nth-child(odd)) {
+  background: linear-gradient(135deg, rgb(193, 154, 57), rgb(255, 255, 255)) !important;               /* 隔行浅色（zebra stripe） */
+}
+
+.rendered-content :deep(table tbody tr:hover) {
+  background: linear-gradient(135deg, rgb(0, 248, 255), rgb(255, 255, 255)) !important;                /* 鼠标悬停高亮 */
+}
+
+.rendered-content :deep(table td),
+.rendered-content :deep(table th) {
+  padding: 0.75em 1em;
+  vertical-align: top;
+  border: 1px solid #e2e8f0;
+}
+
+/* 表格对齐支持（通过 Markdown 语法 :--: | :--- | ---:） */
+.rendered-content :deep(table th.align-center),
+.rendered-content :deep(table td.align-center) {
+  text-align: center;
+}
+
+.rendered-content :deep(table th.align-right),
+.rendered-content :deep(table td.align-right) {
+  text-align: right;
+}
+
+/* 响应式：小屏幕时允许横向滚动 */
+@media (max-width: 768px) {
+  .rendered-content :deep(table) {
+    font-size: 0.9em;
+  }
+  .rendered-content :deep(table td),
+  .rendered-content :deep(table th) {
+    padding: 0.6em 0.8em;
+  }
+}
+
+/* 如果表格很宽，强制横向滚动 */
+.rendered-content :deep(table-wrapper) {
+  overflow-x: auto;
+  margin: 1em 0;
+}
 /* 暗黑模式额外保障（保持浅背景 + 深文字） */
 @media (prefers-color-scheme: dark) {
   .rendered-content :deep(.mermaid .actor rect),
