@@ -400,7 +400,7 @@ onUnmounted(() => {
   font-size: 0.95em;
   overflow-x: auto;
   display: block;
-  border-radius: 12px; /* 表格整体圆角 */
+  border-radius: 7px; /* 表格整体圆角 */
   overflow: hidden; /* 让内部内容不溢出圆角 */
   /*border: 1px solid #000000;          !* 外边框黑色 *!*/
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 可选：轻微阴影增加立体感 */
