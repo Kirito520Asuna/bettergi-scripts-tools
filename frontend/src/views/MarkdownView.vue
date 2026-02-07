@@ -220,9 +220,11 @@ onUnmounted(() => {
 
 <style scoped>
 .home{
-  min-height: 100vh;
 /*  padding: 20px;*/
   /*margin: 0 auto;*/
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
   background: url("@assets/MHY_XTLL.png");
   /* 关键：固定背景，不随滚动重复或变形 */
   background-attachment: fixed;         /* ← 核心属性 */
