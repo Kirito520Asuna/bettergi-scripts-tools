@@ -16,7 +16,8 @@
                 :key="item.id"
                 :class="['feature-item', getItemClass(item)]"
             >
-              <span class="icon">{{ getIcon(item) }}</span>
+<!--              <span class="icon">{{ getIcon(item) }}</span>-->
+              <span v-html="getIcon(item)" class="icon"></span>
               <button class="name" @click="togo(item)">{{ item.name }}</button>
             </div>
           </div>
@@ -28,14 +29,15 @@
                 :key="item.id"
                 :class="['feature-item', getItemClass(item)]"
             >
-              <span class="icon">{{ getIcon(item) }}</span>
+<!--              <span class="icon">{{ getIcon(item) }}</span>-->
+              <span v-html="getIcon(item)" class="icon"></span>
               <button class="name" @click="togo(item)">{{ item.name }}</button>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <router-view />
+    <router-view/>
   </div>
 </template>
 
@@ -43,11 +45,11 @@
 import {ref, onMounted} from "vue";
 import router from "@router/router";
 
+
 const currentRoute = ref(router.currentRoute)
 export default {
   name: 'HomeView',
   setup() {
-
     // 统一管理所有功能项
     const featureGroup = ref([]);
     const list = [
@@ -67,6 +69,7 @@ export default {
         isRote: item.isRote,
         isLink: item.isLink,
         isSwagger: item.isSwagger,
+        icon: undefined,
         name: item.name,
         value: item.value
       });
@@ -85,6 +88,7 @@ export default {
           id: index,
           position: index % 2 === 1 ? "left" : "right",
           isRote: true,
+          icon: route?.meta?.icon,
           name: route?.meta?.title,
           value: route.path
         });
@@ -106,6 +110,7 @@ export default {
           id: index,
           position: index % 2 === 1 ? "left" : "right",
           isRote: true,
+          icon: route?.meta?.icon,
           name: route?.meta?.title,
           value: route.path
         });
@@ -114,10 +119,49 @@ export default {
       featureGroup.value.push(homeJson);
 
     });
+    const iconAsMap = new Map();
 
+    iconAsMap.set('Markdown',
+        (`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+              fill="#ff3366"
+              stroke="#ff3366"
+              strokeWidth="1.5"
+          />
+        </svg>`.trim())
+    );
     // 获取图标
     const getIcon = (item) => {
-      return item.isLink ? "🔗" : item.isSwagger ? "📖" : item.isRote ? "🛤️" : "";
+      // 优先使用 meta.icon，没有则根据类型给默认 emoji
+      let rawIcon = item?.icon;
+      if (rawIcon) {
+        // 字符串处理
+        if (typeof rawIcon === "string") {
+          const trimmed = rawIcon.trim();
+
+          // 如果是 SVG 字符串
+          if (trimmed.trim().startsWith('<svg')) {
+            return trimmed.trim() // 直接返回字符串
+          }
+          // 优先级 2：从 iconMap 中根据别名查找（新加的部分）
+          const alias = item?.icon; // 假设别名放在 meta.iconAlias，或用 key/name
+          if (alias && iconAsMap.has(trimmed)) {
+            const svgOrEmoji = iconAsMap.get(trimmed);
+
+            // 如果是 SVG 字符串
+            if (typeof svgOrEmoji === "string" && svgOrEmoji.trim().startsWith("<svg")) {
+              return svgOrEmoji.trim() // 直接返回字符串
+            }
+            // 如果是 emoji 或其他字符串
+            return svgOrEmoji;
+          }
+        }
+        return rawIcon;
+      }
+      rawIcon = item.isLink ? "🔗" : item.isSwagger ? "📖" : item.isRote ? "🛤️" : "";
+      // 其他情况兜底（比如传了奇怪的东西）
+      return rawIcon;
     };
     // 获取样式类
     const getItemClass = (item) => {
@@ -294,8 +338,16 @@ export default {
 }
 
 .icon {
-  font-size: 20px;
-  margin-right: 15px;
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  line-height: 1;
+}
+
+.icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor; /* 让颜色跟随 CSS color */
 }
 
 .name {

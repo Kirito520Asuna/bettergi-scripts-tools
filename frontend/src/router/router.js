@@ -13,8 +13,7 @@ const routes = [
             icon: 'icon-home'
         },
         component: () => import('@main/views/HomeView'),
-        children: [
-        ]
+        children: []
     },
     {
         path: '/capabilities',
@@ -38,6 +37,7 @@ const routes = [
             title: 'Markdown渲染',
             desc: 'Markdown渲染',
             asSubParentTitle: 'Markdown渲染',
+            icon: 'Markdown'
             // icon: 'icon-home'
         },
     }

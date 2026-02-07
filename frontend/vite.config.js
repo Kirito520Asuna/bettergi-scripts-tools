@@ -30,7 +30,9 @@ export default defineConfig(({mode}) => {
             },
             extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
         },
-        plugins: [vue()],
+        plugins: [
+            vue(),
+            ],
         // vite 相关配置
         server: {
             //port: 80：服务器监听端口为80。
