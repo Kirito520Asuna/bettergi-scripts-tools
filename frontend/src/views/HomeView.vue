@@ -1,49 +1,52 @@
 <template>
   <div class="home">
-    <div class="welcome-card">
-      <img class="logo" src="@assets/logo.svg" alt="Logo"/>
-      <h2 class="title">{{ currentRoute.meta.title || 'HOME' }}</h2>
-      <p class="subtitle">欢迎使用扩展工具</p>
+    <div class="home-card">
+      <div class="welcome-card">
+        <img class="logo" src="@assets/logo.svg" alt="Logo"/>
+        <h2 class="title">{{ currentRoute.meta.title || 'HOME' }}</h2>
+        <p class="subtitle">欢迎使用扩展工具</p>
 
-      <!-- 外层结构遍历 -->
-      <div v-for="group in featureGroup" :key="group.title" class="feature-section">
-        <h3 class="section-title" v-if="group.children.length > 0">{{ group.title }}</h3>
-        <div class="feature-container">
-          <!-- 左侧功能列表 -->
-          <div class="feature-column">
-            <div
-                v-for="item in getItemsByPosition(group.children, 'left')"
-                :key="item.id"
-                :class="['feature-item', getItemClass(item)]"
-            >
-<!--              <span class="icon">{{ getIcon(item) }}</span>-->
-              <span v-html="getIcon(item)" class="icon"></span>
-              <button class="name" @click="togo(item)">{{ item.name }}</button>
+        <!-- 外层结构遍历 -->
+        <div v-for="group in featureGroup" :key="group.title" class="feature-section">
+          <h3 class="section-title" v-if="group.children.length > 0">{{ group.title }}</h3>
+          <div class="feature-container">
+            <!-- 左侧功能列表 -->
+            <div class="feature-column">
+              <div
+                  v-for="item in getItemsByPosition(group.children, 'left')"
+                  :key="item.id"
+                  :class="['feature-item', getItemClass(item)]"
+              >
+                <!--              <span class="icon">{{ getIcon(item) }}</span>-->
+                <span v-html="getIcon(item)" class="icon"></span>
+                <button class="name" @click="togo(item)">{{ item.name }}</button>
+              </div>
             </div>
-          </div>
 
-          <!-- 右侧功能列表 -->
-          <div class="feature-column">
-            <div
-                v-for="item in getItemsByPosition(group.children, 'right')"
-                :key="item.id"
-                :class="['feature-item', getItemClass(item)]"
-            >
-<!--              <span class="icon">{{ getIcon(item) }}</span>-->
-              <span v-html="getIcon(item)" class="icon"></span>
-              <button class="name" @click="togo(item)">{{ item.name }}</button>
+            <!-- 右侧功能列表 -->
+            <div class="feature-column">
+              <div
+                  v-for="item in getItemsByPosition(group.children, 'right')"
+                  :key="item.id"
+                  :class="['feature-item', getItemClass(item)]"
+              >
+                <!--              <span class="icon">{{ getIcon(item) }}</span>-->
+                <span v-html="getIcon(item)" class="icon"></span>
+                <button class="name" @click="togo(item)">{{ item.name }}</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <router-view/>
     </div>
-    <router-view/>
   </div>
 </template>
 
 <script>
 import {ref, onMounted} from "vue";
 import router from "@router/router";
+
 const iconAsMap = new Map();
 
 iconAsMap.set('Markdown',
@@ -202,8 +205,19 @@ export default {
 
 </script>
 <style scoped>
-/* 页面全屏背景 */
 .home {
+  min-height: 100vh;
+  /*  padding: 20px;*/
+  /*margin: 0 auto;*/
+  background: url("@assets/MHY_XTLL.png");
+  /* 关键：固定背景，不随滚动重复或变形 */
+  background-attachment: fixed; /* ← 核心属性 */
+  background-size: cover; /* 覆盖整个容器 */
+  background-position: center;
+}
+
+/* 页面全屏背景 */
+.home-card {
   display: flex;
   justify-content: center;
   align-items: center;

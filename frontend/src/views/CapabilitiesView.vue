@@ -1,115 +1,117 @@
 <template xmlns="http://www.w3.org/1999/html">
-  <div class="container">
-    <h1 class="title">BetterGI Script Tools@{{ currentRoute?.meta?.title || '未知标题' }}</h1>
+  <div class="home">
+    <div class="container">
+      <h1 class="title">BetterGI Script Tools@{{ currentRoute?.meta?.title || '未知标题' }}</h1>
 
-    <!-- Cron 相关功能 -->
-    <h2 class="section-title">Cron 功能</h2>
+      <!-- Cron 相关功能 -->
+      <h2 class="section-title">Cron 功能</h2>
 
-    <div class="section">
-      <div class="card">
-        <h3 class="section-title">[时区为东八区]解析cron表达式获取俩个时间戳中符合条件的首个时间戳 没有就返回null</h3>
-        <div class="one-item">
-          <div class="form-group">
-            <label class="label">Cron 表达式:</label>
-            <input v-model="cronExpression" class="input" placeholder="例如: 0 0 * * * ?"/>
+      <div class="section">
+        <div class="card">
+          <h3 class="section-title">[时区为东八区]解析cron表达式获取俩个时间戳中符合条件的首个时间戳 没有就返回null</h3>
+          <div class="one-item">
+            <div class="form-group">
+              <label class="label">Cron 表达式:</label>
+              <input v-model="cronExpression" class="input" placeholder="例如: 0 0 * * * ?"/>
+            </div>
+            <div class="form-group">
+              <label class="label">开始时间戳:</label>
+              <!--            <input v-model.number="startTimestamp" class="input" type="number" placeholder="开始时间戳"/>-->
+              <el-date-picker
+                  v-model="startTime"
+                  type="datetime"
+                  placeholder="选择开始时间"
+              />
+            </div>
+            <div class="form-group">
+              <label class="label">结束时间戳:</label>
+              <!--            <input v-model.number="endTimestamp" class="input" type="number" placeholder="结束时间戳"/>-->
+              <el-date-picker
+                  v-model="endTime"
+                  type="datetime"
+                  placeholder="选择结束时间"
+              />
+            </div>
           </div>
-          <div class="form-group">
-            <label class="label">开始时间戳:</label>
-            <!--            <input v-model.number="startTimestamp" class="input" type="number" placeholder="开始时间戳"/>-->
-            <el-date-picker
-                v-model="startTime"
-                type="datetime"
-                placeholder="选择开始时间"
-            />
-          </div>
-          <div class="form-group">
-            <label class="label">结束时间戳:</label>
-            <!--            <input v-model.number="endTimestamp" class="input" type="number" placeholder="结束时间戳"/>-->
-            <el-date-picker
-                v-model="endTime"
-                type="datetime"
-                placeholder="选择结束时间"
-            />
+          <button @click="getNextTimestamp" class="btn primary">获取下一个时间戳</button>
+          <label class="label">返回结果:</label>
+          <div class="result-all">
+            <pre class="result">{{ cronResult || '暂无返回数据' }}</pre>
+            <button @click="copyToClipboard(cronResult)" class="copy-btn">📋 复制</button>
           </div>
         </div>
-        <button @click="getNextTimestamp" class="btn primary">获取下一个时间戳</button>
-        <label class="label">返回结果:</label>
-        <div class="result-all">
-          <pre class="result">{{ cronResult || '暂无返回数据' }}</pre>
-          <button @click="copyToClipboard(cronResult)" class="copy-btn">📋 复制</button>
+
+        <div class="card">
+          <h3 class="section-title">[时区为东八区]大批量解析</h3>
+          <div class="list-item">
+            <div class="list-one-item header">
+              <label class="label">id</label>
+              <label class="label">任务标识唯一值</label>
+              <label class="label">Cron 表达式</label>
+              <label class="label">开始时间</label>
+              <label class="label">结束时间</label>
+              <label class="label">操作按钮 </label>
+            </div>
+            <br/>
+            <div v-for="(item, index) in cronList" :key="index" class="list-one-item">
+              <p>{{ index + 1 }}</p>
+              <input v-model="item.key" class="input small" placeholder="任务标识唯一值"/>
+              <input v-model="item.cronExpression" class="input small" placeholder="Cron 表达式 如: 0 0 * * * ?"/>
+              <!--            <input v-model.number="item.startTimestamp" class="input small" type="number" placeholder="开始时间戳"/>-->
+              <el-date-picker
+                  v-model="item.startTime"
+                  type="datetime"
+                  placeholder="选择开始时间时间"
+              />
+              <!--            <input v-model.number="item.endTimestamp" class="input small" type="number" placeholder="结束时间戳"/>-->
+              <el-date-picker
+                  v-model="item.endTime"
+                  type="datetime"
+                  placeholder="选择结束时间"
+              />
+              <button @click="cronListRemoveItem(index)" class="btn danger">删除</button>
+            </div>
+          </div>
+          <div class="actions">
+            <button @click="cronListAddItem" class="btn secondary">添加任务</button>
+            <button @click="cronListSubmit" class="btn primary">提交</button>
+          </div>
+          <label class="label">返回结果:</label>
+          <div class="result-all">
+            <pre class="result">{{ cronListResult || '暂无返回数据' }}</pre>
+            <button @click="copyToClipboard(cronListResult)" class="copy-btn">📋 复制</button>
+          </div>
         </div>
       </div>
+      <h2 class="section-title">OCR 功能</h2>
+      <!-- OCR 相关功能 -->
+      <div class="section">
+        <div class="card">
+          <h3 class="section-title">OCR 图片字节组</h3>
+          <!--        <input type="file" @change="handleFileUpload" class="file-input"/>-->
 
-      <div class="card">
-        <h3 class="section-title">[时区为东八区]大批量解析</h3>
-        <div class="list-item">
-          <div class="list-one-item header">
-            <label class="label">id</label>
-            <label class="label">任务标识唯一值</label>
-            <label class="label">Cron 表达式</label>
-            <label class="label">开始时间</label>
-            <label class="label">结束时间</label>
-            <label class="label">操作按钮 </label>
+          <div class="file-upload-container">
+            <div class="file-upload-area" @click="triggerFileInput" @dragover.prevent @drop.prevent="handleDrop">
+              <input
+                  type="file"
+                  ref="fileInput"
+                  @change="handleFileUpload"
+                  class="file-input"
+                  accept=".png,.jpg,.jpeg,.pdf"
+              />
+              <!-- 限制文件类型 -->
+              <div class="upload-icon">📁</div>
+              <p class="upload-text">点击选择文件或拖拽到此处</p>
+              <p class="file-info" v-if="fileName">已选择文件：{{ fileName }}</p>
+            </div>
           </div>
-          <br/>
-          <div v-for="(item, index) in cronList" :key="index" class="list-one-item">
-            <p>{{ index + 1 }}</p>
-            <input v-model="item.key" class="input small" placeholder="任务标识唯一值"/>
-            <input v-model="item.cronExpression" class="input small" placeholder="Cron 表达式 如: 0 0 * * * ?"/>
-            <!--            <input v-model.number="item.startTimestamp" class="input small" type="number" placeholder="开始时间戳"/>-->
-            <el-date-picker
-                v-model="item.startTime"
-                type="datetime"
-                placeholder="选择开始时间时间"
-            />
-            <!--            <input v-model.number="item.endTimestamp" class="input small" type="number" placeholder="结束时间戳"/>-->
-            <el-date-picker
-                v-model="item.endTime"
-                type="datetime"
-                placeholder="选择结束时间"
-            />
-            <button @click="cronListRemoveItem(index)" class="btn danger">删除</button>
-          </div>
-        </div>
-        <div class="actions">
-          <button @click="cronListAddItem" class="btn secondary">添加任务</button>
-          <button @click="cronListSubmit" class="btn primary">提交</button>
-        </div>
-        <label class="label">返回结果:</label>
-        <div class="result-all">
-          <pre class="result">{{ cronListResult || '暂无返回数据' }}</pre>
-          <button @click="copyToClipboard(cronListResult)" class="copy-btn">📋 复制</button>
-        </div>
-      </div>
-    </div>
-    <h2 class="section-title">OCR 功能</h2>
-    <!-- OCR 相关功能 -->
-    <div class="section">
-      <div class="card">
-        <h3 class="section-title">OCR 图片字节组</h3>
-        <!--        <input type="file" @change="handleFileUpload" class="file-input"/>-->
 
-        <div class="file-upload-container">
-          <div class="file-upload-area" @click="triggerFileInput" @dragover.prevent @drop.prevent="handleDrop">
-            <input
-                type="file"
-                ref="fileInput"
-                @change="handleFileUpload"
-                class="file-input"
-                accept=".png,.jpg,.jpeg,.pdf"
-            />
-            <!-- 限制文件类型 -->
-            <div class="upload-icon">📁</div>
-            <p class="upload-text">点击选择文件或拖拽到此处</p>
-            <p class="file-info" v-if="fileName">已选择文件：{{ fileName }}</p>
+          <button @click="performOcr" class="btn primary">执行 OCR 识别</button>
+          <label class="label">返回结果:</label>
+          <div class="result-all">
+            <pre class="result">{{ ocrResult || '暂无返回数据' }}</pre>
+            <button @click="copyToClipboard(ocrResult)" class="copy-btn">📋 复制</button>
           </div>
-        </div>
-
-        <button @click="performOcr" class="btn primary">执行 OCR 识别</button>
-        <label class="label">返回结果:</label>
-        <div class="result-all">
-          <pre class="result">{{ ocrResult || '暂无返回数据' }}</pre>
-          <button @click="copyToClipboard(ocrResult)" class="copy-btn">📋 复制</button>
         </div>
       </div>
     </div>
@@ -321,6 +323,17 @@ export default {
 
 
 <style scoped>
+.home {
+  min-height: 100vh;
+  /*  padding: 20px;*/
+  /*margin: 0 auto;*/
+  background: url("@assets/MHY_XTLL.png");
+  /* 关键：固定背景，不随滚动重复或变形 */
+  background-attachment: fixed; /* ← 核心属性 */
+  background-size: cover; /* 覆盖整个容器 */
+  background-position: center;
+}
+
 /* 容器布局 */
 .container {
   max-width: 1200px;
