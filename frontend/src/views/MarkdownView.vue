@@ -1,40 +1,43 @@
 <!-- MarkdownViewer.vue -->
 <template>
-  <div class="markdown-container">
-    <!-- 上传区域 -->
-    <div
-        v-if="!markdownContent"
-        class="upload-area"
-        :class="{ 'drag-over': isDragging }"
-        @dragover.prevent="handleDragOver"
-        @dragenter.prevent="handleDragOver"
-        @dragleave.prevent="handleDragLeave"
-        @drop.prevent="handleDrop"
-    >
-      <input
-          type="file"
-          accept=".md,.markdown"
-          @change="handleFileChange"
-          id="md-upload"
-          hidden
-      />
-      <label for="md-upload" class="upload-btn">
-        <div v-if="isDragging">松开鼠标 → 立即上传 Markdown 文件</div>
-        <div v-else>点击上传 .md / .markdown 文件<br>或拖拽文件到此处</div>
-      </label>
+  <div class="home">
+    <div class="markdown-container">
+      <!-- 上传区域 -->
+      <div
+          v-if="!markdownContent"
+          class="upload-area"
+          :class="{ 'drag-over': isDragging }"
+          @dragover.prevent="handleDragOver"
+          @dragenter.prevent="handleDragOver"
+          @dragleave.prevent="handleDragLeave"
+          @drop.prevent="handleDrop"
+      >
+        <input
+            type="file"
+            accept=".md,.markdown"
+            @change="handleFileChange"
+            id="md-upload"
+            hidden
+        />
+        <label for="md-upload" class="upload-btn">
+          <div v-if="isDragging">松开鼠标 → 立即上传 Markdown 文件</div>
+          <div v-else>点击上传 .md / .markdown 文件<br>或拖拽文件到此处</div>
+        </label>
+      </div>
+
+      <!-- 渲染结果 -->
+      <div v-else class="rendered-content" v-html="renderedHtml"></div>
+
+      <!-- 加载中 / 错误提示 -->
+      <div v-if="loading" class="loading">读取文件中...</div>
+      <div v-if="error" class="error">{{ error }}</div>
     </div>
-
-    <!-- 渲染结果 -->
-    <div v-else class="rendered-content" v-html="renderedHtml"></div>
-
-    <!-- 加载中 / 错误提示 -->
-    <div v-if="loading" class="loading">读取文件中...</div>
-    <div v-if="error" class="error">{{ error }}</div>
   </div>
+
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import {ref, computed, watch, onMounted, onUnmounted, nextTick} from 'vue'
 import MarkdownIt from 'markdown-it'
 import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
@@ -60,13 +63,14 @@ const md = new MarkdownIt({
     if (lang && hljs.getLanguage(lang)) {
       try {
         return '<pre class="hljs"><code>' +
-            hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+            hljs.highlight(str, {language: lang, ignoreIllegals: true}).value +
             '</code></pre>';
-      } catch (e) {}
+      } catch (e) {
+      }
     }
 
     // 默认 fallback：保持原始格式，用 pre code 包裹
-    return md.utils.escapeHtml(str.trim()) ;
+    return md.utils.escapeHtml(str.trim());
   }
 })
 
@@ -85,8 +89,8 @@ const initMermaid = async () => {
       lineColor: '#94a3b8'
     },
     securityLevel: 'strict',
-    flowchart: { useMaxWidth: true },
-    sequence: { useMaxWidth: true }
+    flowchart: {useMaxWidth: true},
+    sequence: {useMaxWidth: true}
   })
 
   // 断开旧的 observer
@@ -104,7 +108,7 @@ const initMermaid = async () => {
     const mermaidEls = container.querySelectorAll('.mermaid:not([data-processed])')
     if (mermaidEls.length > 0) {
       try {
-        await mermaid.run({ nodes: mermaidEls })
+        await mermaid.run({nodes: mermaidEls})
         mermaidEls.forEach(el => el.setAttribute('data-processed', 'true'))
       } catch (err) {
         console.warn('Mermaid 渲染失败:', err)
@@ -121,7 +125,7 @@ const initMermaid = async () => {
   const initialEls = container.querySelectorAll('.mermaid:not([data-processed])')
   if (initialEls.length > 0) {
     try {
-      await mermaid.run({ nodes: initialEls })
+      await mermaid.run({nodes: initialEls})
       initialEls.forEach(el => el.setAttribute('data-processed', 'true'))
     } catch (err) {
       console.warn('Mermaid 首次渲染失败:', err)
@@ -215,9 +219,20 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.home{
+  min-height: 100vh;
+/*  padding: 20px;*/
+  /*margin: 0 auto;*/
+  background: url("@assets/MHY_XTLL.png");
+  /* 关键：固定背景，不随滚动重复或变形 */
+  background-attachment: fixed;         /* ← 核心属性 */
+  background-size: cover;               /* 覆盖整个容器 */
+  background-position: center;
+}
 .markdown-container {
   padding: 20px;
-/*  max-width: 960px;*/
+  /*  max-width: 960px;*/
+  max-width: 60%;
   margin: 0 auto;
   background: #fadbd8;
   /*background: linear-gradient(135deg, rgba(84, 197, 243, 0.67), rgba(86, 197, 204, 0.66)) !important; !* 添加渐变背景 *!*/
@@ -262,10 +277,10 @@ onUnmounted(() => {
 .rendered-content :deep(pre),
 .rendered-content :deep(pre code),
 .rendered-content :deep(code) {
- /* line-height: 3 !important;       !* 推荐 1.4 ~ 1.6，代码最舒适 *!*/
-  white-space: pre-wrap !important;  /* 保留换行，但允许自动换行 */
-  margin: 0.4em 0 !important;        /* 上下外边距减小 */
-  padding: 0.1em 0.5em !important;   /* 上下内边距减小，左右稍宽一点好看 */
+  /* line-height: 3 !important;       !* 推荐 1.4 ~ 1.6，代码最舒适 *!*/
+  white-space: pre-wrap !important; /* 保留换行，但允许自动换行 */
+  margin: 0.4em 0 !important; /* 上下外边距减小 */
+  padding: 0.1em 0.5em !important; /* 上下内边距减小，左右稍宽一点好看 */
   background: #ececea;
   /*background: linear-gradient(135deg, rgba(242, 197, 92), rgb(242, 197, 92)) !important; !* 添加渐变背景 *!*/
   border-radius: 10px;
@@ -274,6 +289,7 @@ onUnmounted(() => {
   color: rgb(255, 0, 107);
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
 }
+
 /* 如果你用了 hljs 的类，也可以针对它设置 */
 .rendered-content :deep(.hljs) {
   /*line-height: 3 !important;*/
@@ -291,8 +307,13 @@ onUnmounted(() => {
   font-size: 1.1rem;
 }
 
-.loading { color: #909399; }
-.error   { color: #f56c6c; }
+.loading {
+  color: #909399;
+}
+
+.error {
+  color: #f56c6c;
+}
 
 /* Mermaid 相关样式 */
 /* Mermaid 强制优化样式 - sequenceDiagram 专用：浅色背景 + 文字不粗 + 高对比 */
@@ -316,8 +337,8 @@ onUnmounted(() => {
 /* participant / actor 框背景 - 强制浅色 */
 .rendered-content :deep(.mermaid .actor rect),
 .rendered-content :deep(.mermaid g rect.actor) {
-  fill: #f1f5f9 !important;          /* 非常浅灰白 */
-  stroke: #cbd5e1 !important;        /* 浅灰边框 */
+  fill: #f1f5f9 !important; /* 非常浅灰白 */
+  stroke: #cbd5e1 !important; /* 浅灰边框 */
   stroke-width: 1.8px !important;
 }
 
@@ -325,22 +346,22 @@ onUnmounted(() => {
 .rendered-content :deep(.mermaid .messageText tspan),
 .rendered-content :deep(.mermaid .messageText text),
 .rendered-content :deep(.mermaid .signalText) {
-  fill: #111827 !important;          /* 深灰，几乎黑 */
-  font-weight: normal !important;    /* 不加粗 */
-  stroke: none !important;           /* 移除任何描边，避免变粗 */
-  font-size: 14px !important;        /* 可微调大小 */
+  fill: #111827 !important; /* 深灰，几乎黑 */
+  font-weight: normal !important; /* 不加粗 */
+  stroke: none !important; /* 移除任何描边，避免变粗 */
+  font-size: 14px !important; /* 可微调大小 */
 }
 
 /* participant / actor 文字（框上面的名字） - 深色、不粗 */
 .rendered-content :deep(.mermaid .actor text) {
-  fill: #0f172a !important;          /* 深 slate */
+  fill: #0f172a !important; /* 深 slate */
   font-weight: normal !important;
   stroke: none !important;
 }
 
 /* Note 框（如果你的图有 Note） - 浅黄色背景 + 深文字 */
 .rendered-content :deep(.mermaid .note rect) {
-  fill: #fefce8 !important;          /* 浅黄/米白，避免黑 */
+  fill: #fefce8 !important; /* 浅黄/米白，避免黑 */
   stroke: #ca8a04 !important;
   stroke-width: 1.5px !important;
 }
@@ -367,46 +388,47 @@ onUnmounted(() => {
   fill: #6b7280 !important;
   font-weight: normal !important;
 }
+
 /* Markdown 表格样式 - 美化 + 响应式 + 横向滚动 */
 .rendered-content :deep(table) {
   width: 100%;
   max-width: 100%;
-  border-collapse: separate;          /* 必须改为 separate 才能实现圆角 */
-  border-spacing: 0;                  /* 去除单元格间距 */
+  border-collapse: separate; /* 必须改为 separate 才能实现圆角 */
+  border-spacing: 0; /* 去除单元格间距 */
   margin: 1.5em 0;
   font-size: 0.95em;
   overflow-x: auto;
   display: block;
-  border-radius: 12px;                /* 表格整体圆角 */
-  overflow: hidden;                   /* 让内部内容不溢出圆角 */
+  border-radius: 12px; /* 表格整体圆角 */
+  overflow: hidden; /* 让内部内容不溢出圆角 */
   /*border: 1px solid #000000;          !* 外边框黑色 *!*/
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* 可选：轻微阴影增加立体感 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 可选：轻微阴影增加立体感 */
 }
 
 .rendered-content :deep(table thead th),
 .rendered-content :deep(table thead td) {
-  background: rgb(177, 182, 189);               /* 表头浅灰背景 */
-/*  background: linear-gradient(135deg, rgb(124, 123, 123), rgb(255, 255, 255)) !important;*/
+  background: rgb(177, 182, 189); /* 表头浅灰背景 */
+  /*  background: linear-gradient(135deg, rgb(124, 123, 123), rgb(255, 255, 255)) !important;*/
   color: #1e293b;
-/*  font-weight: 600;*/
+  /*  font-weight: 600;*/
   text-align: left;
   padding: 0.75em 1em;
- /* border-bottom: 2px solid #cbd5e1;*/
-  border-bottom: 1px solid #000000;   /* 表头下边线黑色 */
+  /* border-bottom: 2px solid #cbd5e1;*/
+  border-bottom: 1px solid #000000; /* 表头下边线黑色 */
 }
 
 .rendered-content :deep(table tbody tr) {
-  border-bottom: 1px solid #000000;   /* 行间分隔线黑色 */
+  border-bottom: 1px solid #000000; /* 行间分隔线黑色 */
   transition: background 0.2s;
   background: linear-gradient(135deg, rgb(198, 51, 159), rgb(255, 255, 255)) !important;
 }
 
 .rendered-content :deep(table tbody tr:nth-child(odd)) {
-  background: linear-gradient(135deg, rgb(193, 154, 57), rgb(255, 255, 255)) !important;               /* 隔行浅色（zebra stripe） */
+  background: linear-gradient(135deg, rgb(193, 154, 57), rgb(255, 255, 255)) !important; /* 隔行浅色（zebra stripe） */
 }
 
 .rendered-content :deep(table tbody tr:hover) {
-  background: linear-gradient(135deg, rgb(0, 248, 255), rgb(255, 255, 255)) !important;                /* 鼠标悬停高亮 */
+  background: linear-gradient(135deg, rgb(0, 248, 255), rgb(255, 255, 255)) !important; /* 鼠标悬停高亮 */
 }
 
 .rendered-content :deep(table td),
@@ -432,6 +454,7 @@ onUnmounted(() => {
   .rendered-content :deep(table) {
     font-size: 0.9em;
   }
+
   .rendered-content :deep(table td),
   .rendered-content :deep(table th) {
     padding: 0.6em 0.8em;
@@ -443,11 +466,12 @@ onUnmounted(() => {
   overflow-x: auto;
   margin: 1em 0;
 }
+
 /* 暗黑模式额外保障（保持浅背景 + 深文字） */
 @media (prefers-color-scheme: dark) {
   .rendered-content :deep(.mermaid .actor rect),
   .rendered-content :deep(.mermaid g rect.actor) {
-    fill: #e5e7eb !important;      /* 稍亮的浅灰 */
+    fill: #e5e7eb !important; /* 稍亮的浅灰 */
   }
 
   .rendered-content :deep(.mermaid .messageText tspan),
