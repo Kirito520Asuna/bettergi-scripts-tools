@@ -391,8 +391,9 @@ onUnmounted(() => {
 
 /* Markdown 表格样式 - 美化 + 响应式 + 横向滚动 */
 .rendered-content :deep(table) {
-  width: 100%;
-  max-width: 100%;
+  max-width: 80%;
+  /*width: 100%;
+  max-width: 100%;*/
   border-collapse: separate; /* 必须改为 separate 才能实现圆角 */
   border-spacing: 0; /* 去除单元格间距 */
   margin: 1.5em 0;
