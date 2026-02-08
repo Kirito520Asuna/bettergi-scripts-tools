@@ -535,8 +535,6 @@ const copyToClipboard = (text) => {
       <div class="config-list">
         <div v-for="config in configs" :key="config.order" class="config-item">
           <h3>#{{ config.order }} 配置</h3>
-
-
           <!-- 删除按钮 -->
           <button @click="removeConfig(config.order)" class="btn danger">🗑️ 删除</button>
           <div class="form-group">
@@ -568,7 +566,6 @@ const copyToClipboard = (text) => {
               <option value="圣遗物">圣遗物</option>
             </select>
           </div>
-
           <!-- 秘境选择（根据 selectedType 过滤） -->
           <div class="form-group">
             <label>秘境：</label>
@@ -583,7 +580,6 @@ const copyToClipboard = (text) => {
               </option>
             </select>
           </div>
-
           <!-- 物品名称选择（根据 domainName 过滤） -->
           <div v-if="domainMap.get(config.autoFight.domainName)?.hasOrder" class="form-group">
             <label>周日/限时材料：</label>
@@ -608,21 +604,18 @@ const copyToClipboard = (text) => {
               </li>
             </ul>
           </div>
-
-
           <div class="form-group">
             <label>队伍名称（可选）：</label>
             <input class="limited-input" v-model="config.autoFight.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
 
           </div>
-
           <div class="form-group">
             <label>副本轮数：</label>
             <input class="limited-input" v-model.number="config.autoFight.DomainRoundNum" type="number" min="1" max="99"
                    placeholder="建议 1~10"/>
           </div>
 
-          <hr/>
+<!--          <hr/>-->
         </div>
       </div>
       <div class="result-all">
@@ -678,7 +671,7 @@ h2 {
 
 /* UID 输入框 */
 .uid-input {
-  width: 100%;
+  max-width: 40%;
   padding: 10px;
   margin-bottom: 20px;
   border: 1px solid #ccc;
@@ -688,6 +681,7 @@ h2 {
 }
 
 .uid-input:focus {
+  max-width: 40%;
   border-color: #409eff;
   outline: none;
   box-shadow: 0 0 5px rgba(64, 158, 255, 0.5);
