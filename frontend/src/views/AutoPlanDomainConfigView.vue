@@ -1,6 +1,7 @@
 <script setup>
-import {ref, computed, watch} from 'vue'
+import {ref, computed, watch, watchEffect} from 'vue'
 import {ElMessage} from "element-plus";
+import {isNumber} from "element-plus/es/utils/index";
 
 // 秘境数据（保持不变，建议单独抽到一个文件）
 const domains = ref([
@@ -352,6 +353,7 @@ const addConfig = () => {
       domainName: undefined,
       partyName: undefined,
       sundaySelectedValue: undefined,
+      sundaySelectedName: undefined,
       DomainRoundNum: undefined
     }
   })
@@ -372,26 +374,37 @@ const domainMap = computed(() => {
 })
 
 // 监听每一项的 domainName 变化 → 自动填充 sundaySelectedValue
-watch(
+watchEffect(
     () => configs.value,
     (newConfigs) => {
       newConfigs.forEach(config => {
         const domainName = config.autoFight.domainName
         if (!domainName) {
           config.autoFight.sundaySelectedValue = undefined
+          config.autoFight.sundaySelectedName = undefined
           return
         }
 
         const domain = domainMap.value.get(domainName)
         if (!domain) return
 
+        // 处理 sundaySelectedValue 和 sundaySelectedName
+        if (typeof config.autoFight.sundaySelectedValue === 'number') {
+          const index = config.autoFight.sundaySelectedValue - 1;
+          config.autoFight.sundaySelectedName = domain.list?.[index] || '';
+        } else {
+          config.autoFight.sundaySelectedName = config.autoFight.sundaySelectedValue || '';
+        }
+
         if (domain.hasOrder && domain.list?.length > 0) {
           // 自动选第一个（也可改为 undefined，让用户手动选）
           if (!config.autoFight.sundaySelectedValue) {
             config.autoFight.sundaySelectedValue = domain.list[0]
+            config.autoFight.sundaySelectedName = domain.list[0]
           }
         } else {
-          config.autoFight.sundaySelectedValue = undefined
+          config.autoFight.sundaySelectedValue = config.autoFight.sundaySelectedName || undefined
+          config.autoFight.sundaySelectedName = config.autoFight.sundaySelectedName || ''
         }
       })
     },
@@ -402,7 +415,12 @@ watch(
 if (configs.value.length === 0) {
   addConfig()
 }
-
+const getSundaySelectedName = (sundaySelectedValue, domainName) => {
+  if (isNumber(sundaySelectedValue)) {
+    sundaySelectedValue = domainMap.value.get(domainName).list[sundaySelectedValue - 1]
+  }
+  return sundaySelectedValue
+}
 // 获取最终用于保存/提交的数据
 const getFinalConfigs = () => {
   return configs.value.map(c => {
@@ -412,6 +430,7 @@ const getFinalConfigs = () => {
       let index = 1
       for (let item of info.list) {
         if (autoFight.sundaySelectedValue === item) {
+          autoFight.sundaySelectedName = autoFight.sundaySelectedValue
           autoFight.sundaySelectedValue = index
         }
         index++
@@ -520,7 +539,8 @@ const copyToClipboard = (text) => {
         <!-- 物品名称选择（根据 domainName 过滤） -->
         <div v-if="domainMap.get(config.autoFight.domainName)?.hasOrder" class="form-group">
           <label>周日/限时材料：</label>
-          <select v-model="config.autoFight.sundaySelectedValue">
+          <select
+              v-model="config.autoFight.sundaySelectedName">
             <option
                 v-for="item in domainMap.get(config.autoFight.domainName)?.list || []"
                 :key="item"
@@ -716,6 +736,7 @@ h2 {
   gap: 10px;
   margin-top: 20px;
 }
+
 .result-key {
   background-color: #ffffff; /* 白色背景 */
   color: #000000; /* 黑色文字 */
@@ -757,6 +778,7 @@ h2 {
 .copy-btn:hover {
   background-color: #85ce61;
 }
+
 .btn.btn-add {
   background-color: #85ce61; /* 白色背景 */
   color: #000000; /* 黑色文字 */
@@ -788,6 +810,7 @@ h2 {
   transform: translateY(-2px); /* 悬停时轻微上移 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬停时增强阴影 */
 }
+
 .btn.danger:hover {
   background: #c0392b;
   transform: scale(1.05);
@@ -799,6 +822,7 @@ h2 {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 /* 主标题美化 */
 .title {
   font-size: 36px;
