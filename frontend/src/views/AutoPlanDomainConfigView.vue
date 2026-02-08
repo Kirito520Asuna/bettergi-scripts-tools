@@ -430,7 +430,7 @@ const getFinalConfigs = () => {
       let index = 1
       for (let item of info.list) {
         if (autoFight.sundaySelectedValue === item|| autoFight.sundaySelectedName === item) {
-          autoFight.sundaySelectedName = autoFight.sundaySelectedValue
+          // autoFight.sundaySelectedName = autoFight.sundaySelectedValue
           autoFight.sundaySelectedValue = index
         }
         index++
