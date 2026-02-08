@@ -1,24 +1,18 @@
 package com.cloud_guest.controller;
 
-import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.log.SysLog;
-import com.cloud_guest.domain.AnalysisJsonFileDto;
 import com.cloud_guest.domain.AutoPlanDomainDto;
-import com.cloud_guest.domain.Cache;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AutoPlanDomainService;
 import com.cloud_guest.view.BasicJsonView;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.SneakyThrows;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotBlank;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -41,17 +35,24 @@ public class AutoPlanDomainController {
 
     @PostMapping("json/all")
     @SysLog
-    @Operation(summary = "存储JSON")
+    @Operation(summary = "存储基础全部JSON")
     public Result<String> saveAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
                                   @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
                                   @RequestBody AutoPlanDomainDto dto) {
         autoPlanDomainService.saveAll(dto.getJson());
         return ok();
     }
+    @SysLog(result = false)
+    @Operation(summary = "查询基础全部JSON")
+    @GetMapping("json/all")
+    public Result<List<Map<String, Object>>> infoAll() {
+        List<Map<String, Object>> list = autoPlanDomainService.findAll();
+        return ok(list);
+    }
 
     @PostMapping("json")
     @SysLog
-    @Operation(summary = "存储JSON")
+    @Operation(summary = "存储UID映射JSON")
     public Result<String> save(@JsonView(value = BasicJsonView.AutoPlanDomainView.class)
                                @Validated(value = BasicJsonView.AutoPlanDomainView.class)
                                @RequestBody AutoPlanDomainDto dto) {
@@ -61,18 +62,18 @@ public class AutoPlanDomainController {
 
 
     @SysLog(result = false)
-    @Operation(summary = "查询JSON")
+    @Operation(summary = "查询UID映射JSON")
     @GetMapping("json")
     public Result<List<Map<String, Object>>> info(@RequestParam String uid) {
         List<Map<String, Object>> list = autoPlanDomainService.find(uid);
-        return Result.ok(list);
+        return ok(list);
     }
 
     @SysLog
-    @Operation(summary = "批量删除JSON")
+    @Operation(summary = "批量删除UID映射JSON")
     @DeleteMapping("json")
     public Result<Boolean> infoDel(@Validated @NotBlank @RequestParam String uidStr) {
         List<String> ids = Arrays.stream(uidStr.split(",")).collect(Collectors.toList());
-        return Result.ok(autoPlanDomainService.delList(ids));
+        return ok(autoPlanDomainService.delList(ids));
     }
 }

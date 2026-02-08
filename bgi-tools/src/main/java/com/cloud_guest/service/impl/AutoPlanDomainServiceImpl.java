@@ -61,6 +61,27 @@ public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
     }
 
     @Override
+    public List<Map<String, Object>> findAll() {
+        List<Map<String, Object>> list = new ArrayList<>();
+        Cache<String> cache = cacheService.find(key_all);
+        if (ObjectUtils.equals(cache.getType(), "json")) {
+            String data = cache.getData();
+            boolean typeJSON = JSONUtil.isTypeJSON(data);
+            if (typeJSON) {
+                Map<String, Object> bean = JSONUtil.toBean(data, Map.class);
+                list.add(bean);
+            } else if (JSONUtil.isTypeJSONArray(data)) {
+                List<String> maps = JSONUtil.toList(data, String.class);
+                for (String json : maps) {
+                    Map<String, Object> bean = JSONUtil.toBean(json, Map.class);
+                    list.add(bean);
+                }
+            }
+        }
+        return list;
+    }
+
+    @Override
     public boolean saveAll(String json) {
         return cacheService.save(key_all, json);
     }
