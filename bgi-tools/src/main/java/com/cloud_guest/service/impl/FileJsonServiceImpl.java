@@ -34,10 +34,10 @@ public class FileJsonServiceImpl implements FileJsonService {
             // 直接写入文件（自动创建目录、覆盖写入）
             FileUtil.writeBytes(bytes, path);
             String json = FileUtil.readUtf8String(path);
-            Cache<String> cache = new Cache<>();
-            cache.setType("json");
-            cache.setData(json);
-            cacheService.save(id, JSONUtil.toJsonStr(cache));
+            //Cache<String> cache = new Cache<>();
+            //cache.setType("json");
+            //cache.setData(json);
+            cacheService.save(id, json);
             return id;
         } finally {
             FileUtil.del(path);

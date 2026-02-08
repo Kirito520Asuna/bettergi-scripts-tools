@@ -356,15 +356,13 @@ const submitConfigToBackend = async () => {
   }
 
   const jsonData = getFinalConfigsMap(); // 获取 JSON 配置
-  const keyData = getFinalConfigsToKey(); // 获取 Key 配置
 
   const payload = {
     uid: uid.value,
-    json: jsonData,
-    key: keyData,
+    json: JSON.stringify(jsonData),
   };
   try {
-    const response = await service.post("/api/config/submit", payload);
+    const response = await service.post("/auto/plan/domain/json", payload);
     const result = JSON.stringify(response.data, null, 2)
   } catch (error) {
   }
