@@ -378,7 +378,7 @@ const addConfig = () => {
       domainName: undefined,
       partyName: undefined,
       sundaySelectedValue: undefined,
-      sundaySelectedName: undefined,
+      // sundaySelectedName: undefined,
       DomainRoundNum: undefined
     }
   })
@@ -406,7 +406,7 @@ watchEffect(
         const domainName = config.autoFight.domainName
         if (!domainName) {
           config.autoFight.sundaySelectedValue = undefined
-          config.autoFight.sundaySelectedName = undefined
+          // config.autoFight.sundaySelectedName = undefined
           return
         }
 
@@ -414,12 +414,12 @@ watchEffect(
         if (!domain) return
 
         // 处理 sundaySelectedValue 和 sundaySelectedName
-        if (typeof config.autoFight.sundaySelectedValue === 'number') {
-          const index = config.autoFight.sundaySelectedValue - 1;
-          config.autoFight.sundaySelectedName = domain.list?.[index] || '';
-        } else {
-          config.autoFight.sundaySelectedName = config.autoFight.sundaySelectedValue || '';
-        }
+        // if (typeof config.autoFight.sundaySelectedValue === 'number') {
+        //   const index = config.autoFight.sundaySelectedValue - 1;
+        //   config.autoFight.sundaySelectedName = domain.list?.[index] || '';
+        // } else {
+        //   config.autoFight.sundaySelectedName = config.autoFight.sundaySelectedValue || '';
+        // }
         if (typeof config.day === 'number') {
           config.dayName = weekDays[config.day] || '';
         } else {
@@ -430,11 +430,11 @@ watchEffect(
           // 自动选第一个（也可改为 undefined，让用户手动选）
           if (!config.autoFight.sundaySelectedValue) {
             config.autoFight.sundaySelectedValue = domain.list[0]
-            config.autoFight.sundaySelectedName = domain.list[0]
+            // config.autoFight.sundaySelectedName = domain.list[0]
           }
         } else {
-          config.autoFight.sundaySelectedValue = config.autoFight.sundaySelectedName || undefined
-          config.autoFight.sundaySelectedName = config.autoFight.sundaySelectedName || ''
+          config.autoFight.sundaySelectedValue = config.autoFight.sundaySelectedValue || undefined
+          // config.autoFight.sundaySelectedName = config.autoFight.sundaySelectedName || ''
         }
       })
     },
@@ -454,7 +454,7 @@ const getFinalConfigs = () => {
       const info = domainMap.value.get(autoFight.domainName);
       let index = 1
       for (let item of info.list) {
-        if (autoFight.sundaySelectedValue === item || autoFight.sundaySelectedName === item) {
+        if (autoFight.sundaySelectedValue === item) {
           // autoFight.sundaySelectedName = autoFight.sundaySelectedValue
           autoFight.sundaySelectedValue = index
         }
@@ -526,99 +526,99 @@ const copyToClipboard = (text) => {
 
       <!-- 添加配置按钮 -->
       <button @click="addConfig" class="btn btn-add">➕ 添加一条配置</button>
+      <div class="config-list">
+        <div v-for="config in configs" :key="config.order" class="config-item">
+          <h3>#{{ config.order }} 配置</h3>
 
-      <div v-for="config in configs" :key="config.order" class="config-item">
-        <h3>#{{ config.order }} 配置</h3>
+
+          <!-- 删除按钮 -->
+          <button @click="removeConfig(config.order)" class="btn danger">🗑️ 删除</button>
+          <div class="form-group">
+            <label>执行顺序：</label>
+            <input class="limited-input" v-model.number="config.order" type="number" min="1" max="99999999"
+                   placeholder="建议 1~10"/>
+          </div>
+          <div class="form-group">
+            <label>执行日：</label>
+            <select v-model="config.day">
+              <option value="">请选择执行日(默认每天执行)</option>
+              <option
+                  v-for="(d, index) in weekDays"
+                  :key="d"
+                  :value="index"
+              >
+                {{ d }}
+              </option>
+            </select>
+          </div>
+          <!-- 秘境选择 -->
+          <!-- 新增 type 选择器 -->
+          <div class="form-group">
+            <label>秘境类型：</label>
+            <select v-model="selectedType">
+              <option value="">请选择类型</option>
+              <option value="天赋">天赋</option>
+              <option value="武器">武器</option>
+              <option value="圣遗物">圣遗物</option>
+            </select>
+          </div>
+
+          <!-- 秘境选择（根据 selectedType 过滤） -->
+          <div class="form-group">
+            <label>秘境：</label>
+            <select v-model="config.autoFight.domainName">
+              <option value="">请选择秘境</option>
+              <option
+                  v-for="d in filteredDomains"
+                  :key="d.name"
+                  :value="d.name"
+              >
+                {{ d.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- 物品名称选择（根据 domainName 过滤） -->
+          <div v-if="domainMap.get(config.autoFight.domainName)?.hasOrder" class="form-group">
+            <label>周日/限时材料：</label>
+            <select
+                v-model="config.autoFight.sundaySelectedValue">
+              <option
+                  v-for="(item,index) in domainMap.get(config.autoFight.domainName)?.list || []"
+                  :key="item"
+                  :value="index + 1"
+              >
+                {{ item }}
+              </option>
+            </select>
+          </div>
+          <div
+              v-if="(!domainMap.get(config.autoFight.domainName)?.hasOrder)&&(domainMap.get(config.autoFight.domainName)?.list?.length>0)"
+              class="form-group">
+            <label>秘境圣遗物：</label>
+            <ul>
+              <li v-for="item in domainMap.get(config.autoFight.domainName)?.list" :key="item">
+                {{ item }}
+              </li>
+            </ul>
+          </div>
 
 
-        <!-- 删除按钮 -->
-        <button @click="removeConfig(config.order)" class="btn danger">🗑️ 删除</button>
-        <div class="form-group">
-          <label>执行顺序：</label>
-          <input class="limited-input" v-model.number="config.order" type="number" min="1" max="99999999"
-                 placeholder="建议 1~10"/>
+          <div class="form-group">
+            <label>队伍名称（可选）：</label>
+            <input class="limited-input" v-model="config.autoFight.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
+
+          </div>
+
+          <div class="form-group">
+            <label>副本轮数：</label>
+            <input class="limited-input" v-model.number="config.autoFight.DomainRoundNum" type="number" min="1" max="99"
+                   placeholder="建议 1~10"/>
+          </div>
+
+          <hr/>
         </div>
-        <div class="form-group">
-          <label>执行日：</label>
-          <select v-model="config.day">
-            <option value="">请选择执行日(默认每天执行)</option>
-            <option
-                v-for="(d, index) in weekDays"
-                :key="d"
-                :value="index"
-            >
-              {{ d }}
-            </option>
-          </select>
-        </div>
-        <!-- 秘境选择 -->
-        <!-- 新增 type 选择器 -->
-        <div class="form-group">
-          <label>秘境类型：</label>
-          <select v-model="selectedType">
-            <option value="">请选择类型</option>
-            <option value="天赋">天赋</option>
-            <option value="武器">武器</option>
-            <option value="圣遗物">圣遗物</option>
-          </select>
-        </div>
-
-        <!-- 秘境选择（根据 selectedType 过滤） -->
-        <div class="form-group">
-          <label>秘境：</label>
-          <select v-model="config.autoFight.domainName">
-            <option value="">请选择秘境</option>
-            <option
-                v-for="d in filteredDomains"
-                :key="d.name"
-                :value="d.name"
-            >
-              {{ d.name }}
-            </option>
-          </select>
-        </div>
-
-        <!-- 物品名称选择（根据 domainName 过滤） -->
-        <div v-if="domainMap.get(config.autoFight.domainName)?.hasOrder" class="form-group">
-          <label>周日/限时材料：</label>
-          <select
-              v-model="config.autoFight.sundaySelectedName">
-            <option
-                v-for="item in domainMap.get(config.autoFight.domainName)?.list || []"
-                :key="item"
-                :value="item"
-            >
-              {{ item }}
-            </option>
-          </select>
-        </div>
-        <div
-            v-if="(!domainMap.get(config.autoFight.domainName)?.hasOrder)&&(domainMap.get(config.autoFight.domainName)?.list?.length>0)"
-            class="form-group">
-          <label>秘境圣遗物：</label>
-          <ul>
-            <li v-for="item in domainMap.get(config.autoFight.domainName)?.list" :key="item">
-              {{ item }}
-            </li>
-          </ul>
-        </div>
-
-
-        <div class="form-group">
-          <label>队伍名称（可选）：</label>
-          <input class="limited-input" v-model="config.autoFight.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
-
-        </div>
-
-        <div class="form-group">
-          <label>副本轮数：</label>
-          <input class="limited-input" v-model.number="config.autoFight.DomainRoundNum" type="number" min="1" max="99"
-                 placeholder="建议 1~10"/>
-        </div>
-
-        <hr/>
       </div>
-
       <div class="result-all">
         <label class="result-key">Json配置:</label>
         <pre class="result">{{ getFinalConfigsMap() || '暂无返回数据' }}</pre>
@@ -702,16 +702,24 @@ h2 {
 .add-config-btn:hover {
   background-color: #66b1ff;
 }
-
+.config-list {
+  display: flex;
+  flex-wrap: wrap; /* 允许子元素换行 */
+  gap: 20px; /* 设置子元素之间的间距 */
+  justify-content: flex-start; /* 子元素左对齐 */
+}
 /* 配置项卡片 */
 .config-item {
+  max-width: 40%;
   background: linear-gradient(135deg, #b6b2b6, #91dcd6);
   border: 1px solid #b9bcc6;
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 10px;
+  margin-bottom: 10px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* 禁止超出框限制*/
+  overflow: hidden; /* 禁止内容超出容器 */
 }
 
 .config-item:hover {
@@ -723,7 +731,7 @@ h2 {
 .config-item h3 {
   margin-top: 0;
   color: #333;
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 /* 删除按钮 */
@@ -744,19 +752,29 @@ h2 {
 
 /* 表单项通用样式 */
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 8px;
 }
 
 .form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
+  font-size: 0.9rem; /* 从默认大小减小 */
+  /*  display: block;
+    margin-bottom: 5px;
+    font-weight: bold;*/
   color: #606266;
 }
 
-.form-group select,
+.form-group select{
+  align-items: center;
+ /* width: 80%;*/
+  padding: 8px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
 .form-group input {
-  width: 100%;
+  align-items: center;
+  width: 40%;
   padding: 8px;
   border: 1px solid #dcdfe6;
   border-radius: 6px;
@@ -859,7 +877,8 @@ h2 {
 }
 
 .limited-input {
-  width: 200px; /* 限制输入框宽度 */
+ /* width: 200px; !* 限制输入框宽度 *!*/
+  /* 禁止超出框限制*/
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
