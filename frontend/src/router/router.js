@@ -40,6 +40,32 @@ const routes = [
             icon: 'Markdown'
         },
     }
+    ,
+    {
+        path: '/AutoPlanDomainConfig',
+        name: 'AutoPlanDomainConfig',
+        component: () => import('@main/views/AutoPlanDomainConfigView'),
+        meta: {
+            isRoot: true,
+            title: '自动秘境计划配置',
+            desc: '自动秘境计划配置',
+            asSubParentTitle: '自动秘境计划配置',
+            icon: 'Markdown'
+        },
+    }
+    ,
+    {
+        path: '/AutoPlanDomain',
+        name: 'AutoPlanDomain',
+        component: () => import('@main/views/AutoPlanDomainView'),
+        meta: {
+            isRoot: true,
+            title: '自动秘境计划',
+            desc: '自动秘境计划',
+            asSubParentTitle: '自动秘境计划',
+            icon: 'Markdown'
+        },
+    }
     // 其他路由...
 ]
 
