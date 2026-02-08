@@ -349,6 +349,27 @@ const fetchDomains = async () => {
     isLoading.value = false;
   }
 };
+const submitConfigToBackend = async () => {
+  if (!uid.value) {
+    ElMessage.warning("请先设置 UID");
+    return;
+  }
+
+  const jsonData = getFinalConfigsMap(); // 获取 JSON 配置
+  const keyData = getFinalConfigsToKey(); // 获取 Key 配置
+
+  const payload = {
+    uid: uid.value,
+    json: jsonData,
+    key: keyData,
+  };
+  try {
+    const response = await service.post("/api/config/submit", payload);
+    const result = JSON.stringify(response.data, null, 2)
+  } catch (error) {
+  }
+};
+
 onMounted(() => {
   fetchDomains();
 })
@@ -505,6 +526,7 @@ const getFinalConfigsToKey = () => {
   })
   return key
 }
+
 const copyToClipboard = (text) => {
 
   try {
@@ -528,10 +550,12 @@ const copyToClipboard = (text) => {
   <div class="home">
     <div class="container">
       <h2 class="title">自动秘境计划配置列表</h2>
-      <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
-
-      <!-- 添加配置按钮 -->
-      <button @click="addConfig" class="btn btn-add">➕ 添加一条配置</button>
+      <div class="config-header">
+        <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
+        <!-- 添加配置按钮 -->
+        <button @click="addConfig" class="btn btn-add">➕ 添加一条配置</button>
+        <button @click="submitConfigToBackend" class="btn btn-submit">提交配置</button>
+      </div>
       <div class="config-list">
         <div v-for="config in configs" :key="config.order" class="config-item">
           <h3>#{{ config.order }} 配置</h3>
@@ -615,7 +639,7 @@ const copyToClipboard = (text) => {
                    placeholder="建议 1~10"/>
           </div>
 
-<!--          <hr/>-->
+          <!--          <hr/>-->
         </div>
       </div>
       <div class="result-all">
@@ -702,12 +726,21 @@ h2 {
 .add-config-btn:hover {
   background-color: #66b1ff;
 }
+.config-header {
+  display: flex;
+  flex-wrap: wrap; /* 允许子元素换行 */
+  gap: 20px; /* 设置子元素之间的间距 */
+  justify-content: flex-start; /* 子元素左对齐 */
+  padding: 10px;
+}
+
 .config-list {
   display: flex;
   flex-wrap: wrap; /* 允许子元素换行 */
   gap: 20px; /* 设置子元素之间的间距 */
   justify-content: flex-start; /* 子元素左对齐 */
 }
+
 /* 配置项卡片 */
 .config-item {
   max-width: 40%;
@@ -763,15 +796,16 @@ h2 {
   color: #606266;
 }
 
-.form-group select{
+.form-group select {
   align-items: center;
- /* width: 80%;*/
+  /* width: 80%;*/
   padding: 8px;
   border: 1px solid #dcdfe6;
   border-radius: 6px;
   font-size: 1rem;
   transition: border-color 0.3s ease;
 }
+
 .form-group input {
   align-items: center;
   width: 40%;
@@ -850,6 +884,22 @@ h2 {
   transition: all 0.3s ease; /* 平滑过渡效果 */
 }
 
+.btn.btn-submit:hover {
+  transform: translateY(-2px); /* 悬停时轻微上移 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬停时增强阴影 */
+}
+
+.btn.btn-submit {
+  background-color: #18c3e8; /* 白色背景 */
+  color: #000000; /* 黑色文字 */
+  padding: 10px 20px; /* 内边距 */
+  border-radius: 8px; /* 圆角 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
+  border: none; /* 去除边框 */
+  font-weight: bold; /* 加粗文字 */
+  transition: all 0.3s ease; /* 平滑过渡效果 */
+}
+
 .btn.btn-add:hover {
   transform: translateY(-2px); /* 悬停时轻微上移 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬停时增强阴影 */
@@ -877,7 +927,7 @@ h2 {
 }
 
 .limited-input {
- /* width: 200px; !* 限制输入框宽度 *!*/
+  /* width: 200px; !* 限制输入框宽度 *!*/
   /* 禁止超出框限制*/
   overflow: hidden;
   text-overflow: ellipsis;
