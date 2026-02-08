@@ -1,0 +1,61 @@
+package com.cloud_guest.service.impl;
+
+import cn.hutool.json.JSONUtil;
+import com.cloud_guest.domain.Cache;
+import com.cloud_guest.service.AutoPlanDomainService;
+import com.cloud_guest.service.CacheService;
+import com.cloud_guest.utils.object.ObjectUtils;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * @Author yan
+ * @Date 2026/2/8 15:31:57
+ * @Description
+ */
+@Service
+public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
+    private static final String key = "AUTO_PLAN_DOMAIN:UID:";
+    @Resource
+    private CacheService cacheService;
+
+    @Override
+    public boolean delList(List<String> ids) {
+        ids = ids.stream().map(id -> key + id).collect(Collectors.toList());
+        return cacheService.delList(ids);
+    }
+
+    @Override
+    public boolean save(String id, String json) {
+        id = key + id;
+        return cacheService.save(id, json);
+    }
+
+
+    @Override
+    public List<Map<String, Object>> find(String id) {
+        id = key + id;
+        List<Map<String, Object>> list = new ArrayList<>();
+        Cache<String> cache = cacheService.find(id);
+        if (ObjectUtils.equals(cache.getType(), "json")) {
+            String data = cache.getData();
+            boolean typeJSON = JSONUtil.isTypeJSON(data);
+            if (typeJSON) {
+                Map<String, Object> bean = JSONUtil.toBean(data, Map.class);
+                list.add(bean);
+            } else if (JSONUtil.isTypeJSONArray(data)) {
+                List<String> maps = JSONUtil.toList(data, String.class);
+                for (String json : maps) {
+                    Map<String, Object> bean = JSONUtil.toBean(json, Map.class);
+                    list.add(bean);
+                }
+            }
+        }
+        return list;
+    }
+}
