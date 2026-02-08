@@ -526,25 +526,27 @@ const copyToClipboard = (text) => {
             </option>
           </select>
         </div>
-  <div v-if="!domainMap.get(config.autoFight.domainName)?.hasOrder" class="form-group">
-  <label>秘境圣遗物：</label>
-  <ul>
-    <li v-for="item in domainMap.get(config.autoFight.domainName)?.list" :key="item">
-      {{ item }}
-    </li>
-  </ul>
-</div>
+        <div
+            v-if="(!domainMap.get(config.autoFight.domainName)?.hasOrder)&&(domainMap.get(config.autoFight.domainName)?.list?.length>0)"
+            class="form-group">
+          <label>秘境圣遗物：</label>
+          <ul>
+            <li v-for="item in domainMap.get(config.autoFight.domainName)?.list" :key="item">
+              {{ item }}
+            </li>
+          </ul>
+        </div>
 
 
         <div class="form-group">
           <label>队伍名称（可选）：</label>
-          <input  class="limited-input" v-model="config.autoFight.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
+          <input class="limited-input" v-model="config.autoFight.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
 
         </div>
 
         <div class="form-group">
           <label>副本轮数：</label>
-          <input  class="limited-input" v-model.number="config.autoFight.DomainRoundNum" type="number" min="1" max="99"
+          <input class="limited-input" v-model.number="config.autoFight.DomainRoundNum" type="number" min="1" max="99"
                  placeholder="建议 1~10"/>
         </div>
 
@@ -734,8 +736,9 @@ h2 {
 .copy-btn:hover {
   background-color: #85ce61;
 }
+
 .btn.danger {
-/*  width: 80px;*/
+  /*  width: 80px;*/
   padding: 8px 12px;
 }
 
@@ -743,6 +746,7 @@ h2 {
   background: #c0392b;
   transform: scale(1.05);
 }
+
 .limited-input {
   width: 200px; /* 限制输入框宽度 */
   overflow: hidden;
