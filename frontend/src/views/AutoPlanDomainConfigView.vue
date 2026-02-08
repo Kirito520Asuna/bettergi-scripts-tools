@@ -356,10 +356,11 @@ onMounted(() => {
 const selectedType = ref(""); // 当前选择的秘境类型
 
 // 根据 selectedType 过滤秘境列表
-const filteredDomains = computed(() => {
-  if (!selectedType.value) return [];
+const filteredDomains = computed((selectedType) => {
+  if (!selectedType) return [];
   return domains.value.filter(d => d.type === selectedType.value);
 });
+
 
 // 配置列表 → 核心数据结构改为 array
 const configs = ref([])
@@ -374,6 +375,7 @@ const addConfig = () => {
     order: newOrder,
     day: undefined,
     dayName: undefined,
+    selectedType: "", // 新增字段
     autoFight: {
       domainName: undefined,
       partyName: undefined,
@@ -390,7 +392,10 @@ const removeConfig = (order) => {
   // 可选：重新排序 order（如果前端需要显示连续的序号）
   // configs.value.forEach((c, i) => { c.order = i + 1 })
 }
-
+const filteredDomainsType = ((selectedType) => {
+  if (!selectedType) return [];
+  return domains.value.filter(d => d.type === selectedType);
+});
 // 为每一条配置找到对应的秘境对象（用 Map 优化查找性能）
 const domainMap = computed(() => {
   const map = new Map()
@@ -466,6 +471,7 @@ const getFinalConfigs = () => {
       order: c.order,
       day: c.day,
       dayName: c.dayName,
+      selectedType: c.selectedType, // 新增字段
       autoFight: autoFight
     };
     return json
@@ -555,7 +561,7 @@ const copyToClipboard = (text) => {
           <!-- 新增 type 选择器 -->
           <div class="form-group">
             <label>秘境类型：</label>
-            <select v-model="selectedType">
+            <select v-model="config.selectedType">
               <option value="">请选择类型</option>
               <option value="天赋">天赋</option>
               <option value="武器">武器</option>
@@ -569,7 +575,7 @@ const copyToClipboard = (text) => {
             <select v-model="config.autoFight.domainName">
               <option value="">请选择秘境</option>
               <option
-                  v-for="d in filteredDomains"
+                  v-for="d in filteredDomainsType(config.selectedType)"
                   :key="d.name"
                   :value="d.name"
               >
