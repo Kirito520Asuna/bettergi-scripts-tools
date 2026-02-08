@@ -1,14 +1,18 @@
 package com.cloud_guest.service.impl;
 
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.service.AutoPlanDomainService;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.utils.object.ObjectUtils;
+import nonapi.io.github.classgraph.json.JSONUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -45,16 +49,23 @@ public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
         Cache<String> cache = cacheService.find(id);
         if (ObjectUtils.equals(cache.getType(), "json")) {
             String data = cache.getData();
-            boolean typeJSON = JSONUtil.isTypeJSON(data);
-            if (typeJSON) {
-                Map<String, Object> bean = JSONUtil.toBean(data, Map.class);
-                list.add(bean);
-            } else if (JSONUtil.isTypeJSONArray(data)) {
+            if (JSONUtil.isTypeJSONArray(data)) {
                 List<String> maps = JSONUtil.toList(data, String.class);
                 for (String json : maps) {
-                    Map<String, Object> bean = JSONUtil.toBean(json, Map.class);
-                    list.add(bean);
+                    if (JSONUtil.isTypeJSONArray(json)){
+                        // 解析为 JSONArray
+                        List<JSONObject> maps1 = JSONUtil.toList(data, JSONObject.class);
+                        list.addAll(maps1);
+                    }else {
+                        Map<String, Object> bean = JSONUtil.toBean(json, JSONObject.class);
+                        list.add(bean);
+                    }
+
                 }
+            } else
+            if (JSONUtil.isTypeJSON(data)) {
+                Map<String, Object> bean = JSONUtil.toBean(data, Map.class);
+                list.add(bean);
             }
         }
         return list;
@@ -66,16 +77,23 @@ public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
         Cache<String> cache = cacheService.find(key_all);
         if (ObjectUtils.equals(cache.getType(), "json")) {
             String data = cache.getData();
-            boolean typeJSON = JSONUtil.isTypeJSON(data);
-            if (typeJSON) {
-                Map<String, Object> bean = JSONUtil.toBean(data, Map.class);
-                list.add(bean);
-            } else if (JSONUtil.isTypeJSONArray(data)) {
+            if (JSONUtil.isTypeJSONArray(data)) {
                 List<String> maps = JSONUtil.toList(data, String.class);
                 for (String json : maps) {
-                    Map<String, Object> bean = JSONUtil.toBean(json, Map.class);
-                    list.add(bean);
+                    if (JSONUtil.isTypeJSONArray(json)){
+                        // 解析为 JSONArray
+                        List<JSONObject> maps1 = JSONUtil.toList(data, JSONObject.class);
+                        list.addAll(maps1);
+                    }else {
+                        Map<String, Object> bean = JSONUtil.toBean(json, JSONObject.class);
+                        list.add(bean);
+                    }
+
                 }
+            } else
+            if (JSONUtil.isTypeJSON(data)) {
+                Map<String, Object> bean = JSONUtil.toBean(data, Map.class);
+                list.add(bean);
             }
         }
         return list;

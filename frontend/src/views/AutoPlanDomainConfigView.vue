@@ -3,7 +3,8 @@ import {ref, computed, watch, watchEffect, onMounted} from 'vue'
 import {ElMessage} from "element-plus";
 import {isNumber} from "element-plus/es/utils/index";
 import service from "@utils/request.js";
-
+// 配置列表 → 核心数据结构改为 array
+const configs = ref([])
 const isLoading = ref(false);
 // 秘境数据（保持不变，建议单独抽到一个文件）
 const defaultDomains = [
@@ -372,6 +373,7 @@ onMounted(() => {
   fetchDomains();
 })
 
+/*
 const selectedType = ref(""); // 当前选择的秘境类型
 
 // 根据 selectedType 过滤秘境列表
@@ -379,10 +381,9 @@ const filteredDomains = computed((selectedType) => {
   if (!selectedType) return [];
   return domains.value.filter(d => d.type === selectedType.value);
 });
+*/
 
 
-// 配置列表 → 核心数据结构改为 array
-const configs = ref([])
 const uid = ref("")
 // 新增一条空白配置
 const addConfig = () => {
@@ -522,6 +523,9 @@ const getFinalConfigsToKey = () => {
     key += "|"
     key += (item.order || 1) + ","
   })
+  if (key.endsWith(",")) {
+    key = key.substring(0, key.length - 1);
+  }
   return key
 }
 
@@ -724,6 +728,7 @@ h2 {
 .add-config-btn:hover {
   background-color: #66b1ff;
 }
+
 .config-header {
   display: flex;
   flex-wrap: wrap; /* 允许子元素换行 */
