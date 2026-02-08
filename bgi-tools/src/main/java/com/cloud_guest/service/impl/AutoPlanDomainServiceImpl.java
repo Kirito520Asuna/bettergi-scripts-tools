@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 @Service
 public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
     private static final String key = "AUTO_PLAN_DOMAIN:UID:";
+    private static final String key_all = "AUTO_PLAN_DOMAIN:ALL";
     @Resource
     private CacheService cacheService;
 
@@ -57,5 +58,10 @@ public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
             }
         }
         return list;
+    }
+
+    @Override
+    public boolean saveAll(String json) {
+        return cacheService.save(key_all, json);
     }
 }

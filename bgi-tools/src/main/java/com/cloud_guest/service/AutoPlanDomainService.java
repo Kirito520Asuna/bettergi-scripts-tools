@@ -14,4 +14,6 @@ public interface AutoPlanDomainService {
     boolean save(String id, String json);
 
     List<Map<String, Object>> find(String id);
+
+    boolean saveAll(String json);
 }

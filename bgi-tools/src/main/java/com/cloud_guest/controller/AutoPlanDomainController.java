@@ -7,6 +7,8 @@ import com.cloud_guest.domain.AutoPlanDomainDto;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AutoPlanDomainService;
+import com.cloud_guest.view.BasicJsonView;
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.SneakyThrows;
@@ -37,11 +39,23 @@ public class AutoPlanDomainController {
     @Resource
     private AutoPlanDomainService autoPlanDomainService;
 
+    @PostMapping("json/all")
+    @SysLog
+    @Operation(summary = "存储JSON")
+    public Result<String> saveAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
+                                  @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
+                                  @RequestBody AutoPlanDomainDto dto) {
+        autoPlanDomainService.saveAll(dto.getJson());
+        return ok();
+    }
+
     @PostMapping("json")
     @SysLog
     @Operation(summary = "存储JSON")
-    public Result<String> save(@Validated@RequestBody AutoPlanDomainDto dto) {
-         autoPlanDomainService.save(dto.getUid(), dto.getJson());
+    public Result<String> save(@JsonView(value = BasicJsonView.AutoPlanDomainView.class)
+                               @Validated(value = BasicJsonView.AutoPlanDomainView.class)
+                               @RequestBody AutoPlanDomainDto dto) {
+        autoPlanDomainService.save(dto.getUid(), dto.getJson());
         return ok(dto.getUid());
     }
 
