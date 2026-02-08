@@ -473,7 +473,7 @@ const copyToClipboard = (text) => {
 <template>
   <div class="home">
     <div class="container">
-      <h2>自动秘境计划配置列表</h2>
+      <h2 class="title">自动秘境计划配置列表</h2>
       <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
 
       <!-- 添加配置按钮 -->
@@ -485,7 +485,11 @@ const copyToClipboard = (text) => {
 
         <!-- 删除按钮 -->
         <button @click="removeConfig(config.order)" class="btn danger">🗑️ 删除</button>
-
+        <div class="form-group">
+          <label>执行顺序：</label>
+          <input class="limited-input" v-model.number="config.order" type="number" min="1" max="99999999"
+                 placeholder="建议 1~10"/>
+        </div>
         <!-- 秘境选择 -->
         <!-- 新增 type 选择器 -->
         <div class="form-group">
@@ -554,10 +558,12 @@ const copyToClipboard = (text) => {
       </div>
 
       <div class="result-all">
+        <label class="result-key">Json配置:</label>
         <pre class="result">{{ getFinalConfigsMap() || '暂无返回数据' }}</pre>
         <button @click="copyToClipboard(getFinalConfigsMap())" class="copy-btn">📋 复制</button>
       </div>
       <div class="result-all">
+        <label class="result-key">语法key:</label>
         <pre class="result">{{ getFinalConfigsToKey() || '暂无返回数据' }}</pre>
         <button @click="copyToClipboard(getFinalConfigsToKey())" class="copy-btn">📋 复制</button>
       </div>
@@ -637,8 +643,8 @@ h2 {
 
 /* 配置项卡片 */
 .config-item {
-  background: #fff;
-  border: 1px solid #ebeef5;
+  background: linear-gradient(135deg, #b6b2b6, #91dcd6);
+  border: 1px solid #b9bcc6;
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
@@ -710,6 +716,21 @@ h2 {
   gap: 10px;
   margin-top: 20px;
 }
+.result-key {
+  background-color: #ffffff; /* 白色背景 */
+  color: #000000; /* 黑色文字 */
+  padding: 10px 15px; /* 内边距 */
+  border-radius: 8px; /* 圆角 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
+  display: inline-block; /* 确保样式生效 */
+  font-weight: bold; /* 加粗文字 */
+  transition: all 0.3s ease; /* 平滑过渡效果 */
+}
+
+.result-key:hover {
+  transform: translateY(-2px); /* 悬停时轻微上移 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬停时增强阴影 */
+}
 
 .result {
   flex: 1;
@@ -736,12 +757,37 @@ h2 {
 .copy-btn:hover {
   background-color: #85ce61;
 }
-
-.btn.danger {
-  /*  width: 80px;*/
-  padding: 8px 12px;
+.btn.btn-add {
+  background-color: #85ce61; /* 白色背景 */
+  color: #000000; /* 黑色文字 */
+  padding: 10px 20px; /* 内边距 */
+  border-radius: 8px; /* 圆角 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
+  border: none; /* 去除边框 */
+  font-weight: bold; /* 加粗文字 */
+  transition: all 0.3s ease; /* 平滑过渡效果 */
 }
 
+.btn.btn-add:hover {
+  transform: translateY(-2px); /* 悬停时轻微上移 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬停时增强阴影 */
+}
+
+.btn.danger {
+  background-color: #e19025; /* 白色背景 */
+  color: #000000; /* 黑色文字 */
+  padding: 10px 20px; /* 内边距 */
+  border-radius: 8px; /* 圆角 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
+  border: none; /* 去除边框 */
+  font-weight: bold; /* 加粗文字 */
+  transition: all 0.3s ease; /* 平滑过渡效果 */
+}
+
+.btn.danger:hover {
+  transform: translateY(-2px); /* 悬停时轻微上移 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬停时增强阴影 */
+}
 .btn.danger:hover {
   background: #c0392b;
   transform: scale(1.05);
@@ -752,5 +798,22 @@ h2 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* 主标题美化 */
+.title {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 15px;
+  color: transparent;
+  background: linear-gradient(90deg, #d612cc, #9e367d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.title:hover {
+  transform: scale(1.05);
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 </style>
