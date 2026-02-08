@@ -1,10 +1,12 @@
 <script setup>
-import {ref, computed, watch, watchEffect} from 'vue'
+import {ref, computed, watch, watchEffect, onMounted} from 'vue'
 import {ElMessage} from "element-plus";
 import {isNumber} from "element-plus/es/utils/index";
+import service from "@utils/request.js";
 
+const isLoading = ref(false);
 // 秘境数据（保持不变，建议单独抽到一个文件）
-const domains = ref([
+const defaultDomains = [
   {
     "name": "无光的深都",
     "type": "天赋",
@@ -329,7 +331,28 @@ const domains = ref([
       "平息鸣雷的尊者"
     ]
   }
-])
+];
+const domains = ref([])
+const fetchDomains = async () => {
+  isLoading.value = true;
+  try {
+    const response = await service.get('/auto/plan/domain/json/all');
+    domains.value = JSON.parse(response.data);
+  } catch (error) {
+    console.error('请求失败:', error);
+    domains.value = defaultDomains;
+    ElMessage({
+      type: 'warning',
+      message: '使用默认秘境数据。',
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
+onMounted(() => {
+  fetchDomains();
+})
+
 const selectedType = ref(""); // 当前选择的秘境类型
 
 // 根据 selectedType 过滤秘境列表
@@ -349,6 +372,8 @@ const addConfig = () => {
 
   configs.value.push({
     order: newOrder,
+    day: undefined,
+    dayName: undefined,
     autoFight: {
       domainName: undefined,
       partyName: undefined,
@@ -372,7 +397,7 @@ const domainMap = computed(() => {
   domains.value.forEach(d => map.set(d.name, d))
   return map
 })
-
+const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 // 监听每一项的 domainName 变化 → 自动填充 sundaySelectedValue
 watchEffect(
     () => configs.value,
@@ -395,6 +420,11 @@ watchEffect(
         } else {
           config.autoFight.sundaySelectedName = config.autoFight.sundaySelectedValue || '';
         }
+        if (typeof config.day === 'number') {
+          config.dayName = weekDays[config.day] || '';
+        } else {
+          config.dayName = config.day || '';
+        }
 
         if (domain.hasOrder && domain.list?.length > 0) {
           // 自动选第一个（也可改为 undefined，让用户手动选）
@@ -415,12 +445,7 @@ watchEffect(
 if (configs.value.length === 0) {
   addConfig()
 }
-const getSundaySelectedName = (sundaySelectedValue, domainName) => {
-  if (isNumber(sundaySelectedValue)) {
-    sundaySelectedValue = domainMap.value.get(domainName).list[sundaySelectedValue - 1]
-  }
-  return sundaySelectedValue
-}
+
 // 获取最终用于保存/提交的数据
 const getFinalConfigs = () => {
   return configs.value.map(c => {
@@ -429,7 +454,7 @@ const getFinalConfigs = () => {
       const info = domainMap.value.get(autoFight.domainName);
       let index = 1
       for (let item of info.list) {
-        if (autoFight.sundaySelectedValue === item|| autoFight.sundaySelectedName === item) {
+        if (autoFight.sundaySelectedValue === item || autoFight.sundaySelectedName === item) {
           // autoFight.sundaySelectedName = autoFight.sundaySelectedValue
           autoFight.sundaySelectedValue = index
         }
@@ -439,6 +464,8 @@ const getFinalConfigs = () => {
 
     let json = {
       order: c.order,
+      day: c.day,
+      dayName: c.dayName,
       autoFight: autoFight
     };
     return json
@@ -465,6 +492,8 @@ const getFinalConfigsToKey = () => {
     key += (autoFight.DomainRoundNum || "")
     key += "|"
     key += (autoFight.sundaySelectedValue || 1)
+    key += "|"
+    key += (item.day || "")
     key += "|"
     key += (item.order || 1) + ","
   })
@@ -508,6 +537,19 @@ const copyToClipboard = (text) => {
           <label>执行顺序：</label>
           <input class="limited-input" v-model.number="config.order" type="number" min="1" max="99999999"
                  placeholder="建议 1~10"/>
+        </div>
+        <div class="form-group">
+          <label>执行日：</label>
+          <select v-model="config.day">
+            <option value="">请选择执行日(默认每天执行)</option>
+            <option
+                v-for="(d, index) in weekDays"
+                :key="d"
+                :value="index"
+            >
+              {{ d }}
+            </option>
+          </select>
         </div>
         <!-- 秘境选择 -->
         <!-- 新增 type 选择器 -->
