@@ -1,37 +1,36 @@
 <template>
-  <div class="container">
-    <div class="layout">
-      <!-- 左侧固定区域：仅展示 type -->
-      <div class="sidebar">
-        <div v-for="(items, type) in groupedData" :key="type" class="type-group">
-          <div class="type-header" @click="selectType(type)">
-            {{ type }}
-          </div>
-        </div>
-      </div>
-
-      <!-- 右侧主内容区域：树形结构展示 item -->
-      <div class="main-content">
-        <h1>领域配置</h1>
-        <div v-if="selectedTypeItems.length > 0" class="tree-view">
-          <div v-for="(item, index) in selectedTypeItems" :key="index" class="tree-node">
-            <div class="node-header" @click="toggleItem(index)">
-              {{ item.name }}
+    <div class="container">
+      <div class="layout">
+        <!-- 左侧固定区域：仅展示 type -->
+        <div class="sidebar">
+          <div v-for="(items, type) in groupedData" :key="type" class="type-group">
+            <div class="type-header" @click="selectType(type)">
+              {{ type }}
             </div>
-            <ul v-show="expandedItems.includes(index)" class="node-list">
-              <li v-for="(entry, idx) in item.list" :key="idx">{{ entry }}</li>
-            </ul>
           </div>
         </div>
-        <div v-else>
-          请选择一个类型以查看内容。
+
+        <!-- 右侧主内容区域：树形结构展示 item -->
+        <div class="main-content">
+          <h1>领域配置</h1>
+          <h2>{{ selectedType || '请选择一个类型' }}</h2>
+          <div v-if="selectedTypeItems.length > 0" class="tree-view">
+            <div v-for="(item, index) in selectedTypeItems" :key="index" class="tree-node">
+              <div class="node-header" @click="toggleItem(index)">
+                {{ item.name }}
+              </div>
+              <ul v-show="expandedItems.includes(index)" class="node-list">
+                <li v-for="(entry, idx) in item.list" :key="idx">{{ entry }}</li>
+              </ul>
+            </div>
+          </div>
+          <div v-else>
+            请选择一个类型以查看内容。
+          </div>
         </div>
       </div>
     </div>
-  </div>
 </template>
-
-
 
 
 <script setup>
@@ -82,9 +81,11 @@ const selectedTypeItems = ref([]);
 
 // 控制 item 展开/收起
 const expandedItems = ref([]);
-
+// 当前选中的 type
+const selectedType = ref('');
 // 选择 type
 const selectType = (type) => {
+  selectedType.value = type; // 更新选中的 type
   selectedTypeItems.value = groupedData.value[type] || [];
   expandedItems.value = []; // 清空已展开的 item
 };
@@ -187,6 +188,7 @@ onMounted(() => {
 .card-body li:last-child {
   border-bottom: none;
 }
+
 .tree-view {
   margin-top: 20px;
 }

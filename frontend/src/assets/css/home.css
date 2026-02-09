@@ -1,0 +1,19 @@
+/* 页面全屏背景 */
+.home {
+    /*  display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      width: 100vw;*/
+    /*  background: linear-gradient(135deg, #a1c4fd, #c2e9fb);*/
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url("@assets/MHY_XTLL.png") ;
+    /* 关键：固定背景，不随滚动重复或变形 */
+    background-attachment: fixed; /* ← 核心属性 */
+    background-size: cover; /* 覆盖整个容器 */
+    background-position: center;
+    /*  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;*/
+}

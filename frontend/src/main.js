@@ -5,6 +5,7 @@ import {initApiPrefix} from '@utils/http'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css';
 import {zhCn} from "element-plus/es/locale/index";
+import '@/assets/css/home.css';
 // 初始化前端应用
 async function bootstrap() {
     await initApiPrefix() // 获取动态 API 前缀
