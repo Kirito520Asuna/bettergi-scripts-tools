@@ -41,8 +41,6 @@ const submitConfigToBackend = async () => {
     ElMessage.warning("请先设置 UID");
     return;
   }
-  /*  const jsonData = getFinalConfigsMap(); // 获取 JSON 配置
-    const json= jsonData?.get(uid.value)||jsonData*/
   const json = getFinalConfigs()
   await postUidJson(uid.value, JSON.stringify(json))
 };
@@ -57,7 +55,6 @@ const findDomains = async () => {
     configs.value = response;
   } catch (error) {
     console.error('请求失败:', error);
-    // domains.value = defaultDomains;
     ElMessage({
       type: 'error',
       message: error.message,
@@ -78,8 +75,11 @@ const addConfig = () => {
 
   configs.value.push({
     order: newOrder,
-    day: undefined,
+    // day: undefined,
+    days: [],
     dayName: undefined,
+    showDaysSelector: false,   // ← 新增
+    // daysName: [],
     selectedType: "", // 新增字段
     autoFight: {
       domainName: undefined,
@@ -123,35 +123,37 @@ watchEffect(
         const domainName = config.autoFight.domainName
         if (!domainName) {
           config.autoFight.sundaySelectedValue = undefined
-          // config.autoFight.sundaySelectedName = undefined
           return
         }
 
         const domain = domainMap.value.get(domainName)
         if (!domain) return
-
-        // 处理 sundaySelectedValue 和 sundaySelectedName
-        // if (typeof config.autoFight.sundaySelectedValue === 'number') {
-        //   const index = config.autoFight.sundaySelectedValue - 1;
-        //   config.autoFight.sundaySelectedName = domain.list?.[index] || '';
-        // } else {
-        //   config.autoFight.sundaySelectedName = config.autoFight.sundaySelectedValue || '';
-        // }
-        if (typeof config.day === 'number') {
-          config.dayName = weekDays[config.day] || '';
+        // 处理 days 数组
+        if (Array.isArray(config.days) && config.days.length > 0) {
+          config.dayName = config.days.map(dayIndex => weekDays[dayIndex]).join(', ')
         } else {
-          config.dayName = config.day || '';
+          config.dayName = ''
         }
+
+        // if (config.days && config.days.length > 0) {
+        //   config.daysName = config.days.map(day => {
+        //     let dayName
+        //     if (typeof day === 'number') {
+        //       dayName = weekDays[config.day] || '';
+        //     } else {
+        //       dayName = config.day || '';
+        //     }
+        //     return dayName
+        //   })
+        // }
 
         if (domain.hasOrder && domain.list?.length > 0) {
           // 自动选第一个（也可改为 undefined，让用户手动选）
           if (!config.autoFight.sundaySelectedValue) {
             config.autoFight.sundaySelectedValue = domain.list[0]
-            // config.autoFight.sundaySelectedName = domain.list[0]
           }
         } else {
           config.autoFight.sundaySelectedValue = config.autoFight.sundaySelectedValue || undefined
-          // config.autoFight.sundaySelectedName = config.autoFight.sundaySelectedName || ''
         }
       })
     },
@@ -181,11 +183,14 @@ const getFinalConfigs = () => {
 
     let json = {
       order: c.order,
-      day: c.day,
+      // day: c.day,
+      days: c.days,
       dayName: c.dayName,
+      // daysName: c.daysName,
       selectedType: c.selectedType, // 新增字段
       autoFight: autoFight
     };
+    json.days.sort((a, b) => a - b)
     return json
   })
 }
@@ -220,7 +225,8 @@ const getFinalConfigsToKey = () => {
     key += "|"
     key += (autoFight.sundaySelectedValue || 1)
     key += "|"
-    key += (item.day || "")
+    // key += (item.day || "")
+    key += (item.days.join('/') || "") // 将数组转换为字符串
     key += "|"
     key += (item.order || 1) + ","
   })
@@ -260,18 +266,39 @@ const copyToClipboard = (text) => {
               <input class="limited-input" v-model.number="config.order" type="number" min="1" max="99999999"
                      placeholder="建议 1~10"/>
             </div>
+
             <div class="form-group">
               <label>执行日：</label>
-              <select v-model="config.day">
-                <option value="">请选择执行日(默认每天执行)</option>
-                <option
-                    v-for="(d, index) in weekDays"
-                    :key="d"
-                    :value="index"
-                >
-                  {{ d }}
-                </option>
-              </select>
+
+              <div
+                  class="days-display"
+                  @click="config.showDaysSelector = !config.showDaysSelector"
+                  :class="{ 'has-selection': config.days?.length > 0 }"
+              >
+                <span v-if="config.days?.length === 0">
+                  每天执行（点击指定执行日期）
+                </span>
+                <span v-else>
+                  {{ config.dayName || '已选择 ' + config.days.length + ' 天' }}
+                  <i class="el-icon-arrow-down" :class="{ 'rotate': config.showDaysSelector }"></i>
+                </span>
+              </div>
+
+              <!-- 點擊後展開的部分 -->
+              <div v-if="config.showDaysSelector" class="days-selector">
+                <div class="checkbox-group">
+                  <label v-for="(dayName, idx) in weekDays" :key="idx" class="checkbox-label">
+                    <el-checkbox
+                        :label="idx"
+                        v-model="config.days"
+                    >{{ dayName }}</el-checkbox>
+                  </label>
+                </div>
+                <div class="actions">
+                  <el-button size="small" @click="config.days = []">清空</el-button>
+                  <el-button size="small" type="primary" @click="config.showDaysSelector = false">確定</el-button>
+                </div>
+              </div>
             </div>
             <!-- 秘境选择 -->
             <!-- 新增 type 选择器 -->
@@ -539,7 +566,55 @@ h2 {
   font-size: 1rem;
   transition: border-color 0.3s ease;
 }
+.days-display {
+  padding: 8px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s;
+}
 
+.days-display:hover {
+  border-color: #409eff;
+}
+
+.days-display.has-selection {
+  color: #409eff;
+  font-weight: 500;
+}
+
+.days-selector {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  background: #f8f9fa;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  margin-bottom: 12px;
+}
+
+.checkbox-label {
+  min-width: 80px;
+}
+
+.actions {
+  text-align: right;
+  margin-top: 8px;
+}
+
+.rotate {
+  transform: rotate(180deg);
+}
 .form-group input {
   align-items: center;
   width: 40%;
