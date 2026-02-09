@@ -82,7 +82,7 @@ spring:
     # 默认已经包含 classpath:/static/，通常不需要额外配置
     # 如果你把 dist 放在其他位置，可以加
     # static-locations: classpath:/static/,classpath:/public/
-#redis
+  #redis
   redis:
     mode: none # none:不使用redis，single:使用单体,cluster:使用集群，sentinel:使用哨兵
     #单体
@@ -103,7 +103,11 @@ spring:
     #安全
     username:  #默认为空
     password:  #默认为空
-
+#需要验证的接口设置token
+check:
+  token:
+    name: # token名称
+    value:  # token值
 bgi-tools:
   version: 0.0.3
 
