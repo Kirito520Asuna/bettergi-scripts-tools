@@ -125,6 +125,7 @@ import service from "@utils/request";
 import {ElMessage} from "element-plus";
 import router from "@router/router";
 import {getNextTimestampAll} from "@api/cron/cron.js";
+import {ocrBytes} from "@api/ocr/ocr.js";
 
 const currentRoute = router.currentRoute
 const cronResult = ref('')
@@ -237,12 +238,8 @@ const performOcr = async () => {
     reader.onload = async (e) => {
       const arrayBuffer = e.target.result
       const bytes = Array.from(new Uint8Array(arrayBuffer))
-
-      const response = await service.post('/ocr/bytes', {
-        bytes: bytes,
-      })
-
-      ocrResult.value = JSON.stringify(response.data, null, 2)
+      const response =await ocrBytes(bytes)
+      ocrResult.value = JSON.stringify(response, null, 2)
     }
 
     reader.readAsArrayBuffer(file.value)
