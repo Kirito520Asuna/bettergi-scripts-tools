@@ -105,6 +105,7 @@ onMounted(() => {
 <style scoped>
 /* ==================== 全局基础 ==================== */
 .container {
+  height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: #333;
   background: url("@assets/MHY_XTLL.png") no-repeat center center fixed;
