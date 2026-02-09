@@ -1,37 +1,36 @@
 <template>
-    <div class="container">
-      <div class="layout">
-        <!-- 左侧固定区域：仅展示 type -->
-        <div class="sidebar">
-          <div v-for="(items, type) in groupedData" :key="type" class="type-group">
-            <div class="type-header" @click="selectType(type)">
-              {{ type }}
-            </div>
-          </div>
-        </div>
-
-        <!-- 右侧主内容区域：树形结构展示 item -->
-        <div class="main-content">
-          <h1>领域配置</h1>
-          <h2>{{ selectedType || '请选择一个类型' }}</h2>
-          <div v-if="selectedTypeItems.length > 0" class="tree-view">
-            <div v-for="(item, index) in selectedTypeItems" :key="index" class="tree-node">
-              <div class="node-header" @click="toggleItem(index)">
-                {{ item.name }}
-              </div>
-              <ul v-show="expandedItems.includes(index)" class="node-list">
-                <li v-for="(entry, idx) in item.list" :key="idx">{{ entry }}</li>
-              </ul>
-            </div>
-          </div>
-          <div v-else>
-            请选择一个类型以查看内容。
+  <div class="container">
+    <div class="layout">
+      <!-- 左侧固定区域：仅展示 type -->
+      <div class="sidebar">
+        <div v-for="(items, type) in groupedData" :key="type" class="type-group">
+          <div class="type-header" @click="selectType(type)">
+            {{ type }}
           </div>
         </div>
       </div>
-    </div>
-</template>
 
+      <!-- 右侧主内容区域：树形结构展示 item -->
+      <div class="main-content">
+        <h1>领域配置</h1>
+        <h2>{{ selectedType || '请选择一个类型' }}</h2>
+        <div v-if="selectedTypeItems.length > 0" class="tree-view">
+          <div v-for="(item, index) in selectedTypeItems" :key="index" class="tree-node">
+            <div class="node-header" @click="toggleItem(index)">
+              {{ item.name }}
+            </div>
+            <ul v-show="expandedItems.includes(index)" class="node-list">
+              <li v-for="(entry, idx) in item.list" :key="idx">{{ entry }}</li>
+            </ul>
+          </div>
+        </div>
+        <div v-else>
+          请选择一个类型以查看内容。
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <script setup>
 import {ref, computed, onMounted} from 'vue';
@@ -102,123 +101,184 @@ onMounted(() => {
   fetchDomains();
 })
 </script>
+
 <style scoped>
+/* ==================== 全局基础 ==================== */
+.container {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #333;
+}
+
 .layout {
   display: flex;
   height: 100vh;
+  background: #f8f9fa;
 }
 
+/* ==================== 左侧 Sidebar ==================== */
 .sidebar {
-  width: 250px;
-  background-color: #f5f5f5;
-  padding: 20px;
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  padding: 24px 16px;
   overflow-y: auto;
-  border-right: 1px solid #ddd;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
 }
 
 .type-group {
-  margin-bottom: 15px;
+  margin-bottom: 8px;
 }
 
 .type-header {
-  font-weight: bold;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #04b8d8;
+ /* background: #f1f3f5;*/
+  background: linear-gradient(135deg, #b6b2b6, #cf6137);
+  border-radius: 8px;
   cursor: pointer;
-  padding: 8px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-.type-list {
-  list-style: none;
-  padding-left: 10px;
+.type-header:hover {
+/*  background: #e3e7eb;*/
+  background: linear-gradient(135deg, #b6b2b6, #ff4400);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.type-list li {
-  padding: 5px 0;
-  cursor: pointer;
+.type-header:active {
+  transform: scale(0.98);
 }
 
-.type-list li:hover {
-  color: #007bff;
-}
-
+/* ==================== 右侧主内容 ==================== */
 .main-content {
   flex: 1;
-  padding: 20px;
+  padding: 24px 40px;          /* 更小的内边距 */          /* 整体内边距略微缩小（原 40/50） */
   overflow-y: auto;
+  background: #ffffff;
 }
 
-.search-input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+.main-content h1 {
+  font-size: 26px;             /* 稍小一点，更现代 */
+  font-weight: 700;
+  color: #1e2937;
+  margin-bottom: 4px;          /* h1 到 h2 间距大幅缩小 */
+  letter-spacing: -0.4px;
 }
 
-.card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-top: 20px;
-  overflow: hidden;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.main-content h2 {
+  font-size: 16px;             /* 更低调 */
+  color: #e6a327;
+  font-weight: 500;
+  margin-bottom: 20px;         /* h2 到树列表的间距缩小（原 32px） */
+  margin-top: 0;
 }
 
-.card-header {
-  padding: 15px;
-  background-color: #f5f5f5;
-  font-weight: bold;
+/* 空状态提示也跟着上移一点，显得不那么空 */
+.main-content > div:last-child {
+  margin-top: 80px;            /* 原 120px → 80px，更紧凑 */
+  text-align: center;
+  color: #94a3b8;
+  font-size: 16px;
 }
-
-.card-body {
-  padding: 15px;
-}
-
-.card-body ul {
-  list-style-type: none;
-  padding-left: 0;
-}
-
-.card-body li {
-  padding: 5px 0;
-  border-bottom: 1px dashed #eee;
-}
-
-.card-body li:last-child {
-  border-bottom: none;
-}
-
+/* ==================== 树形结构 ==================== */
+/* 当有内容时，让树视图更靠近上方 */
 .tree-view {
-  margin-top: 20px;
+  max-width: 920px;
+  margin-top: 0;               /* 去掉可能的额外上边距 */
 }
 
 .tree-node {
-  margin-bottom: 15px;
+  margin-bottom: 16px;
+/*  background: #d8cbcb;*/
+  background: linear-gradient(135deg, #b6b2b6, #91dcd6);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(230, 227, 227, 0.1);
+  transition: all 0.25s ease;
+}
+
+.tree-node:hover {
+  box-shadow: 0 10px 25px -5px rgba(138, 35, 35, 0.1);
+  transform: translateY(-2px);
 }
 
 .node-header {
-  font-weight: bold;
+  padding: 18px 24px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #615959;
+ /* background: #f8fafc;*/
+  background: linear-gradient(135deg, #b6b2b6, #91dcd6);
+
   cursor: pointer;
-  padding: 8px;
-  background-color: #f0f0f0;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.node-header:hover {
+  /*background: #f1f5f9;*/
+  background: linear-gradient(135deg, #b6b2b6, #00ffff);
+}
+
+.node-header::after {
+  content: '›';
+  position: absolute;
+  right: 24px;
+  font-size: 22px;
+  color: #94a3b8;
+  transition: transform 0.3s ease;
+}
+
+/* 展开时箭头旋转 */
+.tree-node:has(.node-list:not([style*="none"])) .node-header::after {
+  transform: rotate(90deg);
+  color: #3b82f6;
 }
 
 .node-list {
   list-style: none;
-  padding-left: 20px;
-  margin-top: 5px;
+  padding: 0;
+  /*background: #cacaca;*/
+  background: linear-gradient(135deg, #b6b2b6, #91dcd6);
+  border-top: 1px solid #e2e8f0;
 }
 
 .node-list li {
-  padding: 5px 0;
-  border-bottom: 1px dashed #eee;
+  padding: 14px 28px;
+  font-size: 15px;
+  color: rgba(0, 0, 0, 0.78);
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
 }
 
 .node-list li:last-child {
   border-bottom: none;
 }
 
-</style>
+.node-list li:hover {
+  /*background: #f0f9ff;*/
+  background: linear-gradient(135deg, #b6b2b6, #00ffe9);
+  padding-left: 32px;
+}
 
+/* ==================== 空状态 ==================== */
+.main-content > div:last-child {
+  margin-top: 120px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+/* ==================== 响应式小优化 ==================== */
+@media (max-width: 768px) {
+  .sidebar { width: 220px; }
+  .main-content { padding: 24px; }
+}
+</style>
