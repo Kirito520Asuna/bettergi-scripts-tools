@@ -338,7 +338,16 @@ const fetchDomains = async () => {
   isLoading.value = true;
   try {
     const response = await service.get('/auto/plan/domain/json/all');
-    domains.value = JSON.parse(response.data);
+    console.log('response', response)
+    if (response.data&&response.data.length>0) {
+      domains.value = response.data;
+    }else {
+      domains.value = defaultDomains;
+      ElMessage({
+        type: 'warning',
+        message: '无数据存储，使用默认秘境数据。',
+      });
+    }
   } catch (error) {
     console.error('请求失败:', error);
     domains.value = defaultDomains;
@@ -357,10 +366,10 @@ const submitConfigToBackend = async () => {
   }
 
   const jsonData = getFinalConfigsMap(); // 获取 JSON 配置
-
+  const json= jsonData?.get(uid.value)||jsonData
   const payload = {
     uid: uid.value,
-    json: JSON.stringify(jsonData),
+    json: JSON.stringify(json),
   };
   try {
     const response = await service.post("/auto/plan/domain/json", payload);
@@ -368,7 +377,31 @@ const submitConfigToBackend = async () => {
   } catch (error) {
   }
 };
+const findDomains = async () => {
+  if (!uid.value) {
+    ElMessage.warning("请先设置 UID");
+    return;
+  }
 
+  try {
+    const response = await service.get('/auto/plan/domain/json', {params: {uid: uid.value}})
+        .then(res => {
+          console.log('res', res)
+          console.log('res.data', JSON.stringify(res?.data))
+          console.log('res.data type', res?.data?.type)
+         return  res?.data?.get(uid.value)
+        });
+    configs.value = response;
+  } catch (error) {
+    console.error('请求失败:', error);
+    // domains.value = defaultDomains;
+    ElMessage({
+      type: 'error',
+      message: error.message,
+    });
+  } finally {
+  }
+};
 onMounted(() => {
   fetchDomains();
 })
@@ -497,12 +530,21 @@ const getFinalConfigs = () => {
     return json
   })
 }
-const getFinalConfigsMap = () => {
+const getFinalConfigsMapShow = () => {
   const finalConfigs = getFinalConfigs();
   if (uid.value !== "") {
     const map = new Map();
     map.set(uid.value, finalConfigs)
     return [...map]
+  }
+  return finalConfigs
+}
+const getFinalConfigsMap = () => {
+  const finalConfigs = getFinalConfigs();
+  if (uid.value !== "") {
+    const map = new Map();
+    map.set(uid.value, finalConfigs)
+    return map
   }
   return finalConfigs
 }
@@ -557,6 +599,7 @@ const copyToClipboard = (text) => {
         <!-- 添加配置按钮 -->
         <button @click="addConfig" class="btn btn-add">➕ 添加一条配置</button>
         <button @click="submitConfigToBackend" class="btn btn-submit">提交配置</button>
+        <button @click="findDomains" class="btn btn-submit">查询UID配置</button>
       </div>
       <div class="config-list">
         <div v-for="config in configs" :key="config.order" class="config-item">
@@ -646,8 +689,8 @@ const copyToClipboard = (text) => {
       </div>
       <div class="result-all">
         <label class="result-key">Json配置:</label>
-        <pre class="result">{{ getFinalConfigsMap() || '暂无返回数据' }}</pre>
-        <button @click="copyToClipboard(getFinalConfigsMap())" class="copy-btn">📋 复制</button>
+        <pre class="result">{{ getFinalConfigsMapShow() || '暂无返回数据' }}</pre>
+        <button @click="copyToClipboard(getFinalConfigsMapShow())" class="copy-btn">📋 复制</button>
       </div>
       <div class="result-all">
         <label class="result-key">语法key:</label>

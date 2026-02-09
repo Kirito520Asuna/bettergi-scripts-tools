@@ -1,19 +1,26 @@
 package com.cloud_guest.controller;
 
+import cn.hutool.extra.spring.SpringUtil;
+import cn.hutool.json.JSONArray;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.domain.AutoPlanDomainDto;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AutoPlanDomainService;
 import com.cloud_guest.view.BasicJsonView;
+import com.cloud_guest.vo.AutoPlanDomainVo;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotBlank;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,6 +32,7 @@ import static com.cloud_guest.result.Result.ok;
  * @Date 2026/2/8 15:49:23
  * @Description
  */
+@Slf4j
 @Tag(name = "自动秘境计划服务")
 @RestController
 @RequestMapping(value = {"/auto/plan/domain/", "/api/auto/plan/domain/", "/jwt/auto/plan/domain/"})
@@ -61,12 +69,12 @@ public class AutoPlanDomainController {
     }
 
 
-    @SysLog(result = false)
+    @SysLog
     @Operation(summary = "查询UID映射JSON")
     @GetMapping("json")
-    public Result<List<Map<String, Object>>> info(@RequestParam String uid) {
-        List<Map<String, Object>> list = autoPlanDomainService.find(uid);
-        return ok(list);
+    public Result<List<AutoPlanDomainVo>> info(@RequestParam String uid) {
+        List<AutoPlanDomainVo> autoPlanDomainVos = autoPlanDomainService.find(uid);
+        return ok(autoPlanDomainVos);
     }
 
     @SysLog

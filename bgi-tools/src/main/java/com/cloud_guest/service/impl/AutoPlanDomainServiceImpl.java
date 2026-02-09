@@ -1,18 +1,18 @@
 package com.cloud_guest.service.impl;
 
-import cn.hutool.json.JSONArray;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.service.AutoPlanDomainService;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.utils.object.ObjectUtils;
-import nonapi.io.github.classgraph.json.JSONUtils;
+import com.cloud_guest.vo.AutoPlanDomainVo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,7 +43,7 @@ public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
 
 
     @Override
-    public List<Map<String, Object>> find(String id) {
+    public List<AutoPlanDomainVo> find(String id) {
         id = key + id;
         List<Map<String, Object>> list = new ArrayList<>();
         Cache<String> cache = cacheService.find(id);
@@ -68,7 +68,11 @@ public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
                 list.add(bean);
             }
         }
-        return list;
+        ObjectMapper bean = SpringUtil.getBean(ObjectMapper.class);
+        List<AutoPlanDomainVo> collect = list.stream().map(map -> {
+            return bean.convertValue(map, AutoPlanDomainVo.class);
+        }).collect(Collectors.toList());
+        return collect;
     }
 
     @Override
