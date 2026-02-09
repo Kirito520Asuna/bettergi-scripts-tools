@@ -119,206 +119,174 @@
 </template>
 
 
-<script>
+<script setup>
 import {ref} from 'vue'
 import service from "@utils/request";
 import {ElMessage} from "element-plus";
 import router from "@router/router";
 
-export default {
-  name: 'CapabilitiesView',
-  setup() {
-    const currentRoute = router.currentRoute
-    const cronResult = ref('')
-    const ocrResult = ref('')
-    const cronExpression = ref('0 0 * * * ?')
-    // const timeRange = ref([])
-    // const defaultTime = new Date(2000, 1, 1, 12, 0, 0)
+const currentRoute = router.currentRoute
+const cronResult = ref('')
+const ocrResult = ref('')
+const cronExpression = ref('0 0 * * * ?')
+// const timeRange = ref([])
+// const defaultTime = new Date(2000, 1, 1, 12, 0, 0)
 
-    const startTime = ref(new Date(Date.now()))
-    const endTime = ref(new Date(Date.now() + 86400000))
+const startTime = ref(new Date(Date.now()))
+const endTime = ref(new Date(Date.now() + 86400000))
 
-    const cronList = ref([
-      {
-        key: 'task1',
-        startTime: ref(new Date(Date.now())),
-        endTime: ref(new Date(Date.now() + 86400000)),
-        cronExpression: '0 0 * * * ?',
-        startTimestamp: Date.now(),
-        endTimestamp: Date.now() + 86400000,
-      },
-    ]);
-    const cronListResult = ref('');
-
-    const cronListAddItem = () => {
-      cronList.value.push({
-        key: `task${cronList.value.length + 1}`,
-        startTime: ref(new Date(Date.now())),
-        endTime: ref(new Date(Date.now() + 86400000)),
-        cronExpression: '0 0 * * * ?',
-        startTimestamp: Date.now(),
-        endTimestamp: Date.now() + 86400000,
-      });
-    };
-
-    const cronListRemoveItem = (index) => {
-      cronList.value.splice(index, 1);
-    };
-
-    const cronListSubmit = async () => {
-      try {
-        const list = []
-        let cronListJson = cronList.value
-        console.log('cronListJson', JSON.stringify(cronListJson, null, 2))
-        cronListJson.forEach(item => {
-          item.startTimestamp = new Date(item.startTime).getTime()
-          item.endTimestamp = new Date(item.endTime).getTime()
-          list.push({
-            key: item.key,
-            cronExpression: item.cronExpression,
-            startTimestamp: item.startTimestamp,
-            endTimestamp: item.endTimestamp,
-          })
-        })
-        console.log('cronListJson', JSON.stringify(cronListJson, null, 2))
-        const response = await service.post('/cron/next-timestamp/all', {
-          cronList: list,
-        });
-        cronListResult.value = JSON.stringify(response.data, null, 2);
-      } catch (error) {
-        console.error('请求失败:', error);
-      }
-    };
-
-    // 获取单个 Cron 表达式的下一个时间戳
-    const getNextTimestamp = async () => {
-      try {
-        // console.log('cronExpression.value', cronExpression.value)
-        // console.log('startTimestamp.value', startTimestamp.value)
-        // console.log('endTimestamp.value', endTimestamp.value)
-        // // 确保值是数字类型
-        // const start = Number(startTimestamp.value);
-        // const end = Number(endTimestamp.value);
-        //
-        // if (isNaN(start) || isNaN(end)) {
-        //   console.error('时间戳值无效，请检查输入');
-        //   return;
-        // }
-        const startTimestamp = new Date(startTime.value).getTime()
-        const endTimestamp = new Date(endTime.value).getTime()
-        // console.log('startTimestamp', startTimestamp)
-        // console.log('endTimestamp', endTimestamp)
-        // const [start, end] = timeRange.value || [new Date(), new Date(Date.now() + 86400000)]
-        const response = await service.post("/cron/next-timestamp", {
-          cronExpression: cronExpression.value,
-          startTimestamp: startTimestamp,
-          endTimestamp: endTimestamp,
-        })
-        cronResult.value = JSON.stringify(response.data, null, 2)
-      } catch (error) {
-        console.error('Error fetching next timestamp:', error)
-      }
-    }
-    const fileInput = ref(null);
-    const file = ref(null);
-    const fileName = ref('');
-
-    const triggerFileInput = () => {
-      if (fileInput.value) {
-        fileInput.value.click(); // 触发 input 点击
-      } else {
-        console.error('fileInput is not available');
-      }
-    };
-    // 处理文件上传
-    const handleFileUpload = (event) => {
-      const selectedFile = event.target.files[0];
-      if (selectedFile) {
-        file.value = selectedFile;
-        fileName.value = selectedFile.name;
-      }
-    };
-
-    const handleDrop = (event) => {
-      const droppedFile = event.dataTransfer.files[0];
-      if (droppedFile) {
-        file.value = droppedFile;
-        fileName.value = droppedFile.name;
-      }
-    };
-
-    // 执行 OCR 识别
-    const performOcr = async () => {
-      if (!file.value) {
-        alert('请先选择一个文件')
-        return
-      }
-
-      try {
-        const reader = new FileReader()
-        reader.onload = async (e) => {
-          const arrayBuffer = e.target.result
-          const bytes = Array.from(new Uint8Array(arrayBuffer))
-
-          const response = await service.post('/ocr/bytes', {
-            bytes: bytes,
-          })
-
-          ocrResult.value = JSON.stringify(response.data, null, 2)
-        }
-
-        reader.readAsArrayBuffer(file.value)
-      } catch (error) {
-        console.error('Error performing OCR:', error)
-      }
-    }
-
-    const copyToClipboard = (text) => {
-
-      try {
-        navigator.clipboard.writeText(text || '');
-        /*alert('已复制到剪贴板！');*/
-        ElMessage({
-          type: 'success',
-          message: `已复制到剪贴板！`,
-        })
-      } catch (err) {
-        console.error('复制失败:', err);
-        ElMessage({
-          type: 'error',
-          message: `复制失败，请手动复制内容。`,
-        });
-      }
-    };
-
-    return {
-      currentRoute,
-      copyToClipboard,
-      cronResult,
-      ocrResult,
-      cronExpression,
-      // timeRange,
-      // startTimestamp,
-      startTime,
-      // endTimestamp,
-      endTime,
-      // shortcuts,
-      getNextTimestamp,
-      cronList,
-      cronListResult,
-      cronListAddItem,
-      cronListRemoveItem,
-      cronListSubmit,
-      file,
-      fileName,
-      fileInput,
-      triggerFileInput,
-      handleDrop,
-      handleFileUpload,
-      performOcr,
-    }
+const cronList = ref([
+  {
+    key: 'task1',
+    startTime: ref(new Date(Date.now())),
+    endTime: ref(new Date(Date.now() + 86400000)),
+    cronExpression: '0 0 * * * ?',
+    startTimestamp: Date.now(),
+    endTimestamp: Date.now() + 86400000,
   },
+]);
+const cronListResult = ref('');
+
+const cronListAddItem = () => {
+  cronList.value.push({
+    key: `task${cronList.value.length + 1}`,
+    startTime: ref(new Date(Date.now())),
+    endTime: ref(new Date(Date.now() + 86400000)),
+    cronExpression: '0 0 * * * ?',
+    startTimestamp: Date.now(),
+    endTimestamp: Date.now() + 86400000,
+  });
+};
+
+const cronListRemoveItem = (index) => {
+  cronList.value.splice(index, 1);
+};
+
+const cronListSubmit = async () => {
+  try {
+    const list = []
+    let cronListJson = cronList.value
+    console.log('cronListJson', JSON.stringify(cronListJson, null, 2))
+    cronListJson.forEach(item => {
+      item.startTimestamp = new Date(item.startTime).getTime()
+      item.endTimestamp = new Date(item.endTime).getTime()
+      list.push({
+        key: item.key,
+        cronExpression: item.cronExpression,
+        startTimestamp: item.startTimestamp,
+        endTimestamp: item.endTimestamp,
+      })
+    })
+    console.log('cronListJson', JSON.stringify(cronListJson, null, 2))
+    const response = await service.post('/cron/next-timestamp/all', {
+      cronList: list,
+    });
+    cronListResult.value = JSON.stringify(response.data, null, 2);
+  } catch (error) {
+    console.error('请求失败:', error);
+  }
+};
+
+// 获取单个 Cron 表达式的下一个时间戳
+const getNextTimestamp = async () => {
+  try {
+    // console.log('cronExpression.value', cronExpression.value)
+    // console.log('startTimestamp.value', startTimestamp.value)
+    // console.log('endTimestamp.value', endTimestamp.value)
+    // // 确保值是数字类型
+    // const start = Number(startTimestamp.value);
+    // const end = Number(endTimestamp.value);
+    //
+    // if (isNaN(start) || isNaN(end)) {
+    //   console.error('时间戳值无效，请检查输入');
+    //   return;
+    // }
+    const startTimestamp = new Date(startTime.value).getTime()
+    const endTimestamp = new Date(endTime.value).getTime()
+    // console.log('startTimestamp', startTimestamp)
+    // console.log('endTimestamp', endTimestamp)
+    // const [start, end] = timeRange.value || [new Date(), new Date(Date.now() + 86400000)]
+    const response = await service.post("/cron/next-timestamp", {
+      cronExpression: cronExpression.value,
+      startTimestamp: startTimestamp,
+      endTimestamp: endTimestamp,
+    })
+    cronResult.value = JSON.stringify(response.data, null, 2)
+  } catch (error) {
+    console.error('Error fetching next timestamp:', error)
+  }
 }
+const fileInput = ref(null);
+const file = ref(null);
+const fileName = ref('');
+
+const triggerFileInput = () => {
+  if (fileInput.value) {
+    fileInput.value.click(); // 触发 input 点击
+  } else {
+    console.error('fileInput is not available');
+  }
+};
+// 处理文件上传
+const handleFileUpload = (event) => {
+  const selectedFile = event.target.files[0];
+  if (selectedFile) {
+    file.value = selectedFile;
+    fileName.value = selectedFile.name;
+  }
+};
+
+const handleDrop = (event) => {
+  const droppedFile = event.dataTransfer.files[0];
+  if (droppedFile) {
+    file.value = droppedFile;
+    fileName.value = droppedFile.name;
+  }
+};
+
+// 执行 OCR 识别
+const performOcr = async () => {
+  if (!file.value) {
+    alert('请先选择一个文件')
+    return
+  }
+
+  try {
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const arrayBuffer = e.target.result
+      const bytes = Array.from(new Uint8Array(arrayBuffer))
+
+      const response = await service.post('/ocr/bytes', {
+        bytes: bytes,
+      })
+
+      ocrResult.value = JSON.stringify(response.data, null, 2)
+    }
+
+    reader.readAsArrayBuffer(file.value)
+  } catch (error) {
+    console.error('Error performing OCR:', error)
+  }
+}
+
+const copyToClipboard = (text) => {
+
+  try {
+    navigator.clipboard.writeText(text || '');
+    /*alert('已复制到剪贴板！');*/
+    ElMessage({
+      type: 'success',
+      message: `已复制到剪贴板！`,
+    })
+  } catch (err) {
+    console.error('复制失败:', err);
+    ElMessage({
+      type: 'error',
+      message: `复制失败，请手动复制内容。`,
+    });
+  }
+};
 </script>
 
 

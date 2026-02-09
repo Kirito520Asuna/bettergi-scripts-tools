@@ -41,7 +41,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import {ref, onMounted} from "vue";
 import router from "@router/router";
 
@@ -54,153 +54,136 @@ iconAsMap.set('Markdown',
 );
 
 const currentRoute = ref(router.currentRoute)
-export default {
-  name: 'HomeView',
-  setup() {
-    // 统一管理所有功能项
-    const featureGroup = ref([]);
-    const list = [
-      // {isLink: true, name: 'API 调试链接', value: 'API 调试链接'},
-      {isSwagger: true, name: 'Swagger 文档入口', value: 'doc.html'},
-      // {isRote: true, name: '路由管理面板', value: '路由管理面板'},
-    ]
-    let index = 1
-    let initJson = {
-      title: '功能列表',
-      children: []
-    }
-    list.forEach(item => {
-      initJson.children.push({
-        id: index,
-        position: index % 2 === 1 ? "left" : "right",
-        isRote: item.isRote,
-        isLink: item.isLink,
-        isSwagger: item.isSwagger,
-        icon: undefined,
-        name: item.name,
-        value: item.value
-      });
-      index++
-    })
-    featureGroup.value.push(initJson);
-    onMounted(() => {
-      let index = 1
-      let routerJson = {
-        title: '基础路由功能列表',
-        children: []
-      }
-
-      router.getRoutes().filter(route => route.name !== 'home' && route?.meta?.isRoot).forEach(route => {
-        routerJson.children.push({
-          id: index,
-          position: index % 2 === 1 ? "left" : "right",
-          isRote: true,
-          icon: route?.meta?.icon,
-          name: route?.meta?.title,
-          value: route.path
-        });
-        index++
-      });
-      // console.log('getRoutes', router.getRoutes().filter(route => route.name !== 'home'))
-      // console.log('routerJson', routerJson)
-      featureGroup.value.push(routerJson);
-
-      const homeRoute = router.getRoutes().find(route => route.name === 'home')
-      index = 1
-      let homeJson = {
-        title: homeRoute?.meta?.asSubParentTitle,
-        children: []
-      }
-
-      homeRoute.children.forEach(route => {
-        routerJson.children.push({
-          id: index,
-          position: index % 2 === 1 ? "left" : "right",
-          isRote: true,
-          icon: route?.meta?.icon,
-          name: route?.meta?.title,
-          value: route.path
-        });
-        index++
-      });
-      featureGroup.value.push(homeJson);
-
-    });
-
-    // 获取图标
-    const getIcon = (item) => {
-      // 优先使用 meta.icon，没有则根据类型给默认 emoji
-      let rawIcon = item?.icon;
-      if (rawIcon) {
-        // 字符串处理
-        if (typeof rawIcon === "string") {
-          const trimmed = rawIcon.trim();
-
-          // 如果是 SVG 字符串
-          if (trimmed.trim().startsWith('<svg')) {
-            return trimmed.trim() // 直接返回字符串
-          }
-          // 优先级 2：从 iconMap 中根据别名查找（新加的部分）
-          const alias = item?.icon; // 假设别名放在 meta.iconAlias，或用 key/name
-          if (alias && iconAsMap.has(trimmed)) {
-            const svgOrEmoji = iconAsMap.get(trimmed);
-
-            // 如果是 SVG 字符串
-            if (typeof svgOrEmoji === "string" && svgOrEmoji.trim().startsWith("<svg")) {
-              return svgOrEmoji.trim() // 直接返回字符串
-            }
-            // 如果是 emoji 或其他字符串
-            return svgOrEmoji;
-          }
-        }
-        return rawIcon;
-      }
-      rawIcon = item.isLink ? "🔗" : item.isSwagger ? "📖" : item.isRote ? "🛤️" : "";
-      // 其他情况兜底（比如传了奇怪的东西）
-      return rawIcon;
-    };
-    // 获取样式类
-    const getItemClass = (item) => {
-      return {
-        "link-item": item.isLink,
-        "swagger-item": item.isSwagger,
-        "routes-item": item.isRote,
-      };
-    };
-    // 根据 position 分组
-    const getItemsByPosition = (featureGroup, position) => {
-      return featureGroup.filter((item) => item.position === position);
-    };
-
-    // 点击跳转
-    const togo = async (item) => {
-      if (item?.isRote) {
-        try {
-          await router.push(item.value);
-        } catch (error) {
-          console.error('路由跳转失败:', error);
-        }
-      } else if (item?.isSwagger) {
-        const basePath = import.meta.env.VITE_BASE_PATH || '/bgi/';
-        window.open(`${basePath}${item.value}`, '_blank');
-      } else if (item?.isLink) {
-        window.open(item.value, '_blank');
-      }
-    };
-
-    return {
-      currentRoute,
-      featureGroup,
-      togo,
-      getIcon,
-      getItemClass,
-      getItemsByPosition
-      // goFeature1,
-      // goFeature2
-    };
+// 统一管理所有功能项
+const featureGroup = ref([]);
+const list = [
+  // {isLink: true, name: 'API 调试链接', value: 'API 调试链接'},
+  {isSwagger: true, name: 'Swagger 文档入口', value: 'doc.html'},
+  // {isRote: true, name: '路由管理面板', value: '路由管理面板'},
+]
+let index = 1
+let initJson = {
+  title: '功能列表',
+  children: []
+}
+list.forEach(item => {
+  initJson.children.push({
+    id: index,
+    position: index % 2 === 1 ? "left" : "right",
+    isRote: item.isRote,
+    isLink: item.isLink,
+    isSwagger: item.isSwagger,
+    icon: undefined,
+    name: item.name,
+    value: item.value
+  });
+  index++
+})
+featureGroup.value.push(initJson);
+onMounted(() => {
+  let index = 1
+  let routerJson = {
+    title: '基础路由功能列表',
+    children: []
   }
+
+  router.getRoutes().filter(route => route.name !== 'home' && route?.meta?.isRoot).forEach(route => {
+    routerJson.children.push({
+      id: index,
+      position: index % 2 === 1 ? "left" : "right",
+      isRote: true,
+      icon: route?.meta?.icon,
+      name: route?.meta?.title,
+      value: route.path
+    });
+    index++
+  });
+  // console.log('getRoutes', router.getRoutes().filter(route => route.name !== 'home'))
+  // console.log('routerJson', routerJson)
+  featureGroup.value.push(routerJson);
+
+  const homeRoute = router.getRoutes().find(route => route.name === 'home')
+  index = 1
+  let homeJson = {
+    title: homeRoute?.meta?.asSubParentTitle,
+    children: []
+  }
+
+  homeRoute.children.forEach(route => {
+    routerJson.children.push({
+      id: index,
+      position: index % 2 === 1 ? "left" : "right",
+      isRote: true,
+      icon: route?.meta?.icon,
+      name: route?.meta?.title,
+      value: route.path
+    });
+    index++
+  });
+  featureGroup.value.push(homeJson);
+
+});
+
+// 获取图标
+const getIcon = (item) => {
+  // 优先使用 meta.icon，没有则根据类型给默认 emoji
+  let rawIcon = item?.icon;
+  if (rawIcon) {
+    // 字符串处理
+    if (typeof rawIcon === "string") {
+      const trimmed = rawIcon.trim();
+
+      // 如果是 SVG 字符串
+      if (trimmed.trim().startsWith('<svg')) {
+        return trimmed.trim() // 直接返回字符串
+      }
+      // 优先级 2：从 iconMap 中根据别名查找（新加的部分）
+      const alias = item?.icon; // 假设别名放在 meta.iconAlias，或用 key/name
+      if (alias && iconAsMap.has(trimmed)) {
+        const svgOrEmoji = iconAsMap.get(trimmed);
+
+        // 如果是 SVG 字符串
+        if (typeof svgOrEmoji === "string" && svgOrEmoji.trim().startsWith("<svg")) {
+          return svgOrEmoji.trim() // 直接返回字符串
+        }
+        // 如果是 emoji 或其他字符串
+        return svgOrEmoji;
+      }
+    }
+    return rawIcon;
+  }
+  rawIcon = item.isLink ? "🔗" : item.isSwagger ? "📖" : item.isRote ? "🛤️" : "";
+  // 其他情况兜底（比如传了奇怪的东西）
+  return rawIcon;
+};
+// 获取样式类
+const getItemClass = (item) => {
+  return {
+    "link-item": item.isLink,
+    "swagger-item": item.isSwagger,
+    "routes-item": item.isRote,
+  };
+};
+// 根据 position 分组
+const getItemsByPosition = (featureGroup, position) => {
+  return featureGroup.filter((item) => item.position === position);
 };
 
+// 点击跳转
+const togo = async (item) => {
+  if (item?.isRote) {
+    try {
+      await router.push(item.value);
+    } catch (error) {
+      console.error('路由跳转失败:', error);
+    }
+  } else if (item?.isSwagger) {
+    const basePath = import.meta.env.VITE_BASE_PATH || '/bgi/';
+    window.open(`${basePath}${item.value}`, '_blank');
+  } else if (item?.isLink) {
+    window.open(item.value, '_blank');
+  }
+};
 </script>
 <style scoped>
 
