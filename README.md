@@ -228,6 +228,65 @@ Content-Type: application/json
 "bytes": []
 }
 ```
+### 4.自动秘境计划配置
+UID查询(bgi_tools拉取配置api)
+```http request
+###
+GET http://localhost:8081/bgi/auto/plan/domain/json?
+    uid={{$random.alphanumeric(8)}}
+
+###
+GET http://localhost:8081/bgi/api/auto/plan/domain/json?
+    uid={{$random.alphanumeric(8)}}
+
+###
+GET http://localhost:8081/bgi/jwt/auto/plan/domain/json?
+    uid={{$random.alphanumeric(8)}}
+
+```
+查询全部秘境信息
+```http request
+###
+GET http://localhost:8081/bgi/auto/plan/domain/json/all
+
+###
+GET http://localhost:8081/bgi/api/auto/plan/domain/json/all
+
+###
+GET http://localhost:8081/bgi/jwt/auto/plan/domain/json/all
+```
+存储全部秘境信息(bgi_tools推送全部配置api)
+```http request
+###
+POST http://localhost:8081/bgi/auto/plan/domain/json/all
+Content-Type: application/json
+
+{
+  "uid": "",
+  "json": ""
+}
+
+
+###
+POST http://localhost:8081/bgi/api/auto/plan/domain/json/all
+Content-Type: application/json
+
+{
+  "uid": "",
+  "json": ""
+}
+
+###
+POST http://localhost:8081/bgi/jwt/auto/plan/domain/json/all
+Content-Type: application/json
+
+{
+  "uid": "",
+  "json": ""
+}
+```
+
+# 演示
 ### bgi 第三方OCR识别实例
 ```js
 (async function () {
