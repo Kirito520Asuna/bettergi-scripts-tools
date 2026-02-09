@@ -124,6 +124,7 @@ import {ref} from 'vue'
 import service from "@utils/request";
 import {ElMessage} from "element-plus";
 import router from "@router/router";
+import {getNextTimestampAll} from "@api/cron/cron.js";
 
 const currentRoute = router.currentRoute
 const cronResult = ref('')
@@ -178,10 +179,8 @@ const cronListSubmit = async () => {
       })
     })
     console.log('cronListJson', JSON.stringify(cronListJson, null, 2))
-    const response = await service.post('/cron/next-timestamp/all', {
-      cronList: list,
-    });
-    cronListResult.value = JSON.stringify(response.data, null, 2);
+    const response =  await getNextTimestampAll(list)
+    cronListResult.value = JSON.stringify(response, null, 2);
   } catch (error) {
     console.error('请求失败:', error);
   }
@@ -190,28 +189,10 @@ const cronListSubmit = async () => {
 // 获取单个 Cron 表达式的下一个时间戳
 const getNextTimestamp = async () => {
   try {
-    // console.log('cronExpression.value', cronExpression.value)
-    // console.log('startTimestamp.value', startTimestamp.value)
-    // console.log('endTimestamp.value', endTimestamp.value)
-    // // 确保值是数字类型
-    // const start = Number(startTimestamp.value);
-    // const end = Number(endTimestamp.value);
-    //
-    // if (isNaN(start) || isNaN(end)) {
-    //   console.error('时间戳值无效，请检查输入');
-    //   return;
-    // }
     const startTimestamp = new Date(startTime.value).getTime()
     const endTimestamp = new Date(endTime.value).getTime()
-    // console.log('startTimestamp', startTimestamp)
-    // console.log('endTimestamp', endTimestamp)
-    // const [start, end] = timeRange.value || [new Date(), new Date(Date.now() + 86400000)]
-    const response = await service.post("/cron/next-timestamp", {
-      cronExpression: cronExpression.value,
-      startTimestamp: startTimestamp,
-      endTimestamp: endTimestamp,
-    })
-    cronResult.value = JSON.stringify(response.data, null, 2)
+    const response =  await getNextTimestamp(cronExpression.value, startTimestamp, endTimestamp)
+    cronResult.value = JSON.stringify(response, null, 2)
   } catch (error) {
     console.error('Error fetching next timestamp:', error)
   }
