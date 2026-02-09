@@ -107,18 +107,20 @@ onMounted(() => {
 .container {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: #333;
+  background: url("@assets/MHY_XTLL.png") no-repeat center center fixed;
+  background-size: cover;
 }
 
 .layout {
   display: flex;
   height: 100vh;
-  background: #f8f9fa;
+  /* background: #f8f9fa;*/
 }
 
 /* ==================== 左侧 Sidebar ==================== */
 .sidebar {
   width: 260px;
-  background: #ffffff;
+  /*background: #ffffff;*/
   border-right: 1px solid #e0e0e0;
   padding: 24px 16px;
   overflow-y: auto;
@@ -134,7 +136,7 @@ onMounted(() => {
   font-size: 15px;
   font-weight: 600;
   color: #04b8d8;
- /* background: #f1f3f5;*/
+  /* background: #f1f3f5;*/
   background: linear-gradient(135deg, #b6b2b6, #cf6137);
   border-radius: 8px;
   cursor: pointer;
@@ -144,7 +146,7 @@ onMounted(() => {
 }
 
 .type-header:hover {
-/*  background: #e3e7eb;*/
+  /*  background: #e3e7eb;*/
   background: linear-gradient(135deg, #b6b2b6, #ff4400);
   transform: translateX(4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -157,44 +159,45 @@ onMounted(() => {
 /* ==================== 右侧主内容 ==================== */
 .main-content {
   flex: 1;
-  padding: 24px 40px;          /* 更小的内边距 */          /* 整体内边距略微缩小（原 40/50） */
+  padding: 24px 40px; /* 更小的内边距 */ /* 整体内边距略微缩小（原 40/50） */
   overflow-y: auto;
-  background: #ffffff;
+/*  background: #ffffff;*/
 }
 
 .main-content h1 {
-  font-size: 26px;             /* 稍小一点，更现代 */
+  font-size: 26px; /* 稍小一点，更现代 */
   font-weight: 700;
-  color: #1e2937;
-  margin-bottom: 4px;          /* h1 到 h2 间距大幅缩小 */
+  color: #4195ff;
+  margin-bottom: 4px; /* h1 到 h2 间距大幅缩小 */
   letter-spacing: -0.4px;
 }
 
 .main-content h2 {
-  font-size: 16px;             /* 更低调 */
+  font-size: 16px; /* 更低调 */
   color: #e6a327;
   font-weight: 500;
-  margin-bottom: 20px;         /* h2 到树列表的间距缩小（原 32px） */
+  margin-bottom: 20px; /* h2 到树列表的间距缩小（原 32px） */
   margin-top: 0;
 }
 
 /* 空状态提示也跟着上移一点，显得不那么空 */
 .main-content > div:last-child {
-  margin-top: 80px;            /* 原 120px → 80px，更紧凑 */
+  margin-top: 80px; /* 原 120px → 80px，更紧凑 */
   text-align: center;
   color: #94a3b8;
   font-size: 16px;
 }
+
 /* ==================== 树形结构 ==================== */
 /* 当有内容时，让树视图更靠近上方 */
 .tree-view {
   max-width: 920px;
-  margin-top: 0;               /* 去掉可能的额外上边距 */
+  margin-top: 0; /* 去掉可能的额外上边距 */
 }
 
 .tree-node {
   margin-bottom: 16px;
-/*  background: #d8cbcb;*/
+  /*  background: #d8cbcb;*/
   background: linear-gradient(135deg, #b6b2b6, #91dcd6);
   border-radius: 12px;
   overflow: hidden;
@@ -212,7 +215,7 @@ onMounted(() => {
   font-size: 17px;
   font-weight: 600;
   color: #615959;
- /* background: #f8fafc;*/
+  /* background: #f8fafc;*/
   background: linear-gradient(135deg, #b6b2b6, #91dcd6);
 
   cursor: pointer;
@@ -278,7 +281,12 @@ onMounted(() => {
 
 /* ==================== 响应式小优化 ==================== */
 @media (max-width: 768px) {
-  .sidebar { width: 220px; }
-  .main-content { padding: 24px; }
+  .sidebar {
+    width: 220px;
+  }
+
+  .main-content {
+    padding: 24px;
+  }
 }
 </style>
