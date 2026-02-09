@@ -3,6 +3,7 @@ import {ref, computed, watch, watchEffect, onMounted} from 'vue'
 import {ElMessage} from "element-plus";
 import {isNumber} from "element-plus/es/utils/index";
 import service from "@utils/request.js";
+import {getUidJson, postUidJson} from "@api/domain/autoPlan.js";
 // 配置列表 → 核心数据结构改为 array
 const configs = ref([])
 const isLoading = ref(false);
@@ -367,15 +368,7 @@ const submitConfigToBackend = async () => {
 
   const jsonData = getFinalConfigsMap(); // 获取 JSON 配置
   const json= jsonData?.get(uid.value)||jsonData
-  const payload = {
-    uid: uid.value,
-    json: JSON.stringify(json),
-  };
-  try {
-    const response = await service.post("/auto/plan/domain/json", payload);
-    const result = JSON.stringify(response.data, null, 2)
-  } catch (error) {
-  }
+  await postUidJson(uid.value,JSON.stringify(json))
 };
 const findDomains = async () => {
   if (!uid.value) {
@@ -384,13 +377,7 @@ const findDomains = async () => {
   }
 
   try {
-    const response = await service.get('/auto/plan/domain/json', {params: {uid: uid.value}})
-        .then(res => {
-          console.log('res', res)
-          console.log('res.data', JSON.stringify(res?.data))
-          console.log('res.data type', res?.data?.type)
-         return  res?.data?.get(uid.value)
-        });
+    const response = await getUidJson(uid.value)
     configs.value = response;
   } catch (error) {
     console.error('请求失败:', error);
