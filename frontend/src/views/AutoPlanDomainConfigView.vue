@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, watch, watchEffect, onMounted} from 'vue'
 import {ElMessage} from "element-plus";
-import {getBaseJsonAll, getUidJson, postUidJson} from "@api/domain/autoPlan.js";
+import {getBaseJsonAll, getUidJson, postUidJson,removeUidList} from "@api/domain/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
 import {domainsDefault} from "@utils/defaultdata.js";
 // 配置列表 → 核心数据结构改为 array
@@ -36,6 +36,18 @@ const fetchDomains = async () => {
     isLoading.value = false;
   }
 };
+const removeConfigToBackend = async () => {
+  if (!uid.value) {
+    ElMessage.warning("请先设置 UID");
+    return;
+  }
+
+  let ids = []
+  ids.push(uid.value)
+  const uidStr = ids.join(',');
+  await removeUidList(uidStr)
+  return
+}
 const submitConfigToBackend = async () => {
   if (!uid.value) {
     ElMessage.warning("请先设置 UID");
@@ -293,7 +305,8 @@ const copyToClipboard = (text) => {
                     <el-checkbox
                         :label="idx"
                         v-model="config.days"
-                    >{{ dayName }}</el-checkbox>
+                    >{{ dayName }}
+                    </el-checkbox>
                   </label>
                 </div>
                 <div class="actions">
@@ -568,6 +581,7 @@ h2 {
   font-size: 1rem;
   transition: border-color 0.3s ease;
 }
+
 .days-display {
   padding: 8px 12px;
   border: 1px solid #dcdfe6;
@@ -617,6 +631,7 @@ h2 {
 .rotate {
   transform: rotate(180deg);
 }
+
 .form-group input {
   align-items: center;
   width: 40%;

@@ -27,6 +27,17 @@ async function getUidJson(uid){
     // 返回响应数据
     return response.data;
 }
+
+/**
+ * 异步删除指定UID的JSON数据
+ * @param uidStr
+ * @returns {Promise<any>}
+ */
+async function removeUidList(uidStr){
+    const response = await service.delete('/auto/plan/domain/json',{params: {uidStr: uidStr}});
+    return response.data;
+}
+
 /**
  * 异步获取所有JSON数据
  * @returns {Promise<Object>} 获取所有JSON数据
@@ -35,8 +46,10 @@ async function getBaseJsonAll(){
     const response = await service.get('/auto/plan/domain/json/all');
     return response.data;
 }
+
 export {
     postUidJson,
     getUidJson,
-    getBaseJsonAll
+    removeUidList,
+    getBaseJsonAll,
 }
