@@ -1,9 +1,7 @@
 <script setup>
 import {ref, computed, watch, watchEffect, onMounted} from 'vue'
 import {ElMessage} from "element-plus";
-import {isNumber} from "element-plus/es/utils/index";
-import service from "@utils/request.js";
-import {getUidJson, postUidJson} from "@api/domain/autoPlan.js";
+import {getBaseJsonAll, getUidJson, postUidJson} from "@api/domain/autoPlan.js";
 // 配置列表 → 核心数据结构改为 array
 const configs = ref([])
 const isLoading = ref(false);
@@ -338,10 +336,11 @@ const domains = ref([])
 const fetchDomains = async () => {
   isLoading.value = true;
   try {
-    const response = await service.get('/auto/plan/domain/json/all');
+    // const response = await service.get('/auto/plan/domain/json/all');
+    const response = await getBaseJsonAll()
     console.log('response', response)
-    if (response.data&&response.data.length>0) {
-      domains.value = response.data;
+    if (response&&response.length>0) {
+      domains.value = response;
     }else {
       domains.value = defaultDomains;
       ElMessage({

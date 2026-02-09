@@ -27,8 +27,16 @@ async function getUidJson(uid){
     // 返回响应数据
     return response.data;
 }
-
+/**
+ * 异步获取所有JSON数据
+ * @returns {Promise<Object>} 获取所有JSON数据
+ */
+async function getBaseJsonAll(){
+    const response = await service.get('/auto/plan/domain/json/all');
+    return response.data;
+}
 export {
     postUidJson,
-    getUidJson
+    getUidJson,
+    getBaseJsonAll
 }
