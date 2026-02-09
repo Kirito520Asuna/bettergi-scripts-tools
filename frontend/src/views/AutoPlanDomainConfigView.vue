@@ -16,9 +16,9 @@ const fetchDomains = async () => {
     // const response = await service.get('/auto/plan/domain/json/all');
     const response = await getBaseJsonAll()
     console.log('response', response)
-    if (response&&response.length>0) {
+    if (response && response.length > 0) {
       domains.value = response;
-    }else {
+    } else {
       domains.value = defaultDomains;
       ElMessage({
         type: 'warning',
@@ -41,10 +41,10 @@ const submitConfigToBackend = async () => {
     ElMessage.warning("请先设置 UID");
     return;
   }
-/*  const jsonData = getFinalConfigsMap(); // 获取 JSON 配置
-  const json= jsonData?.get(uid.value)||jsonData*/
-  const json= getFinalConfigs()
-  await postUidJson(uid.value,JSON.stringify(json))
+  /*  const jsonData = getFinalConfigsMap(); // 获取 JSON 配置
+    const json= jsonData?.get(uid.value)||jsonData*/
+  const json = getFinalConfigs()
+  await postUidJson(uid.value, JSON.stringify(json))
 };
 const findDomains = async () => {
   if (!uid.value) {
@@ -90,12 +90,19 @@ const addConfig = () => {
     }
   })
 }
-
+const removeConfigAll = () => {
+  configs.value = []
+}
 // 删除某一条
-const removeConfig = (order) => {
-  configs.value = configs.value.filter(c => c.order !== order)
+const removeConfig = (index) => {
+  configs.value = configs.value.filter(c => c !== configs.value[index])
   // 可选：重新排序 order（如果前端需要显示连续的序号）
   // configs.value.forEach((c, i) => { c.order = i + 1 })
+}
+const removeConfigMo = (indexList) => {
+  for (let index of indexList) {
+    removeConfig(index)
+  }
 }
 const filteredDomainsType = ((selectedType) => {
   if (!selectedType) return [];
@@ -231,109 +238,115 @@ const copyToClipboard = (text) => {
 <template>
   <div class="home">
     <div class="container">
-      <h2 class="title">自动秘境计划配置列表</h2>
-      <div class="config-header">
-        <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
-        <!-- 添加配置按钮 -->
-        <button @click="addConfig" class="btn btn-add">➕ 添加一条配置</button>
-        <button @click="submitConfigToBackend" class="btn btn-submit">提交配置</button>
-        <button @click="findDomains" class="btn btn-submit">查询UID配置</button>
-      </div>
-      <div class="config-list">
-        <div v-for="config in configs" :key="config.order" class="config-item">
-          <h3>#{{ config.order }} 配置</h3>
-          <!-- 删除按钮 -->
-          <button @click="removeConfig(config.order)" class="btn danger">🗑️ 删除</button>
-          <div class="form-group">
-            <label>执行顺序：</label>
-            <input class="limited-input" v-model.number="config.order" type="number" min="1" max="99999999"
-                   placeholder="建议 1~10"/>
-          </div>
-          <div class="form-group">
-            <label>执行日：</label>
-            <select v-model="config.day">
-              <option value="">请选择执行日(默认每天执行)</option>
-              <option
-                  v-for="(d, index) in weekDays"
-                  :key="d"
-                  :value="index"
-              >
-                {{ d }}
-              </option>
-            </select>
-          </div>
-          <!-- 秘境选择 -->
-          <!-- 新增 type 选择器 -->
-          <div class="form-group">
-            <label>秘境类型：</label>
-            <select v-model="config.selectedType">
-              <option value="">请选择类型</option>
-              <option value="天赋">天赋</option>
-              <option value="武器">武器</option>
-              <option value="圣遗物">圣遗物</option>
-            </select>
-          </div>
-          <!-- 秘境选择（根据 selectedType 过滤） -->
-          <div class="form-group">
-            <label>秘境：</label>
-            <select v-model="config.autoFight.domainName">
-              <option value="">请选择秘境</option>
-              <option
-                  v-for="d in filteredDomainsType(config.selectedType)"
-                  :key="d.name"
-                  :value="d.name"
-              >
-                {{ d.name }}
-              </option>
-            </select>
-          </div>
-          <!-- 物品名称选择（根据 domainName 过滤） -->
-          <div v-if="domainMap.get(config.autoFight.domainName)?.hasOrder" class="form-group">
-            <label>周日/限时材料：</label>
-            <select
-                v-model="config.autoFight.sundaySelectedValue">
-              <option
-                  v-for="(item,index) in domainMap.get(config.autoFight.domainName)?.list || []"
-                  :key="item"
-                  :value="index + 1"
-              >
-                {{ item }}
-              </option>
-            </select>
-          </div>
-          <div
-              v-if="(!domainMap.get(config.autoFight.domainName)?.hasOrder)&&(domainMap.get(config.autoFight.domainName)?.list?.length>0)"
-              class="form-group">
-            <label>秘境圣遗物：</label>
-            <ul>
-              <li v-for="item in domainMap.get(config.autoFight.domainName)?.list" :key="item">
-                {{ item }}
-              </li>
-            </ul>
-          </div>
-          <div class="form-group">
-            <label>队伍名称（可选）：</label>
-            <input class="limited-input" v-model="config.autoFight.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
-
-          </div>
-          <div class="form-group">
-            <label>副本轮数：</label>
-            <input class="limited-input" v-model.number="config.autoFight.DomainRoundNum" type="number" min="1" max="99"
-                   placeholder="建议 1~10"/>
-          </div>
-
-          <!--          <hr/>-->
+      <div class="fixed-container">
+        <h2 class="title">自动秘境计划配置列表</h2>
+        <div class="config-header">
+          <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
+          <!-- 添加配置按钮 -->
+          <button @click="addConfig" class="btn btn-add">➕ 添加一条配置</button>
+          <button @click="submitConfigToBackend" class="btn btn-submit">提交配置</button>
+          <button @click="findDomains" class="btn btn-submit">查询UID配置</button>
+          <button @click="removeConfigAll" class="btn danger">🗑️ 清除全部</button>
         </div>
       </div>
-      <div class="result-all">
-        <label class="result-key">Json配置:</label>
-        <pre class="result">{{ getFinalConfigsMapShow() || '暂无返回数据' }}</pre>
-        <button @click="copyToClipboard(getFinalConfigsMapShow())" class="copy-btn">📋 复制</button>
-      </div>
-      <div class="result-all">
-        <label class="result-key">语法key:</label>
-        <pre class="result">{{ getFinalConfigsToKey() || '暂无返回数据' }}</pre>
-        <button @click="copyToClipboard(getFinalConfigsToKey())" class="copy-btn">📋 复制</button>
+      <div class="content-area">
+        <div class="config-list">
+          <div v-for="(config,index) in configs" :key="config.order" class="config-item">
+            <h3>#{{ index }} 配置</h3>
+            <!-- 删除按钮 -->
+            <button @click="removeConfig(index)" class="btn danger">🗑️ 删除</button>
+            <div class="form-group">
+              <label>执行顺序：</label>
+              <input class="limited-input" v-model.number="config.order" type="number" min="1" max="99999999"
+                     placeholder="建议 1~10"/>
+            </div>
+            <div class="form-group">
+              <label>执行日：</label>
+              <select v-model="config.day">
+                <option value="">请选择执行日(默认每天执行)</option>
+                <option
+                    v-for="(d, index) in weekDays"
+                    :key="d"
+                    :value="index"
+                >
+                  {{ d }}
+                </option>
+              </select>
+            </div>
+            <!-- 秘境选择 -->
+            <!-- 新增 type 选择器 -->
+            <div class="form-group">
+              <label>秘境类型：</label>
+              <select v-model="config.selectedType">
+                <option value="">请选择类型</option>
+                <option value="天赋">天赋</option>
+                <option value="武器">武器</option>
+                <option value="圣遗物">圣遗物</option>
+              </select>
+            </div>
+            <!-- 秘境选择（根据 selectedType 过滤） -->
+            <div class="form-group">
+              <label>秘境：</label>
+              <select v-model="config.autoFight.domainName">
+                <option value="">请选择秘境</option>
+                <option
+                    v-for="d in filteredDomainsType(config.selectedType)"
+                    :key="d.name"
+                    :value="d.name"
+                >
+                  {{ d.name }}
+                </option>
+              </select>
+            </div>
+            <!-- 物品名称选择（根据 domainName 过滤） -->
+            <div v-if="domainMap.get(config.autoFight.domainName)?.hasOrder" class="form-group">
+              <label>周日/限时材料：</label>
+              <select
+                  v-model="config.autoFight.sundaySelectedValue">
+                <option
+                    v-for="(item,index) in domainMap.get(config.autoFight.domainName)?.list || []"
+                    :key="item"
+                    :value="index + 1"
+                >
+                  {{ item }}
+                </option>
+              </select>
+            </div>
+            <div
+                v-if="(!domainMap.get(config.autoFight.domainName)?.hasOrder)&&(domainMap.get(config.autoFight.domainName)?.list?.length>0)"
+                class="form-group">
+              <label>秘境圣遗物：</label>
+              <ul>
+                <li v-for="item in domainMap.get(config.autoFight.domainName)?.list" :key="item">
+                  {{ item }}
+                </li>
+              </ul>
+            </div>
+            <div class="form-group">
+              <label>队伍名称（可选）：</label>
+              <input class="limited-input" v-model="config.autoFight.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
+
+            </div>
+            <div class="form-group">
+              <label>副本轮数：</label>
+              <input class="limited-input" v-model.number="config.autoFight.DomainRoundNum" type="number" min="1"
+                     max="99"
+                     placeholder="建议 1~10"/>
+            </div>
+
+            <!--          <hr/>-->
+          </div>
+        </div>
+        <div class="result-all">
+          <label class="result-key">Json配置:</label>
+          <pre class="result">{{ getFinalConfigsMapShow() || '暂无返回数据' }}</pre>
+          <button @click="copyToClipboard(getFinalConfigsMapShow())" class="copy-btn">📋 复制</button>
+        </div>
+        <div class="result-all">
+          <label class="result-key">语法key:</label>
+          <pre class="result">{{ getFinalConfigsToKey() || '暂无返回数据' }}</pre>
+          <button @click="copyToClipboard(getFinalConfigsToKey())" class="copy-btn">📋 复制</button>
+        </div>
       </div>
     </div>
   </div>
@@ -362,11 +375,48 @@ const copyToClipboard = (text) => {
 
 /* 整体容器 */
 .container {
-  max-width: 1200px;
+  width: 90%;
   margin: 0 auto;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+/* 固定容器样式 */
+.fixed-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+ /* background: rgba(255, 255, 255, 0.9); !* 半透明白色背景 *!*/
+  backdrop-filter: blur(10px); /* 毛玻璃效果 */
+  z-index: 1000; /* 确保在最上层 */
+  padding: 10px 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+}
+
+/* 内容区域补偿高度 */
+.content-area {
+  margin-top: 10%; /* 根据 .fixed-container 的实际高度调整 */
+}
+
+/* 标题样式（保持原有样式） */
+.title {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 15px;
+  color: transparent;
+  background: linear-gradient(90deg, #d612cc, #9e367d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.title:hover {
+  transform: scale(1.05);
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 
 /* 标题样式 */
 h2 {
@@ -618,21 +668,4 @@ h2 {
   white-space: nowrap;
 }
 
-/* 主标题美化 */
-.title {
-  font-size: 36px;
-  font-weight: 800;
-  margin-bottom: 15px;
-  color: transparent;
-  background: linear-gradient(90deg, #d612cc, #9e367d);
-  -webkit-background-clip: text;
-  background-clip: text;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.title:hover {
-  transform: scale(1.05);
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
 </style>
