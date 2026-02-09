@@ -60,9 +60,9 @@ const routes = [
         component: () => import('@main/views/AutoPlanDomainView'),
         meta: {
             isRoot: true,
-            title: '自动秘境计划',
-            desc: '自动秘境计划',
-            asSubParentTitle: '自动秘境计划',
+            title: '全部秘境展示',
+            desc: '全部秘境展示',
+            asSubParentTitle: '全部秘境展示',
             icon: 'Markdown'
         },
     }

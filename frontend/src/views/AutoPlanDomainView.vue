@@ -12,7 +12,7 @@
 
       <!-- 右侧主内容区域：树形结构展示 item -->
       <div class="main-content">
-        <h1>领域配置</h1>
+        <h1>秘境</h1>
         <h2>{{ selectedType || '请选择一个类型' }}</h2>
         <div v-if="selectedTypeItems.length > 0" class="tree-view">
           <div v-for="(item, index) in selectedTypeItems" :key="index" class="tree-node">

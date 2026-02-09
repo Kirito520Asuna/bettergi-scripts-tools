@@ -69,17 +69,6 @@ onMounted(() => {
   fetchDomains();
 })
 
-/*
-const selectedType = ref(""); // 当前选择的秘境类型
-
-// 根据 selectedType 过滤秘境列表
-const filteredDomains = computed((selectedType) => {
-  if (!selectedType) return [];
-  return domains.value.filter(d => d.type === selectedType.value);
-});
-*/
-
-
 const uid = ref("")
 // 新增一条空白配置
 const addConfig = () => {
@@ -97,7 +86,7 @@ const addConfig = () => {
       partyName: undefined,
       sundaySelectedValue: undefined,
       // sundaySelectedName: undefined,
-      DomainRoundNum: undefined
+      DomainRoundNum: 1
     }
   })
 }
