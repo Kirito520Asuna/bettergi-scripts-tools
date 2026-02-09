@@ -365,9 +365,9 @@ const submitConfigToBackend = async () => {
     ElMessage.warning("请先设置 UID");
     return;
   }
-
-  const jsonData = getFinalConfigsMap(); // 获取 JSON 配置
-  const json= jsonData?.get(uid.value)||jsonData
+/*  const jsonData = getFinalConfigsMap(); // 获取 JSON 配置
+  const json= jsonData?.get(uid.value)||jsonData*/
+  const json= getFinalConfigs()
   await postUidJson(uid.value,JSON.stringify(json))
 };
 const findDomains = async () => {
