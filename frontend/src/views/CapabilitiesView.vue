@@ -126,6 +126,7 @@ import {ElMessage} from "element-plus";
 import router from "@router/router";
 import {getNextTimestampAll} from "@api/cron/cron.js";
 import {ocrBytes} from "@api/ocr/ocr.js";
+import {CopyToClipboard} from "@utils/local.js";
 
 const currentRoute = router.currentRoute
 const cronResult = ref('')
@@ -249,21 +250,7 @@ const performOcr = async () => {
 }
 
 const copyToClipboard = (text) => {
-
-  try {
-    navigator.clipboard.writeText(text || '');
-    /*alert('已复制到剪贴板！');*/
-    ElMessage({
-      type: 'success',
-      message: `已复制到剪贴板！`,
-    })
-  } catch (err) {
-    console.error('复制失败:', err);
-    ElMessage({
-      type: 'error',
-      message: `复制失败，请手动复制内容。`,
-    });
-  }
+  CopyToClipboard(text)
 };
 </script>
 
