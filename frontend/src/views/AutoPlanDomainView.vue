@@ -1,39 +1,36 @@
 <template>
   <div class="container">
     <div class="layout">
-      <!-- 左侧固定区域 -->
+      <!-- 左侧固定区域：仅展示 type -->
       <div class="sidebar">
         <div v-for="(items, type) in groupedData" :key="type" class="type-group">
-          <div class="type-header" @click="toggleType(type)">
+          <div class="type-header" @click="selectType(type)">
             {{ type }}
           </div>
-          <ul v-show="expandedTypes.includes(type)" class="type-list">
-            <li v-for="(item, index) in items" :key="index" @click="selectItem(item)">
-              {{ item.name }}
-            </li>
-          </ul>
         </div>
       </div>
 
-      <!-- 右侧主内容区域 -->
+      <!-- 右侧主内容区域：树形结构展示 item -->
       <div class="main-content">
         <h1>领域配置</h1>
-        <input v-model="searchKeyword" type="text" placeholder="搜索..." class="search-input"/>
-        <div class="domain-tree">
-          <!-- 动态展示选中项的详细内容 -->
-          <div v-if="selectedItem" class="card">
-            <div class="card-header">{{ selectedItem.name }}</div>
-            <div class="card-body">
-              <ul>
-                <li v-for="(entry, idx) in selectedItem.list" :key="idx">{{ entry }}</li>
-              </ul>
+        <div v-if="selectedTypeItems.length > 0" class="tree-view">
+          <div v-for="(item, index) in selectedTypeItems" :key="index" class="tree-node">
+            <div class="node-header" @click="toggleItem(index)">
+              {{ item.name }}
             </div>
+            <ul v-show="expandedItems.includes(index)" class="node-list">
+              <li v-for="(entry, idx) in item.list" :key="idx">{{ entry }}</li>
+            </ul>
           </div>
+        </div>
+        <div v-else>
+          请选择一个类型以查看内容。
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 
 
@@ -68,6 +65,7 @@ const fetchDomains = async () => {
   }
 };
 // 将 domainData 按照 type 分组
+// 数据分组
 const groupedData = computed(() => {
   const groups = {};
   domainData.value.forEach(item => {
@@ -78,101 +76,31 @@ const groupedData = computed(() => {
   });
   return groups;
 });
-// 控制分组展开/收起
-const expandedTypes = ref([]);
-// 切换分组展开/收起
-const toggleType = (type) => {
-  if (expandedTypes.value.includes(type)) {
-    expandedTypes.value = expandedTypes.value.filter(t => t !== type);
+
+// 当前选中的 type 对应的 items
+const selectedTypeItems = ref([]);
+
+// 控制 item 展开/收起
+const expandedItems = ref([]);
+
+// 选择 type
+const selectType = (type) => {
+  selectedTypeItems.value = groupedData.value[type] || [];
+  expandedItems.value = []; // 清空已展开的 item
+};
+
+// 切换 item 展开/收起
+const toggleItem = (index) => {
+  if (expandedItems.value.includes(index)) {
+    expandedItems.value = expandedItems.value.filter(i => i !== index);
   } else {
-    expandedTypes.value.push(type);
+    expandedItems.value.push(index);
   }
 };
-// 选中项
-const selectedItem = ref(null);
-
-const selectItem = (item) => {
-  selectedItem.value = item;
-};
-
 onMounted(() => {
   fetchDomains();
 })
-// 响应式数据
-const searchKeyword = ref('');
-const expandedCards = ref([]);
-
-// 计算属性：过滤后的数据
-const filteredData = computed(() => {
-  const keyword = searchKeyword.value.toLowerCase();
-  return domainData.filter(
-      (item) =>
-          item.name.toLowerCase().includes(keyword) ||
-          item.list.some((entry) => entry.toLowerCase().includes(keyword))
-  );
-});
-
-// 方法：切换卡片展开/收起
-const toggleCard = (index) => {
-  if (expandedCards.value.includes(index)) {
-    expandedCards.value = expandedCards.value.filter((i) => i !== index);
-  } else {
-    expandedCards.value.push(index);
-  }
-};
 </script>
-
-<!--<style scoped>
-.container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  overflow: hidden;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-  padding: 15px;
-  background-color: #f5f5f5;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.card-body {
-  padding: 15px;
-}
-
-.card-body ul {
-  list-style-type: none;
-  padding-left: 0;
-}
-
-.card-body li {
-  padding: 5px 0;
-  border-bottom: 1px dashed #eee;
-}
-
-.card-body li:last-child {
-  border-bottom: none;
-}
-
-</style>-->
-
 <style scoped>
 .layout {
   display: flex;
@@ -259,5 +187,36 @@ const toggleCard = (index) => {
 .card-body li:last-child {
   border-bottom: none;
 }
+.tree-view {
+  margin-top: 20px;
+}
+
+.tree-node {
+  margin-bottom: 15px;
+}
+
+.node-header {
+  font-weight: bold;
+  cursor: pointer;
+  padding: 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+}
+
+.node-list {
+  list-style: none;
+  padding-left: 20px;
+  margin-top: 5px;
+}
+
+.node-list li {
+  padding: 5px 0;
+  border-bottom: 1px dashed #eee;
+}
+
+.node-list li:last-child {
+  border-bottom: none;
+}
+
 </style>
 
