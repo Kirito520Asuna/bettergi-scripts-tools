@@ -82,3 +82,6 @@ gradle-app.setting
 */node_modules
 /frontend/node/
 /cache/
+*/cache/
+/temp
+*/temp
