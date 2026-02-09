@@ -50,7 +50,7 @@ const routes = [
             title: '自动秘境计划配置',
             desc: '自动秘境计划配置',
             asSubParentTitle: '自动秘境计划配置',
-            icon: 'Markdown'
+            icon: 'Domain'
         },
     }
     ,
@@ -63,7 +63,7 @@ const routes = [
             title: '全部秘境展示',
             desc: '全部秘境展示',
             asSubParentTitle: '全部秘境展示',
-            icon: 'Markdown'
+            icon: 'Domain'
         },
     }
     // 其他路由...
