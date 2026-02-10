@@ -1,4 +1,4 @@
-package com.cloud_guest.aop.token;
+package com.cloud_guest.aop.security;
 
 import java.lang.annotation.*;
 
@@ -10,5 +10,5 @@ import java.lang.annotation.*;
 @Documented
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Token {
+public @interface Login {
 }

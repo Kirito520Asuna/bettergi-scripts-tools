@@ -1,6 +1,6 @@
 package com.cloud_guest.aop;
 
-import com.cloud_guest.aop.security.Token;
+import com.cloud_guest.aop.security.Login;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Pointcut;
@@ -14,15 +14,15 @@ import java.lang.reflect.Method;
  * @Description
  */
 
-public interface AbsToken extends AbsAop {
+public interface AbsLogin extends AbsAop {
 
     @Override
     default int getOrder() {
-        return AopConstants.TokenOrder;
+        return AopConstants.LoginOrder;
     }
 
     @Override
-    @Pointcut(value = "@annotation(com.cloud_guest.aop.security.Token)")
+    @Pointcut(value = "@annotation(com.cloud_guest.aop.security.Login)")
     default void Aop() {
     }
 
@@ -46,15 +46,15 @@ public interface AbsToken extends AbsAop {
      */
     default void checkMethodAnnotation(Method method) {
         // 校验 @RequiresLogin 注解
-        Token login = method.getAnnotation(Token.class);
+        Login login = method.getAnnotation(Login.class);
         if (login != null) {
-            checkToken();
+            checkLogin();
         }
     }
 
     /**
-     * 检查Token
+     * 检查登陆
      */
-    default void checkToken() {
+    default void checkLogin() {
     }
 }
