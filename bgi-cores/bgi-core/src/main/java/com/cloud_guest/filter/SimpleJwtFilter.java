@@ -1,8 +1,6 @@
 package com.cloud_guest.filter;
 import com.cloud_guest.abs.AuthFilter;
 import com.cloud_guest.utils.jwt.JwtUtil;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 /**
  * @Author yan

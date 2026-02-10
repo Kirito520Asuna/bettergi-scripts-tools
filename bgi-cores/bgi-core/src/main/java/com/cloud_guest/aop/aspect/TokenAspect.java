@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.aop.AbsToken;
 import com.cloud_guest.exception.exceptions.GlobalException;
+import com.cloud_guest.properties.check.TokenProperties;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.Aspect;
@@ -28,9 +29,9 @@ public class TokenAspect implements AbsToken {
     @Override
     public void checkToken() {
         AbsToken.super.checkToken();
-        Environment env = SpringUtil.getBean(Environment.class);
-        String tokenName = env.getProperty("check.token.name");
-        String tokenValue = env.getProperty("check.token.value");
+        TokenProperties tokenProperties = SpringUtil.getBean(TokenProperties.class);
+        String tokenName = tokenProperties.getName();
+        String tokenValue = tokenProperties.getValue();
         if (StrUtil.isNotBlank(tokenName) && StrUtil.isNotBlank(tokenValue)) {
             // 接收到请求，记录请求内容
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
