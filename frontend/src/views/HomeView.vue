@@ -31,7 +31,8 @@
             >
               <!--              <span class="icon">{{ getIcon(item) }}</span>-->
               <span v-html="getIcon(item)" class="icon"></span>
-              <button class="name" @click="togo(item)">{{ item.name }}</button>
+              <button class="name" v-if="item.isUi" @click="togo(item)">{{ item.name }}</button>
+              <button class="name" v-else @click="toClick(item)">{{ item.name }}</button>
             </div>
           </div>
         </div>
@@ -55,6 +56,7 @@ const list = [
   // {isLink: true, name: 'API 调试链接', value: 'API 调试链接'},
   {isSwagger: true, name: 'Swagger 文档入口', value: 'doc.html'},
   // {isRote: true, name: '路由管理面板', value: '路由管理面板'},
+  {name: '退出登录', value: 'Logout'},
 ]
 let index = 1
 let initJson = {
@@ -68,7 +70,8 @@ list.forEach(item => {
     isRote: item.isRote,
     isLink: item.isLink,
     isSwagger: item.isSwagger,
-    icon: undefined,
+    isUi: (item.isSwagger || item.isRote || item.isLink),
+    icon: item.icon || iconAsMap.get(item.value),
     name: item.name,
     value: item.value
   });
@@ -82,12 +85,13 @@ onMounted(() => {
     children: []
   }
 
-  router.getRoutes().filter(route => route.name !== 'home' &&  route.name !=='login' && route?.meta?.isRoot).forEach(route => {
+  router.getRoutes().filter(route => route.name !== 'home' && route.name !== 'login' && route?.meta?.isRoot).forEach(route => {
     routerJson.children.push({
       id: index,
       position: index % 2 === 1 ? "left" : "right",
       isRote: true,
-      icon: route?.meta?.icon,
+      isUi: true,
+      icon: route?.meta?.icon || iconAsMap.get(route?.name),
       name: route?.meta?.title,
       value: route.path
     });
@@ -109,7 +113,8 @@ onMounted(() => {
       id: index,
       position: index % 2 === 1 ? "left" : "right",
       isRote: true,
-      icon: route?.meta?.icon,
+      isUi: true,
+      icon: route?.meta?.icon || iconAsMap.get(route?.name),
       name: route?.meta?.title,
       value: route.path
     });
@@ -186,6 +191,13 @@ const togo = async (item) => {
     window.open(item.value, '_blank');
   }
 };
+const toClick = async (item) => {
+  const value = item.value;
+  if (value === 'Logout') {
+    localStorage.removeItem('bgi_tools_token')
+    router.push('/login')
+  }
+}
 </script>
 <style scoped>
 
