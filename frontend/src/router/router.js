@@ -87,14 +87,15 @@ const router = createRouter({
 })
 router.beforeEach((to, from, next) => {
     console.log('Navigating to:', to.path);
+    let item = localStorage.getItem('token');
     if (to.path === '/login') {
-        if (localStorage.getItem('token')){
+        if (item){
             next('/')
         }else {
             next()
         }
     }else {
-        if (localStorage.getItem('token')){
+        if (item){
             next()
         }else {
             next('/login')

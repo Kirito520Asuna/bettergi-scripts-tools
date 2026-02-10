@@ -1,4 +1,4 @@
-import axios from "axios";
+import service from "@utils/request.js";
 
 /**
  * 登录函数
@@ -7,7 +7,7 @@ import axios from "axios";
  * @returns {Promise<Object>} 返回登录结果数据
  */
 async function login(username, password) {
-    const res = await axios.post('/auth/login', {username: username, password: password})  // 注意 context-path 是 /bgi
+    const res = await service.post('/auth/login', {username: username, password: password})  // 注意 context-path 是 /bgi
     return res.data
 }
 
