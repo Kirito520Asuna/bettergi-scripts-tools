@@ -27,6 +27,7 @@ public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter {
                     username, null, null);
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
+
     }
 
     @Override
