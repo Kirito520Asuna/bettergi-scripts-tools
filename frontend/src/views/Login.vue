@@ -2,7 +2,7 @@
   <div class="login-container">
     <el-card class="login-card glass-card">
       <img class="logo" src="@assets/logo.svg" alt="Logo"/>
-      <h2 class="login-title">登录 BetterGI 工具</h2>
+      <h2 class="login-title">登录 BetterGI 工具集</h2>
       <el-form :model="form" ref="formRef" @submit.prevent="handleLogin">
         <el-form-item label="账号">
           <el-input
@@ -48,7 +48,7 @@ const handleLogin = async () => {
   try {
     const res = await login(form.value.username, form.value.password)
     const token = res.token
-    localStorage.setItem('token', token)
+    localStorage.setItem('bgi_tools_token', token)
     ElMessage.success('登录成功')
     router.push('/')
   } catch (err) {

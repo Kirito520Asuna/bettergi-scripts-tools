@@ -87,7 +87,7 @@ const router = createRouter({
 })
 router.beforeEach((to, from, next) => {
     console.log('Navigating to:', to.path);
-    let item = localStorage.getItem('token');
+    let item = localStorage.getItem('bgi_tools_token');
     if (to.path === '/login') {
         if (item){
             next('/')

@@ -16,7 +16,7 @@ const service = axios.create({
 
 // request拦截器
 service.interceptors.request.use(config => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('bgi_tools_token')
     if (token) {
         config.headers.Authorization = `Bearer ${token}`
     }
