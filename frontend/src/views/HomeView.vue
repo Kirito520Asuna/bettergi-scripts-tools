@@ -14,11 +14,18 @@
             <div
                 v-for="item in getItemsByPosition(group.children, 'left')"
                 :key="item.id"
+                :style="{ backgroundColor: buttonBackgrounds[item.id] }"
                 :class="['feature-item', getItemClass(item)]"
             >
               <!--              <span class="icon">{{ getIcon(item) }}</span>-->
               <span v-html="getIcon(item)" class="icon"></span>
-              <button class="name" @click="togo(item)">{{ item.name }}</button>
+              <button class="name" v-if="item.isUi" @click="togo(item)"
+              >
+                {{ item.name }}
+              </button>
+              <button class="name" v-else @click="toClick(item)"
+              >{{ item.name }}
+              </button>
             </div>
           </div>
 
@@ -27,12 +34,17 @@
             <div
                 v-for="item in getItemsByPosition(group.children, 'right')"
                 :key="item.id"
+                :style="{ backgroundColor: buttonBackgrounds[item.id] }"
                 :class="['feature-item', getItemClass(item)]"
             >
               <!--              <span class="icon">{{ getIcon(item) }}</span>-->
               <span v-html="getIcon(item)" class="icon"></span>
-              <button class="name" v-if="item.isUi" @click="togo(item)">{{ item.name }}</button>
-              <button class="name" v-else @click="toClick(item)">{{ item.name }}</button>
+              <button class="name" v-if="item.isUi" @click="togo(item)"
+              >{{ item.name }}
+              </button>
+              <button class="name" v-else @click="toClick(item)"
+              >{{ item.name }}
+              </button>
             </div>
           </div>
         </div>
@@ -78,6 +90,23 @@ list.forEach(item => {
   index++
 })
 featureGroup.value.push(initJson);
+// 存储每个按钮的随机背景色
+const buttonBackgrounds = ref({});
+
+// 生成随机浅色函数
+const getRandomLightColor = () => {
+  const r = Math.floor(Math.random() * 106) + 150; // 150-255
+  const g = Math.floor(Math.random() * 106) + 150; // 150-255
+  const b = Math.floor(Math.random() * 106) + 150; // 150-255
+  return `rgb(${r}, ${g}, ${b})`;
+};
+const lightColors = [
+  'rgba(116,181,181,0.56)',
+  '#e1c7ba',
+  'rgba(255,141,195,0.54)',
+  '#ced4da'
+];
+
 onMounted(() => {
   let index = 1
   let routerJson = {
@@ -122,6 +151,15 @@ onMounted(() => {
   });
   featureGroup.value.push(homeJson);
 
+  // 初始化按钮背景色
+  let colorIndex = 0;
+
+  featureGroup.value.forEach((group) => {
+    group.children.forEach((item) => {
+      buttonBackgrounds.value[item.id] = lightColors[colorIndex % lightColors.length];
+      colorIndex++;
+    });
+  });
 });
 
 // 获取图标
