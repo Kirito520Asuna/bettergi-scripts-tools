@@ -1,7 +1,6 @@
 package com.cloud_guest.utils;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
