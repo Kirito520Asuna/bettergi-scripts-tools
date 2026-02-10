@@ -17,6 +17,7 @@
         <swagger.version>1.6.16</swagger.version>
         <rapidocr.version>0.0.7</rapidocr.version>
         <commons-jexl3.version>3.1</commons-jexl3.version>
+        <jwt.version>0.12.6</jwt.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -53,6 +54,24 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- JWT 支持 -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-jexl3</artifactId>
