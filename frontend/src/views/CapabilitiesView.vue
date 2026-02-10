@@ -33,7 +33,7 @@
               />
             </div>
           </div>
-          <button @click="getNextTimestamp" class="btn primary">获取下一个时间戳</button>
+          <button @click="getNextTime" class="btn primary">获取下一个时间戳</button>
           <label class="label">返回结果:</label>
           <div class="result-all">
             <pre class="result">{{ cronResult || '暂无返回数据' }}</pre>
@@ -189,7 +189,7 @@ const cronListSubmit = async () => {
 };
 
 // 获取单个 Cron 表达式的下一个时间戳
-const getNextTimestamp = async () => {
+const getNextTime= async () => {
   try {
     const startTimestamp = new Date(startTime.value).getTime()
     const endTimestamp = new Date(endTime.value).getTime()
