@@ -25,11 +25,44 @@ git clone https://github.com/Kirito520Asuna/bettergi-script-tools.git
 ```shell
 server:
   port: 8081
-  servlet:
-    context-path: /bgi
+  #servlet:
+    #context-path: /bgi #0.0.4版本及其以上请勿修改
 ws:
   url: ws://localhost:8081/ws #可忽略
   access-token-name: access-token   
+spring:
+  #redis 集群支持
+  redis:
+    mode: none # none:不使用redis，single:使用单体,cluster:使用集群，sentinel:使用哨兵
+    #单体
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+    #哨兵
+    sentinel:
+      master: mymaster   # 哨兵 master-set 名称
+      nodes:
+        - 192.168.6.128:26379
+        - 192.168.6.128:26380
+    #集群
+    cluster:
+      nodes:
+        - 192.168.6.128:7000
+        - 192.168.6.128:7001
+    #安全
+    username:  #默认为空
+    password:  #默认为空
+#需要验证的接口设置token
+check:
+  token: #注意：其中一项为空时将不会校验
+    name:  # token名称 默认为空 自行修改
+    value: # token值 默认为空 自行修改
+#设置默认账号密码 自行修改
+auth:
+  users:
+    - username: bgi_tools
+      password: bgi_tools
+  
 ```
 
 ### 3. 运行
@@ -45,7 +78,7 @@ java -jar xxxx.jar
 ```
 
 #### 3.部署docker
-
+***`先新建 /path/to/application-prod.yml 文件，将 application-prod.yml 文件内容复制到 /path/to/application-prod.yml 文件中`***
 ```shell
 docker pull ghcr.io/kirito520asuna/bettergi-scripts-tools:latest
 docker run -d -p 8081:8081 -v /path/to/application-prod.yml:/app/application-prod.yml --name bettergi-script-tools ghcr.io/kirito520asuna/bettergi-script-tools:latest
@@ -70,7 +103,7 @@ services:
       - SERVER_SERVLET_CONTEXT_PATH=/bgi
       - WS_URL=ws://backend-service:8080/ws  # 连接后端服务
       - ACCESS_TOKEN_NAME=access-token
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=prod 
     volumes:
       - /path/to/application-prod.yml:/app/application-prod.yml
     networks:
