@@ -40,6 +40,7 @@
 <!--        <module>framework-knife4j</module>
         <module>framework-redis</module>-->
         <module>bgi-framework</module>
+        <module>bgi-cores</module>
         <module>bgi-tools</module>
     </modules>
 
