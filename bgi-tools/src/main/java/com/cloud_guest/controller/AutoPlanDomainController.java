@@ -3,6 +3,7 @@ package com.cloud_guest.controller;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONArray;
 import com.cloud_guest.aop.log.SysLog;
+import com.cloud_guest.aop.security.Token;
 import com.cloud_guest.domain.AutoPlanDomainDto;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AutoPlanDomainService;
@@ -42,8 +43,8 @@ public class AutoPlanDomainController {
     private AutoPlanDomainService autoPlanDomainService;
 
     @PostMapping("json/all")
-    @SysLog
-    @Operation(summary = "存储基础全部JSON")
+    @SysLog @Token
+    @Operation(summary = "[需要登录/授权token]存储基础全部JSON")
     public Result<String> saveAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
                                   @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
                                   @RequestBody AutoPlanDomainDto dto) {
@@ -59,8 +60,8 @@ public class AutoPlanDomainController {
     }
 
     @PostMapping("json")
-    @SysLog
-    @Operation(summary = "存储UID映射JSON")
+    @SysLog @Token
+    @Operation(summary = "[需要登录/授权token]存储UID映射JSON")
     public Result<String> save(@JsonView(value = BasicJsonView.AutoPlanDomainView.class)
                                @Validated(value = BasicJsonView.AutoPlanDomainView.class)
                                @RequestBody AutoPlanDomainDto dto) {
@@ -77,8 +78,8 @@ public class AutoPlanDomainController {
         return ok(autoPlanDomainVos);
     }
 
-    @SysLog
-    @Operation(summary = "批量删除UID映射JSON")
+    @SysLog @Token
+    @Operation(summary = "[需要登录/授权token]批量删除UID映射JSON")
     @DeleteMapping("json")
     public Result<Boolean> infoDel(@Validated @NotBlank @RequestParam String uidStr) {
         List<String> ids = Arrays.stream(uidStr.split(",")).collect(Collectors.toList());
