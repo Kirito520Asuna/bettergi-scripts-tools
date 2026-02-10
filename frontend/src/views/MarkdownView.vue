@@ -32,6 +32,9 @@
       <div v-if="loading" class="loading">读取文件中...</div>
       <div v-if="error" class="error">{{ error }}</div>
     </div>
+    <div class="fixed-footer">
+      <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
+    </div>
   </div>
 
 </template>
@@ -43,6 +46,11 @@ import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.min.css'
 import mermaid from 'mermaid'
+import router from "@router/router.js";
+// 在 script 中添加跳转逻辑
+const goToHome = () => {
+  router.push('/'); // 假设主页路径是 '/'
+};
 
 // ================== Markdown 配置 ==================
 const md = new MarkdownIt({

@@ -28,6 +28,9 @@
           请选择一个类型以查看内容。
         </div>
       </div>
+      <div class="fixed-footer">
+        <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
+      </div>
     </div>
   </div>
 </template>
@@ -37,6 +40,11 @@ import {ref, computed, onMounted} from 'vue';
 import {domainsDefault} from "@utils/defaultdata.js";
 import {getBaseJsonAll} from "@api/domain/autoPlan.js";
 import {ElMessage} from "element-plus";
+import router from "@router/router.js";
+// 在 script 中添加跳转逻辑
+const goToHome = () => {
+  router.push('/'); // 假设主页路径是 '/'
+};
 
 // 模拟数据
 const domainData = ref(domainsDefault);

@@ -4,6 +4,7 @@ import {ElMessage} from "element-plus";
 import {getBaseJsonAll, getUidJson, postUidJson,removeUidList} from "@api/domain/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
 import {domainsDefault} from "@utils/defaultdata.js";
+import router from "@router/router.js";
 // 配置列表 → 核心数据结构改为 array
 const configs = ref([])
 const isLoading = ref(false);
@@ -77,6 +78,10 @@ const findDomains = async () => {
 onMounted(() => {
   fetchDomains();
 })
+// 在 script 中添加跳转逻辑
+const goToHome = () => {
+  router.push('/'); // 假设主页路径是 '/'
+};
 
 const uid = ref("")
 // 新增一条空白配置
@@ -391,6 +396,11 @@ const copyToClipboard = (text) => {
         </div>
       </div>
     </div>
+    <!-- 在 template 最后添加 -->
+<div class="fixed-footer">
+  <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
+</div>
+
   </div>
 </template>
 
@@ -417,7 +427,7 @@ const copyToClipboard = (text) => {
 
 /* 整体容器 */
 .container {
-  width: 90%;
+  width: 80%;
   margin: 0 auto;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
