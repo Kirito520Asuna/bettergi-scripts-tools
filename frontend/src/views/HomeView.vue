@@ -110,7 +110,7 @@ const lightColors = [
 onMounted(() => {
   let index = 1
   let routerJson = {
-    title: '基础路由功能列表',
+    title: '扩展功能列表',
     children: []
   }
 
