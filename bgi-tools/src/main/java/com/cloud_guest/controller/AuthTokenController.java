@@ -20,7 +20,7 @@ import static com.cloud_guest.result.Result.ok;
  * @Date 2026/2/10 13:35:31
  * @Description
  */
-@Tag(name = "解析服务")
+@Tag(name = "授权token服务")
 @RestController
 @RequestMapping(value = {"/jwt/token/"})
 public class AuthTokenController {
@@ -29,7 +29,7 @@ public class AuthTokenController {
     @Login
     @SysLog
     @Operation(summary = "[需要登录]获取授权token")
-    @GetMapping
+    @GetMapping("info")
     public Result<TokenVo> token() {
         String tokenName = tokenProperties.getName();
         String tokenValue = tokenProperties.getValue();
