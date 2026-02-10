@@ -110,5 +110,10 @@ check:
     value:  # token值
 bgi-tools:
   version: 0.0.3
-
+#设置默认账号密码
+auth:
+  enabled: true
+  users:
+    - username: bgi_tools
+      password: bgi_tools
 
