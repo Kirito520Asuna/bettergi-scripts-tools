@@ -49,6 +49,11 @@ on:
         required: true
         type: boolean
         default: false
+      desc:
+        description: 'Release 描述信息'
+        required: false
+        type: string
+        default: ''
 
 env:
   REGISTRY: ghcr.io
@@ -460,7 +465,9 @@ jobs:
             - `jars-${{ env.TAG_NAME }}.zip`：原始 JAR 包
             - 单个 `.jar` 文件：供开发者使用
             - 单个 `.exe` 文件：仅 EXE（需系统已安装 Java ${{ env.JAVA_VERSION}}）
-
+            
+            ${{github.event.inputs.desc}} 
+            
             **系统要求**：Windows 10/11 x64  
             **运行方式**：推荐使用独立包，双击即跑
 

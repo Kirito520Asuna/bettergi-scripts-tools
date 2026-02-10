@@ -8,6 +8,7 @@ bettergi-script-tools 是一个基于 bettergi-script 的工具集，提供了�
 - 支持 WebSocket 请求的代理
 - 支持 Cron 表达式解析
 
+详情请运行后查看UI(内置文档) http://localhost:8081/bgi/
 详情请运行后查看文档 http://localhost:8081/bgi/doc.html
 
 ## 使用
@@ -26,10 +27,11 @@ git clone https://github.com/Kirito520Asuna/bettergi-script-tools.git
 server:
   port: 8081
   #servlet:
-    #context-path: /bgi #0.0.4版本及其以上请勿修改
+    #context-path: /bgi #0.0.4版本禁止修改 会影响ui运行
 ws:
   url: ws://localhost:8081/ws #可忽略
   access-token-name: access-token   
+#多实例运行支持(存储需要从本地改为远程 如 spring.redis.mode=single)   
 spring:
   #redis 集群支持
   redis:
@@ -103,7 +105,7 @@ services:
       - SERVER_SERVLET_CONTEXT_PATH=/bgi
       - WS_URL=ws://backend-service:8080/ws  # 连接后端服务
       - ACCESS_TOKEN_NAME=access-token
-      - SPRING_PROFILES_ACTIVE=prod 
+      - SPRING_PROFILES_ACTIVE=prod
     volumes:
       - /path/to/application-prod.yml:/app/application-prod.yml
     networks:
@@ -114,7 +116,11 @@ networks:
     driver: bridge
 
 ```
-
+## UI界面(0.0.4以上版本)
+```text
+默认地址：http://localhost:8081/bgi/
+动态地址：http://127.0.0.1:${server.port:8080}${server.servlet.context-path:/}/
+```
 ## swagger 文档地址
 
 ```text

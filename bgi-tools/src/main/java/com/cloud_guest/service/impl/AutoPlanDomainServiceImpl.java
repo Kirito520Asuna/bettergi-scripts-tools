@@ -54,7 +54,7 @@ public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
                 for (String json : maps) {
                     if (JSONUtil.isTypeJSONArray(json)){
                         // 解析为 JSONArray
-                        List<JSONObject> maps1 = JSONUtil.toList(data, JSONObject.class);
+                        List<JSONObject> maps1 = JSONUtil.toList(json, JSONObject.class);
                         list.addAll(maps1);
                     }else {
                         Map<String, Object> bean = JSONUtil.toBean(json, JSONObject.class);
@@ -86,7 +86,7 @@ public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
                 for (String json : maps) {
                     if (JSONUtil.isTypeJSONArray(json)){
                         // 解析为 JSONArray
-                        List<JSONObject> maps1 = JSONUtil.toList(data, JSONObject.class);
+                        List<JSONObject> maps1 = JSONUtil.toList(json, JSONObject.class);
                         list.addAll(maps1);
                     }else {
                         Map<String, Object> bean = JSONUtil.toBean(json, JSONObject.class);
