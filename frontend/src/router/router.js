@@ -16,6 +16,18 @@ const routes = [
         children: []
     },
     {
+        path: '/login',
+        name: 'login',
+        component: () => import('@main/views/Login'),
+        meta: {
+            isRoot: true,
+            title: '登录',
+            desc: '登录',
+            asSubParentTitle: '登录',
+            icon: 'icon-home'
+        },
+    },
+    {
         path: '/capabilities',
         name: 'capabilities',
         component: () => import('@main/views/CapabilitiesView'),
@@ -75,7 +87,20 @@ const router = createRouter({
 })
 router.beforeEach((to, from, next) => {
     console.log('Navigating to:', to.path);
-    next()
+    if (to.path === '/login') {
+        if (localStorage.getItem('token')){
+            next('/')
+        }else {
+            next()
+        }
+    }else {
+        if (localStorage.getItem('token')){
+            next()
+        }else {
+            next('/login')
+        }
+
+    }
 })
 
 export default router

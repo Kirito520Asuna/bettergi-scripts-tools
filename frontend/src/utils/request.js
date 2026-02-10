@@ -16,6 +16,11 @@ const service = axios.create({
 
 // request拦截器
 service.interceptors.request.use(config => {
+    const token = localStorage.getItem('token')
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
     return config
 }, error => {
     console.log(error)
@@ -33,6 +38,8 @@ service.interceptors.response.use(res => {
             return res.data
         }
         if (code === 401) {
+            ElMessage({message: msg, type: 'error'})
+            return Promise.reject(new Error(msg))
         } else if (code === 500) {
             ElMessage({message: msg, type: 'error'})
             return Promise.reject(new Error(msg))

@@ -82,7 +82,7 @@ onMounted(() => {
     children: []
   }
 
-  router.getRoutes().filter(route => route.name !== 'home' && route?.meta?.isRoot).forEach(route => {
+  router.getRoutes().filter(route => route.name !== 'home' &&  route.name !=='login' && route?.meta?.isRoot).forEach(route => {
     routerJson.children.push({
       id: index,
       position: index % 2 === 1 ? "left" : "right",
