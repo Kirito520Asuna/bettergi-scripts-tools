@@ -1,6 +1,7 @@
 <template xmlns="http://www.w3.org/1999/html">
   <div class="home">
     <div class="container">
+
       <h1 class="title">BetterGI Script Tools@{{ currentRoute?.meta?.title || '未知标题' }}</h1>
 
       <!-- Cron 相关功能 -->
@@ -115,6 +116,9 @@
         </div>
       </div>
     </div>
+    <div class="fixed-footer">
+      <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
+    </div>
   </div>
 </template>
 
@@ -186,6 +190,9 @@ const cronListSubmit = async () => {
   } catch (error) {
     console.error('请求失败:', error);
   }
+};
+const goToHome = () => {
+  router.push('/'); // 假设主页路径是 '/'
 };
 
 // 获取单个 Cron 表达式的下一个时间戳
@@ -269,7 +276,7 @@ const copyToClipboard = (text) => {
 
 /* 容器布局 */
 .container {
-  max-width: 1200px;
+  min-width: 70%;
   margin: 0 auto;
   padding: 20px;
   background: linear-gradient(135deg, #f5f7fa, #e4edf9);
@@ -551,4 +558,28 @@ const copyToClipboard = (text) => {
   color: #7f8c8d;
   margin-top: 10px;
 }
+.fixed-footer {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000; /* 确保按钮在其他元素之上 */
+}
+
+.fixed-footer .btn {
+  padding: 10px 15px;
+  font-size: 1rem;
+  background: rgba(52, 152, 219, 0.8); /* 半透明背景 */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.fixed-footer .btn:hover {
+  background: rgba(41, 128, 185, 1); /* 悬停时加深背景 */
+  transform: scale(1.05);
+}
+
+
 </style>
