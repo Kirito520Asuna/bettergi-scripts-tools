@@ -32,6 +32,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>com.cloud-guest</groupId>
+                <artifactId>bgi-cores</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- Swagger 注解包（核心） -->
             <dependency>
                 <groupId>io.swagger.core.v3</groupId>
