@@ -21,15 +21,16 @@ public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter {
     private JwtUtil jwtUtil;
 
     @Override
-    public void setToken(String token) {
-        if (jwtUtil.validateToken(token)) {
+    public boolean setToken(String token) {
+        boolean validateToken = jwtUtil.validateToken(token);
+        if (validateToken) {
             String username = jwtUtil.getUsernameFromToken(token);
             // 简单起见，不设权限，只放用户名进去
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     username, null, null);
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
-
+        return validateToken;
     }
 
     @Override

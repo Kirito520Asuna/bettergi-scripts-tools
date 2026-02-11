@@ -59,14 +59,13 @@ public interface AuthFilter extends Filter {
             token = token.trim();
 
             if (StrUtil.isNotBlank(token)) {
-                setToken(token);
-                return true;
+                return setToken(token);
             }
         }
         return false;
     }
 
-    default void setToken(String token) {
+    default boolean setToken(String token) {
         //JwtUtil jwtUtil = SpringUtil.getBean(JwtUtil.class);
         //if (jwtUtil.validateToken(token)) {
         //    String username = jwtUtil.getUsernameFromToken(token);
@@ -75,6 +74,7 @@ public interface AuthFilter extends Filter {
         //            username, null, null);
         //    SecurityContextHolder.getContext().setAuthentication(auth);
         //}
+        return true;
     }
 
     default boolean checkTokenLogin(HttpServletRequest request, HttpServletResponse response) {
