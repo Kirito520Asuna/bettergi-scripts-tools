@@ -54,6 +54,11 @@ on:
         required: false
         type: string
         default: ''
+      icon_path:
+        description: 'icon 图标'
+        required: false
+        type: string
+        default: './frontend/public/logo.ico'
 
 env:
   REGISTRY: ghcr.io
@@ -377,6 +382,8 @@ jobs:
               <internalName>${jar_name}</internalName>
               <originalFilename>${jar_name}.exe</originalFilename>
             </versionInfo>
+            <!-- 添加图标配置 -->
+            <icon>${{ github.event.inputs.icon_path }}</icon>
           </launch4jConfig>
           EOF
 
