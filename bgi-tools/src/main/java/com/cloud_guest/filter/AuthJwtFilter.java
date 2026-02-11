@@ -1,6 +1,8 @@
 package com.cloud_guest.filter;
 
 import com.cloud_guest.abs.AuthFilter;
+import com.cloud_guest.enums.ApiCode;
+import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.utils.jwt.JwtUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,7 +35,11 @@ public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        checkTokenLogin(request, response);
+        boolean check = checkTokenLogin(request, response);
+        if (!check) {
+            ApiCode fail = ApiCode.UNAUTHORIZED;
+            throw new GlobalException(fail.getCode(), fail.getMessage());
+        }
         chain.doFilter(request, response);
     }
 }

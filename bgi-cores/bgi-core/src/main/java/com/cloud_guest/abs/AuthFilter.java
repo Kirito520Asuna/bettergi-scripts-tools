@@ -40,9 +40,10 @@ public interface AuthFilter extends Filter {
 
             if (StrUtil.isNotBlank(token)) {
                 setToken(token);
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     default void setToken(String token) {
@@ -56,7 +57,7 @@ public interface AuthFilter extends Filter {
         //}
     }
 
-    default void checkTokenLogin(HttpServletRequest request, HttpServletResponse response) {
-        checkToken(request, response);
+    default boolean checkTokenLogin(HttpServletRequest request, HttpServletResponse response) {
+       return checkToken(request, response);
     }
 }
