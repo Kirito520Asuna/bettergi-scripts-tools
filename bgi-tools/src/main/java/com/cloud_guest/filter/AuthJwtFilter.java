@@ -35,10 +35,22 @@ public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        boolean check = checkTokenLogin(request, response);
-        if (!check) {
-            ApiCode fail = ApiCode.UNAUTHORIZED;
-            throw new GlobalException(fail.getCode(), fail.getMessage());
+
+        String requestPath = request.getServletPath();
+        // 检查是否为受保护路径
+        boolean isProtectedPath = false;
+        for (String path : fetchProtectedPaths()) {
+            if (fetchPathMatcher().match(path, requestPath)) {
+                isProtectedPath = true;
+                break;
+            }
+        }
+        if (isProtectedPath) {
+            boolean check = checkTokenLogin(request, response);
+            if (!check) {
+                ApiCode fail = ApiCode.UNAUTHORIZED;
+                throw new GlobalException(fail.getCode(), fail.getMessage());
+            }
         }
         chain.doFilter(request, response);
     }
