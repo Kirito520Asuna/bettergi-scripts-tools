@@ -58,7 +58,7 @@ on:
         description: 'icon 图标'
         required: false
         type: string
-        default: 'frontend/public/logo.ico'
+        default: 'frontend/public/favicon.ico'
 
 env:
   REGISTRY: ghcr.io
