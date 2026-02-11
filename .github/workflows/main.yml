@@ -58,7 +58,7 @@ on:
         description: 'icon 图标'
         required: false
         type: string
-        default: './frontend/public/logo.ico'
+        default: 'frontend/public/logo.ico'
 
 env:
   REGISTRY: ghcr.io
@@ -365,7 +365,7 @@ jobs:
               <mainClass>$main_class</mainClass>
             </classPath>
             <jre>
-              <path>jre</path>
+              <path>jre;%JAVA_HOME%;%PATH%</path>
               <minVersion>${{ env.JAVA_VERSION }}.0</minVersion>
               <maxVersion>${{ env.JAVA_VERSION }}.999</maxVersion>
               <jdkPreference>preferBundled</jdkPreference>
@@ -383,7 +383,7 @@ jobs:
               <originalFilename>${jar_name}.exe</originalFilename>
             </versionInfo>
             <!-- 添加图标配置 -->
-            <icon>${{ github.event.inputs.icon_path }}</icon>
+            <icon>/home/runner/work/${{github.event.repository.name }}/${{github.event.repository.name }}/${{ github.event.inputs.icon_path }}</icon>
           </launch4jConfig>
           EOF
 
