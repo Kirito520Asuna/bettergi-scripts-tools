@@ -7,6 +7,7 @@ import com.cloud_guest.properties.auth.AuthProperties;
 import com.cloud_guest.utils.jwt.JwtUtil;
 import org.springframework.http.HttpHeaders;
 
+import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -15,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
  * @Date 2026/2/10 12:54:47
  * @Description
  */
-public interface AuthFilter {
+public interface AuthFilter extends Filter {
 
     /**
      * 检查token是否合法
