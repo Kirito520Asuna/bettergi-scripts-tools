@@ -395,8 +395,8 @@ const copyToClipboard = (text) => {
         <div class="config-list">
           <div v-for="(config,index) in configs" :key="config.order" class="config-item">
             <h3>#{{ index }} 配置</h3>
-            <!-- 删除按钮 -->
-            <button @click="removeConfig(index)" class="btn danger">🗑️ 删除</button>
+                      <hr/>
+
             <div class="form-group">
               <label>执行顺序：</label>
               <input class="limited-input" v-model.number="config.order" type="number" min="1" max="99999999"
@@ -582,6 +582,10 @@ const copyToClipboard = (text) => {
               </div>
             </div>
 
+            <!-- 删除按钮 -->
+
+            <button @click="removeConfig(index)" class="btn danger">🗑️ 删除</button>
+
           </div>
         </div>
         <div class="result-all">
@@ -639,6 +643,7 @@ const copyToClipboard = (text) => {
   top: 0;
   left: 0;
   width: 100%;
+  height: 15%;
   /* background: rgba(255, 255, 255, 0.9); !* 半透明白色背景 *!*/
   backdrop-filter: blur(10px); /* 毛玻璃效果 */
   z-index: 1000; /* 确保在最上层 */
@@ -648,7 +653,8 @@ const copyToClipboard = (text) => {
 
 /* 内容区域补偿高度 */
 .content-area {
-  margin-top: 10%; /* 根据 .fixed-container 的实际高度调整 */
+  margin-top: 15%; /* 根据 .fixed-container 的实际高度调整 */
+  width: 100%;
 }
 
 /* 标题样式（保持原有样式） */
