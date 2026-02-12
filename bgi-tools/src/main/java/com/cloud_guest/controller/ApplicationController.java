@@ -5,6 +5,7 @@ import com.cloud_guest.aop.security.Login;
 import com.cloud_guest.result.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.cloud.context.restart.RestartEndpoint;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,4 +31,10 @@ public class ApplicationController {
         return Result.ok();
     }
 
+    @SysLog
+    @Operation(summary = "判断重启")
+    @GetMapping("info")
+    public Result info(){
+        return Result.ok();
+    }
 }

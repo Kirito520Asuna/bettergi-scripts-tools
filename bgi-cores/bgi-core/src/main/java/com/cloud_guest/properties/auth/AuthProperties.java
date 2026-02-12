@@ -29,7 +29,7 @@ public class AuthProperties {
     @Data
     public static class Jwt {
         public static final long JWT_TTL = 24 * 60 * 60 * 1000L;// 60 * 60 *1000  一个小时
-        public static final long LONG_JWT_TTL = 7 * JWT_TTL;
+        public static final long LONG_JWT_TTL = 30 * JWT_TTL;
         private String secret= "a2lyaXRvYXN1bkeyMbgi_toolskwMTIzNDjwtzg5MDEy";
         private long expirationMs= LONG_JWT_TTL;
     }
