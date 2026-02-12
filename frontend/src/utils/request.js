@@ -9,7 +9,7 @@ axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
 // 创建axios实例
 const service = axios.create({
     // axios中请求配置有baseURL选项，表示请求URL公共部分
-    baseURL: import.meta.env.VITE_BASE_PATH || '/bgi/',
+    baseURL: import.meta.env.VITE_BASE_API_PATH || '/bgi/',
     // 超时
     timeout: 10000
 })
@@ -50,7 +50,7 @@ service.interceptors.response.use(res => {
             ElNotification.error({title: msg})
             return Promise.reject('error')
         } else {
-            ElMessage({message: "请求成功", type: 'success'})
+            // ElMessage({message: "请求成功", type: 'success'})
             return Promise.resolve(res.data)
         }
     },

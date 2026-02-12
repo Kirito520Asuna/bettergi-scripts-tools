@@ -21,6 +21,7 @@
 
         <workingDirectory>../frontend</workingDirectory>
         <workingNodeDirectory>${workingDirectory}/node</workingNodeDirectory>
+        <staticDirectory>/static/ui</staticDirectory>
     </properties>
 
     <dependencyManagement>
@@ -269,7 +270,7 @@
                         </goals>
                         <configuration>
                             <!-- 目标：打包进 jar 的 classpath static 目录 -->
-                            <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+                            <outputDirectory>${project.build.outputDirectory}${staticDirectory}</outputDirectory>
                             <!-- 来源：vite build 后的 dist -->
                             <resources>
                                 <resource>

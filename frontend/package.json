@@ -6,7 +6,8 @@
   "scripts": {
     "build:full": "npm install && npm run build",
     "dev": "npx vite --mode dev",
-    "build": "npx vite build",
+    "prod": "npx vite --mode prod",
+    "build": "npx vite build --mode prod",
     "preview": "npx vite preview"
   },
   "dependencies": {

@@ -10,4 +10,4 @@ ${AnsiColor.BRIGHT_WHITE}                                                       
 ${AnsiColor.BRIGHT_GREEN}:: Spring Boot ::                ${AnsiColor.BRIGHT_WHITE}(v${spring-boot.version})
 ${AnsiColor.BRIGHT_GREEN}:: Spring Profiles Active ::     ${AnsiColor.BRIGHT_WHITE}(${spring.profiles.active:default})
 ${AnsiColor.BRIGHT_GREEN}:: Spring Application Name ::    ${AnsiColor.BRIGHT_WHITE}(${spring.application.name:default})
-${AnsiColor.BRIGHT_GREEN}:: UI Address ::    ${AnsiColor.BRIGHT_WHITE}http://127.0.0.1:${server.port:8080}${server.servlet.context-path:/}
+${AnsiColor.BRIGHT_GREEN}:: UI Address ::    ${AnsiColor.BRIGHT_WHITE}http://127.0.0.1:${server.port:8080}${server.servlet.context-path:/}/ui/

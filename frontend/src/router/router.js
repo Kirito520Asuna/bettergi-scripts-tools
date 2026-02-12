@@ -80,13 +80,15 @@ const routes = [
     }
     // 其他路由...
 ]
-
+const VITE_BASE_PATH = (import.meta.env.VITE_BASE_PATH || '/bgi/ui/');
+// console.log("VITE_BASE_PATH:", VITE_BASE_PATH);
 const router = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL),
+    history: createWebHistory(VITE_BASE_PATH),
+    // history: createWebHistory("/bgi"),
     routes: routes,
 })
 router.beforeEach((to, from, next) => {
-    console.log('Navigating to:', to.path);
+    // console.log('Navigating to:', to.path);
     let item = localStorage.getItem('bgi_tools_token');
     if (to.path === '/login') {
         if (item){

@@ -68,7 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements AbsB
                         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                         .and()
                         .authorizeRequests()
-                        .antMatchers("/login", "/logout").permitAll();
+                        .antMatchers("/login", "/logout", "/static/**").permitAll();
 
         String jwtPath = "/jwt/**";
         String[] paths = jwtPath.split(",");

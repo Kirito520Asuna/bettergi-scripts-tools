@@ -223,7 +223,7 @@ const togo = async (item) => {
       console.error('路由跳转失败:', error);
     }
   } else if (item?.isSwagger) {
-    const basePath = import.meta.env.VITE_BASE_PATH || '/bgi/';
+    const basePath = import.meta.env.VITE_BASE_API_PATH || '/bgi/';
     window.open(`${basePath}${item.value}`, '_blank');
   } else if (item?.isLink) {
     window.open(item.value, '_blank');
