@@ -49,7 +49,14 @@ html, body {
   cursor: pointer;
   transition: all 0.3s ease;
 }
-
+/*.btn.secondary {
+    padding: 10px 24px;
+    background: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}*/
 .fixed-footer .btn:hover {
   background: rgba(41, 128, 185, 1);
   transform: scale(1.05);
