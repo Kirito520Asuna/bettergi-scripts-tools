@@ -1,6 +1,6 @@
 api:
   #authorization: Authorization
-  authorization: token
+  authorization: ${auth.token-name}
   common:
     version: 3.0.0
     title: SecuityAPI
@@ -117,7 +117,7 @@ bgi-tools:
 #设置默认账号密码
 auth:
   enabled: true
-  token-name: token
+  token-name: bgi_tools_token
   users:
     - username: bgi_tools
       password: bgi_tools
