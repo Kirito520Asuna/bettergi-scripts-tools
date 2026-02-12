@@ -24,7 +24,7 @@ public interface AuthFilter extends Filter {
  */
     default String[] fetchProtectedPaths() {
         // 定义需要保护的路径，使用逗号分隔，然后分割成数组
-        String[] protectedPaths = "jwt/**".split(",");
+        String[] protectedPaths = "/jwt/**".split(",");
         return protectedPaths;
     }
 /**
@@ -55,6 +55,8 @@ public interface AuthFilter extends Filter {
             String token = "";
             if (authHeader.startsWith(bearer)) {
                 token = authHeader.substring(bearer.length() - 1);
+            }else {
+                token = authHeader;
             }
             token = token.trim();
 
