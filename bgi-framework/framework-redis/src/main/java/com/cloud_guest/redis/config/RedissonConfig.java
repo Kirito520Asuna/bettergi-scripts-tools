@@ -10,14 +10,9 @@ import com.cloud_guest.redis.service.impl.SimpleRedisService;
 import javax.annotation.Resource;
 
 import org.redisson.api.RedissonClient;
-import org.redisson.spring.starter.RedissonAutoConfiguration;
-import org.redisson.spring.starter.RedissonAutoConfigurationV2;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
@@ -35,13 +30,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 @ConditionalOnBean(RedisConfiguration.class)
 @EnableAspectJAutoProxy
 @EnableCaching // 开启Spring Redis Cache，使用注解驱动缓存机制
-//@ImportAutoConfiguration({  // 手动导入官方配置（或你的自定义）
-//        // 加其他需要的，如 RedisReactiveAutoConfiguration 如果要响应式
-//        org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
-//        org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class,
-//        org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
-//        org.redisson.spring.starter.RedissonAutoConfiguration.class,
-//})
 public class RedissonConfig implements AbsRedissonConfig {
 
     @Resource
@@ -50,29 +38,7 @@ public class RedissonConfig implements AbsRedissonConfig {
     @Resource
     @Lazy
     private Environment env;
-    @Bean
-    @ConditionalOnBean(RedisConfiguration.class)
-    public RedisAutoConfiguration redisAutoConfiguration() {
-        return new RedisAutoConfiguration();
-    }
 
-    @Bean
-    @ConditionalOnBean(RedisConfiguration.class)
-    public RedisRepositoriesAutoConfiguration redisRepositoriesAutoConfiguration() {
-        return new RedisRepositoriesAutoConfiguration();
-    }
-
-    @Bean
-    @ConditionalOnBean(RedisConfiguration.class)
-    public RedissonAutoConfigurationV2 redissonAutoConfigurationV2() {
-        return new RedissonAutoConfigurationV2();
-    }
-
-    @Bean
-    @ConditionalOnBean(RedisConfiguration.class)
-    public RedissonAutoConfiguration redissonAutoConfiguration() {
-        return new RedissonAutoConfiguration();
-    }
     @Bean
     @Lazy
     public RedissonClient redissonClient() {
