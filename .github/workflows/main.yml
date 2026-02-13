@@ -196,8 +196,6 @@ jobs:
 
       - name: 7.使用 Maven 构建并生成 JAR
         run: |
-          echo "bgi-tools/src/main/resources/application.yml:"
-          cat bgi-tools/src/main/resources/application.yml
           if [ ${{ env.SKIP_TESTS }} ]; then
             echo "跳过测试"
             echo "mvn clean package -B -DskipTests -Dquickly"
