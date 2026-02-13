@@ -58,6 +58,8 @@
 import {ref, onMounted} from "vue";
 import router from "@router/router";
 import {iconAsMapDefault} from "@utils/defaultdata.js";
+import {restartService} from "@api/sys/sys.js";
+import {ElMessage, ElMessageBox} from "element-plus";
 
 let iconAsMap = iconAsMapDefault()
 
@@ -69,6 +71,7 @@ const list = [
   {isSwagger: true, name: 'Swagger 文档入口', value: 'doc.html'},
   // {isRote: true, name: '路由管理面板', value: '路由管理面板'},
   {name: '退出登录', value: 'Logout'},
+  {name: '重启', value: 'Restart'},
 ]
 let index = 1
 let initJson = {
@@ -234,6 +237,14 @@ const toClick = async (item) => {
   if (value === 'Logout') {
     localStorage.removeItem('bgi_tools_token')
     router.push('/login')
+  } else if (value === 'Restart') {
+    //重启服务
+    const result = await restartService();
+    if (result.code===200) {
+      ElMessage.info('重启指令发送成功');
+    }else {
+      ElMessage.error('重启指令发送失败');
+    }
   }
 }
 </script>

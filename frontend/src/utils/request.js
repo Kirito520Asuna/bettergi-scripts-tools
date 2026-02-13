@@ -32,13 +32,15 @@ service.interceptors.response.use(res => {
         // 未设置状态码则默认成功状态
         const code = res?.data?.code || 200;
         // 获取错误信息
-        const msg =res.data.message
+        const msg = res.data.message
         // 二进制数据则直接返回
         if (res.request.responseType === 'blob' || res.request.responseType === 'arraybuffer') {
             return res.data
         }
         if (code === 401) {
             ElMessage({message: msg, type: 'error'})
+            const token_name = import.meta.env.VITE_BASE_TOKEN_NAME || 'bgi_tools_token'
+            localStorage.removeItem(token_name)
             return Promise.reject(new Error(msg))
         } else if (code === 500) {
             ElMessage({message: msg, type: 'error'})

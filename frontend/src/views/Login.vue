@@ -53,7 +53,8 @@ const handleLogin = async () => {
   try {
     const res = await login(form.value.username, form.value.password)
     const token = res.token
-    localStorage.setItem('bgi_tools_token', token)
+    const token_name= import.meta.env.VITE_BASE_TOKEN_NAME|| 'bgi_tools_token'
+    localStorage.setItem(token_name, token)
     ElMessage.success('登录成功')
     router.push('/')
   } catch (err) {
