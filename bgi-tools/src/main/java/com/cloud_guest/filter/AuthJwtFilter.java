@@ -46,12 +46,14 @@ public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter {
                 break;
             }
         }
+        boolean isAuthenticated = true;
+        boolean checkTokenLogin = checkTokenLogin(request, response);
         if (isProtectedPath) {
-            boolean check = checkTokenLogin(request, response);
-            if (!check) {
-                ApiCode fail = ApiCode.UNAUTHORIZED;
-                throw new GlobalException(fail.getCode(), fail.getMessage());
-            }
+            isAuthenticated = checkTokenLogin;
+        }
+        if (!isAuthenticated) {
+            ApiCode fail = ApiCode.UNAUTHORIZED;
+            throw new GlobalException(fail.getCode(), fail.getMessage());
         }
         chain.doFilter(request, response);
     }
