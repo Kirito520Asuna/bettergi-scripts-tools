@@ -34,7 +34,7 @@ const fetchDomains = async () => {
   try {
     // const response = await service.get('/auto/plan/domain/json/all');
     const response = await getBaseJsonAll()
-    console.log('response', response)
+    // console.log('response', response)
     if (response && response.length > 0) {
       domains.value = response;
     } else {
