@@ -9,6 +9,7 @@ import draggable from 'vuedraggable'
 
 // 配置列表 → 核心数据结构改为 array
 const configs = ref([])
+const currentConfig = ref([])
 const isLoading = ref(false);
 // 秘境数据（保持不变，建议单独抽到一个文件）
 const defaultDomains = domainsDefault
@@ -373,6 +374,32 @@ const updatePhysicalOrder = (config) => {
 const copyToClipboard = (text) => {
   CopyToClipboard(text)
 };
+
+const handleDaysConfirm = (config) => {
+  changShowDaysButton(config)
+  config.showDaysDialog = false
+}
+
+const clearDays = (config) => {
+  config.days = []
+  changShowDaysButton(config)
+  // 可选择是否关闭弹窗：config.showDaysDialog = false
+}
+const handleCurrentConfig = (config, type) => {
+  if (type === "show-day") {
+    config.showDaysDialog = true
+  } else if (type === "hide-day") {
+    config.showDaysDialog = false
+  } else if (type === "show-physical") {
+    config.showPhysicalDialog = true
+  } else if (type === "hide-physical") {
+    config.showPhysicalDialog = false
+  }
+  updateCurrentConfig(config)
+}
+const updateCurrentConfig = (config) => {
+  currentConfig.value = config
+}
 </script>
 
 <template>
@@ -391,11 +418,72 @@ const copyToClipboard = (text) => {
 
         </div>
       </div>
+
+      <div>
+        <!-- 弹窗 -->
+        <el-dialog
+            v-model="currentConfig.showDaysDialog"
+            title="选择执行日期"
+            width="480px"
+            :close-on-click-modal="false"
+            append-to-body
+        >
+
+          <div class="dialog-content">
+            <div class="checkbox-group">
+              <label v-for="(dayName, idx) in weekDays" :key="idx" class="checkbox-label">
+                <el-checkbox :label="idx" v-model="currentConfig.days">
+                  {{ dayName }}
+                </el-checkbox>
+              </label>
+            </div>
+
+            <div class="dialog-actions">
+              <el-button @click="currentConfig.showDaysDialog = false">取消</el-button>
+              <el-button type="primary" @click="handleDaysConfirm(currentConfig)">确定</el-button>
+              <el-button type="danger" plain size="small" @click="clearDays(currentConfig)">清空</el-button>
+            </div>
+          </div>
+        </el-dialog>
+        <el-dialog
+            v-model="currentConfig.showPhysicalDialog"
+            title="调整树脂使用顺序与启用状态"
+            width="520px"
+            direction="rtl"
+            :close-on-click-modal="false"
+        >
+          <div class="dialog-content">
+            <div class="selector-title">拖拽调整顺序</div>
+            <draggable
+                v-model="currentConfig.autoFight.physical"
+                item-key="name"
+                handle=".drag-handle"
+                @end="updatePhysicalOrder(currentConfig)"
+            >
+              <template #item="{ element }">
+                <div class="draggable-item">
+                  <span class="drag-handle">☰</span>
+                  <span class="physical-name">{{ element.name }}</span>
+                  <el-switch
+                      v-model="element.open"
+                      @change="updatePhysicalOrder(currentConfig)"
+                  />
+                </div>
+              </template>
+            </draggable>
+
+            <div class="dialog-actions" style="margin-top: 24px; text-align: right;">
+              <el-button @click="currentConfig.showPhysicalDialog = false">关闭</el-button>
+            </div>
+          </div>
+        </el-dialog>
+      </div>
+
       <div class="content-area">
         <div class="config-list">
           <div v-for="(config,index) in configs" :key="config.order" class="config-item">
             <h3>#{{ index }} 配置</h3>
-                      <hr/>
+            <hr/>
 
             <div class="form-group">
               <label>执行顺序：</label>
@@ -405,64 +493,35 @@ const copyToClipboard = (text) => {
             </div>
 
             <div class="form-group">
-
               <label>执行日：</label>
-
               <div
                   class="days-display"
-                  @click="config.showDaysSelector = !config.showDaysSelector"
+                  @click="handleCurrentConfig(config,'show-day')"
                   :class="{ 'has-selection': config.days?.length > 0 }"
               >
-                <span v-if="config.days?.length === 0">
-                  每天执行（点击指定执行日期）
-                </span>
+              <span v-if="config.days?.length === 0">
+                每天执行（点击指定执行日期）
+              </span>
                 <span v-else>
-                  {{ config.dayName || '已选择 ' + config.days.length + ' 天' }}
-                  <i class="el-icon-arrow-down" :class="{ 'rotate': config.showDaysSelector }"></i>
-                </span>
-              </div>
-
-              <!-- 點擊後展開的部分 -->
-              <div v-if="config.showDaysSelector" class="days-selector">
-                <div class="checkbox-group">
-                  <label v-for="(dayName, idx) in weekDays" :key="idx" class="checkbox-label">
-                    <el-checkbox
-                        :label="idx"
-                        v-model="config.days"
-                    >{{ dayName }}
-                    </el-checkbox>
-                  </label>
-                </div>
-                <div class="actions">
-                  <el-button size="small" @click="showDays(config,'clear')">清空</el-button>
-                  <el-button size="small" type="primary" @click="showDays(config,'hideDaysSelector')">确定</el-button>
-                </div>
-              </div>
-
-              <div class="form-group" v-if="config.selectedType&&!excludeDomainTypes.includes(config.selectedType)">
-                <label>材料忽略限时开放：</label>
-                <el-button
-                    size="small"
-                    :disabled="!config.showDaysButton"
-                    @click="specifyDate(config)"
-                >
-                  {{ config.showDaysButton ? '启用' : '已启用' }}  <!--加*注意说明-->
-                </el-button>
-                <span style="color: red;">默认包含周日</span>
+                {{ config.dayName || '已选择 ' + config.days.length + ' 天' }}
+              </span>
               </div>
             </div>
-
-
+            <div class="form-group" v-if="config.selectedType&&!excludeDomainTypes.includes(config.selectedType)">
+              <label>材料忽略限时开放：</label>
+              <el-button
+                  size="small"
+                  :disabled="!config.showDaysButton"
+                  @click="specifyDate(config)"
+              >
+                {{ config.showDaysButton ? '启用' : '已启用' }}
+              </el-button>
+              <span style="color: red;">默认包含周日</span>
+            </div>
             <!-- 秘境选择 -->
             <!-- 新增 type 选择器 -->
             <div class="form-group">
               <label>秘境类型：</label>
-              <!--              <select v-model="config.selectedType">
-                            <option value="">请选择类型</option>
-                            <option value="天赋">天赋</option>
-                            <option value="武器">武器</option>
-                            <option value="圣遗物">圣遗物</option>
-                          </select>-->
               <select v-model="config.selectedType">
                 <option
                     v-for="type in domainTypes"
@@ -526,59 +585,22 @@ const copyToClipboard = (text) => {
 
             <!--          <hr/>-->
 
-            <!-- 树脂使用配置 -->
+
             <div class="form-group">
               <label>树脂使用顺序：</label>
-
-              <!-- 点击展开 -->
+              <!-- 原 physical-display 改成 -->
               <div
                   class="physical-display"
-                  @click="config.showPhysicalSelector = !config.showPhysicalSelector"
+                  @click="handleCurrentConfig(config,'show-physical')"
               >
-    <span>
-      {{
-        config.autoFight.physical
-            .filter(p => p.open)
-            .map(p => p.name)
-            .join(' → ') || '未选择'
-      }}
-    </span>
-                <i
-                    class="el-icon-arrow-down"
-                    :class="{ rotate: config.showPhysicalSelector }"
-                />
-              </div>
-
-              <!-- 展开内容 -->
-              <div v-if="config.showPhysicalSelector" class="physical-selector">
-                <div class="selector-title">拖拽调整顺序 & 启用状态</div>
-
-                <draggable
-                    v-model="config.autoFight.physical"
-                    item-key="name"
-                    handle=".drag-handle"
-                    @end="updatePhysicalOrder(config)"
-                >
-                  <template #item="{ element }">
-                    <div class="draggable-item">
-                      <span class="drag-handle">☰</span>
-
-                      <span class="physical-name">{{ element.name }}</span>
-
-                      <el-switch
-                          v-model="element.open"
-                          @change="updatePhysicalOrder(config)"
-                      />
-                    </div>
-                  </template>
-                </draggable>
-
-                <div class="actions">
-                  <el-button size="small" type="primary"
-                             @click="config.showPhysicalSelector = false">
-                    确定
-                  </el-button>
-                </div>
+              <span>
+                {{
+                  config.autoFight.physical
+                      .filter(p => p.open)
+                      .map(p => p.name)
+                      .join(' → ') || '未选择'
+                }}
+              </span>
               </div>
             </div>
 
@@ -982,38 +1004,6 @@ h2 {
   cursor: not-allowed;
 }
 
-.physical-display {
-  padding: 8px 12px;
-  border: 1px solid #dcdfe6;
-  border-radius: 6px;
-  background: #fff;
-  cursor: pointer;
-  min-height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  transition: all 0.2s;
-  margin-bottom: 8px;
-}
-
-.physical-display:hover {
-  border-color: #409eff;
-}
-
-.physical-selector {
-  margin-top: 8px;
-  padding: 12px;
-  border: 1px solid #e4e7ed;
-  border-radius: 6px;
-  background: #f8f9fa;
-}
-
-.selector-title {
-  font-size: 0.9rem;
-  color: #606266;
-  margin-bottom: 10px;
-  font-weight: 500;
-}
 
 .drag-handle {
   cursor: move;
@@ -1036,6 +1026,45 @@ h2 {
 .actions {
   text-align: right;
   margin-top: 12px;
+}
+
+.physical-display {
+  padding: 8px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  background: #f5f7fa;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s;
+  min-height: 36px;
+}
+
+.physical-display:hover {
+  border-color: #409eff;
+  background: #ecf5ff;
+}
+
+.draggable-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.drag-handle {
+  cursor: move;
+  font-size: 1.3rem;
+  color: #909399;
+}
+
+.physical-name {
+  font-weight: 500;
 }
 
 </style>
