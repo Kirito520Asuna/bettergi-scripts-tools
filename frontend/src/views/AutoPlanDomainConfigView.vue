@@ -103,6 +103,7 @@ const goToHome = () => {
   router.push('/'); // 假设主页路径是 '/'
 };
 const showResultDrawer = ref(false)
+const orderSortConfigs = ref(false)
 const uid = ref("")
 // 新增一条空白配置
 const addConfig = () => {
@@ -134,6 +135,9 @@ const addConfig = () => {
       DomainRoundNum: 1
     }
   })
+
+  changSortConfigs()
+
 }
 const removeConfigAll = () => {
   configs.value = []
@@ -160,15 +164,20 @@ const domainMap = computed(() => {
   return map
 })
 const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-const showDays = (config, type) => {
-  if (type === 'clear') {
-    config.days = []
-  } else if (type === 'showDaysSelector') {
-    config.showDaysSelector = true
-  } else if (type === 'hideDaysSelector') {
-    config.showDaysSelector = false
+// const showDays = (config, type) => {
+//   if (type === 'clear') {
+//     config.days = []
+//   } else if (type === 'showDaysSelector') {
+//     config.showDaysSelector = true
+//   } else if (type === 'hideDaysSelector') {
+//     config.showDaysSelector = false
+//   }
+//   changShowDaysButton(config);
+// }
+const changSortConfigs = () => {
+  if (orderSortConfigs.value) {
+    configs.value.sort((a, b) => b.order - a.order)
   }
-  changShowDaysButton(config);
 }
 
 function changShowDaysButton(config) {
@@ -221,6 +230,11 @@ watchEffect(
 
         changShowDaysButton(config);
       })
+
+      if (orderSortConfigs.value) {
+        newConfigs.sort((a, b) => b.order - a.order)
+      }
+
     },
     {deep: true}
 )
@@ -411,6 +425,13 @@ const updateCurrentConfig = (config) => {
           <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
           <!-- 添加配置按钮 -->
           <button @click="addConfig" class="btn btn-add">➕ 添加一条配置</button>
+          <div class="sort-control-card">
+            <span class="sort-label">执行排序</span>
+            <el-switch
+                v-model="orderSortConfigs"
+                @change="changSortConfigs"
+            />
+          </div>
           <button @click="submitConfigToBackend" class="btn btn-submit">同步到云端</button>
           <button @click="findDomains" class="btn btn-submit">加载云端配置</button>
           <button @click="removeConfigToBackend" class="btn danger">🗑️ 移除云端配置</button>
@@ -482,59 +503,59 @@ const updateCurrentConfig = (config) => {
             v-model="showResultDrawer"
             direction="rtl"
             size="45%"
-        :with-header="true"
-        :close-on-press-escape="true"
-        :modal="true"
-        custom-class="result-drawer"
+            :with-header="true"
+            :close-on-press-escape="true"
+            :modal="true"
+            custom-class="result-drawer"
         >
-        <template #title>
-          <span style="font-weight: bold; color: #409eff;">配置结果预览</span>
-        </template>
+          <template #title>
+            <span style="font-weight: bold; color: #409eff;">配置结果预览</span>
+          </template>
 
-        <div class="drawer-content">
-          <!-- Json 配置卡片 -->
-          <div class="result-card">
-            <div class="card-header">
-              <label class="result-key">Json配置</label>
-              <el-tooltip content="复制到剪贴板" placement="top">
-                <el-button
-                    type="primary"
-                    size="small"
-                    icon="DocumentCopy"
-                    @click="copyToClipboard(getFinalConfigsMapShow())"
-                >
-                  复制
-                </el-button>
-              </el-tooltip>
+          <div class="drawer-content">
+            <!-- Json 配置卡片 -->
+            <div class="result-card">
+              <div class="card-header">
+                <label class="result-key">Json配置</label>
+                <el-tooltip content="复制到剪贴板" placement="top">
+                  <el-button
+                      type="primary"
+                      size="small"
+                      icon="DocumentCopy"
+                      @click="copyToClipboard(getFinalConfigsMapShow())"
+                  >
+                    复制
+                  </el-button>
+                </el-tooltip>
+              </div>
+              <pre class="result code-block">{{ getFinalConfigsMapShow() || '暂无返回数据' }}</pre>
             </div>
-            <pre class="result code-block">{{ getFinalConfigsMapShow() || '暂无返回数据' }}</pre>
-          </div>
 
-          <!-- 语法 key 卡片 -->
-          <div class="result-card" style="margin-top: 24px;">
-            <div class="card-header">
-              <label class="result-key">语法key</label>
-              <el-tooltip content="复制到剪贴板" placement="top">
-                <el-button
-                    type="success"
-                    size="small"
-                    icon="DocumentCopy"
-                    @click="copyToClipboard(getFinalConfigsToKey())"
-                >
-                  复制
-                </el-button>
-              </el-tooltip>
+            <!-- 语法 key 卡片 -->
+            <div class="result-card" style="margin-top: 24px;">
+              <div class="card-header">
+                <label class="result-key">语法key</label>
+                <el-tooltip content="复制到剪贴板" placement="top">
+                  <el-button
+                      type="success"
+                      size="small"
+                      icon="DocumentCopy"
+                      @click="copyToClipboard(getFinalConfigsToKey())"
+                  >
+                    复制
+                  </el-button>
+                </el-tooltip>
+              </div>
+              <pre class="result code-block">{{ getFinalConfigsToKey() || '暂无返回数据' }}</pre>
             </div>
-            <pre class="result code-block">{{ getFinalConfigsToKey() || '暂无返回数据' }}</pre>
           </div>
-        </div>
 
-        <!-- 可选：底部操作 -->
-        <template #footer>
-          <div style="text-align: right;">
-            <el-button @click="showResultDrawer = false">关闭</el-button>
-          </div>
-        </template>
+          <!-- 可选：底部操作 -->
+          <template #footer>
+            <div style="text-align: right;">
+              <el-button @click="showResultDrawer = false">关闭</el-button>
+            </div>
+          </template>
         </el-drawer>
       </div>
 
@@ -674,16 +695,16 @@ const updateCurrentConfig = (config) => {
           <i class="el-icon-document"></i>
           <span>查看/复制配置结果</span>
         </div>
-<!--        <div class="result-all">
-          <label class="result-key">Json配置:</label>
-          <pre class="result">{{ getFinalConfigsMapShow() || '暂无返回数据' }}</pre>
-          <button @click="copyToClipboard(getFinalConfigsMapShow())" class="copy-btn">📋 复制</button>
-        </div>
-        <div class="result-all">
-          <label class="result-key">语法key:</label>
-          <pre class="result">{{ getFinalConfigsToKey() || '暂无返回数据' }}</pre>
-          <button @click="copyToClipboard(getFinalConfigsToKey())" class="copy-btn">📋 复制</button>
-        </div>-->
+        <!--        <div class="result-all">
+                  <label class="result-key">Json配置:</label>
+                  <pre class="result">{{ getFinalConfigsMapShow() || '暂无返回数据' }}</pre>
+                  <button @click="copyToClipboard(getFinalConfigsMapShow())" class="copy-btn">📋 复制</button>
+                </div>
+                <div class="result-all">
+                  <label class="result-key">语法key:</label>
+                  <pre class="result">{{ getFinalConfigsToKey() || '暂无返回数据' }}</pre>
+                  <button @click="copyToClipboard(getFinalConfigsToKey())" class="copy-btn">📋 复制</button>
+                </div>-->
       </div>
     </div>
     <!-- 在 template 最后添加 -->
@@ -984,7 +1005,45 @@ h2 {
 .copy-btn:hover {
   background-color: #85ce61;
 }
+.sort-control-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 
+  background-color: #85ce61; /* 白色背景 */
+  color: #000000; /* 黑色文字 */
+  padding: 10px 20px; /* 内边距 */
+  border-radius: 8px; /* 圆角 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
+  border: none; /* 去除边框 */
+  font-weight: bold; /* 加粗文字 */
+  transition: all 0.3s ease; /* 平滑过渡效果 */
+}
+
+.sort-control-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35),
+  inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-color: rgba(96, 165, 250, 0.4);
+}
+
+.sort-label {
+  color: #000000;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* 讓 switch 看起來更精緻（可選） */
+:deep(.el-switch__core) {
+  border-color: rgba(96, 165, 250, 0.5) !important;
+}
+
+:deep(.el-switch.is-checked .el-switch__core) {
+  border-color: #60a5fa !important;
+  background-color: #3b82f6 !important;
+}
 .btn.btn-add {
   background-color: #85ce61; /* 白色背景 */
   color: #000000; /* 黑色文字 */
@@ -1114,6 +1173,7 @@ h2 {
 .physical-name {
   font-weight: 500;
 }
+
 /* 右侧固定触发按钮 */
 .fixed-trigger {
   position: fixed;
@@ -1170,7 +1230,7 @@ h2 {
 .result-card {
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   backdrop-filter: blur(10px); /* 毛玻璃效果 */
 }
 
@@ -1207,42 +1267,44 @@ h2 {
 .external-pop-up-frame {
   /* 讓彈窗有「浮在背景上」的氛圍 */
   position: relative;
-  z-index: 2000;           /* 確保蓋過其他內容 */
+  z-index: 2000; /* 確保蓋過其他內容 */
 }
 
 /* 對所有從這裡彈出的 el-dialog / el-drawer 生效 */
 .external-pop-up-frame .el-dialog,
 .external-pop-up-frame .el-drawer {
-/*  --el-dialog-bg-color         : rgba(206, 210, 225, 0.88) !important;*/
+  /*  --el-dialog-bg-color         : rgba(206, 210, 225, 0.88) !important;*/
   /*background                   : linear-gradient(135deg, #5b818c, #38e0c2);*/
-/*  --el-overlay-bg-color        : rgba(224, 208, 208, 0.65) !important;*/
-  backdrop-filter              : blur(12px) saturate(1.6);
-  border                       : 1px solid rgba(100, 160, 255, 0.25);
-  border-radius                : 16px;
-  box-shadow                   : 0 12px 40px rgba(80, 76, 76, 0.5);
-  overflow                     : hidden;
+  /*  --el-overlay-bg-color        : rgba(224, 208, 208, 0.65) !important;*/
+  backdrop-filter: blur(12px) saturate(1.6);
+  border: 1px solid rgba(100, 160, 255, 0.25);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(80, 76, 76, 0.5);
+  overflow: hidden;
 }
 
 /* 標題區域加強 */
 .external-pop-up-frame .el-dialog__header,
 .external-pop-up-frame .el-drawer__header {
-  color                        : #e4e8ea;
-  border-bottom                : 1px solid rgba(255,255,255,0.12);
-  padding                      : 16px 24px;
+  color: #e4e8ea;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 16px 24px;
 }
 
 /* 內容區域 */
 .external-pop-up-frame .el-dialog__body,
 .external-pop-up-frame .el-drawer__body {
-  background                   : transparent;
-/*  color                        : #e2e8f0;*/
-  padding                      : 20px 24px;
+  background: transparent;
+  /*  color                        : #e2e8f0;*/
+  padding: 20px 24px;
 }
 
 /* 按鈕區域（footer） */
 .external-pop-up-frame .el-dialog__footer {
-  background                   : rgba(0,0,0,0.2);
-  border-top                   : 1px solid rgba(255,255,255,0.08);
-  padding                      : 16px 24px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px 24px;
 }
+
+
 </style>
