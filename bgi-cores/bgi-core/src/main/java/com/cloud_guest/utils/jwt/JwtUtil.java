@@ -251,6 +251,8 @@ public class JwtUtil {
      * @return
      */
     public static boolean isTokenExpired(Claims claims, Date date) {
-        return claims.getExpiration().before(date);
+        Date expiration = claims.getExpiration();
+        boolean before = expiration.after(date);
+        return before;
     }
 }
