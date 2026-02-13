@@ -1,5 +1,6 @@
 package com.cloud_guest.filter;
 
+import cn.hutool.core.util.StrUtil;
 import com.cloud_guest.abs.AuthFilter;
 import com.cloud_guest.enums.ApiCode;
 import com.cloud_guest.exception.exceptions.GlobalException;
@@ -25,6 +26,9 @@ public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter {
         boolean validateToken = jwtUtil.validateToken(token);
         if (validateToken) {
             String username = jwtUtil.getUsernameFromToken(token);
+            if (StrUtil.isEmpty(username)){
+                return false;
+            }
             // 简单起见，不设权限，只放用户名进去
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     username, null, null);
