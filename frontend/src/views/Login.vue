@@ -52,8 +52,13 @@ const handleLogin = async () => {
   isLoading.value = true // 开始登录时设置为 true
   try {
     const res = await login(form.value.username, form.value.password)
-    const token = res.token
+    const token = res
+    if (!token){
+      throw new Error('登录异常')
+    }
     const token_name= import.meta.env.VITE_BASE_TOKEN_NAME|| 'bgi_tools_token'
+    console.log("login=>name:",token_name)
+    console.log("login=>token:",token)
     localStorage.setItem(token_name, token)
     ElMessage.success('登录成功')
     router.push('/')

@@ -16,11 +16,18 @@ const service = axios.create({
 
 // request拦截器
 service.interceptors.request.use(config => {
-    const token = localStorage.getItem('bgi_tools_token')
+    const token_name = import.meta.env.VITE_BASE_TOKEN_NAME || 'bgi_tools_token';
+    const token = localStorage.getItem(token_name);
+    console.log('Token Name:', token_name);
+    console.log('Token Value:', token);
+
     if (token) {
-        config.headers.Authorization = `Bearer ${token}`
+        config.headers.Authorization = `Bearer ${token}`;
+        config.headers[token_name] = token;
+        console.log('Headers Set:', config.headers);
+    } else {
+        console.warn('No token found in localStorage');
     }
-    return config
     return config
 }, error => {
     console.log(error)

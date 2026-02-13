@@ -8,6 +8,7 @@ import service from "@utils/request.js";
  */
 async function login(username, password) {
     const res = await service.post('/auth/login', {username: username, password: password})  // 注意 context-path 是 /bgi
+    console.log("res:", res)
     return res.data
 }
 
