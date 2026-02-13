@@ -419,7 +419,7 @@ const updateCurrentConfig = (config) => {
         </div>
       </div>
 
-      <div>
+      <div class="external-pop-up-frame">
         <!-- 弹窗 -->
         <el-dialog
             v-model="currentConfig.showDaysDialog"
@@ -1202,5 +1202,47 @@ h2 {
   word-break: break-all;
   max-height: 45vh;
   overflow-y: auto;
+}
+
+.external-pop-up-frame {
+  /* 讓彈窗有「浮在背景上」的氛圍 */
+  position: relative;
+  z-index: 2000;           /* 確保蓋過其他內容 */
+}
+
+/* 對所有從這裡彈出的 el-dialog / el-drawer 生效 */
+.external-pop-up-frame .el-dialog,
+.external-pop-up-frame .el-drawer {
+/*  --el-dialog-bg-color         : rgba(206, 210, 225, 0.88) !important;*/
+  /*background                   : linear-gradient(135deg, #5b818c, #38e0c2);*/
+/*  --el-overlay-bg-color        : rgba(224, 208, 208, 0.65) !important;*/
+  backdrop-filter              : blur(12px) saturate(1.6);
+  border                       : 1px solid rgba(100, 160, 255, 0.25);
+  border-radius                : 16px;
+  box-shadow                   : 0 12px 40px rgba(80, 76, 76, 0.5);
+  overflow                     : hidden;
+}
+
+/* 標題區域加強 */
+.external-pop-up-frame .el-dialog__header,
+.external-pop-up-frame .el-drawer__header {
+  color                        : #e4e8ea;
+  border-bottom                : 1px solid rgba(255,255,255,0.12);
+  padding                      : 16px 24px;
+}
+
+/* 內容區域 */
+.external-pop-up-frame .el-dialog__body,
+.external-pop-up-frame .el-drawer__body {
+  background                   : transparent;
+/*  color                        : #e2e8f0;*/
+  padding                      : 20px 24px;
+}
+
+/* 按鈕區域（footer） */
+.external-pop-up-frame .el-dialog__footer {
+  background                   : rgba(0,0,0,0.2);
+  border-top                   : 1px solid rgba(255,255,255,0.08);
+  padding                      : 16px 24px;
 }
 </style>
