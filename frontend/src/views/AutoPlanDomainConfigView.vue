@@ -102,7 +102,7 @@ onMounted(() => {
 const goToHome = () => {
   router.push('/'); // 假设主页路径是 '/'
 };
-
+const showResultDrawer = ref(false)
 const uid = ref("")
 // 新增一条空白配置
 const addConfig = () => {
@@ -477,6 +477,65 @@ const updateCurrentConfig = (config) => {
             </div>
           </div>
         </el-dialog>
+        <!-- 主内容区保持原样，只在最外层加一个抽屉 -->
+        <el-drawer
+            v-model="showResultDrawer"
+            direction="rtl"
+            size="45%"
+        :with-header="true"
+        :close-on-press-escape="true"
+        :modal="true"
+        custom-class="result-drawer"
+        >
+        <template #title>
+          <span style="font-weight: bold; color: #409eff;">配置结果预览</span>
+        </template>
+
+        <div class="drawer-content">
+          <!-- Json 配置卡片 -->
+          <div class="result-card">
+            <div class="card-header">
+              <label class="result-key">Json配置</label>
+              <el-tooltip content="复制到剪贴板" placement="top">
+                <el-button
+                    type="primary"
+                    size="small"
+                    icon="DocumentCopy"
+                    @click="copyToClipboard(getFinalConfigsMapShow())"
+                >
+                  复制
+                </el-button>
+              </el-tooltip>
+            </div>
+            <pre class="result code-block">{{ getFinalConfigsMapShow() || '暂无返回数据' }}</pre>
+          </div>
+
+          <!-- 语法 key 卡片 -->
+          <div class="result-card" style="margin-top: 24px;">
+            <div class="card-header">
+              <label class="result-key">语法key</label>
+              <el-tooltip content="复制到剪贴板" placement="top">
+                <el-button
+                    type="success"
+                    size="small"
+                    icon="DocumentCopy"
+                    @click="copyToClipboard(getFinalConfigsToKey())"
+                >
+                  复制
+                </el-button>
+              </el-tooltip>
+            </div>
+            <pre class="result code-block">{{ getFinalConfigsToKey() || '暂无返回数据' }}</pre>
+          </div>
+        </div>
+
+        <!-- 可选：底部操作 -->
+        <template #footer>
+          <div style="text-align: right;">
+            <el-button @click="showResultDrawer = false">关闭</el-button>
+          </div>
+        </template>
+        </el-drawer>
       </div>
 
       <div class="content-area">
@@ -610,7 +669,12 @@ const updateCurrentConfig = (config) => {
 
           </div>
         </div>
-        <div class="result-all">
+        <!-- 右侧固定触发按钮（悬浮在页面右中部） -->
+        <div class="fixed-trigger" @click="showResultDrawer = true" title="查看/复制配置结果">
+          <i class="el-icon-document"></i>
+          <span>查看/复制配置结果</span>
+        </div>
+<!--        <div class="result-all">
           <label class="result-key">Json配置:</label>
           <pre class="result">{{ getFinalConfigsMapShow() || '暂无返回数据' }}</pre>
           <button @click="copyToClipboard(getFinalConfigsMapShow())" class="copy-btn">📋 复制</button>
@@ -619,7 +683,7 @@ const updateCurrentConfig = (config) => {
           <label class="result-key">语法key:</label>
           <pre class="result">{{ getFinalConfigsToKey() || '暂无返回数据' }}</pre>
           <button @click="copyToClipboard(getFinalConfigsToKey())" class="copy-btn">📋 复制</button>
-        </div>
+        </div>-->
       </div>
     </div>
     <!-- 在 template 最后添加 -->
@@ -842,14 +906,6 @@ h2 {
   font-weight: 500;
 }
 
-.days-selector {
-  margin-top: 8px;
-  padding: 12px;
-  border: 1px solid #e4e7ed;
-  border-radius: 6px;
-  background: #f8f9fa;
-}
-
 .checkbox-group {
   display: flex;
   flex-wrap: wrap;
@@ -861,14 +917,6 @@ h2 {
   min-width: 80px;
 }
 
-.actions {
-  text-align: right;
-  margin-top: 8px;
-}
-
-.rotate {
-  transform: rotate(180deg);
-}
 
 .form-group input {
   align-items: center;
@@ -1066,5 +1114,93 @@ h2 {
 .physical-name {
   font-weight: 500;
 }
+/* 右侧固定触发按钮 */
+.fixed-trigger {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 999;
+  width: 4%;
+  height: 40%;
+  background: rgba(64, 158, 255, 0.9);
+  color: white;
+  border-radius: 12px 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
 
+.fixed-trigger:hover {
+  right: 18px;
+  background: rgba(64, 158, 255, 1);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.2);
+}
+
+.fixed-trigger i {
+  font-size: 1.8rem;
+}
+
+.fixed-trigger span {
+  font-size: 0.9rem;
+  writing-mode: vertical-rl;
+  letter-spacing: 2px;
+}
+
+/* 抽屉自定义样式 */
+.result-drawer {
+  --el-drawer-bg-color: rgba(206, 33, 33, 0.96);
+  --el-drawer-border-color: #1b3e8f;
+  background: #fadbd8;
+  backdrop-filter: blur(6px);
+}
+
+.drawer-content {
+  padding: 0 16px 24px;
+  height: 100%;
+  overflow-y: auto;
+  backdrop-filter: blur(6px);
+}
+
+.result-card {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  backdrop-filter: blur(10px); /* 毛玻璃效果 */
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #29cbc5, #cf12e3); /* 添加渐变背景 */
+  border-bottom: 1px solid #e9ecef;
+}
+
+.result-key {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #303133;
+}
+
+.code-block {
+  margin: 0;
+  padding: 16px;
+  background: linear-gradient(135deg, #ddb568, #ffffff); /* 添加渐变背景 */
+  color: rgb(230, 0, 103); /* 修改为你想要的颜色 */
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 0.94rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 45vh;
+  overflow-y: auto;
+}
 </style>
