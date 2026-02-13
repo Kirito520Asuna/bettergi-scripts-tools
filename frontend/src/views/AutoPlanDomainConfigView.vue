@@ -457,7 +457,7 @@ const updateCurrentConfig = (config) => {
             <draggable
                 v-model="currentConfig.autoFight.physical"
                 item-key="name"
-                handle=".drag-handle"
+                handle=".draggable-item"
                 @end="updatePhysicalOrder(currentConfig)"
             >
               <template #item="{ element }">
