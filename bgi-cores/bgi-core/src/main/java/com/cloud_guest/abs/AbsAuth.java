@@ -46,7 +46,7 @@ public interface AbsAuth {
     default boolean checkToken(HttpServletRequest request, HttpServletResponse response) {
         AuthProperties authProperties = SpringUtil.getBean(AuthProperties.class);
         String authHeader = request.getHeader(authProperties.getTokenName());
-        authHeader = StrUtil.isBlankIfStr(authHeader) ? request.getHeader(HttpHeaders.AUTHORIZATION) : authHeader;
+        authHeader = StrUtil.isBlank(authHeader) ? request.getHeader(HttpHeaders.AUTHORIZATION) : authHeader;
         if (StrUtil.isNotBlank(authHeader)) {
             String bearer = "Bearer";
             String token = "";
