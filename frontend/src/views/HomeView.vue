@@ -221,7 +221,7 @@ const getIcon = (item) => {
     }
     return rawIcon;
   }
-  rawIcon = item.isLink ? "🔗" : item.isSwagger ? "📖" : item.isRote ? "🛤️" : "";
+  rawIcon = item.isLink ? "🔗" : item.isSwagger ? "📖" : item.isRote ? "🚀" : "";
   // 其他情况兜底（比如传了奇怪的东西）
   return rawIcon;
 };
@@ -258,7 +258,7 @@ const toClick = async (item) => {
   const value = item.value;
   if (value === 'Logout') {
     await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-      confirmButtonText: '确定退出登录',
+      confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     })
@@ -273,7 +273,7 @@ const toClick = async (item) => {
     }
 // 可選：二次確認（看需求加不加）
     await ElMessageBox.confirm('确定要重启系统吗？', '提示', {
-      confirmButtonText: '确定重启',
+      confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     })
