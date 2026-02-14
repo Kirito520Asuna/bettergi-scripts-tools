@@ -739,16 +739,15 @@ const updateCurrentConfig = (config) => {
 
 /* 固定容器样式 */
 .fixed-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 15%;
-  /* background: rgba(255, 255, 255, 0.9); !* 半透明白色背景 *!*/
-  backdrop-filter: blur(10px); /* 毛玻璃效果 */
+  position: fixed; /* 固定定位 */
+  top: 0; /* 距离顶部为 0 */
+  left: 0; /* 距离左侧为 0 */
+  width: 100%; /* 占满整个视口宽度 */
   z-index: 1000; /* 确保在最上层 */
-  padding: 10px 20px;
+  backdrop-filter: blur(10px); /* 毛玻璃效果 */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+  border-radius: 12px; /* 添加圆角 */
+  padding: 10px 20px; /* 内边距 */
 }
 
 /* 内容区域补偿高度 */
@@ -1006,7 +1005,7 @@ h2 {
 
   background-color: #85ce61; /* 白色背景 */
   color: #000000; /* 黑色文字 */
-  padding: 4px 4px; /* 内边距 */
+  padding: 4px 8px; /* 内边距 */
   border-radius: 8px; /* 圆角 */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
   border: none; /* 去除边框 */
