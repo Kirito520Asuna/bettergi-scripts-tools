@@ -28,6 +28,9 @@ async function postUidJson(uid, json) {
  */
 async function getUidJson(uid){
     const response = await service.get('/auto/plan/domain/json', {params: {uid: uid}})
+    if (response.code === 200){
+        ElMessage.success("加载成功");
+    }
     // 返回响应数据
     return response.data;
 }
@@ -51,6 +54,9 @@ async function removeUidList(uidStr){
  */
 async function getBaseJsonAll(){
     const response = await service.get('/auto/plan/domain/json/all');
+    if (response.code === 200){
+        ElMessage.success("全部加载成功");
+    }
     return response.data;
 }
 
