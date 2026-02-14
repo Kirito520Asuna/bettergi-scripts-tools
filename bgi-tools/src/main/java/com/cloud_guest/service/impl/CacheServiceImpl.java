@@ -39,14 +39,14 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public boolean save(String id, String json) {
+        Cache<String> cache = new Cache<>();
+        cache.setType("json");
+        cache.setData(json);
         if ("none".equals(redisMode)) {
-            Cache<String> cache = new Cache<>();
-            cache.setType("json");
-            cache.setData(json);
             LocalCacheUtils.put(id, JSONUtil.toJsonStr(cache));
         } else {
             RedisService bean = SpringUtil.getBean(RedisService.class);
-            bean.save(REDIS_FILE_JSON_KEY + id, json);
+            bean.save(REDIS_FILE_JSON_KEY + id, JSONUtil.toJsonStr(cache));
         }
         return true;
     }
