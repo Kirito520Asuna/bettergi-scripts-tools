@@ -1269,6 +1269,7 @@ h2 {
   /*  --el-dialog-bg-color         : rgba(206, 210, 225, 0.88) !important;*/
   /*background                   : linear-gradient(135deg, #5b818c, #38e0c2);*/
   /*  --el-overlay-bg-color        : rgba(224, 208, 208, 0.65) !important;*/
+  max-width: 500px;
   backdrop-filter: blur(12px) saturate(1.6);
   border: 1px solid rgba(100, 160, 255, 0.25);
   border-radius: 16px;
