@@ -1,6 +1,11 @@
 package com.cloud_guest.filter;
 
+import cn.hutool.core.util.StrUtil;
 import com.cloud_guest.abs.AuthFilter;
+import com.cloud_guest.aop.bean.AbsBean;
+import com.cloud_guest.enums.ApiCode;
+import com.cloud_guest.exception.exceptions.GlobalException;
+import com.cloud_guest.utils.AuthContextUtil;
 import com.cloud_guest.utils.jwt.JwtUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,27 +18,47 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter {
+public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter, AbsBean {
 
     @Resource
     private JwtUtil jwtUtil;
 
     @Override
-    public void setToken(String token) {
-        if (jwtUtil.validateToken(token)) {
+    public boolean setToken(String token) {
+        log().debug("setToken: {}", token);
+        boolean validateToken = jwtUtil.validateToken(token);
+        if (validateToken) {
             String username = jwtUtil.getUsernameFromToken(token);
-            // 简单起见，不设权限，只放用户名进去
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    username, null, null);
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            if (StrUtil.isEmpty(username)){
+                return false;
+            }
+            AuthContextUtil.setUsername(username);
         }
-
+        return validateToken;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        checkTokenLogin(request, response);
+
+        String requestPath = request.getServletPath();
+        // 检查是否为受保护路径
+        boolean isProtectedPath = false;
+        for (String path : fetchProtectedPaths()) {
+            if (fetchPathMatcher().match(path, requestPath)) {
+                isProtectedPath = true;
+                break;
+            }
+        }
+        boolean isAuthenticated = true;
+        boolean checkTokenLogin = checkTokenLogin(request, response);
+        if (isProtectedPath) {
+            isAuthenticated = checkTokenLogin;
+        }
+        if (!isAuthenticated) {
+            ApiCode fail = ApiCode.UNAUTHORIZED;
+            throw new GlobalException(fail.getCode(), fail.getMessage());
+        }
         chain.doFilter(request, response);
     }
 }

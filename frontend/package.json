@@ -6,7 +6,8 @@
   "scripts": {
     "build:full": "npm install && npm run build",
     "dev": "npx vite --mode dev",
-    "build": "npx vite build",
+    "prod": "npx vite --mode prod",
+    "build": "npx vite build --mode prod",
     "preview": "npx vite preview"
   },
   "dependencies": {
@@ -17,7 +18,8 @@
     "markdown-it": "^14.1.0",
     "mermaid": "^11.12.2",
     "vue": "^3.5.12",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",

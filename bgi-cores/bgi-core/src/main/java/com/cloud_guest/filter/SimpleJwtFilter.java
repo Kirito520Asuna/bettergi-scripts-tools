@@ -18,14 +18,6 @@ import java.io.IOException;
 
 public class SimpleJwtFilter extends OncePerRequestFilter implements AuthFilter {
 
-    @Resource
-    private JwtUtil jwtUtil;
-
-    @Override
-    public void setToken(String token) {
-        //AuthFilter.super.setToken(token);
-    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {

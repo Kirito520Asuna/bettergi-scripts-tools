@@ -3,7 +3,9 @@ package com.cloud_guest.config;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.cloud_guest.abs.AuthFilter;
 import com.cloud_guest.aop.bean.AbsBean;
+import com.cloud_guest.filter.AuthJwtFilter;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -19,6 +21,7 @@ import org.springframework.security.config.annotation.web.configurers.Expression
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.annotation.PostConstruct;
 
@@ -53,20 +56,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements AbsB
         log().debug("class:{},msg:PasswordEncoder", getAClassName());
         return new BCryptPasswordEncoder();
     }
-
+    @Bean
+    @ConditionalOnExpression("${auth.enabled:true}")
+    public AuthFilter authFilter() {
+        return new AuthJwtFilter();
+    }
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry expressionInterceptUrlRegistry =
                 http.cors().and().csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeRequests()
-                .antMatchers("/login", "/logout").permitAll();
+                        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .and()
+                        .authorizeRequests()
+                        .antMatchers("/login", "/logout", "/static/**").permitAll();
 
-            String jwtPath = "/jwt/**";
-            String[] paths = jwtPath.split(",");
-            expressionInterceptUrlRegistry
-                    .antMatchers(paths).authenticated(); // 以 "/jwt" 开头的请求需要认证
+        String jwtPath = "/jwt/**";
+        String[] paths = jwtPath.split(",");
+        expressionInterceptUrlRegistry
+                .antMatchers(paths).authenticated(); // 以 "/jwt" 开头的请求需要认证
         expressionInterceptUrlRegistry.anyRequest().permitAll(); // 其他请求允许访问
 
         if (securityAutoConfiguration != null) {
@@ -76,9 +83,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements AbsB
                     .permitAll()
             );
         }
+        AuthFilter authFilter = SpringUtil.getBean(AuthFilter.class);
+        http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
 
     }
-
 
 
     @Bean
@@ -86,5 +94,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements AbsB
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
+
 
 }

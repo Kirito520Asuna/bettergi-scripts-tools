@@ -6,6 +6,7 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.log.SysLog;
+import com.cloud_guest.aop.security.Token;
 import com.cloud_guest.domain.AnalysisJsonFileDto;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.result.Result;
@@ -85,7 +86,7 @@ public class AnalysisController {
         return Result.ok(cache);
     }
 
-    @SysLog
+    @SysLog @Token
     @Operation(summary = "批量删除JSON")
     @DeleteMapping("json/file")
     public Result<Boolean> infoDel(@Validated @NotBlank @RequestParam String idStr) {

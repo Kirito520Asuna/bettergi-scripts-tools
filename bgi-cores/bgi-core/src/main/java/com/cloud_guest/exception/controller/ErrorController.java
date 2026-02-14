@@ -57,7 +57,7 @@ public class ErrorController extends BasicErrorController {
             if (attribute instanceof GlobalException) {
                 GlobalException exception = (GlobalException) attribute;
                 Integer exceptionCode = exception.getCode();
-                errcode = ObjectUtil.isEmpty(exceptionCode) ? exceptionCode : errcode;
+                errcode = ObjectUtil.isNotEmpty(exceptionCode) ? exceptionCode : errcode;
                 obj = exception.getMessage();
                 break;
             }

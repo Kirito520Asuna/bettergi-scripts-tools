@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +26,8 @@ public class AutoPlanDomainVo implements Serializable {
     @Schema(description = "执行日期")
     @JsonProperty("days")
     private List<Integer> days;
+    @JsonProperty("dayName")
+    private String dayName;
     @Schema(description = "执行类型")
     @JsonProperty("selectedType")
     private String selectedType;
@@ -47,5 +50,19 @@ public class AutoPlanDomainVo implements Serializable {
         @Schema(description = "秘境轮数")
         @JsonProperty("DomainRoundNum")
         private Integer domainRoundNum;
+        @Schema(description = "树脂启用顺序")
+        @JsonProperty("physical")
+        private List<PhysicalDTO> physical;
+    }
+
+    @NoArgsConstructor
+    @Data
+    public static class PhysicalDTO {
+        @JsonProperty("order")
+        private Integer order;
+        @JsonProperty("name")
+        private String name;
+        @JsonProperty("open")
+        private boolean open;
     }
 }

@@ -80,14 +80,21 @@ const routes = [
     }
     // 其他路由...
 ]
-
+const VITE_BASE_PATH = (import.meta.env.VITE_BASE_PATH || '/bgi/ui/');
+const token_name= import.meta.env.VITE_BASE_TOKEN_NAME|| 'bgi_tools_token'
+// console.log("VITE_BASE_PATH:", VITE_BASE_PATH);
 const router = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL),
+    history: createWebHistory(VITE_BASE_PATH),
+    // history: createWebHistory("/bgi"),
     routes: routes,
 })
 router.beforeEach((to, from, next) => {
-    console.log('Navigating to:', to.path);
-    let item = localStorage.getItem('bgi_tools_token');
+    // console.log('Navigating to:', to.path);
+    //开发模式下，允许所有路由
+    if (import.meta.env.VITE_SERVER_PORT){
+       return  next()
+    }
+    let item = localStorage.getItem(token_name);
     if (to.path === '/login') {
         if (item){
             next('/')

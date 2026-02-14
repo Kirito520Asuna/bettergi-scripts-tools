@@ -66,10 +66,9 @@ const domainsDefault = [
         "list": [
             "「自由」的哲学",
             "「抗争」的哲学",
-            "「纷争」的哲学"
+            "「诗文」的哲学"
         ]
     }
-    //================================
     ,
     {
         "name": "失落的月庭",
@@ -86,9 +85,9 @@ const domainsDefault = [
         "type": "武器",
         "hasOrder": true,
         "list": [
-            "神合秘烟的启示",
+            "贡祭炽心的荣膺",
             "谚妄圣主的神面",
-            "贡祭炽心的荣膺"
+            "神合秘烟的启示"
         ]
     },
     {
@@ -141,7 +140,6 @@ const domainsDefault = [
             "狮牙斗士的理想"
         ]
     }
-    //================================
     ,
     {
         "name": "月童的库藏",
@@ -323,8 +321,17 @@ const domainsDefault = [
             "平息鸣雷的尊者"
         ]
     }
-];
-
+]
+const selectedAsDaysMap = () => {
+    const selectedAsDaysMap = new Map();
+    //1--days 0,1,4 周日,1,4
+    //2--days 0,2,5 周日,2,5
+    //3--days 0,3,6 周日,3,6
+    selectedAsDaysMap.set('1', [0, 1, 4])
+    selectedAsDaysMap.set('2', [0, 2, 5])
+    selectedAsDaysMap.set('3', [0, 3, 6])
+    return selectedAsDaysMap
+}
 
 const iconAsMapDefault = () => {
     const iconAsMap = new Map();
@@ -4660,12 +4667,29 @@ TkSuQmCC" />
 
     iconAsMap.set('Logout',
         (`<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><linearGradient id="a" gradientUnits="userSpaceOnUse" x1=".0001" x2="511.9799" y1="256" y2="256"><stop offset="0" stop-color="#87f1fc"/><stop offset=".2557" stop-color="#7fd4fb"/><stop offset=".5295" stop-color="#78bcfb"/><stop offset=".7844" stop-color="#74aefa"/><stop offset="1" stop-color="#73a9fa"/></linearGradient><path d="m216 512h-136c-44.113281 0-80-35.886719-80-80v-352c0-44.113281 35.886719-80 80-80h136c44.113281 0 80 35.886719 80 80v56c0 11.046875-8.953125 20-20 20s-20-8.953125-20-20v-56c0-22.054688-17.945312-40-40-40h-136c-22.054688 0-40 17.945312-40 40v352c0 22.054688 17.945312 40 40 40h136c22.054688 0 40-17.945312 40-40v-55c0-11.046875 8.953125-20 20-20s20 8.953125 20 20v55c0 44.113281-35.886719 80-80 80zm186.675781-122.410156 91.628907-91.089844c11.398437-11.332031 17.675781-26.425781 17.675781-42.496094 0-16.074218-6.277344-31.167968-17.675781-42.5l-91.628907-91.089844c-11.246093-11.179687-27.988281-14.46875-42.648437-8.367187-14.601563 6.070313-24.035156 20.191406-24.035156 35.96875v85.988281h-235.992188c-11.046875 0-20 8.953125-20 20s8.953125 20 20 20h235.992188c22.058593 0 40-17.945312 40-40v-83.710937l90.109374 89.578125c3.792969 3.769531 5.878907 8.785156 5.878907 14.132812 0 5.34375-2.085938 10.363282-5.878907 14.128906l-90.109374 89.582032v-19.710938c0-11.046875-8.953126-20-20-20-11.046876 0-20 8.953125-20 20v21.984375c0 15.777344 9.4375 29.898438 24.039062 35.972657 4.890625 2.035156 10.015625 3.023437 15.089844 3.023437 10.128906 0 20.0625-3.945313 27.554687-11.394531zm0 0" fill="url(#a)"/></svg>`.trim()))
-
+    iconAsMap.set('Restart', (
+        `<svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><linearGradient id="paint0_linear_607_9926" gradientUnits="userSpaceOnUse" x1="12" x2="12" y1="2" y2="22"><stop offset="0" stop-color="#0d84f1"/><stop offset="1" stop-color="#875be3"/></linearGradient><path clip-rule="evenodd" d="m12 1.99988c-.5523 0-1 .44771-1 1 0 .55228.4477 1 1 1 4.4183 0 8 3.58172 8 8.00002s-3.5817 8-8 8c-4.41825 0-7.99997-3.5817-7.99997-8 0-1.2296.27711-2.39424.77272-3.43513.14113-.2964.5306-.34735.76274-.11522l.75743.75743c.286.286.71612.37156 1.08979.21678.37368-.15478.61732-.51942.61732-.92388v-4c0-.55229-.44772-1-1-1h-4c-.40446 0-.7691.24364-.92388.61731-.15478.37368-.06923.8038.21677 1.08979l1.04288 1.04288c.1673.1673.19325.42828.07198.63144-.89371 1.49714-1.40775 3.248-1.40775 5.1186 0 5.5228 4.47715 10 9.99997 10 5.5229 0 10-4.4772 10-10 0-5.52287-4.4771-10.00002-10-10.00002z" fill="url(#paint0_linear_607_9926)" fill-rule="evenodd"/></svg>`
+    ).trim())
     return iconAsMap
 }
-
+const domainTypesDefault = () => {
+    const domainTypes = [
+        '天赋',
+        '武器',
+        '圣遗物'
+    ];
+    return domainTypes;
+}
+const excludeDomainTypesDefault = () => {
+    const excludeDomainTypes = new Array()
+    excludeDomainTypes.push('圣遗物')
+    return excludeDomainTypes;
+}
 
 export {
     domainsDefault,
     iconAsMapDefault,
+    selectedAsDaysMap,
+    domainTypesDefault,
+    excludeDomainTypesDefault
 }

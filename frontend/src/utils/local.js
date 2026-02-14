@@ -1,9 +1,23 @@
 import {ElMessage} from "element-plus";
 
-const CopyToClipboard = (text) => {
+const CopyToClipboard = async (text) => {
 
     try {
-        navigator.clipboard.writeText(text || '');
+        // 强制将 text 转换为字符串
+        const content = typeof text === 'object' ? JSON.stringify(text) : String(text);
+
+        if (typeof navigator !== 'undefined' && navigator.clipboard) {
+            // 现代浏览器使用 Clipboard API
+            await navigator.clipboard.writeText(content || '');
+        } else {
+            // 降级处理：使用 execCommand
+            const textarea = document.createElement('textarea');
+            textarea.value = content || '';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
         /*alert('已复制到剪贴板！');*/
         ElMessage({
             type: 'success',

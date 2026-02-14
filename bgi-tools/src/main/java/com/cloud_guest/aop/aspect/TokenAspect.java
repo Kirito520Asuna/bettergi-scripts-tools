@@ -6,6 +6,7 @@ import com.cloud_guest.aop.AbsToken;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.properties.auth.AuthProperties;
 import com.cloud_guest.properties.check.TokenProperties;
+import com.cloud_guest.utils.AuthContextUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.Aspect;
@@ -32,11 +33,8 @@ public class TokenAspect implements AbsToken {
     @Override
     public void checkToken() {
         AbsToken.super.checkToken();
-
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        AuthProperties authProperties = SpringUtil.getBean(AuthProperties.class);
-        List<String> collect = authProperties.getUsers().stream().map(AuthProperties.User::getUsername).collect(Collectors.toList());
-        if (!collect.contains(username)) {
+        String username = AuthContextUtil.getUsernameIdNoThrow();
+        if (StrUtil.isBlank(username)) {
             //没登录才验证授权token
             TokenProperties tokenProperties = SpringUtil.getBean(TokenProperties.class);
             String tokenName = tokenProperties.getName();
@@ -47,6 +45,7 @@ public class TokenAspect implements AbsToken {
                 //可能有空指针问题
                 HttpServletRequest request = attributes.getRequest();
                 String token = request.getHeader(tokenName);
+                log.debug("tokenName: {}, tokenValue: {}, token: {}", tokenName, tokenValue, token);
                 if (!StrUtil.equals(token, tokenValue)) {
                     throw new GlobalException("token校验失败");
                 }

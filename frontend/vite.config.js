@@ -9,10 +9,11 @@ export default defineConfig(({mode}) => {
     const env = loadEnv(mode, process.cwd());
     // 获取端口号，默认为 3000
     let SERVER_PORT = env.VITE_SERVER_PORT || 5137;
-    let VITE_BASE_PATH = env.VITE_BASE_PATH || '/bgi/';
+    let VITE_BASE_PATH = (env.VITE_BASE_PATH || '/bgi/ui/');
     console.log("mode:", mode);  //
     return {
         base: VITE_BASE_PATH,
+        // base: '/ui/',
         resolve: {
             alias: {
                 '@views': path.resolve(__dirname, 'src/views'), // 添加 @views 别名指向 views 目录
