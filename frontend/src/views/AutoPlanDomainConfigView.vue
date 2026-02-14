@@ -1,6 +1,6 @@
 <script setup>
 import {ref, computed, watch, watchEffect, onMounted} from 'vue'
-import {ElMessage} from "element-plus";
+import {ElMessage, ElMessageBox} from "element-plus";
 import {getBaseJsonAll, getUidJson, postUidJson, removeUidList} from "@api/domain/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
 import {domainsDefault, domainTypesDefault, excludeDomainTypesDefault, selectedAsDaysMap} from "@utils/defaultdata.js";
@@ -54,7 +54,11 @@ const removeConfigToBackend = async () => {
     ElMessage.warning("请先设置 UID");
     return;
   }
-
+  await ElMessageBox.confirm(`确定移除UID:${uid.value}的云端数据吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
   let ids = []
   ids.push(uid.value)
   const uidStr = ids.join(',');
@@ -66,6 +70,11 @@ const submitConfigToBackend = async () => {
     ElMessage.warning("请先设置 UID");
     return;
   }
+  await ElMessageBox.confirm(`确定提交UID:${uid.value}的数据至云端吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
   const json = getFinalConfigs()
   await postUidJson(uid.value, JSON.stringify(json))
 };
@@ -74,7 +83,11 @@ const findDomains = async () => {
     ElMessage.warning("请先设置 UID");
     return;
   }
-
+  await ElMessageBox.confirm(`确定加载UID:${uid.value}的云端数据吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
   try {
     const response = await getUidJson(uid.value)
     configs.value = response;
@@ -126,7 +139,12 @@ const addConfig = () => {
   changSortConfigs()
 
 }
-const removeConfigAll = () => {
+const removeConfigAll = async () => {
+  await ElMessageBox.confirm(`确定清除全部本地数据吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
   configs.value = []
 }
 // 删除某一条
@@ -151,16 +169,6 @@ const domainMap = computed(() => {
   return map
 })
 const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-// const showDays = (config, type) => {
-//   if (type === 'clear') {
-//     config.days = []
-//   } else if (type === 'showDaysSelector') {
-//     config.showDaysSelector = true
-//   } else if (type === 'hideDaysSelector') {
-//     config.showDaysSelector = false
-//   }
-//   changShowDaysButton(config);
-// }
 const changSortConfigs = () => {
   if (orderSortConfigs.value) {
     configs.value.sort((a, b) => b.order - a.order)
