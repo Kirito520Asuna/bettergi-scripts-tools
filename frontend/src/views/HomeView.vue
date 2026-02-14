@@ -325,24 +325,24 @@ const toClick = async (item) => {
 /* 中间卡片 */
 .welcome-card {
   background: rgba(255, 255, 255, 0.95);
-  padding: 50px 70px;
+  padding: 50px 50px;
   border-radius: 25px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 15px 35px rgba(0, 255, 246, 0.2);
   text-align: center;
   max-width: 600px;
-  width: 100%;
+  width: 80%;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .welcome-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 40px rgba(255, 0, 181, 0.3);
 }
 
 /* Logo 圆角 */
 .logo {
-  width: 100px;
-  height: 100px;
+ /* width: 50px;
+  height: 50px;*/
   object-fit: cover;
   border-radius: 50%;
   margin-bottom: 25px;
@@ -351,9 +351,9 @@ const toClick = async (item) => {
 
 /* 主标题美化 */
 .title {
-  font-size: 36px;
-  font-weight: 800;
-  margin-bottom: 15px;
+ /* font-size: 36px;*/
+  /*font-weight: 800;*/
+/*  margin-bottom: 5px;*/
   color: transparent;
   background: linear-gradient(90deg, #6a89cc, #3498db);
   -webkit-background-clip: text;
@@ -369,9 +369,9 @@ const toClick = async (item) => {
 
 /* 副标题美化 */
 .subtitle {
-  font-size: 20px;
+ /* font-size: 20px;*/
   color: #7f8c8d;
-  margin-bottom: 40px;
+  /*margin-bottom: 40px;*/
   opacity: 0;
   animation: fadeIn 1s ease-in-out forwards;
   font-style: italic;
@@ -390,12 +390,12 @@ const toClick = async (item) => {
 
 /* 功能区域 */
 .feature-section {
-  margin-top: 30px;
+  /*margin-top: 10px;*/
 }
 
 /* 美化 section-title */
 .section-title {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   margin-bottom: 20px;
   color: transparent;
@@ -415,13 +415,13 @@ const toClick = async (item) => {
 .feature-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 30px;
+  gap: 10px;
 }
 
 .feature-column {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 10px;
 }
 
 .feature-item {
