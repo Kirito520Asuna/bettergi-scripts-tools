@@ -80,7 +80,7 @@ const findDomains = async () => {
     configs.value = response;
   } catch (error) {
     console.error('请求失败:', error);
-    ElMessage.error( error.message);
+    ElMessage.error(error.message);
   } finally {
   }
 };
@@ -413,7 +413,9 @@ const updateCurrentConfig = (config) => {
       <div class="fixed-container">
         <h2 class="title">自动秘境计划配置列表</h2>
         <div class="config-header">
-          <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
+          <div class="sort-control-card">
+            <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
+          </div>
           <!-- 添加配置按钮 -->
           <button @click="addConfig" class="btn btn-add">➕ 添加一条配置</button>
           <div class="sort-control-card">
@@ -784,9 +786,8 @@ h2 {
 
 /* UID 输入框 */
 .uid-input {
-  max-width: 40%;
+  max-width: 100px;
   padding: 10px;
-  margin-bottom: 20px;
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 1rem;
@@ -794,7 +795,6 @@ h2 {
 }
 
 .uid-input:focus {
-  max-width: 40%;
   border-color: #409eff;
   outline: none;
   box-shadow: 0 0 5px rgba(64, 158, 255, 0.5);
@@ -996,15 +996,17 @@ h2 {
 .copy-btn:hover {
   background-color: #85ce61;
 }
+
 .sort-control-card {
+  max-height: 50px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 10px;
 
   background-color: #85ce61; /* 白色背景 */
   color: #000000; /* 黑色文字 */
-  padding: 10px 20px; /* 内边距 */
+  padding: 4px 4px; /* 内边距 */
   border-radius: 8px; /* 圆角 */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
   border: none; /* 去除边框 */
@@ -1035,6 +1037,7 @@ h2 {
   border-color: #60a5fa !important;
   background-color: #3b82f6 !important;
 }
+
 .btn.btn-add {
   background-color: #85ce61; /* 白色背景 */
   color: #000000; /* 黑色文字 */
