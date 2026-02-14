@@ -15,6 +15,7 @@
     "dompurify": "^3.3.1",
     "element-plus": "^2.13.2",
     "highlight.js": "^11.11.1",
+    "lodash-es": "^4.17.23",
     "markdown-it": "^14.1.0",
     "mermaid": "^11.12.2",
     "vue": "^3.5.12",

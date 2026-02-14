@@ -6,7 +6,7 @@ import {CopyToClipboard} from "@utils/local.js";
 import {domainsDefault, domainTypesDefault, excludeDomainTypesDefault, selectedAsDaysMap} from "@utils/defaultdata.js";
 import router from "@router/router.js";
 import draggable from 'vuedraggable'
-
+import { debounce } from 'lodash-es';
 // 配置列表 → 核心数据结构改为 array
 const configs = ref([])
 const currentConfig = ref([])
@@ -185,7 +185,9 @@ function changShowDaysButton(config) {
     }
   }
 }
-
+const debouncedSort = debounce(() => {
+  changSortConfigs();
+}, 300); // 延迟 300ms 执行
 // 监听每一项的 domainName 变化 → 自动填充 sundaySelectedValue
 watchEffect(
     () => configs.value,
@@ -218,10 +220,7 @@ watchEffect(
         changShowDaysButton(config);
       })
 
-      if (orderSortConfigs.value) {
-        newConfigs.sort((a, b) => b.order - a.order)
-      }
-
+      debouncedSort()
     },
     {deep: true}
 )
@@ -418,7 +417,7 @@ const updateCurrentConfig = (config) => {
             <span class="sort-label">执行排序</span>
             <el-switch
                 v-model="orderSortConfigs"
-                @change="changSortConfigs"
+                @change="debouncedSort"
             />
           </div>
           <button @click="submitConfigToBackend" class="btn btn-submit">同步到云端</button>
@@ -556,7 +555,7 @@ const updateCurrentConfig = (config) => {
 
             <div class="form-group">
               <label>执行顺序：</label>
-              <input class="limited-input" v-model.number="config.order" type="number" min="1" max="99999999"
+              <input class="limited-input" @change="debouncedSort" v-model.number="config.order" type="number" min="1" max="99999999"
                      placeholder="建议 1~10"/>
               <span style="color: red;">数值高的优先执行</span>
             </div>
