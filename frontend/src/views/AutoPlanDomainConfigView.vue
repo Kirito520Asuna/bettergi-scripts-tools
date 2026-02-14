@@ -98,12 +98,8 @@ const orderSortConfigs = ref(false)
 const uid = ref("")
 // 新增一条空白配置
 const addConfig = () => {
-  const newOrder = configs.value.length === 0
-      ? 1
-      : Math.max(...configs.value.map(c => c.order)) + 1
-
   configs.value.push({
-    order: newOrder,
+    order: 1,
     // day: undefined,
     days: [],
     dayName: undefined,
@@ -688,16 +684,10 @@ const updateCurrentConfig = (config) => {
           <i class="el-icon-document"></i>
           <span>查看/复制配置结果</span>
         </div>
-        <!--        <div class="result-all">
-                  <label class="result-key">Json配置:</label>
-                  <pre class="result">{{ getFinalConfigsMapShow() || '暂无返回数据' }}</pre>
-                  <button @click="copyToClipboard(getFinalConfigsMapShow())" class="copy-btn">📋 复制</button>
-                </div>
-                <div class="result-all">
-                  <label class="result-key">语法key:</label>
-                  <pre class="result">{{ getFinalConfigsToKey() || '暂无返回数据' }}</pre>
-                  <button @click="copyToClipboard(getFinalConfigsToKey())" class="copy-btn">📋 复制</button>
-                </div>-->
+        <div class="fixed-search" @click="showResultDrawer = true" title="查看/复制配置结果">
+          <i class="el-icon-document"></i>
+          <span>sous</span>
+        </div>
       </div>
     </div>
     <!-- 在 template 最后添加 -->
