@@ -1170,12 +1170,12 @@ h2 {
 /* 右侧固定触发按钮 */
 .fixed-trigger {
   position: fixed;
-  right: 20px;
-  top: 50%;
+  right: 10px;
+  top: 80%;
   transform: translateY(-50%);
   z-index: 999;
-  width: 4%;
-  height: 40%;
+  width: 60px;
+  height: 200px;
   background: rgba(64, 158, 255, 0.9);
   color: white;
   border-radius: 12px 0 0 12px;
@@ -1190,7 +1190,6 @@ h2 {
 }
 
 .fixed-trigger:hover {
-  right: 18px;
   background: rgba(64, 158, 255, 1);
   box-shadow: -4px 0 16px rgba(0, 0, 0, 0.2);
 }
