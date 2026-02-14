@@ -495,11 +495,11 @@ const updateCurrentConfig = (config) => {
         <el-drawer
             v-model="showResultDrawer"
             direction="rtl"
-            size="45%"
+
             :with-header="true"
             :close-on-press-escape="true"
             :modal="true"
-            custom-class="result-drawer"
+            class="result-drawer"
         >
           <template #title>
             <span style="font-weight: bold; color: #409eff;">配置结果预览</span>
@@ -1208,6 +1208,7 @@ h2 {
 .result-drawer {
   --el-drawer-bg-color: rgba(206, 33, 33, 0.96);
   --el-drawer-border-color: #1b3e8f;
+  min-width: 80% !important;
   background: #fadbd8;
   backdrop-filter: blur(6px);
 }
