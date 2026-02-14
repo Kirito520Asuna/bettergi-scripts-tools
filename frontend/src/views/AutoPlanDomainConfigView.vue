@@ -832,7 +832,7 @@ h2 {
 
 /* 配置项卡片 */
 .config-item {
-  max-width: 40%;
+  max-width: 300px;
   background: linear-gradient(135deg, #b6b2b6, #91dcd6);
   border: 1px solid #b9bcc6;
   border-radius: 12px;
