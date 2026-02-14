@@ -752,7 +752,7 @@ const updateCurrentConfig = (config) => {
 
 /* 内容区域补偿高度 */
 .content-area {
-  margin-top: 15%; /* 根据 .fixed-container 的实际高度调整 */
+  margin-top: 300px; /* 根据 .fixed-container 的实际高度调整 */
   width: 100%;
 }
 
