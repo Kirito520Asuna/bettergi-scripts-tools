@@ -51,13 +51,13 @@ public class AutoPlanVo implements Serializable {
         @Schema(description = "地脉花类型 ")
         //地脉花类型
         public String leyLineOutcropType;
-        @Schema(description = "是否开启树脂耗尽模式")
-        @JsonProperty("isResinExhaustionMode")
-        // 是否开启树脂耗尽模式
-        public boolean isResinExhaustionMode;
-        @Schema(description = "[耗尽模式]是否开启取小值模式")
-        // 开启取小值模式
-        public boolean openModeCountMin;
+        //@Schema(description = "是否开启树脂耗尽模式")
+        //@JsonProperty("isResinExhaustionMode")
+        //// 是否开启树脂耗尽模式
+        //public boolean isResinExhaustionMode;
+        //@Schema(description = "[耗尽模式]是否开启取小值模式")
+        //// 开启取小值模式
+        //public boolean openModeCountMin;
         @Schema(description = "是否使用冒险之证寻找地脉花")
         //是否使用冒险之证寻找地脉花
         public boolean useAdventurerHandbook;
