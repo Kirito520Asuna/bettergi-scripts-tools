@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class AutoPlanServiceImpl implements AutoPlanService {
-    private static final String key = "AUTO_PLAN_DOMAIN:UID:";
+    private static final String key = "AUTO_PLAN:UID:";
     private static final String key_all = "AUTO_PLAN_DOMAIN:ALL";
     @Resource
     private CacheService cacheService;
@@ -76,7 +76,7 @@ public class AutoPlanServiceImpl implements AutoPlanService {
     }
 
     @Override
-    public List<Map<String, Object>> findAll() {
+    public List<Map<String, Object>> findDomainAll() {
         List<Map<String, Object>> list = new ArrayList<>();
         Cache<String> cache = cacheService.find(key_all);
         if (ObjectUtils.equals(cache.getType(), "json")) {
@@ -104,7 +104,7 @@ public class AutoPlanServiceImpl implements AutoPlanService {
     }
 
     @Override
-    public boolean saveAll(String json) {
+    public boolean saveDomainAll(String json) {
         return cacheService.save(key_all, json);
     }
 }

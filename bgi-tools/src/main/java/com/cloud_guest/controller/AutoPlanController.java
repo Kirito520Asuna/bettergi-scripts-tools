@@ -43,14 +43,14 @@ public class AutoPlanController {
     public Result<String> saveAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
                                   @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
                                   @RequestBody AutoPlanDto dto) {
-        autoPlanService.saveAll(dto.getJson());
+        autoPlanService.saveDomainAll(dto.getJson());
         return ok();
     }
     @SysLog(result = false)
     @Operation(summary = "查询基础全部JSON")
     @GetMapping("json/all")
     public Result<List<Map<String, Object>>> infoAll() {
-        List<Map<String, Object>> list = autoPlanService.findAll();
+        List<Map<String, Object>> list = autoPlanService.findDomainAll();
         return ok(list);
     }
 
