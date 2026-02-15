@@ -37,10 +37,10 @@ public class AutoPlanController {
     @Resource
     private AutoPlanService autoPlanService;
 
-    @PostMapping("json/all")
+    @PostMapping("domain/json/all")
     @SysLog @Token
     @Operation(summary = "[需要登录/授权token]存储基础全部JSON")
-    public Result<String> saveAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
+    public Result<String> saveDomainAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
                                   @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
                                   @RequestBody AutoPlanDto dto) {
         autoPlanService.saveDomainAll(dto.getJson());
@@ -48,8 +48,8 @@ public class AutoPlanController {
     }
     @SysLog(result = false)
     @Operation(summary = "查询基础全部JSON")
-    @GetMapping("json/all")
-    public Result<List<Map<String, Object>>> infoAll() {
+    @GetMapping("domain/json/all")
+    public Result<List<Map<String, Object>>> infoDomainAll() {
         List<Map<String, Object>> list = autoPlanService.findDomainAll();
         return ok(list);
     }
