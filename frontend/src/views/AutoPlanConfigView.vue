@@ -40,8 +40,10 @@ const initDomainTypes = async () => {
 const initRunTypes = async () => {
   runTypes.value = runTypesDefault();
 }
+const leyLineOutcropTypeNames=ref([])
 const initLeyLineOutcropTypes = async () => {
   leyLineOutcropTypes.value = leyLineOutcropTypesDefault();
+  leyLineOutcropTypeNames.value = leyLineOutcropTypes.value.map(item => item.name)
 }
 const currentConfig = ref(null)
 
@@ -118,6 +120,7 @@ onMounted(() => {
   fetchDomains();
   initDomainTypes()
   initRunTypes()
+  initLeyLineOutcropTypes()
 })
 // 在 script 中添加跳转逻辑
 const goToHome = () => {
@@ -156,7 +159,7 @@ const addConfig = () => {
     // 新增：地脉专用字段（默认值）
     leyLineOutcrop: {
       count: 1,                        // 刷几次（0=自动/无限）
-      leyLineOutcropType: leyLineOutcropTypes[0].name, // 需映射为经验/摩拉
+      leyLineOutcropType: leyLineOutcropTypeNames[0], // 需映射为经验/摩拉
       useAdventurerHandbook: false,    // 是否使用冒险之证
       friendshipTeam: "",              // 好感队伍ID
       team: "",                        // 主队伍ID
@@ -737,11 +740,81 @@ const updateCurrentConfig = (config) => {
                 </div>
               </div>
             </div>
+
             <div class="leyLineOutcrop-section" v-else-if="config.runType === runTypes[1]">
-                        <!--地脉                -->
               <div class="form-group leyLineOutcrop">
+                <label>地脉类型：</label>
+                <select v-model="config.leyLineOutcrop.leyLineOutcropType">
+                  <option value="">请选择地脉类型</option>
+                  <option
+                      v-for="item in leyLineOutcropTypes"
+                      :key="item.value"
+                      :value="item.name"
+                  >
+                    {{ item.value }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="form-group leyLineOutcrop">
+                <label>刷取次数：</label>
+                <input
+                    class="limited-input"
+                    v-model.number="config.leyLineOutcrop.count"
+                    type="number"
+                    min="0"
+                />
+              </div>
+
+              <div class="form-group leyLineOutcrop">
+                <label>使用队伍：</label>
+                <input
+                    class="limited-input"
+                    v-model="config.leyLineOutcrop.team"
+                    placeholder="队伍ID / 队伍名称"
+                />
+              </div>
+
+              <div class="form-group leyLineOutcrop">
+                <label>好感队伍（可选）：</label>
+                <input
+                    class="limited-input"
+                    v-model="config.leyLineOutcrop.friendshipTeam"
+                    placeholder="好感刷取队伍"
+                />
+              </div>
+
+
+              <div class="form-group leyLineOutcrop checkbox-group" style="display: flex; flex-wrap: wrap; gap: 16px;">
+                <el-checkbox v-model="config.leyLineOutcrop.useAdventurerHandbook">
+                  使用冒险之证
+                </el-checkbox>
+                <el-checkbox v-model="config.leyLineOutcrop.useFragileResin">
+                  使用脆弱树脂
+                </el-checkbox>
+                <el-checkbox v-model="config.leyLineOutcrop.useTransientResin">
+                  使用须臾树脂
+                </el-checkbox>
+                <el-checkbox v-model="config.leyLineOutcrop.isGoToSynthesizer">
+                  前往合成台合成
+                </el-checkbox>
+                <el-checkbox v-model="config.leyLineOutcrop.isNotification">
+                  完成后通知
+                </el-checkbox>
+              </div>
+
+              <div class="form-group leyLineOutcrop">
+                <label>超时时间（秒）：</label>
+                <input
+                    class="limited-input"
+                    v-model.number="config.leyLineOutcrop.timeout"
+                    type="number"
+                    min="0"
+                    placeholder="0 = 不限制"
+                />
               </div>
             </div>
+
             <!-- 删除按钮 -->
 
             <button class="btn danger" @click="removeConfig(index)">🗑️ 删除</button>
