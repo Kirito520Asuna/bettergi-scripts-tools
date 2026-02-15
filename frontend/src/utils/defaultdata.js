@@ -4677,6 +4677,9 @@ const runTypesDefault = () => {
     // ["秘境","地脉"]
     return runTypes;
 }
+const leyLineOutcropTypesDefault = () => {
+    return [{name:"启示之花",value:"经验书"},{name:"藏金之花",value:"摩拉"}];
+}
 const domainTypesDefault = () => {
     const domainTypes = [
         '天赋',
@@ -4698,4 +4701,5 @@ export {
     domainTypesDefault,
     excludeDomainTypesDefault,
     runTypesDefault,
+    leyLineOutcropTypesDefault,
 }

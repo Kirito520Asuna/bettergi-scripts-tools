@@ -6,7 +6,7 @@ import {CopyToClipboard} from "@utils/local.js";
 import {
   domainsDefault,
   domainTypesDefault,
-  excludeDomainTypesDefault,
+  excludeDomainTypesDefault, leyLineOutcropTypesDefault,
   runTypesDefault,
   selectedAsDaysMap
 } from "@utils/defaultdata.js";
@@ -22,6 +22,7 @@ const defaultDomains = domainsDefault
 const domains = ref([])
 const domainTypes = ref([])
 const runTypes = ref([])
+const leyLineOutcropTypes = ref([])
 const excludeDomainTypes = ref(new Array())
 const initDomainTypes = async () => {
   const types = [
@@ -37,18 +38,11 @@ const initDomainTypes = async () => {
   excludeDomainTypes.value.push(...excludes)
 }
 const initRunTypes = async () => {
-  // const types = [
-  //   // {value: '', label: '请选择执行类型'}
-  // ]
-  // const list = runTypesDefault();
-  // list.forEach(item => {
-  //   types.push({value: item, label: item})
-  // })
-  // console.log('list', JSON.stringify(list))
   runTypes.value = runTypesDefault();
-  // console.log('runTypes', JSON.stringify(runTypes.value))
 }
-
+const initLeyLineOutcropTypes = async () => {
+  leyLineOutcropTypes.value = leyLineOutcropTypesDefault();
+}
 const currentConfig = ref(null)
 
 const fetchDomains = async () => {
@@ -158,6 +152,19 @@ const addConfig = () => {
       sundaySelectedValue: undefined,
       // sundaySelectedName: undefined,
       DomainRoundNum: 1
+    },
+    // 新增：地脉专用字段（默认值）
+    leyLineOutcrop: {
+      count: 1,                        // 刷几次（0=自动/无限）
+      leyLineOutcropType: leyLineOutcropTypes[0].name, // 需映射为经验/摩拉
+      useAdventurerHandbook: false,    // 是否使用冒险之证
+      friendshipTeam: "",              // 好感队伍ID
+      team: "",                        // 主队伍ID
+      timeout: 120,                      // 超时时间（秒）
+      isGoToSynthesizer: false,        // 是否前往合成台
+      useFragileResin: false,          // 使用脆弱树脂
+      useTransientResin: false,        // 使用须臾树脂（须臾=Transient）
+      isNotification: false            // 是否通知
     }
   })
 
@@ -730,20 +737,10 @@ const updateCurrentConfig = (config) => {
                 </div>
               </div>
             </div>
-            <div class="domain-section" v-else-if="config.runType === runTypes[1]">
-              {
-              "count": 0,
-              "country": "country_d0365b9134e9",
-              "leyLineOutcropType": "leyLineOutcropType_a3a6c54f2403",
-              "useAdventurerHandbook": false,
-              "friendshipTeam": "friendshipTeam_87b9d99ff62e",
-              "team": "team_b52ef41471f7",
-              "timeout": 0,
-              "isGoToSynthesizer": false,
-              "useFragileResin": false,
-              "useTransientResin": false,
-              "isNotification": false
-              }
+            <div class="leyLineOutcrop-section" v-else-if="config.runType === runTypes[1]">
+                        <!--地脉                -->
+              <div class="form-group leyLineOutcrop">
+              </div>
             </div>
             <!-- 删除按钮 -->
 
