@@ -4672,6 +4672,13 @@ TkSuQmCC" />
     ).trim())
     return iconAsMap
 }
+const runTypesDefault = () => {
+    const runTypes = [
+        '秘境'
+    ];
+    // ["秘境","地脉"]
+    return runTypes;
+}
 const domainTypesDefault = () => {
     const domainTypes = [
         '天赋',
@@ -4691,5 +4698,6 @@ export {
     iconAsMapDefault,
     selectedAsDaysMap,
     domainTypesDefault,
-    excludeDomainTypesDefault
+    excludeDomainTypesDefault,
+    runTypesDefault,
 }

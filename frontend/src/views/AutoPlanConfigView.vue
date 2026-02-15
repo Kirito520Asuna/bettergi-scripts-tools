@@ -3,7 +3,13 @@ import {ref, computed, watch, watchEffect, onMounted} from 'vue'
 import {ElMessage, ElMessageBox} from "element-plus";
 import {getBaseJsonAll, getUidJson, postUidJson, removeUidList} from "@api/domain/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
-import {domainsDefault, domainTypesDefault, excludeDomainTypesDefault, selectedAsDaysMap} from "@utils/defaultdata.js";
+import {
+  domainsDefault,
+  domainTypesDefault,
+  excludeDomainTypesDefault,
+  runTypesDefault,
+  selectedAsDaysMap
+} from "@utils/defaultdata.js";
 import router from "@router/router.js";
 import draggable from 'vuedraggable'
 import {debounce} from 'lodash-es';
@@ -15,6 +21,7 @@ const isLoading = ref(false);
 const defaultDomains = domainsDefault
 const domains = ref([])
 const domainTypes = ref([])
+const runTypes = ref([])
 const excludeDomainTypes = ref(new Array())
 const initDomainTypes = async () => {
   const types = [
@@ -28,6 +35,18 @@ const initDomainTypes = async () => {
 
   const excludes = excludeDomainTypesDefault()
   excludeDomainTypes.value.push(...excludes)
+}
+const initRunTypes = async () => {
+  const types = [
+    {value: '', label: '请选择执行类型'}
+  ]
+  const list = runTypesDefault();
+  list.forEach(item => {
+    types.push({value: item, label: item})
+  })
+  console.log('list', JSON.stringify(list))
+  runTypes.value = types
+  console.log('runTypes', JSON.stringify(runTypes.value))
 }
 const fetchDomains = async () => {
   isLoading.value = true;
@@ -101,6 +120,7 @@ const asDaysMap = selectedAsDaysMap()
 onMounted(() => {
   fetchDomains();
   initDomainTypes()
+  initRunTypes()
 })
 // 在 script 中添加跳转逻辑
 const goToHome = () => {
@@ -121,7 +141,7 @@ const addConfig = () => {
     showDaysButton: true,   // ← 新增
     // daysName: [],
     selectedType: "", // 新增字段
-    runType: "秘境",//先写死 预留地脉类型
+    runType: runTypesDefault()[0],//先写死 预留地脉类型
     autoFight: {
       physical: [
         {order: 0, name: "原粹树脂", open: true},
@@ -294,12 +314,13 @@ const getFinalConfigsToKey = () => {
   let key = ""
   //"队伍名称|秘境名称/刷取物品名称|刷几轮|限时/周日|执行顺序,..."
   getFinalConfigs().forEach(item => {
+
     let autoFight = item.autoFight;
     let physical = [...autoFight.physical];
     physical.sort((a, b) => a.order - b.order)
     key += (item.runType || "")
     key += "|"
-    if (item.runType==="秘境"){
+    if (item.runType===runTypesDefault()[0]){
       key += (autoFight.partyName || "")
       key += "|"
       key += (autoFight.domainName)
@@ -314,7 +335,7 @@ const getFinalConfigsToKey = () => {
       key += (physical.filter(p => p.open).map(p => p.name).join('/') || "")
       key += "|"
       key += (item.order || 1) + ","
-    }else if (item.runType==="地脉"){
+    }else if (item.runType===runTypesDefault()[1]){
           //...
     }
 
@@ -424,7 +445,7 @@ const updateCurrentConfig = (config) => {
   <div class="home">
     <div class="container">
       <div class="fixed-container">
-        <h2 class="title">自动秘境计划配置列表</h2>
+        <h2 class="title">自动体力计划配置列表</h2>
         <div class="config-header">
           <div class="sort-control-card">
             <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
@@ -571,7 +592,7 @@ const updateCurrentConfig = (config) => {
             <h3>#{{ index }} 配置</h3>
             <hr/>
 
-            <div class="form-group">
+            <div class="form-group common">
               <label>执行顺序：</label>
               <input class="limited-input" @change="debouncedSort" v-model.number="config.order" type="number" min="1"
                      max="99999999"
@@ -579,7 +600,7 @@ const updateCurrentConfig = (config) => {
               <span style="color: red;">数值高的优先执行</span>
             </div>
 
-            <div class="form-group">
+            <div class="form-group common">
               <label>执行日：</label>
               <div
                   class="days-display"
@@ -594,7 +615,20 @@ const updateCurrentConfig = (config) => {
               </span>
               </div>
             </div>
-            <div class="form-group" v-if="config.selectedType&&!excludeDomainTypes.includes(config.selectedType)">
+            <div class="form-group common">
+              <label>执行类型：</label>
+              <select v-model="config.runType">
+                <option value="">请执行类型</option>
+                <option
+                    v-for="d in runTypes"
+                    :key="d.name"
+                    :value="d.name"
+                >
+                  {{ d.name }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group domain" v-if="config.selectedType&&!excludeDomainTypes.includes(config.selectedType)">
               <label>材料忽略限时开放：</label>
               <el-button
                   size="small"
@@ -607,7 +641,7 @@ const updateCurrentConfig = (config) => {
             </div>
             <!-- 秘境选择 -->
             <!-- 新增 type 选择器 -->
-            <div class="form-group">
+            <div class="form-group domain">
               <label>秘境类型：</label>
               <select v-model="config.selectedType">
                 <option
@@ -620,7 +654,7 @@ const updateCurrentConfig = (config) => {
               </select>
             </div>
             <!-- 秘境选择（根据 selectedType 过滤） -->
-            <div class="form-group">
+            <div class="form-group domain">
               <label>秘境：</label>
               <select v-model="config.autoFight.domainName">
                 <option value="">请选择秘境</option>
@@ -634,7 +668,7 @@ const updateCurrentConfig = (config) => {
               </select>
             </div>
             <!-- 物品名称选择（根据 domainName 过滤） -->
-            <div v-if="domainMap.get(config.autoFight.domainName)?.hasOrder" class="form-group">
+            <div v-if="domainMap.get(config.autoFight.domainName)?.hasOrder" class="form-group domain">
               <label>周日/限时材料：</label>
               <select
                   v-model="config.autoFight.sundaySelectedValue">
@@ -649,7 +683,7 @@ const updateCurrentConfig = (config) => {
             </div>
             <div
                 v-if="(!domainMap.get(config.autoFight.domainName)?.hasOrder)&&(domainMap.get(config.autoFight.domainName)?.list?.length>0)"
-                class="form-group">
+                class="form-group domain">
               <label>秘境圣遗物：</label>
               <ul>
                 <li v-for="item in domainMap.get(config.autoFight.domainName)?.list" :key="item">
@@ -659,7 +693,7 @@ const updateCurrentConfig = (config) => {
             </div>
 
 
-            <div class="form-group">
+            <div class="form-group domain">
               <label>队伍名称（可选）：</label>
               <input class="limited-input" v-model="config.autoFight.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
             </div>
@@ -673,7 +707,7 @@ const updateCurrentConfig = (config) => {
             <!--          <hr/>-->
 
 
-            <div class="form-group">
+            <div class="form-group domain">
               <label>树脂使用顺序：</label>
               <!-- 原 physical-display 改成 -->
               <div
