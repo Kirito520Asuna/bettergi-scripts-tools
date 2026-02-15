@@ -15,7 +15,7 @@ import draggable from 'vuedraggable'
 import {debounce} from 'lodash-es';
 // 配置列表 → 核心数据结构改为 array
 const configs = ref([])
-const currentConfig = ref([])
+
 const isLoading = ref(false);
 // 秘境数据（保持不变，建议单独抽到一个文件）
 const defaultDomains = domainsDefault
@@ -48,6 +48,9 @@ const initRunTypes = async () => {
   runTypes.value = runTypesDefault();
   // console.log('runTypes', JSON.stringify(runTypes.value))
 }
+
+const currentConfig = ref(null)
+
 const fetchDomains = async () => {
   isLoading.value = true;
   try {
@@ -321,7 +324,7 @@ const getFinalConfigsToKey = () => {
     physical.sort((a, b) => a.order - b.order)
     key += (item.runType || "")
     key += "|"
-    if (item.runType===runTypesDefault()[0]){
+    if (item.runType === runTypesDefault()[0]) {
       key += (autoFight.partyName || "")
       key += "|"
       key += (autoFight.domainName)
@@ -336,8 +339,8 @@ const getFinalConfigsToKey = () => {
       key += (physical.filter(p => p.open).map(p => p.name).join('/') || "")
       key += "|"
       key += (item.order || 1) + ","
-    }else if (item.runType===runTypesDefault()[1]){
-          //...
+    } else if (item.runType === runTypesDefault()[1]) {
+      //...
     }
 
   })
@@ -471,6 +474,7 @@ const updateCurrentConfig = (config) => {
       <div class="external-pop-up-frame">
         <!-- 弹窗 -->
         <el-dialog
+            v-if="currentConfig"
             v-model="currentConfig.showDaysDialog"
             title="选择执行日期"
             width="480px"
@@ -479,7 +483,7 @@ const updateCurrentConfig = (config) => {
         >
 
           <div class="dialog-content">
-            <div class="checkbox-group">
+            <div class="checkbox-group" >
               <label v-for="(dayName, idx) in weekDays" :key="idx" class="checkbox-label">
                 <el-checkbox :label="idx" v-model="currentConfig.days">
                   {{ dayName }}
@@ -495,6 +499,7 @@ const updateCurrentConfig = (config) => {
           </div>
         </el-dialog>
         <el-dialog
+            v-if="currentConfig"
             v-model="currentConfig.showPhysicalDialog"
             title="调整树脂使用顺序与启用状态"
             width="520px"
@@ -504,6 +509,7 @@ const updateCurrentConfig = (config) => {
           <div class="dialog-content">
             <div class="selector-title">拖拽调整顺序</div>
             <draggable
+                v-if="currentConfig"
                 v-model="currentConfig.autoFight.physical"
                 item-key="name"
                 handle=".draggable-item"
@@ -536,7 +542,7 @@ const updateCurrentConfig = (config) => {
             :modal="true"
             class="result-drawer"
         >
-          <template #title>
+          <template #header>
             <span style="font-weight: bold; color: #409eff;">配置结果预览</span>
           </template>
 
@@ -592,7 +598,7 @@ const updateCurrentConfig = (config) => {
           <div v-for="(config,index) in configs" :key="config.order" class="config-item">
             <h3>#{{ index }} 配置</h3>
             <hr/>
-            <div  class="comon-section">
+            <div class="comon-section">
               <div class="form-group common">
                 <label>执行顺序：</label>
                 <input class="limited-input" @change="debouncedSort" v-model.number="config.order" type="number" min="1"
@@ -629,8 +635,9 @@ const updateCurrentConfig = (config) => {
                 </select>
               </div>
             </div>
-            <div  class="domain-section" v-if="config.runType === runTypes[0]">
-              <div class="form-group domain" v-if="config.selectedType&&!excludeDomainTypes.includes(config.selectedType)">
+            <div class="domain-section" v-if="config.runType === runTypes[0]">
+              <div class="form-group domain"
+                   v-if="config.selectedType&&!excludeDomainTypes.includes(config.selectedType)">
                 <label>材料忽略限时开放：</label>
                 <el-button
                     size="small"
@@ -671,7 +678,7 @@ const updateCurrentConfig = (config) => {
                 </select>
               </div>
               <!-- 物品名称选择（根据 domainName 过滤） -->
-              <div class="form-group domain" v-if="domainMap.get(config.autoFight.domainName)?.hasOrder" >
+              <div class="form-group domain" v-if="domainMap.get(config.autoFight.domainName)?.hasOrder">
                 <label>周日/限时材料：</label>
                 <select
                     v-model="config.autoFight.sundaySelectedValue">
@@ -723,7 +730,7 @@ const updateCurrentConfig = (config) => {
                 </div>
               </div>
             </div>
-            <div  class="domain-section" v-else-if="config.runType === runTypes[1]" >
+            <div class="domain-section" v-else-if="config.runType === runTypes[1]">
             </div>
             <!-- 删除按钮 -->
 
