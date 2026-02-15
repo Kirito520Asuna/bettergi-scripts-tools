@@ -23,6 +23,7 @@ const domains = ref([])
 const domainTypes = ref([])
 const runTypes = ref([])
 const leyLineOutcropTypes = ref([])
+const countryList = ref(['蒙德', '璃月', '稻妻', '须弥', '枫丹', '纳塔','挪德卡莱'])
 const excludeDomainTypes = ref(new Array())
 const initDomainTypes = async () => {
   const types = [
@@ -157,7 +158,7 @@ const addConfig = () => {
       DomainRoundNum: 1
     },
     // 新增：地脉专用字段（默认值）
-    leyLineOutcrop: {
+    autoLeyLineOutcrop: {
       count: 1,                        // 刷几次（0=自动/无限）
       country: "",                     // 国家地区
       leyLineOutcropType: leyLineOutcropTypeNames[0], // 需映射为经验/摩拉
@@ -305,13 +306,13 @@ const getFinalConfigs = () => {
       autoFight: autoFight,
       autoLeyLineOutcrop: autoLeyLineOutcrop,
     };
-    if (c.runType === runTypes[0]) {
+    if (c.runType === runTypesDefault()[0]) {
       json.autoLeyLineOutcrop= undefined
-    }else if (c.runType === runTypes[1]) {
+    }else if (c.runType === runTypesDefault()[1]) {
       json.autoFight= undefined
     }else {
-      ElMessage.error("请选择类型！")
-      throw new Error("请选择类型！")
+/*      ElMessage.error("请选择类型！")
+      throw new Error("请选择类型！")*/
     }
     json.days.sort((a, b) => a - b)
     return json
@@ -386,7 +387,6 @@ const getFinalConfigsToKey = () => {
       key += (autoLeyLineOutcrop.isNotification || "")
       key += "|"
       key += (autoLeyLineOutcrop.timeout || "")
-      key += "|"
     }
 
     key += "|"
@@ -782,24 +782,38 @@ const updateCurrentConfig = (config) => {
             <div class="leyLineOutcrop-section" v-else-if="config.runType === runTypes[1]">
               <div class="form-group leyLineOutcrop">
                 <label>地脉类型：</label>
-                <select v-model="config.leyLineOutcrop.leyLineOutcropType">
+                <select v-model="config.autoLeyLineOutcrop.leyLineOutcropType">
                   <option value="">请选择地脉类型</option>
                   <option
                       v-for="item in leyLineOutcropTypes"
                       :key="item.value"
                       :value="item.name"
+                      :default="leyLineOutcropTypes[0].name"
                   >
                     {{ item.value }}
                   </option>
                 </select>
               </div>
-
+              <div class="form-group leyLineOutcrop">
+                <label>国家/地区：</label>
+                <select v-model="config.autoLeyLineOutcrop.country">
+                  <option value="">请选择国家/地区</option>
+                  <option
+                      v-for="item in countryList"
+                      :key="item"
+                      :value="item"
+                  >
+                    {{ item }}
+                  </option>
+                </select>
+              </div>
               <div class="form-group leyLineOutcrop">
                 <label>刷取次数：</label>
                 <input
                     class="limited-input"
-                    v-model.number="config.leyLineOutcrop.count"
+                    v-model.number="config.autoLeyLineOutcrop.count"
                     type="number"
+                    default="1"
                     min="0"
                 />
               </div>
@@ -808,7 +822,7 @@ const updateCurrentConfig = (config) => {
                 <label>使用队伍：</label>
                 <input
                     class="limited-input"
-                    v-model="config.leyLineOutcrop.team"
+                    v-model="config.autoLeyLineOutcrop.team"
                     placeholder="队伍ID / 队伍名称"
                 />
               </div>
@@ -817,26 +831,26 @@ const updateCurrentConfig = (config) => {
                 <label>好感队伍（可选）：</label>
                 <input
                     class="limited-input"
-                    v-model="config.leyLineOutcrop.friendshipTeam"
+                    v-model="config.autoLeyLineOutcrop.friendshipTeam"
                     placeholder="好感刷取队伍"
                 />
               </div>
 
 
               <div class="form-group leyLineOutcrop checkbox-group" style="display: flex; flex-wrap: wrap; gap: 16px;">
-                <el-checkbox v-model="config.leyLineOutcrop.useAdventurerHandbook">
+                <el-checkbox v-model="config.autoLeyLineOutcrop.useAdventurerHandbook">
                   使用冒险之证
                 </el-checkbox>
-                <el-checkbox v-model="config.leyLineOutcrop.useFragileResin">
+                <el-checkbox v-model="config.autoLeyLineOutcrop.useFragileResin">
                   使用脆弱树脂
                 </el-checkbox>
-                <el-checkbox v-model="config.leyLineOutcrop.useTransientResin">
+                <el-checkbox v-model="config.autoLeyLineOutcrop.useTransientResin">
                   使用须臾树脂
                 </el-checkbox>
-                <el-checkbox v-model="config.leyLineOutcrop.isGoToSynthesizer">
+                <el-checkbox v-model="config.autoLeyLineOutcrop.isGoToSynthesizer">
                   前往合成台合成
                 </el-checkbox>
-                <el-checkbox v-model="config.leyLineOutcrop.isNotification">
+                <el-checkbox v-model="config.autoLeyLineOutcrop.isNotification">
                   完成后通知
                 </el-checkbox>
               </div>
@@ -845,9 +859,10 @@ const updateCurrentConfig = (config) => {
                 <label>超时时间（秒）：</label>
                 <input
                     class="limited-input"
-                    v-model.number="config.leyLineOutcrop.timeout"
+                    v-model.number="config.autoLeyLineOutcrop.timeout"
                     type="number"
                     min="0"
+                    default="120"
                     placeholder="0 = 不限制"
                 />
               </div>
