@@ -54,14 +54,14 @@ const routes = [
     }
     ,
     {
-        path: '/AutoPlanDomainConfig',
-        name: 'AutoPlanDomainConfig',
-        component: () => import('@main/views/AutoPlanDomainConfigView'),
+        path: '/AutoPlanConfig',
+        name: 'AutoPlanConfig',
+        component: () => import('@views/AutoPlanConfigView.vue'),
         meta: {
             isRoot: true,
-            title: '自动秘境计划配置',
-            desc: '自动秘境计划配置',
-            asSubParentTitle: '自动秘境计划配置',
+            title: '自动体力计划配置',
+            desc: '自动体力计划配置',
+            asSubParentTitle: '自动体力计划配置',
             icon: 'Domain'
         },
     }
