@@ -25,7 +25,7 @@ const runTypes = ref([])
 const excludeDomainTypes = ref(new Array())
 const initDomainTypes = async () => {
   const types = [
-    {value: '', label: '请选择类型'}
+    // {value: '', label: '请选择类型'}
   ]
   const list = domainTypesDefault();
   list.forEach(item => {
@@ -38,7 +38,7 @@ const initDomainTypes = async () => {
 }
 const initRunTypes = async () => {
   const types = [
-    {value: '', label: '请选择执行类型'}
+    // {value: '', label: '请选择执行类型'}
   ]
   const list = runTypesDefault();
   list.forEach(item => {
@@ -618,13 +618,13 @@ const updateCurrentConfig = (config) => {
             <div class="form-group common">
               <label>执行类型：</label>
               <select v-model="config.runType">
-                <option value="">请执行类型</option>
+                <option value="">请选择执行类型</option>
                 <option
-                    v-for="d in runTypes"
-                    :key="d.name"
-                    :value="d.name"
+                    v-for="type in runTypes"
+                    :key="type.value"
+                    :value="type.value"
                 >
-                  {{ d.name }}
+                  {{ type.label }}
                 </option>
               </select>
             </div>
@@ -644,6 +644,7 @@ const updateCurrentConfig = (config) => {
             <div class="form-group domain">
               <label>秘境类型：</label>
               <select v-model="config.selectedType">
+                <option value="">请选择秘境类型</option>
                 <option
                     v-for="type in domainTypes"
                     :key="type.value"
