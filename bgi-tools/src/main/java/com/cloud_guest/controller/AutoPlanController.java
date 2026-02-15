@@ -2,7 +2,7 @@ package com.cloud_guest.controller;
 
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Token;
-import com.cloud_guest.domain.AutoPlanDomainDto;
+import com.cloud_guest.domain.AutoPlanDto;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.view.BasicJsonView;
@@ -42,7 +42,7 @@ public class AutoPlanController {
     @Operation(summary = "[需要登录/授权token]存储基础全部JSON")
     public Result<String> saveAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
                                   @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
-                                  @RequestBody AutoPlanDomainDto dto) {
+                                  @RequestBody AutoPlanDto dto) {
         autoPlanService.saveAll(dto.getJson());
         return ok();
     }
@@ -57,9 +57,9 @@ public class AutoPlanController {
     @PostMapping("json")
     @SysLog @Token
     @Operation(summary = "[需要登录/授权token]存储UID映射JSON")
-    public Result<String> save(@JsonView(value = BasicJsonView.AutoPlanDomainView.class)
-                               @Validated(value = BasicJsonView.AutoPlanDomainView.class)
-                               @RequestBody AutoPlanDomainDto dto) {
+    public Result<String> save(@JsonView(value = BasicJsonView.AutoPlanView.class)
+                               @Validated(value = BasicJsonView.AutoPlanView.class)
+                               @RequestBody AutoPlanDto dto) {
         autoPlanService.save(dto.getUid(), dto.getJson());
         return ok(dto.getUid());
     }

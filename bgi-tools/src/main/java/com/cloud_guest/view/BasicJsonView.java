@@ -15,7 +15,7 @@ public class BasicJsonView {
     public interface OcrBytesView{}
     public interface NextCronTimestampView{}
     public interface NextCronTimestampALLView{}
-    public interface AutoPlanDomainView{}
+    public interface AutoPlanView {}
     public interface AutoPlanDomainALLView{}
 
 }
