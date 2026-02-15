@@ -846,7 +846,7 @@ const updateCurrentConfig = (config) => {
                   使用须臾树脂
                 </el-checkbox>
                 <el-checkbox v-model="config.autoLeyLineOutcrop.isGoToSynthesizer">
-                  前往合成台合成
+                  前往合成台
                 </el-checkbox>
                 <el-checkbox v-model="config.autoLeyLineOutcrop.isNotification">
                   完成后通知
@@ -1127,6 +1127,20 @@ h2 {
   border-color: #409eff;
   outline: none;
   box-shadow: 0 0 5px rgba(64, 158, 255, 0.5);
+}
+
+.leyLineOutcrop-section .checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);   /* 強制兩欄 */
+  gap: 16px 32px;                          /* 行距 16px，列距 32px 可調 */
+  margin: 16px 0 24px;
+  padding: 12px 0;
+  border-top: 1px dashed rgba(100,100,100,0.15);   /* 可選：加條分隔線好看 */
+}
+
+.leyLineOutcrop-section .checkbox-group .el-checkbox {
+  /* 可選：讓文字靠左對齊 */
+  justify-self: start;
 }
 
 /* 结果展示区域 */
