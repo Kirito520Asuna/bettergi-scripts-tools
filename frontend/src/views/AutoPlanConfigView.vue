@@ -731,6 +731,19 @@ const updateCurrentConfig = (config) => {
               </div>
             </div>
             <div class="domain-section" v-else-if="config.runType === runTypes[1]">
+              {
+              "count": 0,
+              "country": "country_d0365b9134e9",
+              "leyLineOutcropType": "leyLineOutcropType_a3a6c54f2403",
+              "useAdventurerHandbook": false,
+              "friendshipTeam": "friendshipTeam_87b9d99ff62e",
+              "team": "team_b52ef41471f7",
+              "timeout": 0,
+              "isGoToSynthesizer": false,
+              "useFragileResin": false,
+              "useTransientResin": false,
+              "isNotification": false
+              }
             </div>
             <!-- 删除按钮 -->
 
@@ -743,10 +756,10 @@ const updateCurrentConfig = (config) => {
           <i class="el-icon-document"></i>
           <span>查看/复制配置结果</span>
         </div>
-        <div class="fixed-search" @click="showResultDrawer = true" title="查看/复制配置结果">
+<!--        <div class="fixed-search" @click="showResultDrawer = true" title="查看/复制配置结果">
           <i class="el-icon-document"></i>
           <span>sous</span>
-        </div>
+        </div>-->
       </div>
     </div>
     <!-- 在 template 最后添加 -->
