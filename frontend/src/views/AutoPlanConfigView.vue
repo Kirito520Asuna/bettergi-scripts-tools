@@ -159,6 +159,7 @@ const addConfig = () => {
     // 新增：地脉专用字段（默认值）
     leyLineOutcrop: {
       count: 1,                        // 刷几次（0=自动/无限）
+      country: "",                     // 国家地区
       leyLineOutcropType: leyLineOutcropTypeNames[0], // 需映射为经验/摩拉
       useAdventurerHandbook: false,    // 是否使用冒险之证
       friendshipTeam: "",              // 好感队伍ID
@@ -278,6 +279,7 @@ if (configs.value.length === 0) {
 const getFinalConfigs = () => {
   return configs.value.map(c => {
     let autoFight = c.autoFight
+    let autoLeyLineOutcrop = c.autoLeyLineOutcrop
     if (autoFight.domainName) {
       const info = domainMap.value.get(autoFight.domainName);
       let index = 1
@@ -298,10 +300,19 @@ const getFinalConfigs = () => {
       dayName: c.dayName,
       runType: c.runType,
       // daysName: c.daysName,
-      physical: c.physical,
+      // physical: c.physical,
       selectedType: c.selectedType, // 新增字段
-      autoFight: autoFight
+      autoFight: autoFight,
+      autoLeyLineOutcrop: autoLeyLineOutcrop,
     };
+    if (c.runType === runTypes[0]) {
+      json.autoLeyLineOutcrop= undefined
+    }else if (c.runType === runTypes[1]) {
+      json.autoFight= undefined
+    }else {
+      ElMessage.error("请选择类型！")
+      throw new Error("请选择类型！")
+    }
     json.days.sort((a, b) => a - b)
     return json
   })
@@ -326,15 +337,16 @@ const getFinalConfigsMap = () => {
 }
 const getFinalConfigsToKey = () => {
   let key = ""
-  //"队伍名称|秘境名称/刷取物品名称|刷几轮|限时/周日|执行顺序,..."
+
   getFinalConfigs().forEach(item => {
 
-    let autoFight = item.autoFight;
-    let physical = [...autoFight.physical];
-    physical.sort((a, b) => a.order - b.order)
+
+
     key += (item.runType || "")
     key += "|"
     if (item.runType === runTypesDefault()[0]) {
+      //"队伍名称|秘境名称/刷取物品名称|刷几轮|限时/周日|执行顺序,..."
+      let autoFight = item.autoFight;
       key += (autoFight.partyName || "")
       key += "|"
       key += (autoFight.domainName)
@@ -343,16 +355,42 @@ const getFinalConfigsToKey = () => {
       key += "|"
       key += (autoFight.sundaySelectedValue || 1)
       key += "|"
+      let physical = [...autoFight.physical];
+      physical.sort((a, b) => a.order - b.order)
       // key += (item.day || "")
       key += (item.days.join('/') || "") // 将数组转换为字符串
       key += "|"
       key += (physical.filter(p => p.open).map(p => p.name).join('/') || "")
-      key += "|"
-      key += (item.order || 1) + ","
+
     } else if (item.runType === runTypesDefault()[1]) {
-      //...
+      //"队伍名称|国家|刷几轮|花类型|好感队|是否使用脆弱树脂|是否使用须臾树脂|是否前往合成台合成浓缩树脂|发送详细通知|战斗超时时间|执行顺序,..."
+      let autoLeyLineOutcrop = item.autoLeyLineOutcrop;
+      //todo:  LeyLineOutcrop
+      key += "|"
+      key += (autoLeyLineOutcrop.team || "")
+      key += "|"
+      key += (autoLeyLineOutcrop.country || "")
+      key += "|"
+      key += (autoLeyLineOutcrop.count || "")
+      key += "|"
+      key += (autoLeyLineOutcrop.leyLineOutcropType || "")
+      key += "|"
+      key += (autoLeyLineOutcrop.friendshipTeam || "")
+      key += "|"
+      key += (autoLeyLineOutcrop.useFragileResin || "")
+      key += "|"
+      key += (autoLeyLineOutcrop.useTransientResin || "")
+      key += "|"
+      key += (autoLeyLineOutcrop.isGoToSynthesizer || "")
+      key += "|"
+      key += (autoLeyLineOutcrop.isNotification || "")
+      key += "|"
+      key += (autoLeyLineOutcrop.timeout || "")
+      key += "|"
     }
 
+    key += "|"
+    key += (item.order || 1) + ","
   })
   if (key.endsWith(",")) {
     key = key.substring(0, key.length - 1);
