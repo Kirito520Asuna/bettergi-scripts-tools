@@ -31,7 +31,7 @@ import static com.cloud_guest.result.Result.ok;
 @Slf4j
 @Tag(name = "自动体力计划服务")
 @RestController
-@RequestMapping(value = {"/auto/plan/domain/", "/api/auto/plan/domain/", "/jwt/auto/plan/domain/"})
+@RequestMapping(value = {"/auto/plan/", "/api/auto/plan/", "/jwt/auto/plan/"})
 public class AutoPlanController {
 
     @Resource
