@@ -854,7 +854,7 @@ const updateCurrentConfig = (config) => {
               </div>
 
               <div class="form-group leyLineOutcrop">
-                <label>超时时间（秒）：</label>
+                <label>战斗超时时间（秒）：</label>
                 <input
                     class="limited-input"
                     v-model.number="config.autoLeyLineOutcrop.timeout"
