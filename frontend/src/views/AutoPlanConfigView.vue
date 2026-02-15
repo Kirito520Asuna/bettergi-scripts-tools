@@ -136,7 +136,7 @@ const addConfig = () => {
     order: 1,
     // day: undefined,
     days: [],
-    runType: runTypes[0],//先写死 预留地脉类型
+    runType: runTypesDefault()[0],//先写死 预留地脉类型
 
     dayName: undefined,
     showDaysSelector: false,   // ← 新增
@@ -153,7 +153,7 @@ const addConfig = () => {
       ],
       domainName: undefined,
       partyName: undefined,
-      sundaySelectedValue: undefined,
+      sundaySelectedValue: 1,
       // sundaySelectedName: undefined,
       DomainRoundNum: 1
     },
@@ -340,9 +340,6 @@ const getFinalConfigsToKey = () => {
   let key = ""
 
   getFinalConfigs().forEach(item => {
-
-
-
     key += (item.runType || "")
     key += "|"
     if (item.runType === runTypesDefault()[0]) {
