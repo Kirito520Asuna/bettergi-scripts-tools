@@ -4677,8 +4677,14 @@ const runTypesDefault = () => {
     // ["秘境","地脉"]
     return runTypes;
 }
+const leyLineOutcropTypeNamesDefault = () => {
+    return ["启示之花","藏金之花"];
+}
 const leyLineOutcropTypesDefault = () => {
     return [{name:"启示之花",value:"经验书"},{name:"藏金之花",value:"摩拉"}];
+}
+const countryListDefault = () => {
+    return ['蒙德', '璃月', '稻妻', '须弥', '枫丹', '纳塔','挪德卡莱'];
 }
 const domainTypesDefault = () => {
     const domainTypes = [
@@ -4702,4 +4708,6 @@ export {
     excludeDomainTypesDefault,
     runTypesDefault,
     leyLineOutcropTypesDefault,
+    leyLineOutcropTypeNamesDefault,
+    countryListDefault,
 }

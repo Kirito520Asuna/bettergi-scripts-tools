@@ -4,9 +4,10 @@ import {ElMessage, ElMessageBox} from "element-plus";
 import {getBaseJsonAll, getUidJson, postUidJson, removeUidList} from "@api/auto_plan/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
 import {
+  countryListDefault,
   domainsDefault,
   domainTypesDefault,
-  excludeDomainTypesDefault, leyLineOutcropTypesDefault,
+  excludeDomainTypesDefault, leyLineOutcropTypeNamesDefault, leyLineOutcropTypesDefault,
   runTypesDefault,
   selectedAsDaysMap
 } from "@utils/defaultdata.js";
@@ -23,7 +24,7 @@ const domains = ref([])
 const domainTypes = ref([])
 const runTypes = ref([])
 const leyLineOutcropTypes = ref([])
-const countryList = ref(['蒙德', '璃月', '稻妻', '须弥', '枫丹', '纳塔','挪德卡莱'])
+const countryList = ref(countryListDefault())
 const excludeDomainTypes = ref(new Array())
 const initDomainTypes = async () => {
   const types = [
@@ -160,8 +161,8 @@ const addConfig = () => {
     // 新增：地脉专用字段（默认值）
     autoLeyLineOutcrop: {
       count: 1,                        // 刷几次（0=自动/无限）
-      country: "",                     // 国家地区
-      leyLineOutcropType: leyLineOutcropTypeNames[0], // 需映射为经验/摩拉
+      country: countryListDefault()[0],                     // 国家地区
+      leyLineOutcropType: leyLineOutcropTypeNamesDefault()[0], // 需映射为经验/摩拉
       useAdventurerHandbook: false,    // 是否使用冒险之证
       friendshipTeam: "",              // 好感队伍ID
       team: "",                        // 主队伍ID
