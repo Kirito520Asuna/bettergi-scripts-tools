@@ -723,6 +723,8 @@ const updateCurrentConfig = (config) => {
                 </div>
               </div>
             </div>
+            <div  class="domain-section" v-else-if="config.runType === runTypes[1]" >
+            </div>
             <!-- 删除按钮 -->
 
             <button class="btn danger" @click="removeConfig(index)">🗑️ 删除</button>
