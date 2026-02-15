@@ -52,7 +52,7 @@
 <script setup>
 import {ref, computed, onMounted} from 'vue';
 import {domainsDefault} from "@utils/defaultdata.js";
-import {getBaseJsonAll} from "@api/domain/autoPlan.js";
+import {getBaseJsonAll} from "@api/auto_plan/autoPlan.js";
 import {ElMessage} from "element-plus";
 import router from "@router/router.js";
 

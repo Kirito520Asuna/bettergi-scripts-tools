@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, watch, watchEffect, onMounted} from 'vue'
 import {ElMessage, ElMessageBox} from "element-plus";
-import {getBaseJsonAll, getUidJson, postUidJson, removeUidList} from "@api/domain/autoPlan";
+import {getBaseJsonAll, getUidJson, postUidJson, removeUidList} from "@api/auto_plan/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
 import {
   domainsDefault,
