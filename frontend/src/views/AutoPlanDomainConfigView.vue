@@ -6,7 +6,7 @@ import {CopyToClipboard} from "@utils/local.js";
 import {domainsDefault, domainTypesDefault, excludeDomainTypesDefault, selectedAsDaysMap} from "@utils/defaultdata.js";
 import router from "@router/router.js";
 import draggable from 'vuedraggable'
-import { debounce } from 'lodash-es';
+import {debounce} from 'lodash-es';
 // 配置列表 → 核心数据结构改为 array
 const configs = ref([])
 const currentConfig = ref([])
@@ -121,6 +121,7 @@ const addConfig = () => {
     showDaysButton: true,   // ← 新增
     // daysName: [],
     selectedType: "", // 新增字段
+    runType: "秘境",//先写死 预留地脉类型
     autoFight: {
       physical: [
         {order: 0, name: "原粹树脂", open: true},
@@ -193,6 +194,7 @@ function changShowDaysButton(config) {
     }
   }
 }
+
 const debouncedSort = debounce(() => {
   changSortConfigs();
 }, 300); // 延迟 300ms 执行
@@ -294,20 +296,27 @@ const getFinalConfigsToKey = () => {
     let autoFight = item.autoFight;
     let physical = [...autoFight.physical];
     physical.sort((a, b) => a.order - b.order)
-    key += (autoFight.partyName || "")
+    key += (item.runType || "")
     key += "|"
-    key += (autoFight.domainName)
-    key += "|"
-    key += (autoFight.DomainRoundNum || "")
-    key += "|"
-    key += (autoFight.sundaySelectedValue || 1)
-    key += "|"
-    // key += (item.day || "")
-    key += (item.days.join('/') || "") // 将数组转换为字符串
-    key += "|"
-    key += (physical.filter(p => p.open).map(p => p.name).join('/') || "")
-    key += "|"
-    key += (item.order || 1) + ","
+    if (item.runType==="秘境"){
+      key += (autoFight.partyName || "")
+      key += "|"
+      key += (autoFight.domainName)
+      key += "|"
+      key += (autoFight.DomainRoundNum || "")
+      key += "|"
+      key += (autoFight.sundaySelectedValue || 1)
+      key += "|"
+      // key += (item.day || "")
+      key += (item.days.join('/') || "") // 将数组转换为字符串
+      key += "|"
+      key += (physical.filter(p => p.open).map(p => p.name).join('/') || "")
+      key += "|"
+      key += (item.order || 1) + ","
+    }else if (item.runType==="地脉"){
+          //...
+    }
+
   })
   if (key.endsWith(",")) {
     key = key.substring(0, key.length - 1);
@@ -563,7 +572,8 @@ const updateCurrentConfig = (config) => {
 
             <div class="form-group">
               <label>执行顺序：</label>
-              <input class="limited-input" @change="debouncedSort" v-model.number="config.order" type="number" min="1" max="99999999"
+              <input class="limited-input" @change="debouncedSort" v-model.number="config.order" type="number" min="1"
+                     max="99999999"
                      placeholder="建议 1~10"/>
               <span style="color: red;">数值高的优先执行</span>
             </div>

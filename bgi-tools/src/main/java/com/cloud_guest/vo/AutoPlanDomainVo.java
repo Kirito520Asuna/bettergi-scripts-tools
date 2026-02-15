@@ -28,9 +28,12 @@ public class AutoPlanDomainVo implements Serializable {
     private List<Integer> days;
     @JsonProperty("dayName")
     private String dayName;
-    @Schema(description = "执行类型")
+    //@Schema(description = "执行类型(展示用)")
     @JsonProperty("selectedType")
     private String selectedType;
+    @Schema(description = "执行类型")
+    @JsonProperty("runType")
+    private String runType;
     @Schema(description = "秘境参数")
     @JsonProperty("autoFight")
     private AutoFightDTO autoFight;
