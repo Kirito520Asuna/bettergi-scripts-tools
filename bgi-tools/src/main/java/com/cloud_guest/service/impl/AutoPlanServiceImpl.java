@@ -4,7 +4,7 @@ import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.domain.Cache;
-import com.cloud_guest.service.AutoPlanDomainService;
+import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.vo.AutoPlanVo;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * @Description
  */
 @Service
-public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
+public class AutoPlanServiceImpl implements AutoPlanService {
     private static final String key = "AUTO_PLAN_DOMAIN:UID:";
     private static final String key_all = "AUTO_PLAN_DOMAIN:ALL";
     @Resource

@@ -10,7 +10,7 @@ import java.util.Map;
  * @Date 2026/2/8 15:31:44
  * @Description
  */
-public interface AutoPlanDomainService {
+public interface AutoPlanService {
     boolean delList(List<String> ids);
 
     boolean save(String id, String json);

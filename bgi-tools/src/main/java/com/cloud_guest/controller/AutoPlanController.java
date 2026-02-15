@@ -4,7 +4,7 @@ import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Token;
 import com.cloud_guest.domain.AutoPlanDomainDto;
 import com.cloud_guest.result.Result;
-import com.cloud_guest.service.AutoPlanDomainService;
+import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.view.BasicJsonView;
 import com.cloud_guest.vo.AutoPlanVo;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -29,13 +29,13 @@ import static com.cloud_guest.result.Result.ok;
  * @Description
  */
 @Slf4j
-@Tag(name = "自动秘境计划服务")
+@Tag(name = "自动体力计划服务")
 @RestController
 @RequestMapping(value = {"/auto/plan/domain/", "/api/auto/plan/domain/", "/jwt/auto/plan/domain/"})
-public class AutoPlanDomainController {
+public class AutoPlanController {
 
     @Resource
-    private AutoPlanDomainService autoPlanDomainService;
+    private AutoPlanService autoPlanService;
 
     @PostMapping("json/all")
     @SysLog @Token
@@ -43,14 +43,14 @@ public class AutoPlanDomainController {
     public Result<String> saveAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
                                   @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
                                   @RequestBody AutoPlanDomainDto dto) {
-        autoPlanDomainService.saveAll(dto.getJson());
+        autoPlanService.saveAll(dto.getJson());
         return ok();
     }
     @SysLog(result = false)
     @Operation(summary = "查询基础全部JSON")
     @GetMapping("json/all")
     public Result<List<Map<String, Object>>> infoAll() {
-        List<Map<String, Object>> list = autoPlanDomainService.findAll();
+        List<Map<String, Object>> list = autoPlanService.findAll();
         return ok(list);
     }
 
@@ -60,7 +60,7 @@ public class AutoPlanDomainController {
     public Result<String> save(@JsonView(value = BasicJsonView.AutoPlanDomainView.class)
                                @Validated(value = BasicJsonView.AutoPlanDomainView.class)
                                @RequestBody AutoPlanDomainDto dto) {
-        autoPlanDomainService.save(dto.getUid(), dto.getJson());
+        autoPlanService.save(dto.getUid(), dto.getJson());
         return ok(dto.getUid());
     }
 
@@ -69,7 +69,7 @@ public class AutoPlanDomainController {
     @Operation(summary = "查询UID映射JSON")
     @GetMapping("json")
     public Result<List<AutoPlanVo>> info(@RequestParam String uid) {
-        List<AutoPlanVo> autoPlanVos = autoPlanDomainService.find(uid);
+        List<AutoPlanVo> autoPlanVos = autoPlanService.find(uid);
         return ok(autoPlanVos);
     }
 
@@ -78,6 +78,6 @@ public class AutoPlanDomainController {
     @DeleteMapping("json")
     public Result<Boolean> infoDel(@Validated @NotBlank @RequestParam String uidStr) {
         List<String> ids = Arrays.stream(uidStr.split(",")).collect(Collectors.toList());
-        return ok(autoPlanDomainService.delList(ids));
+        return ok(autoPlanService.delList(ids));
     }
 }
