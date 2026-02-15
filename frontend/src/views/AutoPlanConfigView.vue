@@ -37,16 +37,16 @@ const initDomainTypes = async () => {
   excludeDomainTypes.value.push(...excludes)
 }
 const initRunTypes = async () => {
-  const types = [
-    // {value: '', label: '请选择执行类型'}
-  ]
-  const list = runTypesDefault();
-  list.forEach(item => {
-    types.push({value: item, label: item})
-  })
-  console.log('list', JSON.stringify(list))
-  runTypes.value = types
-  console.log('runTypes', JSON.stringify(runTypes.value))
+  // const types = [
+  //   // {value: '', label: '请选择执行类型'}
+  // ]
+  // const list = runTypesDefault();
+  // list.forEach(item => {
+  //   types.push({value: item, label: item})
+  // })
+  // console.log('list', JSON.stringify(list))
+  runTypes.value = runTypesDefault();
+  // console.log('runTypes', JSON.stringify(runTypes.value))
 }
 const fetchDomains = async () => {
   isLoading.value = true;
@@ -135,13 +135,14 @@ const addConfig = () => {
     order: 1,
     // day: undefined,
     days: [],
+    runType: runTypes[0],//先写死 预留地脉类型
+
     dayName: undefined,
     showDaysSelector: false,   // ← 新增
     showPhysicalSelector: false,   // ← 新增
     showDaysButton: true,   // ← 新增
     // daysName: [],
     selectedType: "", // 新增字段
-    runType: runTypesDefault()[0],//先写死 预留地脉类型
     autoFight: {
       physical: [
         {order: 0, name: "原粹树脂", open: true},
@@ -591,144 +592,140 @@ const updateCurrentConfig = (config) => {
           <div v-for="(config,index) in configs" :key="config.order" class="config-item">
             <h3>#{{ index }} 配置</h3>
             <hr/>
-
-            <div class="form-group common">
-              <label>执行顺序：</label>
-              <input class="limited-input" @change="debouncedSort" v-model.number="config.order" type="number" min="1"
-                     max="99999999"
-                     placeholder="建议 1~10"/>
-              <span style="color: red;">数值高的优先执行</span>
-            </div>
-
-            <div class="form-group common">
-              <label>执行日：</label>
-              <div
-                  class="days-display"
-                  @click="handleCurrentConfig(config,'show-day')"
-                  :class="{ 'has-selection': config.days?.length > 0 }"
-              >
-              <span v-if="config.days?.length === 0">
-                每天执行（点击指定执行日期）
-              </span>
-                <span v-else>
-                {{ config.dayName || '已选择 ' + config.days.length + ' 天' }}
-              </span>
+            <div  class="comon-section">
+              <div class="form-group common">
+                <label>执行顺序：</label>
+                <input class="limited-input" @change="debouncedSort" v-model.number="config.order" type="number" min="1"
+                       max="99999999"
+                       placeholder="建议 1~10"/>
+                <span style="color: red;">数值高的优先执行</span>
+              </div>
+              <div class="form-group common">
+                <label>执行日：</label>
+                <div
+                    class="days-display"
+                    @click="handleCurrentConfig(config,'show-day')"
+                    :class="{ 'has-selection': config.days?.length > 0 }"
+                >
+                <span v-if="config.days?.length === 0">
+                  每天执行（点击指定执行日期）
+                </span>
+                  <span v-else>
+                  {{ config.dayName || '已选择 ' + config.days.length + ' 天' }}
+                </span>
+                </div>
+              </div>
+              <div class="form-group common">
+                <label>执行类型：</label>
+                <select v-model="config.runType">
+                  <option value="">请选择执行类型</option>
+                  <option
+                      v-for="type in runTypes"
+                      :key="type"
+                      :value="type"
+                  >
+                    {{ type }}
+                  </option>
+                </select>
               </div>
             </div>
-            <div class="form-group common">
-              <label>执行类型：</label>
-              <select v-model="config.runType">
-                <option value="">请选择执行类型</option>
-                <option
-                    v-for="type in runTypes"
-                    :key="type.value"
-                    :value="type.value"
+            <div  class="domain-section" v-if="config.runType === runTypes[0]">
+              <div class="form-group domain" v-if="config.selectedType&&!excludeDomainTypes.includes(config.selectedType)">
+                <label>材料忽略限时开放：</label>
+                <el-button
+                    size="small"
+                    :disabled="!config.showDaysButton"
+                    @click="specifyDate(config)"
                 >
-                  {{ type.label }}
-                </option>
-              </select>
-            </div>
-            <div class="form-group domain" v-if="config.selectedType&&!excludeDomainTypes.includes(config.selectedType)">
-              <label>材料忽略限时开放：</label>
-              <el-button
-                  size="small"
-                  :disabled="!config.showDaysButton"
-                  @click="specifyDate(config)"
-              >
-                {{ config.showDaysButton ? '启用' : '已启用' }}
-              </el-button>
-              <span style="color: red;">默认包含周日</span>
-            </div>
-            <!-- 秘境选择 -->
-            <!-- 新增 type 选择器 -->
-            <div class="form-group domain">
-              <label>秘境类型：</label>
-              <select v-model="config.selectedType">
-                <option value="">请选择秘境类型</option>
-                <option
-                    v-for="type in domainTypes"
-                    :key="type.value"
-                    :value="type.value"
-                >
-                  {{ type.label }}
-                </option>
-              </select>
-            </div>
-            <!-- 秘境选择（根据 selectedType 过滤） -->
-            <div class="form-group domain">
-              <label>秘境：</label>
-              <select v-model="config.autoFight.domainName">
-                <option value="">请选择秘境</option>
-                <option
-                    v-for="d in filteredDomainsType(config.selectedType)"
-                    :key="d.name"
-                    :value="d.name"
-                >
-                  {{ d.name }}
-                </option>
-              </select>
-            </div>
-            <!-- 物品名称选择（根据 domainName 过滤） -->
-            <div v-if="domainMap.get(config.autoFight.domainName)?.hasOrder" class="form-group domain">
-              <label>周日/限时材料：</label>
-              <select
-                  v-model="config.autoFight.sundaySelectedValue">
-                <option
-                    v-for="(item,index) in domainMap.get(config.autoFight.domainName)?.list || []"
-                    :key="item"
-                    :value="index + 1"
-                >
-                  {{ item }}
-                </option>
-              </select>
-            </div>
-            <div
-                v-if="(!domainMap.get(config.autoFight.domainName)?.hasOrder)&&(domainMap.get(config.autoFight.domainName)?.list?.length>0)"
-                class="form-group domain">
-              <label>秘境圣遗物：</label>
-              <ul>
-                <li v-for="item in domainMap.get(config.autoFight.domainName)?.list" :key="item">
-                  {{ item }}
-                </li>
-              </ul>
-            </div>
-
-
-            <div class="form-group domain">
-              <label>队伍名称（可选）：</label>
-              <input class="limited-input" v-model="config.autoFight.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
-            </div>
-            <div class="form-group">
-              <label>副本轮数：</label>
-              <input class="limited-input" v-model.number="config.autoFight.DomainRoundNum" type="number" min="1"
-                     max="99"
-                     placeholder="建议 1~10"/>
-            </div>
-
-            <!--          <hr/>-->
-
-
-            <div class="form-group domain">
-              <label>树脂使用顺序：</label>
-              <!-- 原 physical-display 改成 -->
+                  {{ config.showDaysButton ? '启用' : '已启用' }}
+                </el-button>
+                <span style="color: red;">默认包含周日</span>
+              </div>
+              <!-- 秘境选择 -->
+              <!-- 新增 type 选择器 -->
+              <div class="form-group domain">
+                <label>秘境类型：</label>
+                <select v-model="config.selectedType">
+                  <option value="">请选择秘境类型</option>
+                  <option
+                      v-for="type in domainTypes"
+                      :key="type.value"
+                      :value="type.value"
+                  >
+                    {{ type.label }}
+                  </option>
+                </select>
+              </div>
+              <!-- 秘境选择（根据 selectedType 过滤） -->
+              <div class="form-group domain">
+                <label>秘境：</label>
+                <select v-model="config.autoFight.domainName">
+                  <option value="">请选择秘境</option>
+                  <option
+                      v-for="d in filteredDomainsType(config.selectedType)"
+                      :key="d.name"
+                      :value="d.name"
+                  >
+                    {{ d.name }}
+                  </option>
+                </select>
+              </div>
+              <!-- 物品名称选择（根据 domainName 过滤） -->
+              <div class="form-group domain" v-if="domainMap.get(config.autoFight.domainName)?.hasOrder" >
+                <label>周日/限时材料：</label>
+                <select
+                    v-model="config.autoFight.sundaySelectedValue">
+                  <option
+                      v-for="(item,index) in domainMap.get(config.autoFight.domainName)?.list || []"
+                      :key="item"
+                      :value="index + 1"
+                  >
+                    {{ item }}
+                  </option>
+                </select>
+              </div>
               <div
-                  class="physical-display"
-                  @click="handleCurrentConfig(config,'show-physical')"
-              >
-              <span>
-                {{
-                  config.autoFight.physical
-                      .filter(p => p.open)
-                      .map(p => p.name)
-                      .join(' → ') || '未选择'
-                }}
-              </span>
+                  v-if="(!domainMap.get(config.autoFight.domainName)?.hasOrder)&&(domainMap.get(config.autoFight.domainName)?.list?.length>0)"
+                  class="form-group domain">
+                <label>秘境圣遗物：</label>
+                <ul>
+                  <li v-for="item in domainMap.get(config.autoFight.domainName)?.list" :key="item">
+                    {{ item }}
+                  </li>
+                </ul>
+              </div>
+              <div class="form-group domain">
+                <label>队伍名称（可选）：</label>
+                <input class="limited-input" v-model="config.autoFight.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
+              </div>
+              <div class="form-group domain">
+                <label>副本轮数：</label>
+                <input class="limited-input" v-model.number="config.autoFight.DomainRoundNum" type="number" min="1"
+                       max="99"
+                       placeholder="建议 1~10"/>
+              </div>
+              <!--          <hr/>-->
+              <div class="form-group domain">
+                <label>树脂使用顺序：</label>
+                <!-- 原 physical-display 改成 -->
+                <div
+                    class="physical-display"
+                    @click="handleCurrentConfig(config,'show-physical')"
+                >
+                <span>
+                  {{
+                    config.autoFight.physical
+                        .filter(p => p.open)
+                        .map(p => p.name)
+                        .join(' → ') || '未选择'
+                  }}
+                </span>
+                </div>
               </div>
             </div>
-
             <!-- 删除按钮 -->
 
-            <button @click="removeConfig(index)" class="btn danger">🗑️ 删除</button>
+            <button class="btn danger" @click="removeConfig(index)">🗑️ 删除</button>
 
           </div>
         </div>
