@@ -262,6 +262,7 @@ const getFinalConfigs = () => {
       // day: c.day,
       days: c.days,
       dayName: c.dayName,
+      runType: c.runType,
       // daysName: c.daysName,
       physical: c.physical,
       selectedType: c.selectedType, // 新增字段
