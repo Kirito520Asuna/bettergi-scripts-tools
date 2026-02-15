@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class AutoPlanDomainVo implements Serializable {
+public class AutoPlanVo implements Serializable {
     private static final long serialVersionUID = 8997301368952007161L;
     @Schema(description = "执行顺序")
     @JsonProperty("order")
@@ -31,7 +30,7 @@ public class AutoPlanDomainVo implements Serializable {
     //@Schema(description = "执行类型(展示用)")
     @JsonProperty("selectedType")
     private String selectedType;
-    @Schema(description = "执行类型")
+    @Schema(description = "执行类型(秘境|地脉)")
     @JsonProperty("runType")
     private String runType;
     @Schema(description = "秘境参数")

@@ -7,7 +7,7 @@ import com.cloud_guest.domain.Cache;
 import com.cloud_guest.service.AutoPlanDomainService;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.utils.object.ObjectUtils;
-import com.cloud_guest.vo.AutoPlanDomainVo;
+import com.cloud_guest.vo.AutoPlanVo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +43,7 @@ public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
 
 
     @Override
-    public List<AutoPlanDomainVo> find(String id) {
+    public List<AutoPlanVo> find(String id) {
         id = key + id;
         List<Map<String, Object>> list = new ArrayList<>();
         Cache<String> cache = cacheService.find(id);
@@ -69,8 +69,8 @@ public class AutoPlanDomainServiceImpl implements AutoPlanDomainService {
             }
         }
         ObjectMapper bean = SpringUtil.getBean(ObjectMapper.class);
-        List<AutoPlanDomainVo> collect = list.stream().map(map -> {
-            return bean.convertValue(map, AutoPlanDomainVo.class);
+        List<AutoPlanVo> collect = list.stream().map(map -> {
+            return bean.convertValue(map, AutoPlanVo.class);
         }).collect(Collectors.toList());
         return collect;
     }

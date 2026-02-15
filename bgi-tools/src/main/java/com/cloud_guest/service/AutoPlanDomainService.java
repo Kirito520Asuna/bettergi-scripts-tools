@@ -1,6 +1,6 @@
 package com.cloud_guest.service;
 
-import com.cloud_guest.vo.AutoPlanDomainVo;
+import com.cloud_guest.vo.AutoPlanVo;
 
 import java.util.List;
 import java.util.Map;
@@ -15,7 +15,7 @@ public interface AutoPlanDomainService {
 
     boolean save(String id, String json);
 
-    List<AutoPlanDomainVo> find(String id);
+    List<AutoPlanVo> find(String id);
 
     boolean saveAll(String json);
 
