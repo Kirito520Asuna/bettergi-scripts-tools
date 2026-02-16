@@ -1,7 +1,7 @@
 package com.cloud_guest.manager;
 
 import cn.hutool.core.util.StrUtil;
-import com.cloud_guest.domain.WsProxy;
+import com.cloud_guest.domain.dto.WsProxyDto;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -46,10 +46,10 @@ public class WsClientManager {
     }
 
     @SneakyThrows
-    public void send(WsProxy wsProxy) {
-        String bodyJson = wsProxy.getBodyJson();
-        String url = wsProxy.getUrl();
-        String token = wsProxy.getToken();
+    public void send(WsProxyDto wsProxyDto) {
+        String bodyJson = wsProxyDto.getBodyJson();
+        String url = wsProxyDto.getUrl();
+        String token = wsProxyDto.getToken();
         url = buildUrl(url, token);
         send(url, bodyJson);
     }

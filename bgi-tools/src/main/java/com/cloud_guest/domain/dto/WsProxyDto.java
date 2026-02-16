@@ -1,4 +1,4 @@
-package com.cloud_guest.domain;
+package com.cloud_guest.domain.dto;
 
 import com.cloud_guest.view.BasicJsonView;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -22,7 +22,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "ws代理类")
-public class WsProxy {
+public class WsProxyDto {
     @NotBlank
     @JsonView(value = {BasicJsonView.WsProxyViewV1.class, BasicJsonView.WsProxyView.class})
     @Schema(description = "ws地址")

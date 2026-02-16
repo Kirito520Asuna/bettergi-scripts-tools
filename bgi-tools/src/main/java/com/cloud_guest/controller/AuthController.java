@@ -1,7 +1,7 @@
 package com.cloud_guest.controller;
 
 import com.cloud_guest.aop.log.SysLog;
-import com.cloud_guest.domain.LoginDto;
+import com.cloud_guest.domain.dto.LoginDto;
 import com.cloud_guest.enums.ApiCode;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.properties.auth.AuthProperties;

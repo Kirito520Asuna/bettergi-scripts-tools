@@ -2,7 +2,7 @@ package com.cloud_guest.controller;
 
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Token;
-import com.cloud_guest.domain.AutoPlanDto;
+import com.cloud_guest.domain.dto.AutoPlanDto;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.view.BasicJsonView;

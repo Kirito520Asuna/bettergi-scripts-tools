@@ -1,4 +1,4 @@
-package com.cloud_guest.domain;
+package com.cloud_guest.domain.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

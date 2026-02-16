@@ -2,7 +2,7 @@ package com.cloud_guest.controller;
 
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.log.SysLog;
-import com.cloud_guest.domain.WsProxy;
+import com.cloud_guest.domain.dto.WsProxyDto;
 import com.cloud_guest.manager.WsClientManager;
 import com.cloud_guest.view.BasicJsonView;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -36,7 +36,7 @@ public class WsProxyMessageController {
     @SneakyThrows
     @Operation(summary = "发送消息")
     @PostMapping("send")
-    public String send(@JsonView(BasicJsonView.WsProxyView.class) @Validated @RequestBody WsProxy wsProxy) {
+    public String send(@JsonView(BasicJsonView.WsProxyView.class) @Validated @RequestBody WsProxyDto wsProxy) {
         wsClientManager.send(wsProxy);
         return "success";
     }
@@ -44,11 +44,11 @@ public class WsProxyMessageController {
     @SneakyThrows
     @Operation(summary = "发送消息v1")
     @PostMapping("send/v1")
-    public String sendV1(@JsonView(BasicJsonView.WsProxyViewV1.class)@Validated @RequestBody WsProxy wsProxy) {
-        Map<String, Object> bodyMap = wsProxy.getBodyMap();
-        String url = wsProxy.getUrl();
-        wsClientManager.buildUrl(url, wsProxy.getToken());
-        wsClientManager.send(wsProxy.getUrl(), JSONUtil.toJsonStr(bodyMap));
+    public String sendV1(@JsonView(BasicJsonView.WsProxyViewV1.class)@Validated @RequestBody WsProxyDto wsProxyDto) {
+        Map<String, Object> bodyMap = wsProxyDto.getBodyMap();
+        String url = wsProxyDto.getUrl();
+        wsClientManager.buildUrl(url, wsProxyDto.getToken());
+        wsClientManager.send(wsProxyDto.getUrl(), JSONUtil.toJsonStr(bodyMap));
         return "success";
     }
 }

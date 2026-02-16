@@ -1,4 +1,4 @@
-package com.cloud_guest.domain;
+package com.cloud_guest.domain.dto;
 
 import com.cloud_guest.aop.validator.ValidCron;
 import com.cloud_guest.view.BasicJsonView;

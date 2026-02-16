@@ -1,17 +1,12 @@
 package com.cloud_guest.controller;
 
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.IdUtil;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Token;
-import com.cloud_guest.domain.AnalysisJsonFileDto;
+import com.cloud_guest.domain.dto.AnalysisJsonFileDto;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.FileJsonService;
-import com.cloud_guest.utils.LocalCacheUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.SneakyThrows;
@@ -23,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.validation.constraints.NotBlank;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
