@@ -39,7 +39,7 @@ public class AutoPlanDTO implements Serializable {
     @NotEmptyList(message = "自动计划列表不能为空")
     private List<AutoPlan> autoPlanList = new ArrayList<>();
 
-    private void checkValid() {
+    public void checkValid() {
         List<String> runTypes = Arrays.asList("秘境", "地脉");
         for (AutoPlan autoPlan : this.autoPlanList) {
             if (!runTypes.contains(autoPlan.getRunType())) {

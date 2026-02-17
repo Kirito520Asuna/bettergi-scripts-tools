@@ -1,7 +1,9 @@
 package com.cloud_guest.controller;
 
+import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Token;
+import com.cloud_guest.domain.dto.AutoPlanDTO;
 import com.cloud_guest.domain.dto.AutoPlanJsonDto;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AutoPlanService;
@@ -38,14 +40,16 @@ public class AutoPlanController {
     private AutoPlanService autoPlanService;
 
     @PostMapping("domain/json/all")
-    @SysLog @Token
+    @SysLog
+    @Token
     @Operation(summary = "[需要登录/授权token]存储基础全部JSON")
     public Result<String> saveDomainAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
-                                  @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
-                                  @RequestBody AutoPlanJsonDto dto) {
+                                        @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
+                                        @RequestBody AutoPlanJsonDto dto) {
         autoPlanService.saveDomainAll(dto.getJson());
         return ok();
     }
+
     @SysLog(result = false)
     @Operation(summary = "查询基础全部JSON")
     @GetMapping("domain/json/all")
@@ -55,7 +59,8 @@ public class AutoPlanController {
     }
 
     @PostMapping("json")
-    @SysLog @Token
+    @SysLog
+    @Token
     @Operation(summary = "[需要登录/授权token]存储UID映射JSON")
     public Result<String> save(@JsonView(value = BasicJsonView.AutoPlanView.class)
                                @Validated(value = BasicJsonView.AutoPlanView.class)
@@ -64,6 +69,15 @@ public class AutoPlanController {
         return ok(dto.getUid());
     }
 
+    @PostMapping("info")
+    @SysLog
+    @Token
+    @Operation(summary = "[需要登录/授权token]存储UID体力计划")
+    public Result<String> saveInfo(@Validated @RequestBody AutoPlanDTO dto) {
+        dto.checkValid();
+        autoPlanService.save(dto.getUid(), JSONUtil.toJsonStr(dto.getAutoPlanList()));
+        return ok(dto.getUid());
+    }
 
     @SysLog
     @Operation(summary = "查询UID映射JSON")
@@ -73,7 +87,8 @@ public class AutoPlanController {
         return ok(autoPlanVos);
     }
 
-    @SysLog @Token
+    @SysLog
+    @Token
     @Operation(summary = "[需要登录/授权token]批量删除UID映射JSON")
     @DeleteMapping("json")
     public Result<Boolean> infoDel(@Validated @NotBlank @RequestParam String uidStr) {
