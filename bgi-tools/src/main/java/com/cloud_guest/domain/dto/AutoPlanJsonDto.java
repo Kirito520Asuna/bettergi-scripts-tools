@@ -19,7 +19,7 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AutoPlanDto implements Serializable {
+public class AutoPlanJsonDto implements Serializable {
     private static final long serialVersionUID = 4630197595885404176L;
     @Schema(description = "uid")
     @NotBlank(groups = {BasicJsonView.AutoPlanView.class})

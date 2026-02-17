@@ -156,7 +156,7 @@ const addConfig = () => {
       partyName: undefined,
       sundaySelectedValue: 1,
       // sundaySelectedName: undefined,
-      DomainRoundNum: 1
+      domainRoundNum: 1
     },
     // 新增：地脉专用字段（默认值）
     autoLeyLineOutcrop: {
@@ -350,7 +350,7 @@ const getFinalConfigsToKey = () => {
       key += "|"
       key += (autoFight.domainName)
       key += "|"
-      key += (autoFight.DomainRoundNum || "")
+      key += (autoFight.domainRoundNum || "")
       key += "|"
       key += (autoFight.sundaySelectedValue || 1)
       key += "|"
@@ -753,7 +753,7 @@ const updateCurrentConfig = (config) => {
               </div>
               <div class="form-group domain">
                 <label>副本轮数：</label>
-                <input class="limited-input" v-model.number="config.autoFight.DomainRoundNum" type="number" min="1"
+                <input class="limited-input" v-model.number="config.autoFight.domainRoundNum" type="number" min="1"
                        max="99"
                        placeholder="建议 1~10"/>
               </div>
