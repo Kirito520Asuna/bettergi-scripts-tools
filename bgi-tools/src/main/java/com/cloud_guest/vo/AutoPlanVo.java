@@ -35,7 +35,7 @@ public class AutoPlanVo implements Serializable {
     private String runType;
     @Schema(description = "秘境参数")
     @JsonProperty("autoFight")
-    private AutoFightDTO autoFight;
+    private AutoFight autoFight;
     @Schema(description = "地脉参数")
     @JsonProperty("autoLeyLineOutcrop")
     private AutoLeyLineOutcrop autoLeyLineOutcrop;
@@ -88,7 +88,7 @@ public class AutoPlanVo implements Serializable {
 
     @NoArgsConstructor
     @Data
-    public static class AutoFightDTO {
+    public static class AutoFight {
         //@Schema(description = "国家地区")
         //@JsonProperty("country")
         //public String country;
@@ -106,12 +106,12 @@ public class AutoPlanVo implements Serializable {
         private Integer domainRoundNum;
         @Schema(description = "树脂启用顺序")
         @JsonProperty("physical")
-        private List<PhysicalDTO> physical;
+        private List<Physical> physical;
     }
 
     @NoArgsConstructor
     @Data
-    public static class PhysicalDTO {
+    public static class Physical {
         @JsonProperty("order")
         private Integer order;
         @JsonProperty("name")
