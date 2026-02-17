@@ -364,7 +364,7 @@ const getFinalConfigsToKey = () => {
       key += "|"
       key += (physical.filter(p => p.open).map(p => p.name).join('/') || "")
     } else if (item.runType === runTypesDefault()[1]) {
-      //"|队伍名称|国家|刷几轮|花类型|好感队|是否使用脆弱树脂|是否使用须臾树脂|是否前往合成台合成浓缩树脂|发送详细通知|战斗超时时间,..."
+      //"|队伍名称|国家|刷几轮|花类型|好感队|是否使用脆弱树脂|是否使用须臾树脂|是否前往合成台合成浓缩树脂|是否使用冒险之证|发送详细通知|战斗超时时间,..."
       let autoLeyLineOutcrop = item.autoLeyLineOutcrop;
       //todo:  LeyLineOutcrop
       key += "|"
@@ -383,6 +383,8 @@ const getFinalConfigsToKey = () => {
       key += (autoLeyLineOutcrop.useTransientResin || "")
       key += "|"
       key += (autoLeyLineOutcrop.isGoToSynthesizer || "")
+      key += "|"
+      key += (autoLeyLineOutcrop.useAdventurerHandbook || "")
       key += "|"
       key += (autoLeyLineOutcrop.isNotification || "")
       key += "|"
