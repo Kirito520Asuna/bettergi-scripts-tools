@@ -341,11 +341,19 @@ const getFinalConfigsToKey = () => {
   let key = ""
 
   getFinalConfigs().forEach(item => {
+    // 类型|执行日期|执行顺序|
     key += (item.runType || "")
     key += "|"
+    key += (item.days.join('/') || "") // 将数组转换为字符串
+    key += "|"
+    key += (item.order || 1) + ","
+    key += "|"
     if (item.runType === runTypesDefault()[0]) {
-      //"队伍名称|秘境名称/刷取物品名称|刷几轮|限时/周日|执行顺序,..."
+      //"队伍名称|秘境名称/刷取物品名称|刷几轮|限时/周日,..."
       let autoFight = item.autoFight;
+      let physical = [...autoFight.physical];
+      physical.sort((a, b) => a.order - b.order)
+
       key += (autoFight.partyName || "")
       key += "|"
       key += (autoFight.domainName)
@@ -354,15 +362,9 @@ const getFinalConfigsToKey = () => {
       key += "|"
       key += (autoFight.sundaySelectedValue || 1)
       key += "|"
-      let physical = [...autoFight.physical];
-      physical.sort((a, b) => a.order - b.order)
-      // key += (item.day || "")
-      key += (item.days.join('/') || "") // 将数组转换为字符串
-      key += "|"
       key += (physical.filter(p => p.open).map(p => p.name).join('/') || "")
-
     } else if (item.runType === runTypesDefault()[1]) {
-      //"队伍名称|国家|刷几轮|花类型|好感队|是否使用脆弱树脂|是否使用须臾树脂|是否前往合成台合成浓缩树脂|发送详细通知|战斗超时时间|执行顺序,..."
+      //"队伍名称|国家|刷几轮|花类型|好感队|是否使用脆弱树脂|是否使用须臾树脂|是否前往合成台合成浓缩树脂|发送详细通知|战斗超时时间,..."
       let autoLeyLineOutcrop = item.autoLeyLineOutcrop;
       //todo:  LeyLineOutcrop
       key += "|"
@@ -386,9 +388,7 @@ const getFinalConfigsToKey = () => {
       key += "|"
       key += (autoLeyLineOutcrop.timeout || "")
     }
-
-    key += "|"
-    key += (item.order || 1) + ","
+    key += ","
   })
   if (key.endsWith(",")) {
     key = key.substring(0, key.length - 1);
