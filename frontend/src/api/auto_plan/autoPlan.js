@@ -81,10 +81,22 @@ async function getBaseJsonAll(){
     return response.data;
 }
 
+/**
+ *
+ * @returns {Promise<any>}
+ */
+async function getBaseCountryJsonAll(){
+    const response = await service.get('/auto/plan/country/json/all');
+    if (response.code === 200){
+        ElMessage.success("全部加载成功");
+    }
+    return response.data;
+}
 export {
     // postUidJson,
     postUidPlan,
     getUidJson,
     removeUidList,
     getBaseJsonAll,
+    getBaseCountryJsonAll,
 }

@@ -1,18 +1,14 @@
 package com.cloud_guest.service.impl;
 
 import cn.hutool.extra.spring.SpringUtil;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.service.CacheService;
-import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.vo.AutoPlanVo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,7 +21,9 @@ import java.util.stream.Collectors;
 @Service
 public class AutoPlanServiceImpl implements AutoPlanService {
     private static final String key = "AUTO_PLAN:UID:";
-    private static final String key_all = "AUTO_PLAN_DOMAIN:ALL";
+    //private static final String key_uid_all = "AUTO_PLAN_UID:ALL";
+    private static final String key_domain_all = "AUTO_PLAN_DOMAIN:ALL";
+    private static final String key_country_all = "AUTO_PLAN_COUNTRY:ALL";
     @Resource
     private CacheService cacheService;
 
@@ -45,29 +43,9 @@ public class AutoPlanServiceImpl implements AutoPlanService {
     @Override
     public List<AutoPlanVo> find(String id) {
         id = key + id;
-        List<Map<String, Object>> list = new ArrayList<>();
         Cache<String> cache = cacheService.find(id);
-        if (ObjectUtils.equals(cache.getType(), "json")) {
-            String data = cache.getData();
-            if (JSONUtil.isTypeJSONArray(data)) {
-                List<String> maps = JSONUtil.toList(data, String.class);
-                for (String json : maps) {
-                    if (JSONUtil.isTypeJSONArray(json)){
-                        // 解析为 JSONArray
-                        List<JSONObject> maps1 = JSONUtil.toList(json, JSONObject.class);
-                        list.addAll(maps1);
-                    }else {
-                        Map<String, Object> bean = JSONUtil.toBean(json, JSONObject.class);
-                        list.add(bean);
-                    }
+        List<Map<String, Object>> list =  cache.toList();
 
-                }
-            } else
-            if (JSONUtil.isTypeJSON(data)) {
-                Map<String, Object> bean = JSONUtil.toBean(data, Map.class);
-                list.add(bean);
-            }
-        }
         ObjectMapper bean = SpringUtil.getBean(ObjectMapper.class);
         List<AutoPlanVo> collect = list.stream().map(map -> {
             return bean.convertValue(map, AutoPlanVo.class);
@@ -77,34 +55,22 @@ public class AutoPlanServiceImpl implements AutoPlanService {
 
     @Override
     public List<Map<String, Object>> findDomainAll() {
-        List<Map<String, Object>> list = new ArrayList<>();
-        Cache<String> cache = cacheService.find(key_all);
-        if (ObjectUtils.equals(cache.getType(), "json")) {
-            String data = cache.getData();
-            if (JSONUtil.isTypeJSONArray(data)) {
-                List<String> maps = JSONUtil.toList(data, String.class);
-                for (String json : maps) {
-                    if (JSONUtil.isTypeJSONArray(json)){
-                        // 解析为 JSONArray
-                        List<JSONObject> maps1 = JSONUtil.toList(json, JSONObject.class);
-                        list.addAll(maps1);
-                    }else {
-                        Map<String, Object> bean = JSONUtil.toBean(json, JSONObject.class);
-                        list.add(bean);
-                    }
-
-                }
-            } else
-            if (JSONUtil.isTypeJSON(data)) {
-                Map<String, Object> bean = JSONUtil.toBean(data, Map.class);
-                list.add(bean);
-            }
-        }
-        return list;
+        Cache<String> cache = cacheService.find(key_domain_all);
+        return cache.toList();
     }
 
     @Override
     public boolean saveDomainAll(String json) {
-        return cacheService.save(key_all, json);
+        return cacheService.save(key_domain_all, json);
+    }
+
+    @Override
+    public boolean saveCountryAll(String json) {
+        return cacheService.save(key_country_all, json);
+    }
+    @Override
+    public List<Map<String, Object>> findCountryAll() {
+        Cache<String> cache = cacheService.find(key_country_all);
+        return cache.toList();
     }
 }

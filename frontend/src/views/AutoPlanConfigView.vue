@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, watch, watchEffect, onMounted} from 'vue'
 import {ElMessage, ElMessageBox} from "element-plus";
-import {getBaseJsonAll, getUidJson, postUidPlan, removeUidList} from "@api/auto_plan/autoPlan";
+import {getBaseCountryJsonAll, getBaseJsonAll, getUidJson, postUidPlan, removeUidList} from "@api/auto_plan/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
 import {
   countryListDefault,
@@ -24,7 +24,7 @@ const domains = ref([])
 const domainTypes = ref([])
 const runTypes = ref([])
 const leyLineOutcropTypes = ref([])
-const countryList = ref(countryListDefault())
+const countryList = ref(null)
 const excludeDomainTypes = ref(new Array())
 const initDomainTypes = async () => {
   const types = [
@@ -46,6 +46,15 @@ const leyLineOutcropTypeNames = ref([])
 const initLeyLineOutcropTypes = async () => {
   leyLineOutcropTypes.value = leyLineOutcropTypesDefault();
   leyLineOutcropTypeNames.value = leyLineOutcropTypes.value.map(item => item.name)
+}
+const initCountryList = async () => {
+  try {
+    countryList.value = await getBaseCountryJsonAll()
+  } catch (e) {
+    ElMessage.warning('获取国家列表失败，使用默认数据')
+  }
+  if (!countryList.value)
+    countryList.value = countryListDefault()
 }
 const currentConfig = ref(null)
 const materialsOrderMaps = ref(new Map())
@@ -79,7 +88,7 @@ const fetchDomains = async () => {
         for (let one of item.list) {
           materialsOrderMaps.value.set(one, index)
           materialsDomainMaps.value.set(one, item.name)
-          materialsALL.value.push({name: one,type: item.type, index: index, domain: item.name})
+          materialsALL.value.push({name: one, type: item.type, index: index, domain: item.name})
           index++
         }
       }
@@ -141,6 +150,7 @@ onMounted(() => {
   initDomainTypes()
   initRunTypes()
   initLeyLineOutcropTypes()
+  initCountryList()
 })
 // 在 script 中添加跳转逻辑
 const goToHome = () => {
@@ -150,48 +160,51 @@ const showResultDrawer = ref(false)
 const orderSortConfigs = ref(false)
 const uid = ref("")
 // 新增一条空白配置
-const addConfig = () => {
-  configs.value.push({
-    order: 1,
-    // day: undefined,
-    days: [],
-    runType: runTypesDefault()[0],//先写死 预留地脉类型
+const addConfig = (config = undefined) => {
+  if (config) {
+    configs.value.push(config)
+  } else {
+    configs.value.push({
+      order: 1,
+      // day: undefined,
+      days: [],
+      runType: runTypesDefault()[0],//先写死 预留地脉类型
 
-    dayName: undefined,
-    showDaysSelector: false,   // ← 新增
-    showPhysicalSelector: false,   // ← 新增
-    showDaysButton: true,   // ← 新增
-    // daysName: [],
-    selectedType: undefined, // 新增字段
-    autoFight: {
-      physical: [
-        {order: 0, name: "原粹树脂", open: true},
-        {order: 1, name: "浓缩树脂", open: false},
-        {order: 2, name: "须臾树脂", open: false},
-        {order: 3, name: "脆弱树脂", open: false}
-      ],
-      domainName: undefined,
-      partyName: undefined,
-      sundaySelectedValue: undefined,
-      sundaySelectedDomain: undefined,
-      domainRoundNum: 1
-    },
-    // 新增：地脉专用字段（默认值）
-    autoLeyLineOutcrop: {
-      count: 1,                        // 刷几次（0=自动/无限）
-      country: countryListDefault()[0],                     // 国家地区
-      leyLineOutcropType: leyLineOutcropTypeNamesDefault()[0], // 需映射为经验/摩拉
-      useAdventurerHandbook: false,    // 是否使用冒险之证
-      friendshipTeam: "",              // 好感队伍ID
-      team: "",                        // 主队伍ID
-      timeout: 120,                      // 超时时间（秒）
-      isGoToSynthesizer: false,        // 是否前往合成台
-      useFragileResin: false,          // 使用脆弱树脂
-      useTransientResin: false,        // 使用须臾树脂（须臾=Transient）
-      isNotification: false            // 是否通知
-    }
-  })
-
+      dayName: undefined,
+      showDaysSelector: false,   // ← 新增
+      showPhysicalSelector: false,   // ← 新增
+      showDaysButton: true,   // ← 新增
+      // daysName: [],
+      selectedType: undefined, // 新增字段
+      autoFight: {
+        physical: [
+          {order: 0, name: "原粹树脂", open: true},
+          {order: 1, name: "浓缩树脂", open: false},
+          {order: 2, name: "须臾树脂", open: false},
+          {order: 3, name: "脆弱树脂", open: false}
+        ],
+        domainName: undefined,
+        partyName: undefined,
+        sundaySelectedValue: undefined,
+        sundaySelectedDomain: undefined,
+        domainRoundNum: 1
+      },
+      // 新增：地脉专用字段（默认值）
+      autoLeyLineOutcrop: {
+        count: 1,                        // 刷几次（0=自动/无限）
+        country: countryListDefault()[0],                     // 国家地区
+        leyLineOutcropType: leyLineOutcropTypeNamesDefault()[0], // 需映射为经验/摩拉
+        useAdventurerHandbook: false,    // 是否使用冒险之证
+        friendshipTeam: "",              // 好感队伍ID
+        team: "",                        // 主队伍ID
+        timeout: 120,                      // 超时时间（秒）
+        isGoToSynthesizer: false,        // 是否前往合成台
+        useFragileResin: false,          // 使用脆弱树脂
+        useTransientResin: false,        // 使用须臾树脂（须臾=Transient）
+        isNotification: false            // 是否通知
+      }
+    })
+  }
   changSortConfigs()
 
 }
@@ -230,6 +243,7 @@ const changSortConfigs = () => {
     configs.value.sort((a, b) => b.order - a.order)
   }
 }
+
 // 在 script setup 部分添加方法
 function getFilteredMaterials(config) {
   if (!config || !config.selectedType) {
@@ -237,6 +251,7 @@ function getFilteredMaterials(config) {
   }
   return materialsALL.value.filter(e => e.type === config.selectedType);
 }
+
 function handleSundaySelection(config) {
   const selectedItem = config.autoFight.sundaySelectedDomain;
   if (selectedItem) {
@@ -244,7 +259,7 @@ function handleSundaySelection(config) {
     config.autoFight.domainName = selectedItem.domain;
     config.autoFight.sundaySelectedValue = selectedItem.index;
     config.autoFight.sundaySelectedDomain = undefined
-  }else {
+  } else {
     config.autoFight.sundaySelectedName = undefined
     config.autoFight.domainName = undefined
     config.autoFight.sundaySelectedValue = undefined
@@ -936,6 +951,7 @@ const updateCurrentConfig = (config) => {
             <!-- 删除按钮 -->
 
             <button class="btn danger" @click="removeConfig(index)">🗑️ 删除</button>
+            <button class="btn danger" @click="addConfig(config)">拷贝一份</button>
 
           </div>
         </div>

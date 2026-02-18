@@ -38,6 +38,23 @@ public class AutoPlanController {
 
     @Resource
     private AutoPlanService autoPlanService;
+    @SysLog(result = false)
+    @Operation(summary = "查询全部国家JSON")
+    @GetMapping("country/json/all")
+    public Result<List<Map<String, Object>>> infoCountryAll() {
+        List<Map<String, Object>> list = autoPlanService.findCountryAll();
+        return ok(list);
+    }
+    @PostMapping("country/json/all")
+    @SysLog
+    @Token
+    @Operation(summary = "[需要登录/授权token]存储全部国家JSON")
+    public Result<String> saveCountryAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
+                                        @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
+                                        @RequestBody AutoPlanJsonDto dto) {
+        autoPlanService.saveCountryAll(dto.getJson());
+        return ok();
+    }
 
     @PostMapping("domain/json/all")
     @SysLog
