@@ -26,6 +26,8 @@ public class AutoFight {
     @Schema(description = "限时/周日 顺序1-3")
     @JsonProperty("sundaySelectedValue")
     private Integer sundaySelectedValue;
+    @Schema(description = "限时/周日 材料 名称")
+    private String sundaySelectedName;
     @Schema(description = "队伍")
     @JsonProperty("partyName")
     private String partyName;

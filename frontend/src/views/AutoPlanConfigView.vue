@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, watch, watchEffect, onMounted} from 'vue'
 import {ElMessage, ElMessageBox} from "element-plus";
-import {getBaseJsonAll, getUidJson, postUidJson, postUidPlan, removeUidList} from "@api/auto_plan/autoPlan";
+import {getBaseJsonAll, getUidJson, postUidPlan, removeUidList} from "@api/auto_plan/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
 import {
   countryListDefault,
@@ -42,13 +42,15 @@ const initDomainTypes = async () => {
 const initRunTypes = async () => {
   runTypes.value = runTypesDefault();
 }
-const leyLineOutcropTypeNames=ref([])
+const leyLineOutcropTypeNames = ref([])
 const initLeyLineOutcropTypes = async () => {
   leyLineOutcropTypes.value = leyLineOutcropTypesDefault();
   leyLineOutcropTypeNames.value = leyLineOutcropTypes.value.map(item => item.name)
 }
 const currentConfig = ref(null)
-
+const materialsOrderMaps = ref(new Map())
+const materialsDomainMaps = ref(new Map())
+const materialsALL = ref(new Array())
 const fetchDomains = async () => {
   isLoading.value = true;
   try {
@@ -67,6 +69,21 @@ const fetchDomains = async () => {
     ElMessage.warning('使用默认秘境数据。');
   } finally {
     isLoading.value = false;
+  }
+
+  if (domains.value && domains.value.length > 0) {
+    domains.value.forEach(item => {
+      if (item.hasOrder) {
+        // console.log('item', item)
+        let index = 1
+        for (let one of item.list) {
+          materialsOrderMaps.value.set(one, index)
+          materialsDomainMaps.value.set(one, item.name)
+          materialsALL.value.push({name: one,type: item.type, index: index, domain: item.name})
+          index++
+        }
+      }
+    })
   }
 };
 const removeConfigToBackend = async () => {
@@ -145,7 +162,7 @@ const addConfig = () => {
     showPhysicalSelector: false,   // ← 新增
     showDaysButton: true,   // ← 新增
     // daysName: [],
-    selectedType: "", // 新增字段
+    selectedType: undefined, // 新增字段
     autoFight: {
       physical: [
         {order: 0, name: "原粹树脂", open: true},
@@ -155,8 +172,8 @@ const addConfig = () => {
       ],
       domainName: undefined,
       partyName: undefined,
-      sundaySelectedValue: 1,
-      // sundaySelectedName: undefined,
+      sundaySelectedValue: undefined,
+      sundaySelectedDomain: undefined,
       domainRoundNum: 1
     },
     // 新增：地脉专用字段（默认值）
@@ -213,6 +230,26 @@ const changSortConfigs = () => {
     configs.value.sort((a, b) => b.order - a.order)
   }
 }
+// 在 script setup 部分添加方法
+function getFilteredMaterials(config) {
+  if (!config || !config.selectedType) {
+    return materialsALL.value || [];
+  }
+  return materialsALL.value.filter(e => e.type === config.selectedType);
+}
+function handleSundaySelection(config) {
+  const selectedItem = config.autoFight.sundaySelectedDomain;
+  if (selectedItem) {
+    config.autoFight.sundaySelectedName = selectedItem.name;
+    config.autoFight.domainName = selectedItem.domain;
+    config.autoFight.sundaySelectedValue = selectedItem.index;
+    config.autoFight.sundaySelectedDomain = undefined
+  }else {
+    config.autoFight.sundaySelectedName = undefined
+    config.autoFight.domainName = undefined
+    config.autoFight.sundaySelectedValue = undefined
+  }
+}
 
 function changShowDaysButton(config) {
   if (config.days && config.days.length > 0) {
@@ -241,15 +278,11 @@ watchEffect(
     () => configs.value,
     (newConfigs) => {
       newConfigs.forEach(config => {
-        const domainName = config.autoFight.domainName
+        let domainName = config.autoFight.domainName
         if (!domainName) {
-          config.autoFight.sundaySelectedValue = undefined
           return
         }
-
         const domain = domainMap.value.get(domainName)
-        if (!domain) return
-        // 处理 days 数组
         if (Array.isArray(config.days) && config.days.length > 0) {
           config.dayName = config.days.map(dayIndex => weekDays[dayIndex]).join(', ')
         } else {
@@ -264,7 +297,7 @@ watchEffect(
         } else {
           config.autoFight.sundaySelectedValue = config.autoFight.sundaySelectedValue || undefined
         }
-
+        handleSundaySelection(config)
         changShowDaysButton(config);
       })
 
@@ -309,12 +342,12 @@ const getFinalConfigs = () => {
       autoLeyLineOutcrop: autoLeyLineOutcrop,
     };
     if (c.runType === runTypesDefault()[0]) {
-      json.autoLeyLineOutcrop= undefined
-    }else if (c.runType === runTypesDefault()[1]) {
-      json.autoFight= undefined
-    }else {
-/*      ElMessage.error("请选择类型！")
-      throw new Error("请选择类型！")*/
+      json.autoLeyLineOutcrop = undefined
+    } else if (c.runType === runTypesDefault()[1]) {
+      json.autoFight = undefined
+    } else {
+      /*      ElMessage.error("请选择类型！")
+            throw new Error("请选择类型！")*/
     }
     json.days.sort((a, b) => a - b)
     return json
@@ -532,7 +565,7 @@ const updateCurrentConfig = (config) => {
         >
 
           <div class="dialog-content">
-            <div class="checkbox-group" >
+            <div class="checkbox-group">
               <label v-for="(dayName, idx) in weekDays" :key="idx" class="checkbox-label">
                 <el-checkbox :label="idx" v-model="currentConfig.days">
                   {{ dayName }}
@@ -701,7 +734,8 @@ const updateCurrentConfig = (config) => {
               <!-- 新增 type 选择器 -->
               <div class="form-group domain">
                 <label>秘境类型：</label>
-                <select v-model="config.selectedType">
+                <select v-model="config.selectedType"
+                        @change="handleSundaySelection(config)">
                   <option value="">请选择秘境类型</option>
                   <option
                       v-for="type in domainTypes"
@@ -713,7 +747,20 @@ const updateCurrentConfig = (config) => {
                 </select>
               </div>
               <!-- 秘境选择（根据 selectedType 过滤） -->
-              <div class="form-group domain">
+              <div class="form-group domain" v-if="!config.autoFight.sundaySelectedDomain">
+                <label>秘境：</label>
+                <select v-model="config.autoFight.domainName">
+                  <option value="">请选择秘境</option>
+                  <option
+                      v-for="d in filteredDomainsType(config.selectedType)"
+                      :key="d.name"
+                      :value="d.name"
+                  >
+                    {{ d.name }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group domain" v-else>
                 <label>秘境：</label>
                 <select v-model="config.autoFight.domainName">
                   <option value="">请选择秘境</option>
@@ -727,7 +774,8 @@ const updateCurrentConfig = (config) => {
                 </select>
               </div>
               <!-- 物品名称选择（根据 domainName 过滤） -->
-              <div class="form-group domain" v-if="domainMap.get(config.autoFight.domainName)?.hasOrder">
+              <div class="form-group domain"
+                   v-if="config.autoFight.domainName&&domainMap.get(config.autoFight.domainName)?.hasOrder">
                 <label>周日/限时材料：</label>
                 <select
                     v-model="config.autoFight.sundaySelectedValue">
@@ -740,8 +788,24 @@ const updateCurrentConfig = (config) => {
                   </option>
                 </select>
               </div>
+              <div class="form-group domain"
+                   v-else-if="(!config.autoFight.domainName)&&config.selectedType&&!excludeDomainTypes.includes(config.selectedType)">
+                <label>周日/限时材料：</label>
+                <select
+                    v-model="config.autoFight.sundaySelectedDomain"
+                    @change="handleSundaySelection(config)">
+                  <option
+                      v-for="(item) in getFilteredMaterials(config)|| []"
+                      :key="item.name"
+                      :value="item"
+                  >
+                    {{ item.name }}
+                  </option>
+                </select>
+              </div>
+
               <div
-                  v-if="(!domainMap.get(config.autoFight.domainName)?.hasOrder)&&(domainMap.get(config.autoFight.domainName)?.list?.length>0)"
+                  v-else-if="excludeDomainTypes.includes(config.selectedType)&&(!domainMap.get(config.autoFight.domainName)?.hasOrder)&&(domainMap.get(config.autoFight.domainName)?.list?.length>0)"
                   class="form-group domain">
                 <label>秘境圣遗物：</label>
                 <ul>
@@ -750,6 +814,7 @@ const updateCurrentConfig = (config) => {
                   </li>
                 </ul>
               </div>
+
               <div class="form-group domain">
                 <label>队伍名称（可选）：</label>
                 <input class="limited-input" v-model="config.autoFight.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
@@ -880,10 +945,10 @@ const updateCurrentConfig = (config) => {
           <i class="el-icon-document"></i>
           <span>查看/复制配置结果</span>
         </div>
-<!--        <div class="fixed-search" @click="showResultDrawer = true" title="查看/复制配置结果">
-          <i class="el-icon-document"></i>
-          <span>sous</span>
-        </div>-->
+        <!--        <div class="fixed-search" @click="showResultDrawer = true" title="查看/复制配置结果">
+                  <i class="el-icon-document"></i>
+                  <span>sous</span>
+                </div>-->
       </div>
     </div>
     <!-- 在 template 最后添加 -->
@@ -1134,11 +1199,11 @@ h2 {
 
 .leyLineOutcrop-section .checkbox-group {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);   /* 強制兩欄 */
-  gap: 16px 32px;                          /* 行距 16px，列距 32px 可調 */
+  grid-template-columns: repeat(2, 1fr); /* 強制兩欄 */
+  gap: 16px 32px; /* 行距 16px，列距 32px 可調 */
   margin: 16px 0 24px;
   padding: 12px 0;
-  border-top: 1px dashed rgba(100,100,100,0.15);   /* 可選：加條分隔線好看 */
+  border-top: 1px dashed rgba(100, 100, 100, 0.15); /* 可選：加條分隔線好看 */
 }
 
 .leyLineOutcrop-section .checkbox-group .el-checkbox {
