@@ -914,7 +914,7 @@ const updateCurrentConfig = (config) => {
                   使用须臾树脂
                 </el-checkbox>
                 <el-checkbox v-model="config.autoLeyLineOutcrop.isGoToSynthesizer">
-                  前往合成台
+                  合成浓缩树脂
                 </el-checkbox>
                 <el-checkbox v-model="config.autoLeyLineOutcrop.isNotification">
                   完成后通知
