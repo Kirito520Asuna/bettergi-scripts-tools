@@ -401,7 +401,6 @@ const getFinalConfigsToKey = () => {
       //"|队伍名称|国家|刷几轮|花类型|好感队|是否使用脆弱树脂|是否使用须臾树脂|是否前往合成台合成浓缩树脂|是否使用冒险之证|发送详细通知|战斗超时时间,..."
       let autoLeyLineOutcrop = item.autoLeyLineOutcrop;
       //todo:  LeyLineOutcrop
-      key += "|"
       key += (autoLeyLineOutcrop.team || "")
       key += "|"
       key += (autoLeyLineOutcrop.country || "")
