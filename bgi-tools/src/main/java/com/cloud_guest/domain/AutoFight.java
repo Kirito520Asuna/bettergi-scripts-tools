@@ -30,7 +30,7 @@ public class AutoFight {
     @JsonProperty("partyName")
     private String partyName;
     @Schema(description = "秘境轮数")
-    @JsonProperty("DomainRoundNum")
+    @JsonProperty("domainRoundNum")
     private Integer domainRoundNum;
     @Schema(description = "树脂启用顺序")
     @JsonProperty("physical")
