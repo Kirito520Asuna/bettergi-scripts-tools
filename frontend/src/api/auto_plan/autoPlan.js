@@ -7,14 +7,35 @@ import {ElMessage, ElMessageBox} from "element-plus";
  * @param {object} json - 要发送的JSON数据对象
  * @returns {Promise<object>} 返回服务器响应的数据
  */
-async function postUidJson(uid, json) {
+// async function postUidJson(uid, json) {
+//     // 构建请求负载对象
+//     const payload = {
+//         uid: uid,  // 用户ID
+//         json: json  // JSON数据
+//     };
+//     // 发送POST请求到指定端点
+//     const response = await service.post("/auto/plan/json", payload);
+//     if (response.code === 200){
+//         ElMessage.success("保存成功");
+//     }
+//     // 返回响应数据
+//     return response.data;
+// }
+
+/**
+ *
+ * @param uid
+ * @param autoPlanList
+ * @returns {Promise<any>}
+ */
+async function postUidPlan(uid, autoPlanList=[]) {
     // 构建请求负载对象
     const payload = {
         uid: uid,  // 用户ID
-        json: json  // JSON数据
+        autoPlanList: autoPlanList //体力计划
     };
     // 发送POST请求到指定端点
-    const response = await service.post("/auto/plan/json", payload);
+    const response = await service.post("/auto/plan/info", payload);
     if (response.code === 200){
         ElMessage.success("保存成功");
     }
@@ -61,7 +82,8 @@ async function getBaseJsonAll(){
 }
 
 export {
-    postUidJson,
+    // postUidJson,
+    postUidPlan,
     getUidJson,
     removeUidList,
     getBaseJsonAll,

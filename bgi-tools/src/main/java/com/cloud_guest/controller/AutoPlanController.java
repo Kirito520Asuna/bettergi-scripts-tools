@@ -58,16 +58,16 @@ public class AutoPlanController {
         return ok(list);
     }
 
-    @PostMapping("json")
-    @SysLog
-    @Token
-    @Operation(summary = "[需要登录/授权token]存储UID映射JSON")
-    public Result<String> save(@JsonView(value = BasicJsonView.AutoPlanView.class)
-                               @Validated(value = BasicJsonView.AutoPlanView.class)
-                               @RequestBody AutoPlanJsonDto dto) {
-        autoPlanService.save(dto.getUid(), dto.getJson());
-        return ok(dto.getUid());
-    }
+    //@PostMapping("json")
+    //@SysLog
+    //@Token
+    //@Operation(summary = "[需要登录/授权token]存储UID映射JSON")
+    //public Result<String> save(@JsonView(value = BasicJsonView.AutoPlanView.class)
+    //                           @Validated(value = BasicJsonView.AutoPlanView.class)
+    //                           @RequestBody AutoPlanJsonDto dto) {
+    //    autoPlanService.save(dto.getUid(), dto.getJson());
+    //    return ok(dto.getUid());
+    //}
 
     @PostMapping("info")
     @SysLog

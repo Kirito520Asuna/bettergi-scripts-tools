@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, watch, watchEffect, onMounted} from 'vue'
 import {ElMessage, ElMessageBox} from "element-plus";
-import {getBaseJsonAll, getUidJson, postUidJson, removeUidList} from "@api/auto_plan/autoPlan";
+import {getBaseJsonAll, getUidJson, postUidJson, postUidPlan, removeUidList} from "@api/auto_plan/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
 import {
   countryListDefault,
@@ -95,8 +95,9 @@ const submitConfigToBackend = async () => {
     cancelButtonText: '取消',
     type: 'warning'
   })
-  const json = getFinalConfigs()
-  await postUidJson(uid.value, JSON.stringify(json))
+  const planList = getFinalConfigs()
+  // await postUidJson(uid.value, JSON.stringify(json))
+  await postUidPlan(uid.value, planList)
 };
 const findDomains = async () => {
   if (!uid.value) {
