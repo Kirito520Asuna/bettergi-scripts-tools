@@ -380,7 +380,7 @@ const getFinalConfigsToKey = () => {
     key += "|"
     key += (item.days.join('/') || "") // 将数组转换为字符串
     key += "|"
-    key += (item.order || 1) + ","
+    key += (item.order || 1)
     key += "|"
     if (item.runType === runTypesDefault()[0]) {
       //"|队伍名称|秘境名称/刷取物品名称|刷几轮|限时/周日,..."
