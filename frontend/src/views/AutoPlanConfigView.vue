@@ -161,10 +161,8 @@ const orderSortConfigs = ref(false)
 const uid = ref("")
 // 新增一条空白配置
 const addConfig = (config = undefined) => {
-  if (config) {
-    configs.value.push(config)
-  } else {
-    configs.value.push({
+  if (!config) {
+    config = {
       order: 1,
       // day: undefined,
       days: [],
@@ -203,8 +201,10 @@ const addConfig = (config = undefined) => {
         useTransientResin: false,        // 使用须臾树脂（须臾=Transient）
         isNotification: false            // 是否通知
       }
-    })
+    };
   }
+  configs.value.push(config)
+  // console.log("addConfig", JSON.stringify(config))
   changSortConfigs()
 
 }
@@ -551,7 +551,7 @@ const updateCurrentConfig = (config) => {
             <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
           </div>
           <!-- 添加配置按钮 -->
-          <button @click="addConfig" class="btn btn-add">➕ 添加一条配置</button>
+          <button @click="addConfig()" class="btn btn-add">➕ 添加一条配置</button>
           <div class="sort-control-card">
             <span class="sort-label">执行排序</span>
             <el-switch
@@ -691,7 +691,7 @@ const updateCurrentConfig = (config) => {
 
       <div class="content-area">
         <div class="config-list">
-          <div v-for="(config,index) in configs" :key="config.order" class="config-item">
+          <div v-for="(config,index) in configs" :key="index" class="config-item">
             <h3>#{{ index }} 配置</h3>
             <hr/>
             <div class="comon-section">
@@ -712,8 +712,8 @@ const updateCurrentConfig = (config) => {
                 <span v-if="config.days?.length === 0">
                   每天执行（点击指定执行日期）
                 </span>
-                  <span v-else>
-                  {{ config.dayName || '已选择 ' + config.days.length + ' 天' }}
+                <span v-else>
+                  {{ config.dayName || '已选择 ' + config.days?.length||0 + ' 天' }}
                 </span>
                 </div>
               </div>
