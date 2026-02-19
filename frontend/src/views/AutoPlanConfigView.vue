@@ -125,6 +125,16 @@ const submitConfigToBackend = async () => {
   // await postUidJson(uid.value, JSON.stringify(json))
   await postUidPlan(uid.value, planList)
 };
+const initConfigsId = () => {
+  configs.value.forEach(
+      config => {
+        if (config.id) {
+          //随机生成唯一id，防止重复
+          config.id = Date.now() + Math.random().toString(36).substr(2, 9);
+        }
+      }
+  )
+}
 const findDomains = async () => {
   if (!uid.value) {
     ElMessage.warning("请先设置 UID");
@@ -142,6 +152,7 @@ const findDomains = async () => {
     console.error('请求失败:', error);
     ElMessage.error(error.message);
   } finally {
+    initConfigsId()
   }
 };
 const asDaysMap = selectedAsDaysMap()
@@ -161,8 +172,9 @@ const orderSortConfigs = ref(false)
 const uid = ref("")
 // 新增一条空白配置
 const addConfig = (config = undefined) => {
+  let newConfig;
   if (!config) {
-    config = {
+    newConfig = {
       order: 1,
       // day: undefined,
       days: [],
@@ -202,9 +214,15 @@ const addConfig = (config = undefined) => {
         isNotification: false            // 是否通知
       }
     };
+  }else {
+    // 深拷贝现有配置
+    newConfig = JSON.parse(JSON.stringify(config));
+    // 为复制的配置生成新的唯一ID
+    newConfig.id = Date.now() + Math.random().toString(36).substr(2, 9);
   }
-  configs.value.push(config)
-  // console.log("addConfig", JSON.stringify(config))
+  configs.value.push(newConfig)
+  initConfigsId()
+  // console.log("addConfig", JSON.stringify(newConfig))
   changSortConfigs()
 
 }
@@ -217,14 +235,16 @@ const removeConfigAll = async () => {
   configs.value = []
 }
 // 删除某一条
-const removeConfig = (index) => {
-  configs.value = configs.value.filter(c => c !== configs.value[index])
+const removeConfig = (id) => {
+  const find = configs.value.find(c=> c.id === id);
+  // console.log("find", JSON.stringify(find))
+  configs.value = configs.value.filter(c => c !== find);
   // 可选：重新排序 order（如果前端需要显示连续的序号）
   // configs.value.forEach((c, i) => { c.order = i + 1 })
 }
-const removeConfigMo = (indexList) => {
-  for (let index of indexList) {
-    removeConfig(index)
+const removeConfigMo = (ids) => {
+  for (let id of ids) {
+    removeConfig(id)
   }
 }
 const filteredDomainsType = ((selectedType) => {
@@ -712,8 +732,8 @@ const updateCurrentConfig = (config) => {
                 <span v-if="config.days?.length === 0">
                   每天执行（点击指定执行日期）
                 </span>
-                <span v-else>
-                  {{ config.dayName || '已选择 ' + config.days?.length||0 + ' 天' }}
+                  <span v-else>
+                  {{ config.dayName || '已选择 ' + config.days?.length || 0 + ' 天' }}
                 </span>
                 </div>
               </div>
@@ -950,7 +970,7 @@ const updateCurrentConfig = (config) => {
 
             <!-- 删除按钮 -->
 
-            <button class="btn danger" @click="removeConfig(index)">🗑️ 删除</button>
+            <button class="btn danger" @click="removeConfig(config.id)">🗑️ 删除</button>
             <button class="btn danger" @click="addConfig(config)">拷贝一份</button>
 
           </div>
