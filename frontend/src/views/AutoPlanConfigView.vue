@@ -967,12 +967,11 @@ const updateCurrentConfig = (config) => {
                 />
               </div>
             </div>
-
-            <!-- 删除按钮 -->
-
-            <button class="btn danger" @click="removeConfig(config.id)">🗑️ 删除</button>
-            <button class="btn danger" @click="addConfig(config)">拷贝一份</button>
-
+            <div class="config-btn">
+                 <!-- 删除按钮 -->
+                 <button class="btn danger" @click="removeConfig(config.id)">🗑️ 删除</button>
+                 <button class="btn btn-submit" @click="addConfig(config)">拷贝一份</button>
+            </div>
           </div>
         </div>
         <!-- 右侧固定触发按钮（悬浮在页面右中部） -->
@@ -1141,7 +1140,22 @@ h2 {
   color: #333;
   font-size: 1rem;
 }
+/* 配置按钮容器 - 均匀分布 */
+.config-btn {
+  display: flex;
+  justify-content: space-between; /* 横向均匀分布 */
+  align-items: center; /* 垂直居中对齐 */
+  gap: 12px; /* 元素间间距 */
+  margin-top: 16px;
+  padding: 8px 0;
+}
 
+/* 确保按钮在容器中有合适的最小宽度 */
+.config-btn .btn {
+  flex: 1; /* 平均分配空间 */
+  min-width: 120px; /* 最小宽度 */
+  text-align: center; /* 文字居中 */
+}
 /* 删除按钮 */
 .remove-btn {
   background-color: #f56c6c;
