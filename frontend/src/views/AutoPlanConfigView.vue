@@ -1,5 +1,5 @@
 <script setup>
-import {ref, computed, watch, watchEffect, onMounted} from 'vue'
+import {ref, computed, watch, watchEffect, onMounted, nextTick} from 'vue'
 import {ElMessage, ElMessageBox} from "element-plus";
 import {getBaseCountryJsonAll, getBaseJsonAll, getUidJson, postUidPlan, removeUidList} from "@api/auto_plan/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
@@ -249,11 +249,15 @@ const removeConfigMultiple = () => {
   for (let id of removeIds) {
     removeConfig(id)
   }
-  if (configs.value.length !== batchJson.value.selectedConfigs.size) {
-    isAllSelected.value = false
-  } else if (configs.value.length === batchJson.value.selectedConfigs.size) {
-    isAllSelected.value = true
-  }
+  // if (configs.value.length !== batchJson.value.selectedConfigs.size) {
+  //   isAllSelected.value = false
+  // } else if (configs.value.length === batchJson.value.selectedConfigs.size) {
+  //   isAllSelected.value = true
+  // }
+  // 强制更新状态
+  nextTick(() => {
+    updateSelectAllState()
+  })
 }
 const filteredDomainsType = ((selectedType) => {
   if (!selectedType) return [];
@@ -592,7 +596,11 @@ const batchCopyConfigs = () => {
   // 复制完成后清空选择
   // selectedConfigs.value.clear()
   batchJson.value.selectedConfigs.clear()
-  isAllSelected.value = false
+  // isAllSelected.value = false
+  // 强制更新状态
+  nextTick(() => {
+    updateSelectAllState()
+  })
   ElMessage.success(`成功复制 ${configsToCopy.length} 个配置`)
 }
 // ... existing code ...
@@ -606,13 +614,17 @@ const toggleSelectAll = (add = true) => {
     // 如果已经全选，则取消全选
     batchJson.value.selectedConfigs.clear()
   } else {
-    console.log("configs:", JSON.stringify(configs.value))
+    // console.log("configs:", JSON.stringify(configs.value))
     // 否则全选所有配置
     configs.value.forEach(config => batchJson.value.selectedConfigs.add(config.id))
   }
-  console.log("batchJson:", JSON.stringify(batchJson.value))
-  console.log("selectedConfigs:", JSON.stringify(...batchJson.value.selectedConfigs))
-  isAllSelected.value = batchJson.value.selectedConfigs.size === configs.value.length;
+  // console.log("batchJson:", JSON.stringify(batchJson.value))
+  // console.log("selectedConfigs:", JSON.stringify(...batchJson.value.selectedConfigs))
+  // isAllSelected.value = batchJson.value.selectedConfigs.size === configs.value.length;
+  // 强制更新状态
+  nextTick(() => {
+    updateSelectAllState()
+  })
 }
 
 
@@ -631,8 +643,24 @@ const multiSelectEnabled = computed({
   },
   set(value) {
     changeMultipleChoices()
+    // 强制更新状态
+    nextTick(() => {
+      updateSelectAllState()
+    })
   }
 })
+// 添加专门的状态更新方法
+const updateSelectAllState = () => {
+  const totalConfigs = configs.value.length
+  const selectedCount = batchJson.value.selectedConfigs.size
+
+  // 更新全选状态
+  isAllSelected.value = totalConfigs > 0 && selectedCount === totalConfigs
+
+  // 可选：更新中间状态（部分选中）
+  // isIndeterminate.value = selectedCount > 0 && selectedCount < totalConfigs
+}
+
 // 带有加载状态和错误处理的切换函数
 const changeMultipleChoices = debounce(async () => {
   try {
@@ -646,7 +674,7 @@ const changeMultipleChoices = debounce(async () => {
       // 关闭多选时的清理工作
       // selectedConfigs.value.clear()
       batchJson.value.selectedConfigs.clear()
-      isAllSelected.value = false
+      // isAllSelected.value = false
       // 可以添加其他清理逻辑
     }
 
@@ -681,12 +709,18 @@ const isAllSelectedComputed = computed({
       configs.value.forEach(config => {
         batchJson.value.selectedConfigs.add(config.id)
       })
-      isAllSelected.value = true
+      // isAllSelected.value = true
     } else {
       // 取消全选
       batchJson.value.selectedConfigs.clear()
-      isAllSelected.value = false
+      // isAllSelected.value = false
     }
+
+    // 强制更新状态
+    nextTick(() => {
+      updateSelectAllState()
+    })
+
   }
 })
 
