@@ -919,36 +919,36 @@ const batchUpdate = () => {
             :with-header="true"
             :close-on-press-escape="true"
             :modal="true"
-            class="result-drawer"
+            class="batch-drawer"
         >
           <template #header>
             <span style="font-weight: bold; color: #409eff;">批量配置</span>
           </template>
           <div class="drawer-content">
-            <div class="result-card" style="margin-top: 24px;">
+            <div class="batch-card" style="margin-top: 24px;">
               <div class="card-header">
                 <label class="result-key">秘境配置</label>
               </div>
-              <div class="result code-block">
+              <div class="batch-item">
                 <label>队伍名称（可选）：</label>
                 <input class="limited-input" v-model="batchJson.batch.autoFight.partyName"
                        placeholder="队伍1 / 主C+副C+辅助"/>
               </div>
             </div>
 
-            <div class="result-card" style="margin-top: 24px;">
+            <div class="batch-card" style="margin-top: 24px;">
               <div class="card-header">
                 <label class="result-key">地脉配置</label>
               </div>
-              <div class="result code-block">
+              <div class="batch-item">
                 <label>队伍名称（可选）：</label>
                 <input class="limited-input" v-model="batchJson.batch.autoLeyLineOutcrop.team"
                        placeholder="队伍1 / 主C+副C+辅助"/>
               </div>
-              <div class="result code-block">
+              <div class="batch-item">
                 <label>好感队伍名称（可选）：</label>
                 <input class="limited-input" v-model="batchJson.batch.autoLeyLineOutcrop.friendshipTeam"
-                       placeholder="队伍1 / 主C+副C+辅助"/>
+                       placeholder="队伍1"/>
               </div>
             </div>
           </div>
@@ -2027,5 +2027,52 @@ h2 {
   border-left-color: #409eff;
 }
 
+.batch-drawer {
+  --el-drawer-bg-color: rgba(206, 33, 33, 0.96);
+  --el-drawer-border-color: #1b3e8f;
+  min-width: 60% !important;
+  background: #fadbd8;
+  backdrop-filter: blur(6px);
+}
+
+.batch-card {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: #e8e8e8;
+  backdrop-filter: blur(10px); /* 毛玻璃效果 */
+}
+.batch-item {
+  margin-bottom: 4px;
+  padding: 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/*.batch-item:hover {
+  border-color: #409eff;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
+}*/
+
+.batch-item label {
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.batch-item .limited-input {
+  width: 20%;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  transition: border-color 0.3s ease;
+}
+
+.batch-item .limited-input:focus {
+  outline: none;
+  border-color: #409eff;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+}
 
 </style>
