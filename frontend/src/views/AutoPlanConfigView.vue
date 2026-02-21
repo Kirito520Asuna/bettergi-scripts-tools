@@ -694,6 +694,10 @@ const handleConfigSelection = (configId, isSelected) => {
   } else {
     batchJson.value.selectedConfigs.delete(configId)
   }
+  // 强制更新状态
+  nextTick(() => {
+    updateSelectAllState()
+  })
 }
 
 </script>
@@ -749,6 +753,8 @@ const handleConfigSelection = (configId, isSelected) => {
           <button class="btn danger" @click="removeConfigMultiple">🗑️ 批量删除
           </button>
           <button class="btn btn-submit" @click="batchCopyConfigs">📋 批量复制
+          </button>
+          <button class="btn btn-submit" v-if="batchJson.selectedConfigs.size>0" @click="batchJson.batch.show=true">📝 批量修改
           </button>
         </div>
       </div>
@@ -871,6 +877,19 @@ const handleConfigSelection = (configId, isSelected) => {
             <div style="text-align: right;">
               <el-button @click="showResultDrawer = false">关闭</el-button>
             </div>
+          </template>
+        </el-drawer>
+        <el-drawer
+            v-model="batchJson.batch.show"
+            direction="rtl"
+
+            :with-header="true"
+            :close-on-press-escape="true"
+            :modal="true"
+            class="result-drawer"
+        >
+          <template #header>
+            <span style="font-weight: bold; color: #409eff;">批量配置</span>
           </template>
         </el-drawer>
       </div>
