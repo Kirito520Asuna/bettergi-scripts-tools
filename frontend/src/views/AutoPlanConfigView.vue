@@ -575,7 +575,22 @@ const batchJson = ref({
   selectedConfigs: new Set(),
   batch: {
     show: false,
-
+    autoFight: {
+      partyName: "",
+    },
+    autoLeyLineOutcrop: {
+      // count: 1,                        // 刷几次（0=自动/无限）
+      // country: countryListDefault()[0],                     // 国家地区
+      // leyLineOutcropType: leyLineOutcropTypeNamesDefault()[0], // 需映射为经验/摩拉
+      // useAdventurerHandbook: false,    // 是否使用冒险之证
+      friendshipTeam: "",              // 好感队伍ID
+      team: "",                        // 主队伍ID
+      // timeout: 120,                      // 超时时间（秒）
+      // isGoToSynthesizer: false,        // 是否前往合成台
+      // useFragileResin: false,          // 使用脆弱树脂
+      // useTransientResin: false,        // 使用须臾树脂（须臾=Transient）
+      // isNotification: false            // 是否通知
+    }
   }
 })
 
@@ -602,8 +617,6 @@ const batchCopyConfigs = () => {
   })
   ElMessage.success(`成功复制 ${configsToCopy.length} 个配置`)
 }
-
-
 
 
 // 检查是否全选
@@ -700,6 +713,23 @@ const handleConfigSelection = (configId, isSelected) => {
   })
 }
 
+const batchUpdate = () => {
+  const batch = batchJson.value.batch;
+  const autoLeyLineOutcrop = batch.autoLeyLineOutcrop;
+  const autoFight = batch.autoFight;
+  configs.value.forEach(config => {
+    if (config.runType === runTypesDefault()[0]) {
+      //秘境
+      config.autoFight.partyName = autoFight.partyName
+    } else if (config.runType === runTypesDefault()[1]) {
+      //地脉
+      config.autoLeyLineOutcrop.team = autoLeyLineOutcrop.team
+      config.autoLeyLineOutcrop.friendshipTeam = autoLeyLineOutcrop.friendshipTeam
+    }
+  })
+  batchJson.value.batch.show = false
+}
+
 </script>
 
 <template>
@@ -754,7 +784,8 @@ const handleConfigSelection = (configId, isSelected) => {
           </button>
           <button class="btn btn-submit" @click="batchCopyConfigs">📋 批量复制
           </button>
-          <button class="btn btn-submit" v-if="batchJson.selectedConfigs.size>0" @click="batchJson.batch.show=true">📝 批量修改
+          <button class="btn btn-submit" v-if="batchJson.selectedConfigs.size>0" @click="batchJson.batch.show=true">📝
+            批量修改
           </button>
         </div>
       </div>
@@ -824,7 +855,6 @@ const handleConfigSelection = (configId, isSelected) => {
         <el-drawer
             v-model="showResultDrawer"
             direction="rtl"
-
             :with-header="true"
             :close-on-press-escape="true"
             :modal="true"
@@ -890,6 +920,41 @@ const handleConfigSelection = (configId, isSelected) => {
         >
           <template #header>
             <span style="font-weight: bold; color: #409eff;">批量配置</span>
+          </template>
+          <div class="drawer-content">
+            <div class="result-card" style="margin-top: 24px;">
+              <div class="card-header">
+                <label class="result-key">秘境配置</label>
+              </div>
+              <div class="result code-block">
+                <label>队伍名称（可选）：</label>
+                <input class="limited-input" v-model="batchJson.batch.autoFight.partyName"
+                       placeholder="队伍1 / 主C+副C+辅助"/>
+              </div>
+            </div>
+
+            <div class="result-card" style="margin-top: 24px;">
+              <div class="card-header">
+                <label class="result-key">地脉配置</label>
+              </div>
+              <div class="result code-block">
+                <label>队伍名称（可选）：</label>
+                <input class="limited-input" v-model="batchJson.batch.autoLeyLineOutcrop.team"
+                       placeholder="队伍1 / 主C+副C+辅助"/>
+              </div>
+              <div class="result code-block">
+                <label>好感队伍名称（可选）：</label>
+                <input class="limited-input" v-model="batchJson.batch.autoLeyLineOutcrop.friendshipTeam"
+                       placeholder="队伍1 / 主C+副C+辅助"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- 可选：底部操作 -->
+          <template #footer>
+            <div style="text-align: right;">
+              <el-button @click="batchUpdate">📝批量修改</el-button>
+            </div>
           </template>
         </el-drawer>
       </div>
