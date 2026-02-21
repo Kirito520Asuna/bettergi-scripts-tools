@@ -188,8 +188,8 @@ const addConfig = (config = undefined) => {
       selectedType: undefined, // 新增字段
       autoFight: {
         physical: [
-          {order: 0, name: "原粹树脂", open: true},
-          {order: 1, name: "浓缩树脂", open: false},
+          {order: 0, name: "浓缩树脂", open: true},
+          {order: 1, name: "原粹树脂", open: true},
           {order: 2, name: "须臾树脂", open: false},
           {order: 3, name: "脆弱树脂", open: false}
         ],
