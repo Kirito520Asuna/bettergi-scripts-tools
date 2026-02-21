@@ -224,7 +224,10 @@ const addConfig = (config = undefined) => {
   initConfigsId()
   // console.log("addConfig", JSON.stringify(newConfig))
   changSortConfigs()
-
+  // 强制更新状态
+  nextTick(() => {
+    updateSelectAllState()
+  })
 }
 const removeConfigAll = async () => {
   await ElMessageBox.confirm(`确定清除全部本地数据吗？`, '提示', {
