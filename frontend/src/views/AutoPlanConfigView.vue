@@ -214,7 +214,7 @@ const addConfig = (config = undefined) => {
         isNotification: false            // 是否通知
       }
     };
-  }else {
+  } else {
     // 深拷贝现有配置
     newConfig = JSON.parse(JSON.stringify(config));
     // 为复制的配置生成新的唯一ID
@@ -236,15 +236,23 @@ const removeConfigAll = async () => {
 }
 // 删除某一条
 const removeConfig = (id) => {
-  const find = configs.value.find(c=> c.id === id);
-  // console.log("find", JSON.stringify(find))
-  configs.value = configs.value.filter(c => c !== find);
-  // 可选：重新排序 order（如果前端需要显示连续的序号）
-  // configs.value.forEach((c, i) => { c.order = i + 1 })
+  if (id) {
+    // 单个删除
+    const find = configs.value.find(c => c.id === id);
+    // console.log("find", JSON.stringify(find))
+    configs.value = configs.value.filter(c => c !== find);
+    batchJson.value.selectedConfigs.delete(id)
+  }
 }
-const removeConfigMo = (ids) => {
-  for (let id of ids) {
+const removeConfigMultiple = () => {
+  let removeIds = [...batchJson.value.selectedConfigs]
+  for (let id of removeIds) {
     removeConfig(id)
+  }
+  if (configs.value.length !== batchJson.value.selectedConfigs.size) {
+    isAllSelected.value = false
+  } else if (configs.value.length === batchJson.value.selectedConfigs.size) {
+    isAllSelected.value = true
   }
 }
 const filteredDomainsType = ((selectedType) => {
@@ -559,6 +567,143 @@ const handleCurrentConfig = (config, type) => {
 const updateCurrentConfig = (config) => {
   currentConfig.value = config
 }
+const batchJson = ref({
+  selectedConfigs: new Set(),
+  batch: {}
+})
+// ... existing code ...
+// 添加多选相关的响应式数据
+const selectedConfigs = ref(new Set())
+// 创建计算属性来控制开关状态
+
+// ... existing code ...
+// 批量复制选中的配置
+const batchCopyConfigs = () => {
+  // const selectedIds = Array.from(selectedConfigs.value)
+  const ids = [...batchJson.value.selectedConfigs]
+  const configsToCopy = configs.value.filter(c => ids.includes(c.id))
+  // console.log("configsToCopy:", JSON.stringify(configsToCopy))
+  // console.log("ids:", JSON.stringify(ids))
+  // console.log("selectedConfigs:", batchJson.value.selectedConfigs)
+  configsToCopy.forEach(config => {
+    addConfig(config)
+  })
+
+  // 复制完成后清空选择
+  // selectedConfigs.value.clear()
+  batchJson.value.selectedConfigs.clear()
+  isAllSelected.value = false
+  ElMessage.success(`成功复制 ${configsToCopy.length} 个配置`)
+}
+// ... existing code ...
+
+
+// 添加全选/取消全选功能
+const toggleSelectAll = (add = true) => {
+  // let selectedConfigsList = batchJson.value.selectedConfigs;
+  const selectedAll = batchJson.value.selectedConfigs.size === configs.value.length;
+  if ((!add) && selectedAll) {
+    // 如果已经全选，则取消全选
+    batchJson.value.selectedConfigs.clear()
+  } else {
+    console.log("configs:", JSON.stringify(configs.value))
+    // 否则全选所有配置
+    configs.value.forEach(config => batchJson.value.selectedConfigs.add(config.id))
+  }
+  console.log("batchJson:", JSON.stringify(batchJson.value))
+  console.log("selectedConfigs:", JSON.stringify(...batchJson.value.selectedConfigs))
+  isAllSelected.value = batchJson.value.selectedConfigs.size === configs.value.length;
+}
+
+
+// 检查是否全选
+const isAllSelected = ref(false)
+
+const multipleChoices = ref(false)
+// const changeMultipleChoices = () => {
+//   multipleChoices.value = !multipleChoices.value
+// }
+// 计算属性优化：基于多选状态的派生数据
+const multiSelectEnabled = computed({
+  // return multipleChoices.value
+  get() {
+    return multipleChoices.value
+  },
+  set(value) {
+    changeMultipleChoices()
+  }
+})
+// 带有加载状态和错误处理的切换函数
+const changeMultipleChoices = debounce(async () => {
+  try {
+    // 可以在这里添加加载状态
+    // loading.value = true
+
+    const newValue = !multipleChoices.value
+    multipleChoices.value = newValue
+
+    if (!newValue) {
+      // 关闭多选时的清理工作
+      // selectedConfigs.value.clear()
+      batchJson.value.selectedConfigs.clear()
+      isAllSelected.value = false
+      // 可以添加其他清理逻辑
+    }
+
+    // 触发相关的副作用
+    // emit('multiple-choice-changed', newValue)
+
+  } catch (error) {
+    console.error('切换多选模式失败:', error)
+    // 可以添加错误提示
+    ElMessage.error('操作失败，请重试')
+  } finally {
+    // loading.value = false
+  }
+})
+
+// ... existing code ...
+
+const isAllSelectedComputed = computed({
+  // return isAllSelected.value
+  get() {
+    return isAllSelected.value
+  },
+  set(value) {
+    // if (value) {
+    //   configs.value.forEach(config => batchJson.value.selectedConfigs.add(config.id))
+    // } else {
+    //   batchJson.value.selectedConfigs.clear()
+    // }
+    // toggleSelectAll(value?true:false)
+    if (value) {
+      // 全选
+      configs.value.forEach(config => {
+        batchJson.value.selectedConfigs.add(config.id)
+      })
+      isAllSelected.value = true
+    } else {
+      // 取消全选
+      batchJson.value.selectedConfigs.clear()
+      isAllSelected.value = false
+    }
+  }
+})
+
+// 修正计算属性
+const isConfigSelected = (configId) => {
+  return batchJson.value.selectedConfigs.has(configId)
+}
+
+// 处理选中状态变化
+const handleConfigSelection = (configId, isSelected) => {
+  if (isSelected) {
+    batchJson.value.selectedConfigs.add(configId)
+  } else {
+    batchJson.value.selectedConfigs.delete(configId)
+  }
+}
+
 </script>
 
 <template>
@@ -584,6 +729,35 @@ const updateCurrentConfig = (config) => {
           <button @click="removeConfigToBackend" class="btn danger">🗑️ 移除云端配置</button>
           <button @click="removeConfigAll" class="btn danger">🗑️ 清除全部</button>
 
+        </div>
+
+        <!-- 在配置列表上方添加批量操作区域 -->
+        <div class="config-header" v-if="configs.length > 0">
+          <!--          <button class="btn btn-submit" v-if="configs.length>0"  @click="toggleSelectAll">全选</button>-->
+          <div class="sort-control-card">
+            <el-switch
+                v-if="configs.length > 0"
+                v-model="multiSelectEnabled"
+                active-text="多选"
+                inactive-text="取消"
+                style="margin-left: 12px;"
+            />
+          </div>
+          <div class="sort-control-card" v-if="multiSelectEnabled">
+            <el-switch
+                v-if="configs.length > 0"
+                v-model="isAllSelectedComputed"
+                active-text="全选"
+                inactive-text="取消"
+                style="margin-left: 12px;"
+            />
+          </div>
+        </div>
+        <div class="config-header" v-if="multiSelectEnabled && configs.length > 0">
+          <button class="btn danger" @click="removeConfigMultiple">🗑️ 批量删除
+          </button>
+          <button class="btn btn-submit" @click="batchCopyConfigs">📋 批量复制
+          </button>
         </div>
       </div>
 
@@ -710,11 +884,19 @@ const updateCurrentConfig = (config) => {
       </div>
 
       <div class="content-area">
+
         <div class="config-list">
           <div v-for="(config,index) in configs" :key="index" class="config-item">
+            <!--            <el-checkbox v-model="isConfigSelected"-->
+            <!--                         v-if="multiSelectEnabled"></el-checkbox>-->
+            <el-checkbox
+                :model-value="isConfigSelected(config.id)"
+                @update:model-value="(val) => handleConfigSelection(config.id, val)"
+                v-if="multiSelectEnabled"
+            ></el-checkbox>
             <h3>#{{ index }} 配置</h3>
             <hr/>
-            <div class="comon-section">
+            <div class="common-section">
               <div class="form-group common">
                 <label>执行顺序：</label>
                 <input class="limited-input" @change="debouncedSort" v-model.number="config.order" type="number" min="1"
@@ -968,9 +1150,9 @@ const updateCurrentConfig = (config) => {
               </div>
             </div>
             <div class="config-btn">
-                 <!-- 删除按钮 -->
-                 <button class="btn danger" @click="removeConfig(config.id)">🗑️ 删除</button>
-                 <button class="btn btn-submit" @click="addConfig(config)">拷贝一份</button>
+              <!-- 删除按钮 -->
+              <button class="btn danger" @click="removeConfig(config.id)">🗑️ 删除</button>
+              <button class="btn btn-submit" @click="addConfig(config)">拷贝一份</button>
             </div>
           </div>
         </div>
@@ -1140,6 +1322,7 @@ h2 {
   color: #333;
   font-size: 1rem;
 }
+
 /* 配置按钮容器 - 均匀分布 */
 .config-btn {
   display: flex;
@@ -1156,6 +1339,7 @@ h2 {
   min-width: 120px; /* 最小宽度 */
   text-align: center; /* 文字居中 */
 }
+
 /* 删除按钮 */
 .remove-btn {
   background-color: #f56c6c;
@@ -1612,6 +1796,156 @@ h2 {
   background: rgba(0, 0, 0, 0.2);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding: 16px 24px;
+}
+
+/* 批量操作区域样式 */
+.batch-operation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.select-all-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selected-count {
+  color: #409eff;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* 批量操作按钮区域美化 */
+.batch-buttons {
+  display: flex;
+  gap: 12px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #d51999 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  overflow: visible; /* 禁止内容超出容器 */
+}
+
+.batch-buttons:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* 批量操作按钮美化 */
+.batch-buttons .btn {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.batch-buttons .btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.batch-buttons .btn:hover::before {
+  left: 100%;
+}
+
+.batch-buttons .btn.danger {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+}
+
+.batch-buttons .btn.danger:hover {
+  background: linear-gradient(135deg, #ff5252, #e53935);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4);
+}
+
+.batch-buttons .btn.btn-submit {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  color: white;
+}
+
+.batch-buttons .btn.btn-submit:hover {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 198, 255, 0.4);
+}
+
+/* 按钮图标动画 */
+.batch-buttons .btn i {
+  margin-right: 8px;
+  transition: transform 0.3s ease;
+}
+
+.batch-buttons .btn:hover i {
+  transform: scale(1.2) rotate(10deg);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .batch-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .batch-buttons .btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* 按钮按下效果 */
+.batch-buttons .btn:active {
+  transform: translateY(0) scale(0.98);
+  transition: all 0.1s ease;
+}
+
+
+.config-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.config-checkbox {
+  zoom: 1.2; /* 稍微放大复选框 */
+}
+
+.config-item {
+  position: relative;
+  border-left: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.config-item:hover {
+  border-left-color: #409eff;
+}
+
+/* 当配置被选中时的样式 */
+.config-item:has(.config-checkbox:checked) {
+  background: rgba(64, 158, 255, 0.05);
+  border-left-color: #409eff;
 }
 
 
