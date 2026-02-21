@@ -233,6 +233,10 @@ const removeConfigAll = async () => {
     type: 'warning'
   })
   configs.value = []
+  // 强制更新状态
+  await nextTick(() => {
+    updateSelectAllState()
+  })
 }
 // 删除某一条
 const removeConfig = (id) => {
@@ -242,6 +246,11 @@ const removeConfig = (id) => {
     // console.log("find", JSON.stringify(find))
     configs.value = configs.value.filter(c => c !== find);
     batchJson.value.selectedConfigs.delete(id)
+
+    // 强制更新状态
+    nextTick(() => {
+      updateSelectAllState()
+    })
   }
 }
 const removeConfigMultiple = () => {
@@ -249,15 +258,6 @@ const removeConfigMultiple = () => {
   for (let id of removeIds) {
     removeConfig(id)
   }
-  // if (configs.value.length !== batchJson.value.selectedConfigs.size) {
-  //   isAllSelected.value = false
-  // } else if (configs.value.length === batchJson.value.selectedConfigs.size) {
-  //   isAllSelected.value = true
-  // }
-  // 强制更新状态
-  nextTick(() => {
-    updateSelectAllState()
-  })
 }
 const filteredDomainsType = ((selectedType) => {
   if (!selectedType) return [];
@@ -573,12 +573,11 @@ const updateCurrentConfig = (config) => {
 }
 const batchJson = ref({
   selectedConfigs: new Set(),
-  batch: {}
+  batch: {
+    show: false,
+
+  }
 })
-// ... existing code ...
-// 添加多选相关的响应式数据
-const selectedConfigs = ref(new Set())
-// 创建计算属性来控制开关状态
 
 // ... existing code ...
 // 批量复制选中的配置
@@ -603,62 +602,29 @@ const batchCopyConfigs = () => {
   })
   ElMessage.success(`成功复制 ${configsToCopy.length} 个配置`)
 }
-// ... existing code ...
 
 
-// 添加全选/取消全选功能
-const toggleSelectAll = (add = true) => {
-  // let selectedConfigsList = batchJson.value.selectedConfigs;
-  const selectedAll = batchJson.value.selectedConfigs.size === configs.value.length;
-  if ((!add) && selectedAll) {
-    // 如果已经全选，则取消全选
-    batchJson.value.selectedConfigs.clear()
-  } else {
-    // console.log("configs:", JSON.stringify(configs.value))
-    // 否则全选所有配置
-    configs.value.forEach(config => batchJson.value.selectedConfigs.add(config.id))
-  }
-  // console.log("batchJson:", JSON.stringify(batchJson.value))
-  // console.log("selectedConfigs:", JSON.stringify(...batchJson.value.selectedConfigs))
-  // isAllSelected.value = batchJson.value.selectedConfigs.size === configs.value.length;
-  // 强制更新状态
-  nextTick(() => {
-    updateSelectAllState()
-  })
-}
 
 
 // 检查是否全选
 const isAllSelected = ref(false)
 
 const multipleChoices = ref(false)
-// const changeMultipleChoices = () => {
-//   multipleChoices.value = !multipleChoices.value
-// }
 // 计算属性优化：基于多选状态的派生数据
 const multiSelectEnabled = computed({
-  // return multipleChoices.value
   get() {
     return multipleChoices.value
   },
   set(value) {
     changeMultipleChoices()
-    // 强制更新状态
-    nextTick(() => {
-      updateSelectAllState()
-    })
   }
 })
 // 添加专门的状态更新方法
 const updateSelectAllState = () => {
   const totalConfigs = configs.value.length
   const selectedCount = batchJson.value.selectedConfigs.size
-
   // 更新全选状态
   isAllSelected.value = totalConfigs > 0 && selectedCount === totalConfigs
-
-  // 可选：更新中间状态（部分选中）
-  // isIndeterminate.value = selectedCount > 0 && selectedCount < totalConfigs
 }
 
 // 带有加载状态和错误处理的切换函数
@@ -672,12 +638,10 @@ const changeMultipleChoices = debounce(async () => {
 
     if (!newValue) {
       // 关闭多选时的清理工作
-      // selectedConfigs.value.clear()
       batchJson.value.selectedConfigs.clear()
       // isAllSelected.value = false
       // 可以添加其他清理逻辑
     }
-
     // 触发相关的副作用
     // emit('multiple-choice-changed', newValue)
 
@@ -687,33 +651,27 @@ const changeMultipleChoices = debounce(async () => {
     ElMessage.error('操作失败，请重试')
   } finally {
     // loading.value = false
+    // 强制更新状态
+    await nextTick(() => {
+      updateSelectAllState()
+    })
   }
 })
 
-// ... existing code ...
 
 const isAllSelectedComputed = computed({
-  // return isAllSelected.value
   get() {
     return isAllSelected.value
   },
   set(value) {
-    // if (value) {
-    //   configs.value.forEach(config => batchJson.value.selectedConfigs.add(config.id))
-    // } else {
-    //   batchJson.value.selectedConfigs.clear()
-    // }
-    // toggleSelectAll(value?true:false)
     if (value) {
       // 全选
       configs.value.forEach(config => {
         batchJson.value.selectedConfigs.add(config.id)
       })
-      // isAllSelected.value = true
     } else {
       // 取消全选
       batchJson.value.selectedConfigs.clear()
-      // isAllSelected.value = false
     }
 
     // 强制更新状态
