@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -23,30 +24,29 @@ public class YmlUtils {
     private static final ObjectMapper YAML_MAPPER = new YAMLMapper();
 
     public static void main(String[] args) throws IOException {
-        String absolutePath = FileUtil.getAbsolutePath("application.yml");
-
-        File file = FileUtil.newFile("application.yml");
-        JSONObject jsonObject = readValue(file, JSONObject.class);
-        log.debug(JSONUtil.toJsonStr(jsonObject));
-        JSONObject byPath = (JSONObject)jsonObject.getByPath("check.token");
-        if (byPath == null) {
-            byPath = new JSONObject();
-        }
-        byPath.put("name", "token");
-        byPath.put("value", "123456");
-        log.debug(JSONUtil.toJsonStr(jsonObject));
-        writeValue(file, jsonObject);
         try {
+            String absolutePath = FileUtil.getAbsolutePath("application.yml");
 
+            File file = FileUtil.newFile("application.yml");
+            JSONObject jsonObject = readValue(file, JSONObject.class);
+            log.debug(JSONUtil.toJsonStr(jsonObject));
+            JSONObject byPath = (JSONObject) jsonObject.getByPath("check.token");
+            if (byPath == null) {
+                byPath = new JSONObject();
+            }
+            byPath.put("name", "token");
+            byPath.put("value", "123456");
+            log.debug(JSONUtil.toJsonStr(jsonObject));
+            writeValue(file, jsonObject);
         } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
             //throw new RuntimeException(e);
-            if (e.getMessage().contains("文件不存在或为空")) {
-
-            }else {
+            if (!e.getMessage().contains("文件不存在或为空")) {
                 throw e;
             }
         }
     }
+
     /**
      * 从文件读取 YAML 数据并转换为指定类型
      *
@@ -107,6 +107,7 @@ public class YmlUtils {
             throw e;
         }
     }
+
     /**
      * 将对象写入 YAML 文件
      *
@@ -143,6 +144,29 @@ public class YmlUtils {
         writeValue(path.toFile(), value);
     }
 
+    /**
+     * 将对象写入 OutputStream
+     * @param out
+     * @param value
+     * @throws IOException
+     */
+    public static void writeValue(OutputStream out, Object value) throws IOException {
+        if (out == null) {
+            throw new IllegalArgumentException("输出流不能为空");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("写入值不能为空");
+        }
+        try {
+            log.debug("开始写入 YAML 文件");
+            YAML_MAPPER.writerWithDefaultPrettyPrinter()
+                    .writeValue(out, value);
+            log.debug("成功写入 YAML 文件");
+        } catch (IOException e) {
+            log.error("写入 YAML 文件失败: {}", e.getMessage());
+            throw e;
+        }
+    }
     public static void modify(Path path) throws IOException {
         // 1. 读成 Map
         Map<String, Object> config = YAML_MAPPER.readValue(path.toFile(), Map.class);
