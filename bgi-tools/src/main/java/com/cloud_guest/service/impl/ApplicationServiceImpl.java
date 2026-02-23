@@ -5,7 +5,9 @@ import cn.hutool.json.JSONObject;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.ApplicationService;
 import com.cloud_guest.utils.yml.YmlUtils;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -17,6 +19,7 @@ import java.util.List;
  * @Date 2026/2/23 16:11:31
  * @Description
  */
+@Slf4j
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
 
@@ -27,16 +30,48 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public boolean saveToken(String name, String value) {
         List<String> yamlPaths = loadProperties.getYamlPaths();
+        String checkName = "check";
+        String tokenName = "token";
+        String nameKey = "name";
+        String valueKey = "value";
         for (String yamlPath : yamlPaths) {
             try {
                 File file = FileUtil.newFile(yamlPath);
-                JSONObject jsonObject = YmlUtils.readValue(file, JSONObject.class);
-                JSONObject byPath = (JSONObject) jsonObject.getByPath("check.token");
-                if (byPath == null) {
-                    byPath = new JSONObject();
+
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject = YmlUtils.readValue(file, JSONObject.class);
+                } catch (MismatchedInputException e) {
+                    log.warn("{}", e.getMessage());
                 }
-                byPath.put("name", name);
-                byPath.put("value", value);
+                JSONObject check = (JSONObject) jsonObject.getByPath(checkName);
+                if (check == null) {
+                    JSONObject token = new JSONObject();
+                    JSONObject tokenValue = new JSONObject();
+
+                    tokenValue.put(nameKey, name);
+                    tokenValue.put(valueKey, value);
+
+                    token.put(tokenName, tokenValue);
+                    jsonObject.put(checkName, token);
+                    check = (JSONObject) jsonObject.getByPath(checkName);
+                    jsonObject.put(checkName, check);
+                }
+                JSONObject token = (JSONObject) jsonObject.getByPath(checkName + "." + tokenName);
+                if (token == null) {
+                    token = new JSONObject();
+                    JSONObject tokenValue = new JSONObject();
+
+                    tokenValue.put(nameKey, name);
+                    tokenValue.put(valueKey, value);
+
+                    token.put(tokenName, tokenValue);
+                    jsonObject.put(checkName, token);
+
+                    token = (JSONObject) jsonObject.getByPath(checkName + "." + tokenName);
+                }
+                token.put(nameKey, name);
+                token.put(valueKey, value);
                 YmlUtils.writeValue(file, jsonObject);
             } catch (Exception e) {
                 if (e.getMessage().contains("文件不存在或为空")) {

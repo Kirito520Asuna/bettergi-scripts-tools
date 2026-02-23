@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +25,67 @@ public class YmlUtils {
     private static final ObjectMapper YAML_MAPPER = new YAMLMapper();
 
     public static void main(String[] args) throws IOException {
+        /**
+         * check:
+         *   token:
+         *     name: "token"
+         *     value: "123456"
+         */
+        String name = "token";
+        String value = "555";
+        String yamlPath = "G:\\code\\bettergi-scripts-tools\\bgi-cores\\bgi-core\\src\\main\\java\\com\\cloud_guest\\utils\\yml\\application.yml";
+        try {
+            File file = FileUtil.newFile(yamlPath);
+
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject = YmlUtils.readValue(file, JSONObject.class);
+            } catch (MismatchedInputException e) {
+                log.warn("{}", e.getMessage());
+            }
+
+            String checkName = "check";
+            String tokenName = "token";
+            String nameKey = "name";
+            String valueKey = "value";
+
+            JSONObject check = (JSONObject) jsonObject.getByPath(checkName);
+
+            if (check == null) {
+                JSONObject token = new JSONObject();
+                JSONObject tokenValue = new JSONObject();
+
+                tokenValue.put(nameKey, name);
+                tokenValue.put(valueKey, value);
+
+                token.put(tokenName, tokenValue);
+                jsonObject.put(checkName, token);
+                check = (JSONObject) jsonObject.getByPath(checkName);
+                jsonObject.put(checkName, check);
+            }
+            JSONObject token = (JSONObject) jsonObject.getByPath(checkName + "." + tokenName);
+            if (token == null) {
+
+                token = new JSONObject();
+                JSONObject tokenValue = new JSONObject();
+
+                tokenValue.put(nameKey, name);
+                tokenValue.put(valueKey, value);
+
+                token.put(tokenName, tokenValue);
+                jsonObject.put(checkName, token);
+
+                token = (JSONObject) jsonObject.getByPath(checkName + "." + tokenName);
+            }
+            token.put(nameKey, name);
+            token.put(valueKey, value);
+            YmlUtils.writeValue(file, jsonObject);
+        } catch (Exception e) {
+        }
+        //test01();
+    }
+
+    private static void test01() throws IOException {
         try {
             String absolutePath = FileUtil.getAbsolutePath("application.yml");
 
@@ -146,6 +208,7 @@ public class YmlUtils {
 
     /**
      * 将对象写入 OutputStream
+     *
      * @param out
      * @param value
      * @throws IOException
@@ -167,6 +230,7 @@ public class YmlUtils {
             throw e;
         }
     }
+
     public static void modify(Path path) throws IOException {
         // 1. 读成 Map
         Map<String, Object> config = YAML_MAPPER.readValue(path.toFile(), Map.class);
