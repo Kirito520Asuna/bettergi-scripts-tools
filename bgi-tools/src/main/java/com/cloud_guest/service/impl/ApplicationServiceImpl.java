@@ -1,9 +1,13 @@
 package com.cloud_guest.service.impl;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import com.cloud_guest.domain.Cache;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.ApplicationService;
+import com.cloud_guest.service.CacheService;
 import com.cloud_guest.utils.yml.YmlUtils;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import lombok.SneakyThrows;
@@ -22,6 +26,10 @@ import java.util.List;
 @Slf4j
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
+    private static final String load_yml_key = "load_yml";
+
+    @Resource
+    private CacheService cacheService;
 
     @Resource
     private LoadProperties loadProperties;
@@ -41,7 +49,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 } catch (MismatchedInputException e) {
                     log.warn("{}", e.getMessage());
                 }
-                setSysToken(name, value, jsonObject);
+                jsonObject = setSysToken(name, value, jsonObject);
                 YmlUtils.writeValue(file, jsonObject);
             } catch (Exception e) {
                 if (e.getMessage().contains("文件不存在或为空")) {
@@ -54,6 +62,44 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         return true;
     }
+    @Override
+    public boolean loadApplicationYml() {
+        JSONObject jsonObject = null;
+        //todo: 远程/本地存储加载
+        Cache<String> cache = cacheService.find(load_yml_key);
+        if (cache != null) {
+            String data = cache.getData();
+            if (StrUtil.isNotBlank(data)) {
+                jsonObject = JSONUtil.toBean(data, JSONObject.class);
+            }
+        }
+
+        List<String> yamlPaths = loadProperties.getYamlPaths();
+        for (String yamlPath : yamlPaths) {
+            try {
+                File file = FileUtil.newFile(yamlPath);
+                if (jsonObject != null) {
+                    YmlUtils.writeValue(file, jsonObject);
+                }
+            } catch (Exception e) {
+                if (e.getMessage().contains("文件不存在或为空")) {
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    @Override
+    public boolean saveLoadApplicationYml(JSONObject jsonObject) {
+        if (jsonObject == null) {
+            return false;
+        }
+        cacheService.save(load_yml_key, JSONUtil.toJsonStr(jsonObject));
+        return true;
+    }
+
     @Override
     public JSONObject setSysToken(String name, String value, JSONObject jsonObject) {
         String checkName = "check";
@@ -88,6 +134,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         token.put(nameKey, name);
         token.put(valueKey, value);
+        saveLoadApplicationYml(jsonObject);
         return check;
     }
 }

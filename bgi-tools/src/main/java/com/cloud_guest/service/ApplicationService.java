@@ -12,5 +12,9 @@ public interface ApplicationService {
     @SneakyThrows
     boolean saveToken(String name, String value);
 
+    boolean loadApplicationYml();
+
+    boolean saveLoadApplicationYml(JSONObject jsonObject);
+
     JSONObject setSysToken(String name, String value, JSONObject jsonObject);
 }
