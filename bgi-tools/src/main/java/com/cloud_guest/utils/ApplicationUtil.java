@@ -50,4 +50,14 @@ public class ApplicationUtil {
     public static String getApplicationId() {
         return ApplicationId;
     }
+    public static List<String> getNodeApplicationIds() {
+        return nodeApplicationIds;
+    }
+    public static List<String> getAllApplicationIds() {
+        List<String> list = new ArrayList<>();
+        list.add(ApplicationId);
+        list.addAll(nodeApplicationIds);
+        list = list.stream().filter(StrUtil::isNotBlank).distinct().collect(Collectors.toList());
+        return list;
+    }
 }

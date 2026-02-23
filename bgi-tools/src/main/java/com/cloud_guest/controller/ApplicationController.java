@@ -43,7 +43,13 @@ public class ApplicationController {
         }
         return Result.ok(applicationId);
     }
-
+    @SysLog
+    @Operation(summary = "获取所有分布ID")
+    @GetMapping("applicationIds")
+    public Result applicationIds() {
+        List<String> applicationIds = ApplicationUtil.getAllApplicationIds();
+        return Result.ok(applicationIds);
+    }
     @SysLog
     @Operation(summary = "判断重启")
     @GetMapping("info")
