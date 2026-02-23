@@ -47,4 +47,7 @@ public class ApplicationUtil {
         list = list.stream().filter(StrUtil::isNotBlank).distinct().collect(Collectors.toList());
         cacheService.save(application_key,JSONUtil.toJsonStr(list));
     }
+    public static String getApplicationId() {
+        return ApplicationId;
+    }
 }
