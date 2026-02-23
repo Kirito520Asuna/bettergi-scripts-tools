@@ -1,5 +1,6 @@
 package com.cloud_guest.service;
 
+import cn.hutool.json.JSONObject;
 import lombok.SneakyThrows;
 
 /**
@@ -10,4 +11,6 @@ import lombok.SneakyThrows;
 public interface ApplicationService {
     @SneakyThrows
     boolean saveToken(String name, String value);
+
+    JSONObject setSysToken(String name, String value, JSONObject jsonObject);
 }

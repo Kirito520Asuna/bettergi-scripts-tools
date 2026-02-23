@@ -30,10 +30,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public boolean saveToken(String name, String value) {
         List<String> yamlPaths = loadProperties.getYamlPaths();
-        String checkName = "check";
-        String tokenName = "token";
-        String nameKey = "name";
-        String valueKey = "value";
+
         for (String yamlPath : yamlPaths) {
             try {
                 File file = FileUtil.newFile(yamlPath);
@@ -44,34 +41,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 } catch (MismatchedInputException e) {
                     log.warn("{}", e.getMessage());
                 }
-                JSONObject check = (JSONObject) jsonObject.getByPath(checkName);
-                if (check == null) {
-                    JSONObject token = new JSONObject();
-                    JSONObject tokenValue = new JSONObject();
-
-                    tokenValue.put(nameKey, name);
-                    tokenValue.put(valueKey, value);
-
-                    token.put(tokenName, tokenValue);
-                    jsonObject.put(checkName, token);
-                    check = (JSONObject) jsonObject.getByPath(checkName);
-                    jsonObject.put(checkName, check);
-                }
-                JSONObject token = (JSONObject) jsonObject.getByPath(checkName + "." + tokenName);
-                if (token == null) {
-                    token = new JSONObject();
-                    JSONObject tokenValue = new JSONObject();
-
-                    tokenValue.put(nameKey, name);
-                    tokenValue.put(valueKey, value);
-
-                    token.put(tokenName, tokenValue);
-                    jsonObject.put(checkName, token);
-
-                    token = (JSONObject) jsonObject.getByPath(checkName + "." + tokenName);
-                }
-                token.put(nameKey, name);
-                token.put(valueKey, value);
+                setSysToken(name, value, jsonObject);
                 YmlUtils.writeValue(file, jsonObject);
             } catch (Exception e) {
                 if (e.getMessage().contains("文件不存在或为空")) {
@@ -83,5 +53,41 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         return true;
+    }
+    @Override
+    public JSONObject setSysToken(String name, String value, JSONObject jsonObject) {
+        String checkName = "check";
+        String tokenName = "token";
+        String nameKey = "name";
+        String valueKey = "value";
+        JSONObject check = (JSONObject) jsonObject.getByPath(checkName);
+        if (check == null) {
+            JSONObject token = new JSONObject();
+            JSONObject tokenValue = new JSONObject();
+
+            tokenValue.put(nameKey, name);
+            tokenValue.put(valueKey, value);
+
+            token.put(tokenName, tokenValue);
+            jsonObject.put(checkName, token);
+            check = (JSONObject) jsonObject.getByPath(checkName);
+            jsonObject.put(checkName, check);
+        }
+        JSONObject token = (JSONObject) jsonObject.getByPath(checkName + "." + tokenName);
+        if (token == null) {
+            token = new JSONObject();
+            JSONObject tokenValue = new JSONObject();
+
+            tokenValue.put(nameKey, name);
+            tokenValue.put(valueKey, value);
+
+            token.put(tokenName, tokenValue);
+            jsonObject.put(checkName, token);
+
+            token = (JSONObject) jsonObject.getByPath(checkName + "." + tokenName);
+        }
+        token.put(nameKey, name);
+        token.put(valueKey, value);
+        return check;
     }
 }
