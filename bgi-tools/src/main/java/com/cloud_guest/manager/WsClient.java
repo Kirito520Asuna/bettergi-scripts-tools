@@ -28,18 +28,18 @@ public class WsClient {
     public void onOpen(Session session) {
         this.session = session;
         CONNECTED.set(true);
-        System.out.println("[WS] connected");
+        //System.out.println("[WS] connected");
     }
 
     @OnMessage
     public void onMessage(String msg) {
-        System.out.println("[WS] recv: " + msg);
+        //System.out.println("[WS] recv: " + msg);
     }
 
     @OnClose
     public void onClose() {
         CONNECTED.set(false);
-        System.out.println("[WS] closed");
+        //System.out.println("[WS] closed");
     }
 
     @OnError
