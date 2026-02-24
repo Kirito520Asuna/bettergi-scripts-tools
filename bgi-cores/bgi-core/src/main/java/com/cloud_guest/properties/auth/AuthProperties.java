@@ -1,5 +1,7 @@
 package com.cloud_guest.properties.auth;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -21,12 +23,16 @@ public class AuthProperties {
     private Jwt jwt = new Jwt();
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class User {
         private String username;
         private String password;
     }
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Jwt {
         public static final long JWT_TTL = 24 * 60 * 60 * 1000L;// 60 * 60 *1000  一个小时
         //public static final long LONG_JWT_TTL = 30 * JWT_TTL;

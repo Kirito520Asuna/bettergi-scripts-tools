@@ -1,11 +1,16 @@
 package com.cloud_guest.utils.yml;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.cloud_guest.properties.auth.AuthProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -13,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,9 +28,36 @@ import java.util.Map;
  */
 @Slf4j
 public class YmlUtils {
+
     private static final ObjectMapper YAML_MAPPER = new YAMLMapper();
 
     public static void main(String[] args) throws IOException {
+        test03();
+        //test02();
+        //test01();
+    }
+
+    private static void test03() throws IOException {
+        String yamlPath = "G:\\code\\bettergi-scripts-tools\\bgi-cores\\bgi-core\\src\\main\\java\\com\\cloud_guest\\utils\\yml\\application.yml";
+        String authUsersKey = "auth.users";
+        File file = FileUtil.newFile(yamlPath);
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject = YmlUtils.readValue(file, JSONObject.class);
+        } catch (MismatchedInputException e) {
+            log.warn("{}", e.getMessage());
+        }
+
+        JSONArray authUser = (JSONArray) jsonObject.getByPath(authUsersKey);
+        if (authUser != null) {
+            String jsonStr = JSONUtil.toJsonStr(authUser);
+            List<AuthProperties.User> list = JSONUtil.toList(jsonStr, AuthProperties.User.class);
+            System.out.println( list);
+        }
+    }
+
+    private static void test02() {
         /**
          * check:
          *   token:
@@ -82,7 +115,6 @@ public class YmlUtils {
             YmlUtils.writeValue(file, jsonObject);
         } catch (Exception e) {
         }
-        //test01();
     }
 
     private static void test01() throws IOException {
