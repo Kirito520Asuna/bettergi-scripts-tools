@@ -8,6 +8,7 @@ import com.cloud_guest.enums.ApiCode;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.properties.auth.AuthProperties;
 import com.cloud_guest.properties.load.LoadProperties;
+import com.cloud_guest.service.ApplicationService;
 import com.cloud_guest.service.AuthService;
 import com.cloud_guest.utils.jwt.JwtUtil;
 import com.cloud_guest.utils.yml.YmlUtils;
@@ -29,6 +30,8 @@ import java.util.List;
 @Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
+    @Resource
+    private ApplicationService applicationService;
     @Resource
     private LoadProperties loadProperties;
     @Resource
@@ -85,6 +88,7 @@ public class AuthServiceImpl implements AuthService {
             auth.put(authKey, users);
             jsonObject.putAll(auth);
             YmlUtils.writeValue(file, jsonObject);
+            applicationService.saveLoadApplicationYml(jsonObject);
         }
 
         return true;
