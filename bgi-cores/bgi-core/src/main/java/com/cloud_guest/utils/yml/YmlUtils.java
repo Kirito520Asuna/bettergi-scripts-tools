@@ -50,6 +50,7 @@ public class YmlUtils {
         list.add(path1);
         //list.add(path);
         for (String yamlPath : list) {
+/*
             JSONObject jsonObject = new JSONObject();
             File file = FileUtil.newFile(yamlPath);
             if (file == null || !file.exists()) {
@@ -74,6 +75,14 @@ public class YmlUtils {
                     }
                 }
             }
+*/
+
+            JSONObject jsonObject = YmlUtils.readValueToJSONObject(yamlPath);
+            if (jsonObject == null) {
+                continue;
+            }
+            File file = FileUtil.newFile(yamlPath);
+
 
             JSONObject auth = (JSONObject) jsonObject.getByPath(authKey);
             if (auth == null || true) {
@@ -180,7 +189,31 @@ public class YmlUtils {
             }
         }
     }
+    public static JSONObject readValueToJSONObject(String yamlPath) throws IOException {
+        JSONObject jsonObject = new JSONObject();
+        File file = FileUtil.newFile(yamlPath);
+        if (file == null || !file.exists()) {
+            // 创建文件及其父目录
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+        }else {
+            try {
+                jsonObject = YmlUtils.readValue(file, JSONObject.class);
+            } catch (MismatchedInputException e) {
+                log.warn("{}", e.getMessage());
+            } catch (Exception e) {
+                if (e.getMessage().contains("文件不存在或为空")) {
+                    jsonObject=null;
+                }else {
+                    throw e;
+                }
+            }
+        }
 
+        return jsonObject;
+    }
     /**
      * 从文件读取 YAML 数据并转换为指定类型
      *
@@ -191,15 +224,20 @@ public class YmlUtils {
      * @throws IOException 读取或解析异常
      */
     public static <T> T readValue(File file, Class<T> clazz) throws IOException {
+    // 检查文件是否存在或为空
         if (file == null || !file.exists()) {
             throw new IllegalArgumentException("文件不存在或为空: " + (file != null ? file.getPath() : "null"));
         }
         try {
+        // 记录开始读取文件的日志
             log.debug("开始读取 YAML 文件: {}", file.getAbsolutePath());
+        // 使用 YAML_MAPPER 将文件内容读取为目标类型对象
             T result = YAML_MAPPER.readValue(file, clazz);
+        // 记录成功读取文件的日志
             log.debug("成功读取 YAML 文件: {}", file.getAbsolutePath());
             return result;
         } catch (IOException e) {
+        // 记录读取文件失败的错误日志
             log.error("读取 YAML 文件失败: {}", file.getAbsolutePath(), e);
             throw e;
         }

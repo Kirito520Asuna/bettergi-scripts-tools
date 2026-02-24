@@ -40,14 +40,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         for (String yamlPath : yamlPaths) {
             try {
-                File file = FileUtil.newFile(yamlPath);
-
-                JSONObject jsonObject = new JSONObject();
-                try {
-                    jsonObject = YmlUtils.readValue(file, JSONObject.class);
-                } catch (MismatchedInputException e) {
-                    log.warn("{}", e.getMessage());
+                JSONObject jsonObject = YmlUtils.readValueToJSONObject(yamlPath);
+                if (jsonObject == null) {
+                    continue;
                 }
+                File file = FileUtil.newFile(yamlPath);
                 jsonObject = setSysToken(name, value, jsonObject);
                 YmlUtils.writeValue(file, jsonObject);
             } catch (Exception e) {

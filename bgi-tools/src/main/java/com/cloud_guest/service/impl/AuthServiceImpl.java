@@ -59,27 +59,11 @@ public class AuthServiceImpl implements AuthService {
         //String authUsersKey = authKey + "." + usersKey;
 
         for (String yamlPath : yamlPaths) {
-            JSONObject jsonObject = new JSONObject();
-            File file = FileUtil.newFile(yamlPath);
-            if (file == null || !file.exists()) {
-                // 创建文件及其父目录
-                File parentDir = file.getParentFile();
-                if (parentDir != null && !parentDir.exists()) {
-                    parentDir.mkdirs();
-                }
-            }else {
-                try {
-                    jsonObject = YmlUtils.readValue(file, JSONObject.class);
-                } catch (MismatchedInputException e) {
-                    log.warn("{}", e.getMessage());
-                } catch (Exception e) {
-                    if (e.getMessage().contains("文件不存在或为空")) {
-                        continue;
-                    }else {
-                        throw e;
-                    }
-                }
+            JSONObject jsonObject = YmlUtils.readValueToJSONObject(yamlPath);
+            if (jsonObject == null) {
+                continue;
             }
+            File file = FileUtil.newFile(yamlPath);
 
             JSONObject auth = (JSONObject) jsonObject.getByPath(authKey);
             if (auth == null || true) {
