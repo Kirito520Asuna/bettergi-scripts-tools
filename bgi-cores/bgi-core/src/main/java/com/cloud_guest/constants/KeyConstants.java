@@ -12,4 +12,6 @@ public interface KeyConstants {
     String auto_plan_key_country_all = "AUTO_PLAN_COUNTRY:ALL";
 
     String redis_file_json_key = "redis:file:json:";
+    String task_key = "task:";
+    String lock_key = "lock:";
 }
