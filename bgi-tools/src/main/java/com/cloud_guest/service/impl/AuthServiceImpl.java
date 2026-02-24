@@ -60,11 +60,13 @@ public class AuthServiceImpl implements AuthService {
 
         for (String yamlPath : yamlPaths) {
             JSONObject jsonObject = YmlUtils.readValueToJSONObject(yamlPath);
-            if (jsonObject == null) {
+            //if (jsonObject == null) {
+            //    continue;
+            //}
+            File file = FileUtil.newFile(yamlPath);
+            if (file == null || !file.exists()) {
                 continue;
             }
-            File file = FileUtil.newFile(yamlPath);
-
             JSONObject auth = (JSONObject) jsonObject.getByPath(authKey);
             if (auth == null || true) {
                 auth = new JSONObject();

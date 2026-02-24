@@ -83,7 +83,9 @@ public class YmlUtils {
             }
             File file = FileUtil.newFile(yamlPath);
 
-
+            if (file == null || !file.exists()) {
+                continue;
+            }
             JSONObject auth = (JSONObject) jsonObject.getByPath(authKey);
             if (auth == null || true) {
                 auth = new JSONObject();
@@ -205,7 +207,7 @@ public class YmlUtils {
                 log.warn("{}", e.getMessage());
             } catch (Exception e) {
                 if (e.getMessage().contains("文件不存在或为空")) {
-                    jsonObject=null;
+                    //jsonObject=null;
                 }else {
                     throw e;
                 }
