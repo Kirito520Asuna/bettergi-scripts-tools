@@ -41,11 +41,12 @@ public class ApplicationUtil {
 
     @PreDestroy
     public void destroy() {
-        List<String> list = new ArrayList<>();
-        list.add(ApplicationId);
-        list.addAll(nodeApplicationIds);
-        list = list.stream().filter(StrUtil::isNotBlank).distinct().collect(Collectors.toList());
-        cacheService.save(application_key,JSONUtil.toJsonStr(list));
+        Cache<String> cache = cacheService.find(application_key);
+        if (cache != null && cache.getData() != null) {
+            List<String> ids = JSONUtil.toList(cache.getData(), String.class);
+            List<String> list  = ids.stream().filter(e -> !ObjectUtils.equals(e, ApplicationId)).collect(Collectors.toList());
+            cacheService.save(application_key,JSONUtil.toJsonStr(list));
+        }
     }
     public static String getApplicationId() {
         return ApplicationId;
