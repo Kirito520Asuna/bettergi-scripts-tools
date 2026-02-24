@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.ApplicationService;
@@ -26,8 +27,6 @@ import java.util.List;
 @Slf4j
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
-    private static final String load_yml_key = "load_yml";
-
     @Resource
     private CacheService cacheService;
 
@@ -66,7 +65,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public boolean loadApplicationYml() {
         JSONObject jsonObject = null;
         //todo: 远程/本地存储加载
-        Cache<String> cache = cacheService.find(load_yml_key);
+        Cache<String> cache = cacheService.find(KeyConstants.load_yml_key);
         if (cache != null) {
             String data = cache.getData();
             if (StrUtil.isNotBlank(data)) {
@@ -96,7 +95,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (jsonObject == null) {
             return false;
         }
-        cacheService.save(load_yml_key, JSONUtil.toJsonStr(jsonObject));
+        cacheService.save(KeyConstants.load_yml_key, JSONUtil.toJsonStr(jsonObject));
         return true;
     }
 

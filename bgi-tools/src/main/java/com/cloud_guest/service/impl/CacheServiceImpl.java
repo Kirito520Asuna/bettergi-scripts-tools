@@ -2,6 +2,7 @@ package com.cloud_guest.service.impl;
 
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
+import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.redis.service.RedisService;
 import com.cloud_guest.service.CacheService;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 public class CacheServiceImpl implements CacheService {
     @Value("${spring.redis.mode:none}")
     private String redisMode;
-    public static final String REDIS_FILE_JSON_KEY = "redis:file:json:";
+    //public static final String  KeyConstants.redis_file_json_key = "redis:file:json:";
 
     @Override
     public boolean delList(List<String> ids) {
@@ -30,7 +31,7 @@ public class CacheServiceImpl implements CacheService {
         } else {
             RedisService bean = SpringUtil.getBean(RedisService.class);
             ids = ids.stream()
-                    .map(id -> REDIS_FILE_JSON_KEY + id)
+                    .map(id ->  KeyConstants.redis_file_json_key + id)
                     .collect(Collectors.toList());
             bean.delList(ids);
         }
@@ -46,7 +47,7 @@ public class CacheServiceImpl implements CacheService {
             LocalCacheUtils.put(id, JSONUtil.toJsonStr(cache));
         } else {
             RedisService bean = SpringUtil.getBean(RedisService.class);
-            bean.save(REDIS_FILE_JSON_KEY + id, JSONUtil.toJsonStr(cache));
+            bean.save( KeyConstants.redis_file_json_key + id, JSONUtil.toJsonStr(cache));
         }
         return true;
     }
@@ -58,7 +59,7 @@ public class CacheServiceImpl implements CacheService {
             o = (String) LocalCacheUtils.get(id);
         } else {
             RedisService bean = SpringUtil.getBean(RedisService.class);
-            o = (String) bean.get(REDIS_FILE_JSON_KEY + id);
+            o = (String) bean.get( KeyConstants.redis_file_json_key + id);
         }
         Cache<String> cache = JSONUtil.toBean(o, Cache.class);
         return cache;
