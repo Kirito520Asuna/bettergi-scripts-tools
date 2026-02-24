@@ -39,38 +39,62 @@ public class YmlUtils {
     }
 
     private static void test03() throws IOException {
-        String yamlPath = "G:\\code\\bettergi-scripts-tools\\bgi-cores\\bgi-core\\src\\main\\java\\com\\cloud_guest\\utils\\yml\\application.yml";
+        String path = "G:\\code\\bettergi-scripts-tools\\bgi-cores\\bgi-core\\src\\main\\java\\com\\cloud_guest\\utils\\yml\\application.yml";
+        String path1 = "G:\\code\\bettergi-scripts-tools\\bgi-cores\\bgi-core\\src\\main\\java\\com\\cloud_guest\\utils\\yml\\application-prod.yml";
         String authKey = "auth";
         String usersKey = "users";
         String authUsersKey = authKey + "." + usersKey;
-        File file = FileUtil.newFile(yamlPath);
         String username = "username";
         String password = "username";
+        ArrayList<String> list = new ArrayList<>();
+        list.add(path1);
+        //list.add(path);
+        for (String yamlPath : list) {
+            JSONObject jsonObject = new JSONObject();
+            File file = FileUtil.newFile(yamlPath);
+            if (file == null || !file.exists()) {
+                // 创建文件及其父目录
+                File parentDir = file.getParentFile();
+                if (parentDir != null && !parentDir.exists()) {
+                    parentDir.mkdirs();
+                }
+                //// 初始化一个空的YAML结构
+                //JSONObject emptyConfig = new JSONObject();
+                //YmlUtils.writeValue(file, emptyConfig);
+            }else {
+                try {
+                    jsonObject = YmlUtils.readValue(file, JSONObject.class);
+                } catch (MismatchedInputException e) {
+                    log.warn("{}", e.getMessage());
+                } catch (Exception e) {
+                    if (e.getMessage().contains("文件不存在或为空")) {
+                        continue;
+                    }else {
+                        throw e;
+                    }
+                }
+            }
 
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject = YmlUtils.readValue(file, JSONObject.class);
-        } catch (MismatchedInputException e) {
-            log.warn("{}", e.getMessage());
+            JSONObject auth = (JSONObject) jsonObject.getByPath(authKey);
+            if (auth == null || true) {
+                auth = new JSONObject();
+            }
+            JSONObject users = new JSONObject();
+
+            ArrayList arrayList = new ArrayList();
+
+            AuthProperties.User value = new AuthProperties.User(username, password);
+            arrayList.add(value);
+            String jsonStr = JSONUtil.toJsonStr(arrayList);
+
+
+            JSONArray jsonArray = JSONUtil.parseArray(jsonStr);
+            users.put(usersKey, jsonArray);
+            auth.put(authKey, users);
+            jsonObject.putAll(auth);
+            YmlUtils.writeValue(file, jsonObject);
         }
-        JSONObject auth = (JSONObject) jsonObject.getByPath(authKey);
-        if (auth == null || true) {
-            auth = new JSONObject();
-        }
-        JSONObject users = new JSONObject();
 
-        ArrayList arrayList = new ArrayList();
-
-        AuthProperties.User value = new AuthProperties.User(username, password);
-        arrayList.add(value);
-        String jsonStr = JSONUtil.toJsonStr(arrayList);
-
-
-        JSONArray jsonArray = JSONUtil.parseArray(jsonStr);
-        users.put(usersKey, jsonArray);
-        auth.put(authKey, users);
-        jsonObject.putAll(auth);
-        YmlUtils.writeValue(file, jsonObject);
     }
 
     private static void test02() {
