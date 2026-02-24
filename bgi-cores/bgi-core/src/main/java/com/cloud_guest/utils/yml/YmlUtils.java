@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,8 +40,12 @@ public class YmlUtils {
 
     private static void test03() throws IOException {
         String yamlPath = "G:\\code\\bettergi-scripts-tools\\bgi-cores\\bgi-core\\src\\main\\java\\com\\cloud_guest\\utils\\yml\\application.yml";
-        String authUsersKey = "auth.users";
+        String authKey = "auth";
+        String usersKey = "users";
+        String authUsersKey = authKey + "." + usersKey;
         File file = FileUtil.newFile(yamlPath);
+        String username = "username";
+        String password = "username";
 
         JSONObject jsonObject = new JSONObject();
         try {
@@ -48,13 +53,24 @@ public class YmlUtils {
         } catch (MismatchedInputException e) {
             log.warn("{}", e.getMessage());
         }
-
-        JSONArray authUser = (JSONArray) jsonObject.getByPath(authUsersKey);
-        if (authUser != null) {
-            String jsonStr = JSONUtil.toJsonStr(authUser);
-            List<AuthProperties.User> list = JSONUtil.toList(jsonStr, AuthProperties.User.class);
-            System.out.println( list);
+        JSONObject auth = (JSONObject) jsonObject.getByPath(authKey);
+        if (auth == null || true) {
+            auth = new JSONObject();
         }
+        JSONObject users = new JSONObject();
+
+        ArrayList arrayList = new ArrayList();
+
+        AuthProperties.User value = new AuthProperties.User(username, password);
+        arrayList.add(value);
+        String jsonStr = JSONUtil.toJsonStr(arrayList);
+
+
+        JSONArray jsonArray = JSONUtil.parseArray(jsonStr);
+        users.put(usersKey, jsonArray);
+        auth.put(authKey, users);
+        jsonObject.putAll(auth);
+        YmlUtils.writeValue(file, jsonObject);
     }
 
     private static void test02() {
