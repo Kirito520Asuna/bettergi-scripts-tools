@@ -1,5 +1,5 @@
 import {ElMessage, ElMessageBox} from "element-plus";
-import {restartService} from "@api/sys/sys.js";
+import {getApplicationIds, restartService} from "@api/sys/sys.js";
 
 /**
  * 重启应用程序的异步函数
@@ -15,6 +15,14 @@ async function restart(restartClickRef, applicationIds, restartTimeout = 5 * 60 
         cancelButtonText: '取消',
         type: 'warning'
     })
+    if ((!applicationIds)||applicationIds?.length===0){
+        try {
+            const applicationIds1 = await getApplicationIds();
+            if (applicationIds1.data)
+                applicationIds = applicationIds1.data;
+        }catch (error) {
+        }
+    }
     // 防止重复点击
     if (restartClickRef.value) {
         ElMessage.warning('正在重启中，请勿重复点击');

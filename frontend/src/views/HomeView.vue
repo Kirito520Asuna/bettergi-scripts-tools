@@ -273,15 +273,7 @@ const toClick = async (item) => {
     localStorage.removeItem(token_name)
     router.push('/login')
   } else if (value === 'Restart') {
-    let appIds = []
-    try {
-      const applicationIds1 = await getApplicationIds();
-      if (applicationIds1.data)
-      appIds = applicationIds1.data;
-    } catch (e) {
-      // ElMessage.warning(e.message)
-    }
-    await restart(RestartClick, appIds)
+    await restart(RestartClick)
   }
 }
 
