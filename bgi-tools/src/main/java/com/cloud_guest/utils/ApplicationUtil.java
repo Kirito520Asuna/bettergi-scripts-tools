@@ -30,6 +30,7 @@ public class ApplicationUtil {
 
     @PostConstruct
     public void init() {
+        //上线
         String id = System.currentTimeMillis() + IdUtil.fastUUID();
         ApplicationId = id;
         Cache<String> cache = cacheService.find(application_key);
@@ -41,6 +42,7 @@ public class ApplicationUtil {
 
     @PreDestroy
     public void destroy() {
+        //下线
         Cache<String> cache = cacheService.find(application_key);
         if (cache != null && cache.getData() != null) {
             List<String> ids = JSONUtil.toList(cache.getData(), String.class);
