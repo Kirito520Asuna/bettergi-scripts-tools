@@ -6,6 +6,7 @@ const routes = [
         path: '/',
         name: 'home',
         meta: {
+            excludeInMenu: true,
             isRoot: true,
             title: '首页',
             desc: '首页',
@@ -16,10 +17,24 @@ const routes = [
         children: []
     },
     {
+        path: '/settings',
+        name: 'settings',
+        component: () => import('@main/views/SettingsView'),
+        meta: {
+            excludeInMenu: true,
+            isRoot: true,
+            title: '设置',
+            desc: '设置',
+            asSubParentTitle: '设置',
+            icon: 'icon-home'
+        },
+    },
+    {
         path: '/login',
         name: 'login',
         component: () => import('@main/views/Login'),
         meta: {
+            excludeInMenu: true,
             isRoot: true,
             title: '登录',
             desc: '登录',
