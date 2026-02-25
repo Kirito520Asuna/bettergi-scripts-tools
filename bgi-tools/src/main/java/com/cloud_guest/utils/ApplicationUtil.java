@@ -3,9 +3,11 @@ package com.cloud_guest.utils;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.cloud_guest.aop.bean.AbsBean;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.utils.object.ObjectUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -21,8 +23,9 @@ import java.util.stream.Collectors;
  * @Date 2026/2/23 20:45:43
  * @Description
  */
+@Slf4j
 @Component
-public class ApplicationUtil {
+public class ApplicationUtil implements AbsBean {
     public static String applicationId = null;
     public static Long datacenterId = 0l;
     public static List<String> nodeApplicationIds = new ArrayList<>();
@@ -32,7 +35,10 @@ public class ApplicationUtil {
     private CacheService cacheService;
 
     @PostConstruct
+    @Override
     public void init() {
+        AbsBean.super.init();
+        log.debug("==> 初始化ApplicationUtil <==");
         //上线
         String id = System.currentTimeMillis() + "@" + IdUtil.fastUUID();
         applicationId = id;
@@ -47,51 +53,55 @@ public class ApplicationUtil {
 
 
         //初始化workId
-        String works = cacheService.find(application_datacenter_key, String.class);
+        String works = cacheService.findById(application_datacenter_key);
         LinkedHashSet<Long> datacenterIds = new LinkedHashSet<>();
         if (StrUtil.isNotBlank(works)) {
-            if (JSONUtil.isTypeJSONArray(works)){
+            if (JSONUtil.isTypeJSONArray(works)) {
                 JSONUtil.toList(works, String.class).stream().map(Long::valueOf).forEach(datacenterIds::add);
-            }else {
+            } else {
                 datacenterIds.add(Long.valueOf(works));
             }
         }
         datacenterId++;
-        if (datacenterIds.size()>0) {
-            datacenterId += datacenterIds.stream().mapToLong(Long::longValue).max().getAsLong();
+        if (datacenterIds.size() > 0) {
+            datacenterId += datacenterIds.stream().filter(ObjectUtils::isNotEmpty).mapToLong(Long::longValue).max().getAsLong();
         }
         datacenterIds.add(datacenterId);
         cacheService.save(application_datacenter_key, JSONUtil.toJsonStr(datacenterIds));
     }
 
     @PreDestroy
+    @Override
     public void destroy() {
+        AbsBean.super.destroy();
+        log.debug("==> 销毁ApplicationUtil <==");
         //下线
         Cache<String> cache = cacheService.find(application_key);
+        List<String> list = new ArrayList<>();
         if (cache != null && cache.getData() != null) {
             List<String> ids = JSONUtil.toList(cache.getData(), String.class);
-            List<String> list = ids.stream().filter(e -> !ObjectUtils.equals(e, applicationId)).distinct().collect(Collectors.toList());
-            cacheService.save(application_key, JSONUtil.toJsonStr(list));
-
-
-            //下线datacenterId
-            String datacenters = cacheService.find(application_datacenter_key, String.class);
-            LinkedHashSet<Long> datacenterIds = new LinkedHashSet<>();
-            if (StrUtil.isNotBlank(datacenters)) {
-                if (JSONUtil.isTypeJSONArray(datacenters)){
-                    JSONUtil.toList(datacenters, String.class).stream().map(Long::valueOf).forEach(datacenterIds::add);
-                }else {
-                    datacenterIds.add(Long.valueOf(datacenters));
-                }
-            }
-            datacenterIds.remove(datacenterId);
-            cacheService.save(application_datacenter_key, JSONUtil.toJsonStr(datacenterIds));
+            list = ids.stream().filter(e -> !ObjectUtils.equals(e, applicationId)).distinct().collect(Collectors.toList());
         }
+        cacheService.save(application_key, JSONUtil.toJsonStr(list));
+
+        //下线datacenterId
+        String datacenters = cacheService.findById(application_datacenter_key);
+        LinkedHashSet<Long> datacenterIds = new LinkedHashSet<>();
+        if (StrUtil.isNotBlank(datacenters)) {
+            if (JSONUtil.isTypeJSONArray(datacenters)) {
+                JSONUtil.toList(datacenters, String.class).stream().filter(ObjectUtils::isNotEmpty).map(Long::valueOf).forEach(datacenterIds::add);
+            } else {
+                datacenterIds.add(Long.valueOf(datacenters));
+            }
+        }
+        datacenterIds.remove(datacenterId);
+        cacheService.save(application_datacenter_key, JSONUtil.toJsonStr(datacenterIds));
     }
 
     public static String getApplicationId() {
         return applicationId;
     }
+
     public static Long getDatacenterId() {
         return datacenterId;
     }

@@ -42,6 +42,8 @@ public interface CacheService {
      */
     Cache<String> find(String id);
 
+    String findById(String id);
+
     /**
      * 泛型方法，用于根据ID和类型查找对象
      *

@@ -149,7 +149,11 @@ public class CacheServiceImpl implements CacheService {
         Cache<String> cache = JSONUtil.toBean(o, Cache.class);
         return cache;
     }
-
+    @Override
+    public String findById(String id) {
+        Cache<String> cache = find(id);
+        return cache.getData();
+    }
     @Override
     public <T> T find(String id, Class<T> clazz) {
         Cache<String> cache = find(id);
