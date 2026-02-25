@@ -36,7 +36,7 @@ public class ApplicationUtil {
         Cache<String> cache = cacheService.find(application_key);
         if (cache != null && cache.getData() != null) {
             List<String> ids = JSONUtil.toList(cache.getData(), String.class);
-            nodeApplicationIds = ids.stream().filter(e -> !ObjectUtils.equals(e, id)).collect(Collectors.toList());
+            nodeApplicationIds = ids.stream().filter(e -> !ObjectUtils.equals(e, id)).distinct().collect(Collectors.toList());
         }
     }
 
@@ -46,7 +46,7 @@ public class ApplicationUtil {
         Cache<String> cache = cacheService.find(application_key);
         if (cache != null && cache.getData() != null) {
             List<String> ids = JSONUtil.toList(cache.getData(), String.class);
-            List<String> list  = ids.stream().filter(e -> !ObjectUtils.equals(e, ApplicationId)).collect(Collectors.toList());
+            List<String> list  = ids.stream().filter(e -> !ObjectUtils.equals(e, ApplicationId)).distinct().collect(Collectors.toList());
             cacheService.save(application_key,JSONUtil.toJsonStr(list));
         }
     }
