@@ -41,7 +41,7 @@ public class CacheServiceImpl implements CacheService {
         }
 
         parentKeys.stream().forEach(id -> {
-            if (!id.endsWith("ALL")) {
+            if (!id.contains("ALL")) {
                 String parentKey = id.substring(0, id.lastIndexOf(":"));
                 removeId(parentKey, id);
             }
@@ -65,7 +65,7 @@ public class CacheServiceImpl implements CacheService {
             bean.save(key, JSONUtil.toJsonStr(cache));
             parentKey = key.substring(0, key.lastIndexOf(":"));
         }
-        if (!id.endsWith("ALL")) {
+        if (!id.contains("ALL")) {
             saveId(parentKey, id);
         }
         return true;
