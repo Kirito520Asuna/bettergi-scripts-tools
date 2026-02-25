@@ -1,6 +1,7 @@
 package com.cloud_guest.utils;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +26,8 @@ import java.util.stream.Collectors;
 public class LocalCacheUtils {
     // 本地缓存映射
     private static final Map<String, Object> LOCAL_CACHE_MAP = Maps.newConcurrentMap();
-    @Value("${local.cache.json-file-path:../../.././cache/local-cache.json}")
-    private String localCacheJsonFilePath;
+    //@Value("${local.cache.json-file-path:../../.././cache/local-cache.json}")
+    //private String localCacheJsonFilePath;
     @Resource
     private Environment env;
 
@@ -41,7 +42,7 @@ public class LocalCacheUtils {
         Map<String, Object> map = null;
         try {
             map = JSONUtil.toBean(
-                    FileUtil.readUtf8String(localCacheJsonFilePath),
+                    FileUtil.readUtf8String(getLocalCacheJsonFilePath()),
                     Map.class
             );
         } catch (Exception e) {
@@ -61,9 +62,18 @@ public class LocalCacheUtils {
             return;
         }
         //保存缓存
+        writeLocal(getLocalCacheJsonFilePath());
+        log.info("保存本地缓存成功");
+    }
+    public static String getLocalCacheJsonFilePath() {
+        Environment env = SpringUtil.getBean(Environment.class);
+        String localCacheJsonFilePath  = env.getProperty("local.cache.json-file-path", "../../.././cache/local-cache.json");
+        return localCacheJsonFilePath;
+    }
+
+    public static void writeLocal(String localCacheJsonFilePath) {
         String localCacheJson = JSONUtil.toJsonStr(LOCAL_CACHE_MAP);
         FileUtil.writeUtf8String(localCacheJson, localCacheJsonFilePath);
-        log.info("保存本地缓存成功");
     }
 
     /**
@@ -84,6 +94,7 @@ public class LocalCacheUtils {
      */
     public static void put(String key, Object value) {
         LOCAL_CACHE_MAP.put(key, value);
+        writeLocal(getLocalCacheJsonFilePath());
     }
 
     /**
@@ -103,6 +114,7 @@ public class LocalCacheUtils {
      */
     public static void remove(String key) {
         LOCAL_CACHE_MAP.remove(key);
+        writeLocal(getLocalCacheJsonFilePath());
     }
 
     /**
