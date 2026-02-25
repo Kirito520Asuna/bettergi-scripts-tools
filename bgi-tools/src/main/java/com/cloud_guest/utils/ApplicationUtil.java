@@ -12,6 +12,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,9 +24,10 @@ import java.util.stream.Collectors;
 @Component
 public class ApplicationUtil {
     public static String applicationId = null;
+    public static Long workId = 0l;
     public static List<String> nodeApplicationIds = new ArrayList<>();
     private static final String application_key = "ALL:application";
-    private static final String application_map_key = "ALL:MAP:application";
+    private static final String application_work_key = "ALL:WORK:application";
     @Resource
     private CacheService cacheService;
 
@@ -42,6 +44,24 @@ public class ApplicationUtil {
 
         List<String> applicationIds = getAllApplicationIds();
         cacheService.save(application_key, JSONUtil.toJsonStr(applicationIds));
+
+
+        //初始化workId
+        String works = cacheService.find(application_work_key, String.class);
+        LinkedHashSet<Long> workIds = new LinkedHashSet<>();
+        if (StrUtil.isNotBlank(works)) {
+            if (JSONUtil.isTypeJSONArray(works)){
+                JSONUtil.toList(works, String.class).stream().map(Long::valueOf).forEach(workIds::add);
+            }else {
+                workIds.add(Long.valueOf(works));
+            }
+        }
+        workId ++;
+        if (workIds.size()>0) {
+            workId += workIds.stream().mapToLong(Long::longValue).max().getAsLong();
+        }
+        workIds.add(workId);
+        cacheService.save(application_work_key, JSONUtil.toJsonStr(workIds));
     }
 
     @PreDestroy
@@ -52,11 +72,28 @@ public class ApplicationUtil {
             List<String> ids = JSONUtil.toList(cache.getData(), String.class);
             List<String> list = ids.stream().filter(e -> !ObjectUtils.equals(e, applicationId)).distinct().collect(Collectors.toList());
             cacheService.save(application_key, JSONUtil.toJsonStr(list));
+
+
+            //下线workId
+            String works = cacheService.find(application_work_key, String.class);
+            LinkedHashSet<Long> workIds = new LinkedHashSet<>();
+            if (StrUtil.isNotBlank(works)) {
+                if (JSONUtil.isTypeJSONArray(works)){
+                    JSONUtil.toList(works, String.class).stream().map(Long::valueOf).forEach(workIds::add);
+                }else {
+                    workIds.add(Long.valueOf(works));
+                }
+            }
+            workIds.remove(workId);
+            cacheService.save(application_work_key, JSONUtil.toJsonStr(workIds));
         }
     }
 
     public static String getApplicationId() {
         return applicationId;
+    }
+    public static Long getWorkId() {
+        return workId;
     }
 
     public static List<String> getNodeApplicationIds() {
