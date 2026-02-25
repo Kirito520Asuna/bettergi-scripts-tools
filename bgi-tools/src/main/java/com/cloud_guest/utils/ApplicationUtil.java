@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  */
 @Component
 public class ApplicationUtil {
-    public static String ApplicationId = null;
+    public static String applicationId = null;
     public static List<String> nodeApplicationIds = new ArrayList<>();
     private static final String application_key = "ALL:application";
     private static final String application_map_key = "ALL:MAP:application";
@@ -33,7 +33,7 @@ public class ApplicationUtil {
     public void init() {
         //上线
         String id = System.currentTimeMillis() + "@" + IdUtil.fastUUID();
-        ApplicationId = id;
+        applicationId = id;
         Cache<String> cache = cacheService.find(application_key);
         if (cache != null && cache.getData() != null) {
             List<String> ids = JSONUtil.toList(cache.getData(), String.class);
@@ -50,13 +50,13 @@ public class ApplicationUtil {
         Cache<String> cache = cacheService.find(application_key);
         if (cache != null && cache.getData() != null) {
             List<String> ids = JSONUtil.toList(cache.getData(), String.class);
-            List<String> list = ids.stream().filter(e -> !ObjectUtils.equals(e, ApplicationId)).distinct().collect(Collectors.toList());
+            List<String> list = ids.stream().filter(e -> !ObjectUtils.equals(e, applicationId)).distinct().collect(Collectors.toList());
             cacheService.save(application_key, JSONUtil.toJsonStr(list));
         }
     }
 
     public static String getApplicationId() {
-        return ApplicationId;
+        return applicationId;
     }
 
     public static List<String> getNodeApplicationIds() {
@@ -65,7 +65,7 @@ public class ApplicationUtil {
 
     public static List<String> getAllApplicationIds() {
         List<String> list = new ArrayList<>();
-        list.add(ApplicationId);
+        list.add(applicationId);
         list.addAll(nodeApplicationIds);
         list = list.stream().filter(StrUtil::isNotBlank).distinct().collect(Collectors.toList());
         return list;
