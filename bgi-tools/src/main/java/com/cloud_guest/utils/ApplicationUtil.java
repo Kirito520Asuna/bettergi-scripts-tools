@@ -24,7 +24,8 @@ import java.util.stream.Collectors;
 public class ApplicationUtil {
     public static String ApplicationId = null;
     public static List<String> nodeApplicationIds = new ArrayList<>();
-    private static final String application_key = "application";
+    private static final String application_key = "ALL:application";
+    private static final String application_map_key = "ALL:MAP:application";
     @Resource
     private CacheService cacheService;
 
@@ -38,6 +39,9 @@ public class ApplicationUtil {
             List<String> ids = JSONUtil.toList(cache.getData(), String.class);
             nodeApplicationIds = ids.stream().filter(e -> !ObjectUtils.equals(e, id)).distinct().collect(Collectors.toList());
         }
+
+        List<String> applicationIds = getAllApplicationIds();
+        cacheService.save(application_key, JSONUtil.toJsonStr(applicationIds));
     }
 
     @PreDestroy
