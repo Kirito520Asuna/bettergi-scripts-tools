@@ -51,4 +51,6 @@ public interface CacheService {
      * @return 找到的对象，类型为T
      */
     <T> T find(String id, Class<T> clazz);
+
+    <T> List<T> findAll(String key, Class<T> clazz);
 }

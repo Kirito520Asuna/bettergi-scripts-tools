@@ -8,6 +8,7 @@ import com.cloud_guest.domain.Cache;
 import com.cloud_guest.redis.service.RedisService;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.utils.LocalCacheUtils;
+import com.cloud_guest.utils.object.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -158,5 +159,28 @@ public class CacheServiceImpl implements CacheService {
             return t;
         }
         return null;
+    }
+    @Override
+    public <T> List<T> findAll(String key, Class<T> clazz) {
+        List<T> list;
+        Set<String> hashSetIds = new LinkedHashSet<>();
+        String ids;
+        if ("none".equals(redisMode)) {
+            ids = (String) LocalCacheUtils.get(key);
+        } else {
+            RedisService bean = SpringUtil.getBean(RedisService.class);
+            ids = (String) bean.get(key);
+        }
+        if (StrUtil.isNotBlank(ids)) {
+            if (JSONUtil.isTypeJSONArray(ids)) {
+                // 是数组
+                JSONUtil.toList(ids, String.class).forEach(hashSetIds::add);
+            } else {
+                // 不是数组
+                hashSetIds.add(ids);
+            }
+        }
+        list = hashSetIds.stream().map(id -> find(id, clazz)).filter(ObjectUtils::isNotEmpty).collect(Collectors.toList());
+        return list;
     }
 }
