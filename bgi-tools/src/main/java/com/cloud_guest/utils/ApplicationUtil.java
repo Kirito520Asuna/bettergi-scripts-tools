@@ -92,7 +92,7 @@ public class ApplicationUtil {
     public static String getApplicationId() {
         return applicationId;
     }
-    public static Long getWorkId() {
+    public static Long getDatacenterId() {
         return datacenterId;
     }
 
