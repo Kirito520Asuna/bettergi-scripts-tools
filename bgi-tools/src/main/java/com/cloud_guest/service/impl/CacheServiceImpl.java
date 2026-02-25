@@ -1,5 +1,6 @@
 package com.cloud_guest.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.constants.KeyConstants;
@@ -63,5 +64,16 @@ public class CacheServiceImpl implements CacheService {
         }
         Cache<String> cache = JSONUtil.toBean(o, Cache.class);
         return cache;
+    }
+
+    @Override
+    public <T> T find(String id, Class<T> clazz) {
+        Cache<String> cache = find(id);
+        String data = cache.getData();
+        if(StrUtil.isNotBlank(data)){
+            T t = JSONUtil.toBean(data, clazz);
+            return t;
+        }
+        return null;
     }
 }
