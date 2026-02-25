@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
 @Component
 public class ApplicationUtil {
     public static String applicationId = null;
-    public static Long workId = 0l;
+    public static Long datacenterId = 0l;
     public static List<String> nodeApplicationIds = new ArrayList<>();
     private static final String application_key = "ALL:application";
-    private static final String application_work_key = "ALL:WORK:application";
+    private static final String application_datacenter_key = "ALL:DATACENTER:application";
     @Resource
     private CacheService cacheService;
 
@@ -47,21 +47,21 @@ public class ApplicationUtil {
 
 
         //初始化workId
-        String works = cacheService.find(application_work_key, String.class);
-        LinkedHashSet<Long> workIds = new LinkedHashSet<>();
+        String works = cacheService.find(application_datacenter_key, String.class);
+        LinkedHashSet<Long> datacenterIds = new LinkedHashSet<>();
         if (StrUtil.isNotBlank(works)) {
             if (JSONUtil.isTypeJSONArray(works)){
-                JSONUtil.toList(works, String.class).stream().map(Long::valueOf).forEach(workIds::add);
+                JSONUtil.toList(works, String.class).stream().map(Long::valueOf).forEach(datacenterIds::add);
             }else {
-                workIds.add(Long.valueOf(works));
+                datacenterIds.add(Long.valueOf(works));
             }
         }
-        workId ++;
-        if (workIds.size()>0) {
-            workId += workIds.stream().mapToLong(Long::longValue).max().getAsLong();
+        datacenterId++;
+        if (datacenterIds.size()>0) {
+            datacenterId += datacenterIds.stream().mapToLong(Long::longValue).max().getAsLong();
         }
-        workIds.add(workId);
-        cacheService.save(application_work_key, JSONUtil.toJsonStr(workIds));
+        datacenterIds.add(datacenterId);
+        cacheService.save(application_datacenter_key, JSONUtil.toJsonStr(datacenterIds));
     }
 
     @PreDestroy
@@ -74,18 +74,18 @@ public class ApplicationUtil {
             cacheService.save(application_key, JSONUtil.toJsonStr(list));
 
 
-            //下线workId
-            String works = cacheService.find(application_work_key, String.class);
-            LinkedHashSet<Long> workIds = new LinkedHashSet<>();
-            if (StrUtil.isNotBlank(works)) {
-                if (JSONUtil.isTypeJSONArray(works)){
-                    JSONUtil.toList(works, String.class).stream().map(Long::valueOf).forEach(workIds::add);
+            //下线datacenterId
+            String datacenters = cacheService.find(application_datacenter_key, String.class);
+            LinkedHashSet<Long> datacenterIds = new LinkedHashSet<>();
+            if (StrUtil.isNotBlank(datacenters)) {
+                if (JSONUtil.isTypeJSONArray(datacenters)){
+                    JSONUtil.toList(datacenters, String.class).stream().map(Long::valueOf).forEach(datacenterIds::add);
                 }else {
-                    workIds.add(Long.valueOf(works));
+                    datacenterIds.add(Long.valueOf(datacenters));
                 }
             }
-            workIds.remove(workId);
-            cacheService.save(application_work_key, JSONUtil.toJsonStr(workIds));
+            datacenterIds.remove(datacenterId);
+            cacheService.save(application_datacenter_key, JSONUtil.toJsonStr(datacenterIds));
         }
     }
 
@@ -93,7 +93,7 @@ public class ApplicationUtil {
         return applicationId;
     }
     public static Long getWorkId() {
-        return workId;
+        return datacenterId;
     }
 
     public static List<String> getNodeApplicationIds() {
