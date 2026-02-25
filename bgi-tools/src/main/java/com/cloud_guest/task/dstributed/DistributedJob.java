@@ -21,12 +21,13 @@ import java.time.format.DateTimeFormatter;
 // 禁止并发执行
 @DisallowConcurrentExecution
 @Slf4j
-public class DistributedJob extends QuartzJobBean  {
+public class DistributedJob extends QuartzJobBean {
+    public static final String TASK_LOG_KEY = "[定时任务]";
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         String taskName = context.getJobDetail().getJobDataMap().getString("name");
-        log.debug("===> Quartz job, time:{} ,name:{} <===",DateTimeFormatter.ofPattern(DatePattern
+        log.debug("{} ===> Quartz job, time:{} ,name:{} <===", TASK_LOG_KEY, DateTimeFormatter.ofPattern(DatePattern
                 .NORM_DATETIME_PATTERN).format(LocalDateTime.now()), taskName);
     }
 }
