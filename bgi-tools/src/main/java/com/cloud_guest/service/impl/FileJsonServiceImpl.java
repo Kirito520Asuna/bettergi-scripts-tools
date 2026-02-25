@@ -2,19 +2,13 @@ package com.cloud_guest.service.impl;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.extra.spring.SpringUtil;
-import cn.hutool.json.JSONUtil;
 import com.cloud_guest.domain.Cache;
-import com.cloud_guest.redis.service.RedisService;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.service.FileJsonService;
-import com.cloud_guest.utils.LocalCacheUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @Author yan
@@ -52,6 +46,6 @@ public class FileJsonServiceImpl implements FileJsonService {
 
     @Override
     public boolean del(List<String> ids) {
-        return cacheService.delList(ids);
+        return cacheService.removeList(ids);
     }
 }

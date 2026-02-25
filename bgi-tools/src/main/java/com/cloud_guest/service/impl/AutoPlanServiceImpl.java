@@ -30,7 +30,7 @@ public class AutoPlanServiceImpl implements AutoPlanService {
     @Override
     public boolean delList(List<String> ids) {
         ids = ids.stream().map(id -> KeyConstants.auto_plan_key + id).collect(Collectors.toList());
-        return cacheService.delList(ids);
+        return cacheService.removeList(ids);
     }
 
     @Override

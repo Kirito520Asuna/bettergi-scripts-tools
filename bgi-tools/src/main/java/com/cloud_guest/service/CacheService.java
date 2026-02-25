@@ -18,7 +18,7 @@ public interface CacheService {
      * true - 删除成功
      * false - 删除失败
      */
-    boolean delList(List<String> ids);
+    boolean removeList(List<String> ids);
 
     /**
      * 保存指定ID对应的JSON数据
@@ -28,6 +28,10 @@ public interface CacheService {
      * @return 保存操作是否成功，成功返回true，失败返回false
      */
     boolean save(String id, String json);
+
+    boolean removeId(String key, String id);
+
+    boolean saveId(String key, String id);
 
     /**
      * 根据指定的ID查找缓存中的数据
