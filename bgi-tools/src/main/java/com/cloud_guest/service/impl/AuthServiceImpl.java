@@ -5,12 +5,14 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.enums.ApiCode;
+import com.cloud_guest.enums.OSType;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.properties.auth.AuthProperties;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.ApplicationService;
 import com.cloud_guest.service.AuthService;
 import com.cloud_guest.utils.jwt.JwtUtil;
+import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.utils.yml.YmlUtils;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import lombok.SneakyThrows;
@@ -61,7 +63,14 @@ public class AuthServiceImpl implements AuthService {
         String usersKey = "users";
         //String authUsersKey = authKey + "." + usersKey;
 
+        OSType currentOSType = OSType.getCurrentOSType();
         for (String yamlPath : yamlPaths) {
+            OSType osType = OSType.detectByPathFormat(yamlPath);
+            if (!ObjectUtils.equals(osType, currentOSType)){
+                if (!(OSType.isUnixLike(osType)&&OSType.isUnixLike(null))) {
+                    continue;
+                }
+            }
             JSONObject jsonObject = YmlUtils.readValueToJSONObject(yamlPath);
             //if (jsonObject == null) {
             //    continue;

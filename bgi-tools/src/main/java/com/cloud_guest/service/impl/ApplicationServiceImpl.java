@@ -6,9 +6,11 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.Cache;
+import com.cloud_guest.enums.OSType;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.ApplicationService;
 import com.cloud_guest.service.CacheService;
+import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.utils.yml.YmlUtils;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import lombok.SneakyThrows;
@@ -38,7 +40,14 @@ public class ApplicationServiceImpl implements ApplicationService {
     public boolean saveToken(String name, String value) {
         List<String> yamlPaths = loadProperties.getYamlPaths();
 
+        OSType currentOSType = OSType.getCurrentOSType();
         for (String yamlPath : yamlPaths) {
+            OSType osType = OSType.detectByPathFormat(yamlPath);
+            if (!ObjectUtils.equals(osType, currentOSType)){
+                if (!(OSType.isUnixLike(osType)&&OSType.isUnixLike(null))) {
+                    continue;
+                }
+            }
             try {
                 JSONObject jsonObject = YmlUtils.readValueToJSONObject(yamlPath);
                 //if (jsonObject == null) {

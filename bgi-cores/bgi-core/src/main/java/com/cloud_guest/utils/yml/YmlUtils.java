@@ -4,7 +4,9 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.cloud_guest.enums.OSType;
 import com.cloud_guest.properties.auth.AuthProperties;
+import com.cloud_guest.utils.object.ObjectUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -47,40 +49,19 @@ public class YmlUtils {
         String username = "username";
         String password = "username";
         ArrayList<String> list = new ArrayList<>();
-        list.add(path1);
+        //list.add(path1);
+        list.add("/app/a.yml");
         //list.add(path);
+        OSType currentOSType = OSType.getCurrentOSType();
         for (String yamlPath : list) {
-/*
-            JSONObject jsonObject = new JSONObject();
-            File file = FileUtil.newFile(yamlPath);
-            if (file == null || !file.exists()) {
-                // 创建文件及其父目录
-                File parentDir = file.getParentFile();
-                if (parentDir != null && !parentDir.exists()) {
-                    parentDir.mkdirs();
-                }
-                //// 初始化一个空的YAML结构
-                //JSONObject emptyConfig = new JSONObject();
-                //YmlUtils.writeValue(file, emptyConfig);
-            }else {
-                try {
-                    jsonObject = YmlUtils.readValue(file, JSONObject.class);
-                } catch (MismatchedInputException e) {
-                    log.warn("{}", e.getMessage());
-                } catch (Exception e) {
-                    if (e.getMessage().contains("文件不存在或为空")) {
-                        continue;
-                    }else {
-                        throw e;
-                    }
+            OSType osType = OSType.detectByPathFormat(yamlPath);
+            if (!ObjectUtils.equals(osType, currentOSType)){
+                if (!(OSType.isUnixLike(osType)&&OSType.isUnixLike(null))) {
+                    continue;
                 }
             }
-*/
 
             JSONObject jsonObject = YmlUtils.readValueToJSONObject(yamlPath);
-            //if (jsonObject == null) {
-            //    continue;
-            //}
             File file = FileUtil.newFile(yamlPath);
 
             if (file == null || !file.exists()) {
