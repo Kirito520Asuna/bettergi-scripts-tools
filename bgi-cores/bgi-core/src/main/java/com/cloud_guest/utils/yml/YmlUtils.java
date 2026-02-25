@@ -78,9 +78,9 @@ public class YmlUtils {
 */
 
             JSONObject jsonObject = YmlUtils.readValueToJSONObject(yamlPath);
-            if (jsonObject == null) {
-                continue;
-            }
+            //if (jsonObject == null) {
+            //    continue;
+            //}
             File file = FileUtil.newFile(yamlPath);
 
             if (file == null || !file.exists()) {
@@ -199,6 +199,11 @@ public class YmlUtils {
             File parentDir = file.getParentFile();
             if (parentDir != null && !parentDir.exists()) {
                 parentDir.mkdirs();
+            }
+            try {
+                YmlUtils.writeValue(file, jsonObject);
+            }catch (Exception e){
+                log.warn("{}", e.getMessage());
             }
         }else {
             try {
