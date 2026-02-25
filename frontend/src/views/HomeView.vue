@@ -80,6 +80,7 @@ import router from "@router/router";
 import {iconAsMapDefault} from "@utils/defaultdata.js";
 import {getApplicationIds, restartService} from "@api/sys/sys.js";
 import {ElMessage, ElMessageBox} from "element-plus";
+import {restart} from "@api/web/web.js";
 
 let iconAsMap = iconAsMapDefault()
 
@@ -144,7 +145,7 @@ onMounted(async () => {
     children: []
   }
 
-  router.getRoutes().filter(route => route.name !== 'home' && route.name !== 'login' && route?.meta?.isRoot).forEach(route => {
+  router.getRoutes().filter(route => (!route?.meta?.excludeInMenu) && route.name !== 'home' && route.name !== 'login' && route?.meta?.isRoot).forEach(route => {
     routerJson.children.push({
       id: index,
       position: index % 2 === 1 ? "left" : "right",
@@ -272,54 +273,18 @@ const toClick = async (item) => {
     localStorage.removeItem(token_name)
     router.push('/login')
   } else if (value === 'Restart') {
-    // 防止重复点击
-    if (RestartClick.value) {
-      ElMessage.warning('正在重启中，请勿重复点击');
-      return;
-    }
-// 可選：二次確認（看需求加不加）
-    await ElMessageBox.confirm('确定要重启系统吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-    // 标记为正在重启
-    RestartClick.value = true;
-
+    let appIds = []
     try {
       const applicationIds1 = await getApplicationIds();
-      applicationIds.value = applicationIds1.data
+      if (applicationIds1.data)
+      appIds = applicationIds1.data;
     } catch (e) {
       // ElMessage.warning(e.message)
     }
-
-    try {
-      const list = applicationIds.value;
-      // console.log("ids:",JSON.stringify(list))
-      let ids = [...list]
-      // console.log("ids:",JSON.stringify(ids))
-      while (ids.length > 0) {
-        //分布式重启
-        // 发送重启指令
-        const result = await restartService(ids);
-        if (result.code === 200) {
-          ids = ids.filter(id => id !== result.data)
-          // ElMessage.info('重启指令发送成功');
-        } else {
-          // ElMessage.error('重启指令发送失败');
-        }
-      }
-      ElMessage.success('重启成功');
-    } catch (error) {
-      // 捕获异常并提示用户
-      console.error('重启请求失败:', error);
-      ElMessage.error('重启请求异常，请稍后再试');
-    } finally {
-      // 无论成功与否，都恢复状态
-      RestartClick.value = false;
-    }
+    await restart(RestartClick, appIds)
   }
 }
+
 </script>
 <style scoped>
 
@@ -502,12 +467,12 @@ const toClick = async (item) => {
 .restart-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0, 0, 0, 0.75);
   z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  user-select: none;           /* 防止選取文字 */
+  user-select: none; /* 防止選取文字 */
   -webkit-user-select: none;
 }
 
@@ -518,7 +483,7 @@ const toClick = async (item) => {
   text-align: center;
   min-width: 320px;
   max-width: 420px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   pointer-events: auto;
 }
 
@@ -554,12 +519,12 @@ const toClick = async (item) => {
   .restart-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.75);
+    background: rgba(0, 0, 0, 0.75);
     z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
-    user-select: none;           /* 防止選取文字 */
+    user-select: none; /* 防止選取文字 */
     -webkit-user-select: none;
   }
 
@@ -570,42 +535,42 @@ const toClick = async (item) => {
     text-align: center;
     min-width: 320px;
     max-width: 420px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    pointer-events: auto;
-  }
-/*
-  !* 禁止點擊 overlay 本身關閉（點 modal 內部還是可以操作） *!
-  .restart-overlay {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     pointer-events: auto;
   }
 
-  .restart-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px); !* 強毛玻璃，增加沉浸感 *!
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
-    pointer-events: all; !* 完全攔截互動 *!
-  }
+  /*
+    !* 禁止點擊 overlay 本身關閉（點 modal 內部還是可以操作） *!
+    .restart-overlay {
+      pointer-events: auto;
+    }
 
-  .restart-modal {
-    background: rgba(20, 20, 28, 0.95); !* 深黑半透，與紅色對比強 *!
-    border: 2px solid #ff4d4f; !* 紅色邊框警示 *!
-    border-radius: 16px;
-    padding: 2.5rem 4rem 3.5rem;
-    min-width: 420px;
-    max-width: 520px;
-    text-align: center;
-    box-shadow: 0 30px 80px rgba(255, 77, 79, 0.25), !* 紅色光暈陰影 *! 0 0 0 1px rgba(255, 77, 79, 0.15) inset,
-    inset 0 0 40px rgba(0, 0, 0, 0.6);
-    animation: modalPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    pointer-events: auto;
-  }*/
+    .restart-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px); !* 強毛玻璃，增加沉浸感 *!
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      pointer-events: all; !* 完全攔截互動 *!
+    }
 
+    .restart-modal {
+      background: rgba(20, 20, 28, 0.95); !* 深黑半透，與紅色對比強 *!
+      border: 2px solid #ff4d4f; !* 紅色邊框警示 *!
+      border-radius: 16px;
+      padding: 2.5rem 4rem 3.5rem;
+      min-width: 420px;
+      max-width: 520px;
+      text-align: center;
+      box-shadow: 0 30px 80px rgba(255, 77, 79, 0.25), !* 紅色光暈陰影 *! 0 0 0 1px rgba(255, 77, 79, 0.15) inset,
+      inset 0 0 40px rgba(0, 0, 0, 0.6);
+      animation: modalPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      pointer-events: auto;
+    }*/
   @keyframes modalPop {
     0% {
       opacity: 0;
