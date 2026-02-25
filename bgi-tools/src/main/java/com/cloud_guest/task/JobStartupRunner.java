@@ -19,6 +19,7 @@ import java.util.List;
 @Component
 @Slf4j
 public class JobStartupRunner implements CommandLineRunner {
+    public static final String TASK_LOG_KEY = "[定时任务]";
     @Override
     public void run(String... args) throws Exception {
         Scheduler scheduler = SpringUtil.getBean(Scheduler.class);
@@ -35,12 +36,12 @@ public class JobStartupRunner implements CommandLineRunner {
                 CronTrigger cronTrigger = (CronTrigger) scheduler.getTrigger(triggerKey);
                 if (null == cronTrigger && jobDetail != null && trigger != null) {
                     scheduler.scheduleJob(jobDetail, trigger);
-                    log.debug("==> Quartz 创建了job: {} <==", jobDetail.getKey());
+                    log.debug("{}==> Quartz 创建了job: {} <==", TASK_LOG_KEY, jobDetail.getKey());
                 } else {
                     if (jobDetail != null) {
-                        log.debug("==> {} job已存在 <==", jobDetail.getKey());
+                        log.debug("{}==> {} job已存在 <==",TASK_LOG_KEY, jobDetail.getKey());
                     } else {
-                        log.debug("==> {} job未初始化 <==",jobKey);
+                        log.debug("{}==> {} job未初始化 <==",TASK_LOG_KEY,jobKey);
                     }
                 }
             } catch (Exception e) {
