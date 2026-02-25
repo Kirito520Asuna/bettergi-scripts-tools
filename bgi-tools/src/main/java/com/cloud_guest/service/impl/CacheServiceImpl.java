@@ -29,6 +29,7 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public boolean removeList(List<String> ids) {
+        List<String> parentKeys = ids.stream().collect(Collectors.toList());
         if ("none".equals(redisMode)) {
             LocalCacheUtils.removeList(ids);
         } else {
@@ -38,6 +39,14 @@ public class CacheServiceImpl implements CacheService {
                     .collect(Collectors.toList());
             bean.delList(ids);
         }
+
+        parentKeys.stream().forEach(id -> {
+            if (!id.endsWith("ALL")) {
+                String parentKey = id.substring(0, id.lastIndexOf(":"));
+                removeId(parentKey, id);
+            }
+        });
+
         return true;
     }
 
@@ -56,9 +65,12 @@ public class CacheServiceImpl implements CacheService {
             bean.save(key, JSONUtil.toJsonStr(cache));
             parentKey = key.substring(0, key.lastIndexOf(":"));
         }
-        saveId(parentKey, id);
+        if (!id.endsWith("ALL")) {
+            saveId(parentKey, id);
+        }
         return true;
     }
+
     @Override
     public boolean removeId(String key, String id) {
         Set<String> hashSet = new LinkedHashSet<>();
@@ -90,6 +102,7 @@ public class CacheServiceImpl implements CacheService {
         }
         return true;
     }
+
     @Override
     public boolean saveId(String key, String id) {
         Set<String> hashSet = new LinkedHashSet<>();
