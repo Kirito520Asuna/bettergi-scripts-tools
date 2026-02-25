@@ -31,7 +31,7 @@ public class ApplicationUtil {
     @PostConstruct
     public void init() {
         //上线
-        String id = System.currentTimeMillis() + IdUtil.fastUUID();
+        String id = System.currentTimeMillis() + "@" + IdUtil.fastUUID();
         ApplicationId = id;
         Cache<String> cache = cacheService.find(application_key);
         if (cache != null && cache.getData() != null) {
@@ -46,16 +46,19 @@ public class ApplicationUtil {
         Cache<String> cache = cacheService.find(application_key);
         if (cache != null && cache.getData() != null) {
             List<String> ids = JSONUtil.toList(cache.getData(), String.class);
-            List<String> list  = ids.stream().filter(e -> !ObjectUtils.equals(e, ApplicationId)).distinct().collect(Collectors.toList());
-            cacheService.save(application_key,JSONUtil.toJsonStr(list));
+            List<String> list = ids.stream().filter(e -> !ObjectUtils.equals(e, ApplicationId)).distinct().collect(Collectors.toList());
+            cacheService.save(application_key, JSONUtil.toJsonStr(list));
         }
     }
+
     public static String getApplicationId() {
         return ApplicationId;
     }
+
     public static List<String> getNodeApplicationIds() {
         return nodeApplicationIds;
     }
+
     public static List<String> getAllApplicationIds() {
         List<String> list = new ArrayList<>();
         list.add(ApplicationId);
