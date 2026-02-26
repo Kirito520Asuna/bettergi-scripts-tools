@@ -93,6 +93,7 @@ const list = [
   // {isRote: true, name: '路由管理面板', value: '路由管理面板'},
   {name: '退出登录', value: 'Logout'},
   {name: '重启', value: 'Restart'},
+  {name: '设置', value: 'Settings'},
 ]
 let index = 1
 let initJson = {
@@ -272,6 +273,13 @@ const toClick = async (item) => {
     const token_name = import.meta.env.VITE_BASE_TOKEN_NAME || 'bgi_tools_token'
     localStorage.removeItem(token_name)
     router.push('/login')
+  }else if(value === 'Settings'){
+    await ElMessageBox.confirm('确定要前往设置吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    router.push('/settings')
   } else if (value === 'Restart') {
     await restart(RestartClick)
   }

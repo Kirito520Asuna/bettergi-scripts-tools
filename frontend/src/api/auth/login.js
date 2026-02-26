@@ -11,7 +11,19 @@ async function login(username, password) {
     // console.log("res:", res)
     return res.data
 }
-
+/**
+ * 更新用户信息的异步函数
+ * @param {string} username - 用户名
+ * @param {string} password - 密码
+ * @returns {Promise} 返回请求的响应结果
+ */
+async function  updateUserInfo(username, password) {
+    // 发送POST请求更新用户信息
+    const res = await service.post('/auth/info', {username: username, password: password})
+    // 返回响应结果
+    return res
+}
 export {
-    login
+    login,
+    updateUserInfo
 }
