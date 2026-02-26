@@ -10,15 +10,19 @@ import com.cloud_guest.enums.OSType;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.ApplicationService;
 import com.cloud_guest.service.CacheService;
+import com.cloud_guest.utils.bean.MapUtils;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.utils.yml.YmlUtils;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author yan
@@ -71,6 +75,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 }
                 jsonObject = setCheckToken(name, value, jsonObject);
                 YmlUtils.writeValue(file, jsonObject);
+            }catch (MismatchedInputException e){
+                log.warn("{}文件格式不正确/文件为空", yamlPath);
             } catch (Exception e) {
                 if (e.getMessage().contains("文件不存在或为空")) {
                     continue;
@@ -124,15 +130,19 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public JSONObject setCheckToken(String name, String value, JSONObject jsonObject) {
+
         String checkName = "check";
         String tokenName = "token";
         String nameKey = "name";
         String valueKey = "value";
+        Map<String, Object> map = MapUtils.createHierarchicalMap(checkName + "." + tokenName, null);
+        JSONObject checkToken = new JSONObject();
+        checkToken.putAll(map);
         // 获取或创建 check 对象
-        JSONObject check = (JSONObject) jsonObject.getByPath(checkName);
+        JSONObject check = (JSONObject) checkToken.getByPath(checkName);
         if (check == null) {
             check = new JSONObject();
-            jsonObject.put(checkName, check);
+            checkToken.put(checkName, check);
         }
 
         // 获取或创建 token 对象（checkName → tokenName）
@@ -153,6 +163,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         tokenValue.put(nameKey, StrUtil.isNotBlank(name) ? name : "");
         tokenValue.put(valueKey, StrUtil.isNotBlank(value) ? value : "");
         token.putAll(tokenValue);
+
+        jsonObject.putAll(checkToken);
+
         saveLoadApplicationYml(jsonObject);
         return jsonObject;
     }
