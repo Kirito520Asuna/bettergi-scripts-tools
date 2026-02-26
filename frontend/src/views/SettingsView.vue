@@ -239,7 +239,6 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -263,7 +262,6 @@ onMounted(async () => {
 .settings {
   padding: 30px;
   min-width: 1200px;
-  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -474,6 +472,7 @@ onMounted(async () => {
 @media (max-width: 768px) {
   .settings {
     padding: 15px;
+    min-width: 768px;
   }
 
   .settings-container {
@@ -512,6 +511,9 @@ onMounted(async () => {
 }
 
 @media (max-width: 480px) {
+  .settings {
+   min-width: 480px;
+  }
   .settings-container {
     padding: 20px;
   }
