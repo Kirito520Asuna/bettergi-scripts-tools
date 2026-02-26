@@ -108,7 +108,7 @@ const loadTokenInfo = async () => {
 // 修改Token信息
 const handleUpdateToken = async () => {
   try {
-    await ElMessageBox.confirm('确定要修改授权Token吗？', '提示', {
+    await ElMessageBox.confirm('确定要修改授权Token吗？修改后需要重启服务才能生效', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
