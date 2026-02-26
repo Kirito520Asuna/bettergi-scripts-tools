@@ -66,8 +66,18 @@ public class AuthServiceImpl implements AuthService {
         OSType currentOSType = OSType.getCurrentOSType();
         for (String yamlPath : yamlPaths) {
             OSType osType = OSType.detectByPathFormat(yamlPath);
-            if (!ObjectUtils.equals(osType, currentOSType)){
-                if (!(OSType.isUnixLike(osType)&&OSType.isUnixLike(null))) {
+            if(ObjectUtils.equals(OSType.UNKNOWN, osType)){
+                log.debug("{}是相对路径", yamlPath);
+            }else if(OSType.isUnixLike(osType)){
+                if(!OSType.isUnixLike(null)){
+                    //地址 linux ,系统非linux
+                    log.debug("[{}]{}是{}绝对路径",currentOSType, yamlPath,"[非类unix系统]");
+                    continue;
+                }
+            }else if (!OSType.isUnixLike(null)){
+                if(OSType.isUnixLike(osType)){
+                    //地址 非linux ,系统linux
+                    log.debug("[{}]{}是{}绝对路径",currentOSType, yamlPath,"[非类unix系统]");
                     continue;
                 }
             }

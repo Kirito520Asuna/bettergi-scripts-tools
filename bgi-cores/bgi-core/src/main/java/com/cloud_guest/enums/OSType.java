@@ -16,7 +16,7 @@ public enum OSType {
      * 通过路径格式判断操作系统
      */
     public static OSType detectByPathFormat(String path) {
-        if (path == null || path.isEmpty()) {
+        if (path == null || path.isEmpty() || path.startsWith("./")) {//相对路径无法判断
             return OSType.UNKNOWN;
         }
 
@@ -67,7 +67,7 @@ public enum OSType {
 
     // 添加根据OSType判断是否为Unix-like系统的方法
     public static boolean isUnixLike(OSType osType) {
-        osType = osType != null ? getCurrentOSType() : osType;
+        osType = osType != null ? osType : getCurrentOSType();
         return osType == OSType.LINUX || osType == OSType.MACOS || osType == OSType.UNIX;
     }
 }
