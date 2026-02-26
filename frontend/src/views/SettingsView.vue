@@ -3,6 +3,7 @@ import {onMounted, reactive, ref} from "vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {updateUserInfo} from "@api/auth/login.js";
 import {getTokenInfo, updateToken} from "@api/auth/token.js";
+import {restart} from "@api/web/web.js";
 
 const RestartClick = ref(false)
 const info = reactive({
@@ -123,6 +124,13 @@ const handleUpdateToken = async () => {
     }
   }
 }
+
+// 在 script setup 部分添加重启功能
+const handleRestart = async () => {
+  await restart(RestartClick)
+};
+
+
 // 组件挂载时加载Token信息
 onMounted(async () => {
   await loadTokenInfo();
@@ -153,11 +161,14 @@ onMounted(async () => {
     <div class="settings">
       <div class="settings-container">
         <h2 class="settings-title">系统设置</h2>
-        <div class="settings-list">
+        <div class="settings-grid">
           <!-- 用户信息修改 -->
-          <div class="setting-section">
-            <h3 class="section-title">用户账号设置</h3>
-            <div class="form-container">
+          <div class="setting-card">
+            <div class="card-header">
+              <h3 class="card-title">用户账号设置</h3>
+              <div class="card-icon">👤</div>
+            </div>
+            <div class="card-content">
               <el-form :model="info.user" :rules="userInfoRules" label-width="120px">
                 <el-form-item label="新用户名" prop="username">
                   <el-input
@@ -195,9 +206,12 @@ onMounted(async () => {
           </div>
 
           <!-- Token信息修改 -->
-          <div class="setting-section">
-            <h3 class="section-title">授权Token设置</h3>
-            <div class="form-container">
+          <div class="setting-card">
+            <div class="card-header">
+              <h3 class="card-title">授权Token设置</h3>
+              <div class="card-icon">🔑</div>
+            </div>
+            <div class="card-content">
               <el-form :model="info.token" :rules="tokenRules" label-width="120px">
                 <el-form-item label="Token名称" prop="tokenName">
                   <el-input
@@ -225,14 +239,30 @@ onMounted(async () => {
             </div>
           </div>
         </div>
+
       </div>
     </div>
+
+    <!-- 替换第234行的TODO注释 -->
+    <div class="fixed-bottom-bar">
+      <el-button
+          type="danger"
+          size="large"
+          class="restart-button"
+          @click="handleRestart"
+      >
+        重启系统
+      </el-button>
+    </div>
+
   </div>
 </template>
 
 <style scoped>
+
 .settings {
   padding: 30px;
+  min-width: 1200px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -253,6 +283,60 @@ onMounted(async () => {
   font-weight: 600;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.setting-card {
+  max-width: 500px;
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.setting-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.card-icon {
+  font-size: 24px;
+}
+
+.card-content {
+  padding: 25px;
+}
+
+@media (max-width: 768px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
 
 .setting-section {
   background: white;
@@ -345,6 +429,47 @@ onMounted(async () => {
   border-color: #667eea;
 }
 
+/* 在样式部分添加 */
+.fixed-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /*background: linear-gradient(90deg, #ff6b6b, #ee5a52);*/
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.restart-button {
+  width: 100%;
+  max-width: 300px;
+  height: 50px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 25px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  border: none;
+  box-shadow: 0 4px 15px rgba(238, 90, 82, 0.4);
+  transition: all 0.3s ease;
+}
+
+.restart-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(238, 90, 82, 0.6);
+}
+
+.restart-button:active {
+  transform: translateY(0);
+}
+
+/* 为页面主体添加底部边距，避免被固定按钮遮挡 */
+.settings-container {
+  margin-bottom: 90px;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .settings {
@@ -403,4 +528,5 @@ onMounted(async () => {
     padding: 15px;
   }
 }
+
 </style>
