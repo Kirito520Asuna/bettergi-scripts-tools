@@ -4,6 +4,7 @@ import {ElMessage, ElMessageBox} from "element-plus";
 import {updateUserInfo} from "@api/auth/login.js";
 import {getTokenInfo, updateToken} from "@api/auth/token.js";
 import {restart} from "@api/web/web.js";
+import router from "@router/router.js";
 
 const RestartClick = ref(false)
 const info = reactive({
@@ -130,6 +131,10 @@ const handleRestart = async () => {
   await restart(RestartClick)
 };
 
+// 在 script 中添加跳转逻辑
+const goToHome = () => {
+  router.push('/'); // 假设主页路径是 '/'
+};
 
 // 组件挂载时加载Token信息
 onMounted(async () => {
@@ -253,7 +258,10 @@ onMounted(async () => {
         重启系统
       </el-button>
     </div>
-
+    <!-- 在 template 最后添加 -->
+    <div class="fixed-footer">
+      <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
+    </div>
   </div>
 </template>
 
