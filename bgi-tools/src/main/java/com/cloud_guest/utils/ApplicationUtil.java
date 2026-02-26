@@ -2,6 +2,7 @@ package com.cloud_guest.utils;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.bean.AbsBean;
 import com.cloud_guest.domain.Cache;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 public class ApplicationUtil implements AbsBean {
     public static String applicationId = null;
     public static Long datacenterId = 0l;
-    public static List<String> nodeApplicationIds = new ArrayList<>();
+    //public static List<String> nodeApplicationIds = new ArrayList<>();
     private static final String application_key = "ALL:application";
     private static final String application_datacenter_key = "ALL:DATACENTER:application";
     @Resource
@@ -42,11 +43,11 @@ public class ApplicationUtil implements AbsBean {
         //上线
         String id = System.currentTimeMillis() + "@" + IdUtil.fastUUID();
         applicationId = id;
-        Cache<String> cache = cacheService.find(application_key);
-        if (cache != null && cache.getData() != null) {
-            List<String> ids = JSONUtil.toList(cache.getData(), String.class);
-            nodeApplicationIds = ids.stream().filter(e -> !ObjectUtils.equals(e, id)).distinct().collect(Collectors.toList());
-        }
+        //Cache<String> cache = cacheService.find(application_key);
+        //if (cache != null && cache.getData() != null) {
+        //    List<String> ids = JSONUtil.toList(cache.getData(), String.class);
+        //    //nodeApplicationIds = ids.stream().filter(e -> !ObjectUtils.equals(e, id)).distinct().collect(Collectors.toList());
+        //}
 
         List<String> applicationIds = getAllApplicationIds();
         cacheService.save(application_key, JSONUtil.toJsonStr(applicationIds));
@@ -106,14 +107,17 @@ public class ApplicationUtil implements AbsBean {
         return datacenterId;
     }
 
-    public static List<String> getNodeApplicationIds() {
-        return nodeApplicationIds;
-    }
-
     public static List<String> getAllApplicationIds() {
         List<String> list = new ArrayList<>();
-        list.add(applicationId);
-        list.addAll(nodeApplicationIds);
+        Cache<String> cache = SpringUtil.getBean(CacheService.class).find(application_key);
+        if (cache != null && cache.getData() != null) {
+            List<String> ids = JSONUtil.toList(cache.getData(), String.class);
+            list.addAll(ids);
+        }
+
+        //List<String> list = new ArrayList<>();
+        //list.add(applicationId);
+        //list.addAll(nodeApplicationIds);
         list = list.stream().filter(StrUtil::isNotBlank).distinct().collect(Collectors.toList());
         return list;
     }
