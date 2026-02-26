@@ -270,6 +270,11 @@ const togo = async (item) => {
 
     window.open(`${basePath}${item.value}`, '_blank');
   } else if (item?.isLink) {
+    await ElMessageBox.confirm(`确定要访问外链接:${item.value}吗？`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
     window.open(item.value, '_blank');
   }
 };
