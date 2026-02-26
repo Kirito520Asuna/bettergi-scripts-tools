@@ -16,5 +16,5 @@ public interface ApplicationService {
 
     boolean saveLoadApplicationYml(JSONObject jsonObject);
 
-    JSONObject setSysToken(String name, String value, JSONObject jsonObject);
+    JSONObject setCheckToken(String name, String value, JSONObject jsonObject);
 }

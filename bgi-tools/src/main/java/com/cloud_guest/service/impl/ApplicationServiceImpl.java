@@ -12,7 +12,6 @@ import com.cloud_guest.service.ApplicationService;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.utils.yml.YmlUtils;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -70,7 +69,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 if (file == null || !file.exists()) {
                     continue;
                 }
-                jsonObject = setSysToken(name, value, jsonObject);
+                jsonObject = setCheckToken(name, value, jsonObject);
                 YmlUtils.writeValue(file, jsonObject);
             } catch (Exception e) {
                 if (e.getMessage().contains("文件不存在或为空")) {
@@ -124,7 +123,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public JSONObject setSysToken(String name, String value, JSONObject jsonObject) {
+    public JSONObject setCheckToken(String name, String value, JSONObject jsonObject) {
         String checkName = "check";
         String tokenName = "token";
         String nameKey = "name";
