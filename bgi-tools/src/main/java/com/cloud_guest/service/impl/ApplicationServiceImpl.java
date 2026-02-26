@@ -135,7 +135,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         String tokenName = "token";
         String nameKey = "name";
         String valueKey = "value";
-        Map<String, Object> map = MapUtils.createHierarchicalMap(checkName + "." + tokenName, null);
+        Map<String, Object> map = MapUtils.createHierarchicalMap(checkName + "." + tokenName);
         JSONObject checkToken = new JSONObject();
         checkToken.putAll(map);
         // 获取或创建 check 对象

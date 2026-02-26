@@ -10,7 +10,7 @@ import java.util.Map;
  * @Description
  */
 public class MapUtils {
-        /**
+    /**
      * 根据点分隔的路径创建层次化Map
      * @param path 点分隔的路径，如 "a.b.c"
      * @param value 叶子节点的值
@@ -35,4 +35,13 @@ public class MapUtils {
         return result;
     }
 
+    /**
+     * 创建分层结构的Map，使用默认的空值作为第二个参数
+     * @param path 用于构建Map结构的路径字符串
+     * @return 返回一个包含层次结构的Map对象，其中键为路径中的节点，值为子Map或null
+     */
+    public static Map<String, Object> createHierarchicalMap(String path) {
+        // 调用重载方法，传入null作为第二个参数
+        return createHierarchicalMap(path, null);
+    }
 }
