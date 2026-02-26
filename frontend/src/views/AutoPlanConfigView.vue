@@ -14,6 +14,7 @@ import {
 import router from "@router/router.js";
 import draggable from 'vuedraggable'
 import {debounce} from 'lodash-es';
+import {toHomePage} from "@api/web/web.js";
 // 配置列表 → 核心数据结构改为 array
 const configs = ref([])
 
@@ -164,9 +165,11 @@ onMounted(() => {
   initCountryList()
 })
 // 在 script 中添加跳转逻辑
-const goToHome = () => {
-  router.push('/'); // 假设主页路径是 '/'
+const goToHome = async () => {
+  // router.push('/'); // 假设主页路径是 '/'
+  await toHomePage()
 };
+
 const showResultDrawer = ref(false)
 const orderSortConfigs = ref(false)
 const uid = ref("")

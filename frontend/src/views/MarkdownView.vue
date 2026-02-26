@@ -47,10 +47,13 @@ import hljs from 'highlight.js'
 import 'highlight.js/styles/github.min.css'
 import mermaid from 'mermaid'
 import router from "@router/router.js";
+import {toHomePage} from "@api/web/web.js";
 // 在 script 中添加跳转逻辑
-const goToHome = () => {
-  router.push('/'); // 假设主页路径是 '/'
+const goToHome = async () => {
+  // router.push('/'); // 假设主页路径是 '/'
+  await toHomePage()
 };
+
 
 // ================== Markdown 配置 ==================
 const md = new MarkdownIt({

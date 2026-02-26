@@ -1,5 +1,6 @@
 import {ElMessage, ElMessageBox} from "element-plus";
 import {getApplicationIds, restartService} from "@api/sys/sys.js";
+import router from "@router/router.js";
 
 /**
  * 重启应用程序的异步函数
@@ -68,7 +69,22 @@ async function restart(restartClickRef, applicationIds, restartTimeout = 5 * 60 
     }
 
 }
-
+/**
+ * 前往主页的异步函数
+ * 使用ElMessageBox显示确认对话框，用户确认后跳转到主页
+ */
+async function toHomePage(){
+    // 使用Element Plus的MessageBox显示确认对话框
+    // 包含确认、取消按钮和警告类型图标
+    await ElMessageBox.confirm('确定前往主页吗？', '提示', {
+        confirmButtonText: '确定',    // 确认按钮文本
+        cancelButtonText: '取消',    // 取消按钮文本
+        type: 'warning'             // 提示类型为警告
+    })
+    // 用户确认后，使用router进行页面导航到主页路径'/'
+    router.push('/'); // 假设主页路径是 '/'
+};
 export {
-    restart
+    restart,
+    toHomePage
 }

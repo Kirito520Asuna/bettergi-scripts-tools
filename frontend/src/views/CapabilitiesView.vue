@@ -131,6 +131,7 @@ import router from "@router/router";
 import {getNextTimestampAll} from "@api/cron/cron.js";
 import {ocrBytes} from "@api/ocr/ocr.js";
 import {CopyToClipboard} from "@utils/local.js";
+import {toHomePage} from "@api/web/web.js";
 
 const currentRoute = router.currentRoute
 const cronResult = ref('')
@@ -191,8 +192,9 @@ const cronListSubmit = async () => {
     console.error('请求失败:', error);
   }
 };
-const goToHome = () => {
-  router.push('/'); // 假设主页路径是 '/'
+const goToHome = async () => {
+  // router.push('/'); // 假设主页路径是 '/'
+  await toHomePage()
 };
 
 // 获取单个 Cron 表达式的下一个时间戳

@@ -3,7 +3,7 @@ import {onMounted, reactive, ref} from "vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {updateUserInfo} from "@api/auth/login.js";
 import {getTokenInfo, updateToken} from "@api/auth/token.js";
-import {restart} from "@api/web/web.js";
+import {restart, toHomePage} from "@api/web/web.js";
 import router from "@router/router.js";
 
 const RestartClick = ref(false)
@@ -132,8 +132,9 @@ const handleRestart = async () => {
 };
 
 // 在 script 中添加跳转逻辑
-const goToHome = () => {
-  router.push('/'); // 假设主页路径是 '/'
+const goToHome = async () => {
+  // router.push('/'); // 假设主页路径是 '/'
+  await toHomePage()
 };
 
 // 组件挂载时加载Token信息
