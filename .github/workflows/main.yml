@@ -369,6 +369,8 @@ jobs:
             [ -f "$jar" ] || { echo "没有找到任何 JAR 文件，跳过"; continue; }
 
             jar_name=$(basename "$jar" .jar)
+            # 使用正则表达式去除版本号部分（匹配数字、点号、连字符组成的版本号）
+            jar_name=$(echo "$jar_name" | sed -E 's/-[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//')
             exe_file="/tmp/extracted-exes/${jar_name}.exe"   # 统一放到 /tmp/extracted-exes
 
             echo "======================================"
