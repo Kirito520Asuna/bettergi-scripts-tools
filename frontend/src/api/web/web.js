@@ -7,7 +7,6 @@ import router from "@router/router.js";
  * @param {boolean} restartClick - 防止重复点击的标志
  * @param {Array} applicationIds - 需要重启的应用程序ID列表
  * @param {number} restartTimeout - 重启超时时间，默认为5分钟（毫秒）
- * @returns {Promise<boolean>} 返回重启操作后的状态
  */
 async function restart(restartClickRef, applicationIds, restartTimeout = 5 * 60 * 1000) {
 // 可選：二次確認（看需求加不加）
