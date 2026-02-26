@@ -249,6 +249,11 @@ const getItemsByPosition = (featureGroup, position) => {
 // 点击跳转
 const togo = async (item) => {
   if (item?.isRote) {
+    await ElMessageBox.confirm(`确定要访问${item.name}吗？`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
     try {
       await router.push(item.value);
     } catch (error) {
@@ -256,6 +261,13 @@ const togo = async (item) => {
     }
   } else if (item?.isSwagger) {
     const basePath = import.meta.env.VITE_BASE_API_PATH || '/bgi/';
+
+    await ElMessageBox.confirm(`确定要访问文档吗？`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
     window.open(`${basePath}${item.value}`, '_blank');
   } else if (item?.isLink) {
     window.open(item.value, '_blank');
