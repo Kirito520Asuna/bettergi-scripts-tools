@@ -39,6 +39,7 @@ import {ref} from 'vue'
 import {useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
 import {login} from '@api/auth/login'
+import {toHomePage} from "@api/web/web.js";
 
 const router = useRouter()
 const form = ref({
@@ -61,7 +62,7 @@ const handleLogin = async () => {
     console.log("login=>token:",token)
     localStorage.setItem(token_name, token)
     ElMessage.success('登录成功')
-    router.push('/')
+    await toHomePage(false)
   } catch (err) {
     ElMessage.error(err.response?.data || '登录失败')
   }finally {
