@@ -44,18 +44,18 @@ public class ApplicationServiceImpl implements ApplicationService {
         for (String yamlPath : yamlPaths) {
             //File pathFile = new File(yamlPath);
             OSType osType = OSType.detectByPathFormat(yamlPath);
-            if(ObjectUtils.equals(OSType.UNKNOWN, osType)){
+            if (ObjectUtils.equals(OSType.UNKNOWN, osType)) {
                 log.debug("{}是相对路径", yamlPath);
-            }else if(OSType.isUnixLike(osType)){
-                if(!OSType.isUnixLike(null)){
-                   //地址 linux ,系统非linux
-                    log.debug("[{}]{}是{}绝对路径",currentOSType, yamlPath,"[非类unix系统]");
+            } else if (OSType.isUnixLike(osType)) {
+                if (!OSType.isUnixLike(null)) {
+                    //地址 linux ,系统非linux
+                    log.warn("[跳过写入][{}]{}是{}绝对路径", currentOSType, yamlPath, "[非类unix系统]");
                     continue;
                 }
-            }else if (!OSType.isUnixLike(null)){
-                if(OSType.isUnixLike(osType)){
+            } else if (!OSType.isUnixLike(null)) {
+                if (OSType.isUnixLike(osType)) {
                     //地址 非linux ,系统linux
-                    log.debug("[{}]{}是{}绝对路径",currentOSType, yamlPath,"[非类unix系统]");
+                    log.warn("[跳过写入][{}]{}是{}绝对路径", currentOSType, yamlPath, "[非类unix系统]");
                     continue;
                 }
             }
@@ -83,6 +83,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         return true;
     }
+
     @Override
     public boolean loadApplicationYml() {
         JSONObject jsonObject = null;
@@ -112,6 +113,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         return true;
     }
+
     @Override
     public boolean saveLoadApplicationYml(JSONObject jsonObject) {
         if (jsonObject == null) {
@@ -127,35 +129,32 @@ public class ApplicationServiceImpl implements ApplicationService {
         String tokenName = "token";
         String nameKey = "name";
         String valueKey = "value";
+        // 获取或创建 check 对象
         JSONObject check = (JSONObject) jsonObject.getByPath(checkName);
         if (check == null) {
-            JSONObject token = new JSONObject();
-            JSONObject tokenValue = new JSONObject();
-
-            tokenValue.put(nameKey, name);
-            tokenValue.put(valueKey, value);
-
-            token.put(tokenName, tokenValue);
-            jsonObject.put(checkName, token);
-            check = (JSONObject) jsonObject.getByPath(checkName);
+            check = new JSONObject();
             jsonObject.put(checkName, check);
         }
-        JSONObject token = (JSONObject) jsonObject.getByPath(checkName + "." + tokenName);
+
+        // 获取或创建 token 对象（checkName → tokenName）
+        JSONObject token = (JSONObject) check.get(tokenName);
         if (token == null) {
             token = new JSONObject();
-            JSONObject tokenValue = new JSONObject();
-
-            tokenValue.put(nameKey, name);
-            tokenValue.put(valueKey, value);
-
-            token.put(tokenName, tokenValue);
-            jsonObject.put(checkName, token);
-
-            token = (JSONObject) jsonObject.getByPath(checkName + "." + tokenName);
+            check.put(tokenName, token);
         }
-        token.put(nameKey, name);
-        token.put(valueKey, value);
+
+        // 获取或创建 tokenValue（最里层那个放 name 和 value 的对象）
+        JSONObject tokenValue = (JSONObject) token.get(tokenName);
+        if (tokenValue == null) {
+            tokenValue = new JSONObject();
+            //token.put(tokenName, tokenValue);
+        }
+
+        // 直接设置值（会覆盖旧值，这通常是想要的行为）
+        tokenValue.put(nameKey, StrUtil.isNotBlank(name) ? name : "");
+        tokenValue.put(valueKey, StrUtil.isNotBlank(value) ? value : "");
+        token.putAll(tokenValue);
         saveLoadApplicationYml(jsonObject);
-        return check;
+        return jsonObject;
     }
 }
