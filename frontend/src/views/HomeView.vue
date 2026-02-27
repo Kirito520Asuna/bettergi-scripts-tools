@@ -15,7 +15,7 @@
 
         <p class="hint">
           请勿关闭界面或刷新<br>
-          预计需要 10–60 秒，完成後將自動跳轉
+          预计需要 1–5 分钟，完成后将自动跳转
         </p>
       </div>
     </div>
@@ -78,7 +78,6 @@
 import {ref, onMounted} from "vue";
 import router from "@router/router";
 import {iconAsMapDefault} from "@utils/defaultdata.js";
-import {getApplicationIds, restartService} from "@api/sys/sys.js";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {restart} from "@api/web/web.js";
 
@@ -131,14 +130,7 @@ const lightColors = [
   'rgba(255,141,195,0.54)',
   '#ced4da'
 ];
-const applicationIds = ref([])
 onMounted(async () => {
-  // try {
-  //   const applicationIds1 = await getApplicationIds();
-  //   applicationIds.value = applicationIds1.data
-  // } catch (e) {
-  //   ElMessage.warning(e.message)
-  // }
   /*================*/
   let index = 1
   let routerJson = {

@@ -69,13 +69,18 @@ public class ApplicationController {
         List<String> applicationIds = ApplicationUtil.getAllApplicationIds();
         return Result.ok(applicationIds);
     }
-
+/*    @Login
     @SysLog
-    @Operation(summary = "判断重启")
-    @GetMapping("info")
-    public Result info() {
-        return Result.ok();
-    }
+    @Operation(summary = "[需要登录]判断重启")
+    @PostMapping("restart/info")
+    public Result restartInfo(@Validated @RequestBody ApplicationDto dto) {
+        List<String> ids = dto.getIds();
+        String applicationId = ApplicationUtil.getApplicationId();
+        if (!ids.contains(applicationId)) {
+            applicationId= null;
+        }
+        return Result.ok(applicationId);
+    }*/
 
 /*    @Login
     @SysLog

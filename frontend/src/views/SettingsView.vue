@@ -134,6 +134,7 @@ const handleRestart = async () => {
   await restart(RestartClick)
   if (info.update.user){
     await removeLocalToken()
+    await toHomePage()
   }
 };
 
@@ -164,7 +165,7 @@ onMounted(async () => {
 
         <p class="hint">
           请勿关闭界面或刷新<br>
-          预计需要 10–60 秒，完成後將自動跳轉
+          预计需要 1–5 分钟，完成后将自动跳转
         </p>
       </div>
     </div>
