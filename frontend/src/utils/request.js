@@ -1,5 +1,6 @@
 import axios from 'axios'
 import {ElNotification, ElMessageBox, ElMessage, ElLoading} from 'element-plus'
+import {getLocalToken, getLocalTokenName, removeLocalToken} from "@api/web/web.js";
 
 let downloadLoadingInstance;
 // 是否显示重新登录
@@ -15,9 +16,9 @@ const service = axios.create({
 })
 
 // request拦截器
-service.interceptors.request.use(config => {
-    const token_name = import.meta.env.VITE_BASE_TOKEN_NAME || 'bgi_tools_token';
-    const token = localStorage.getItem(token_name);
+service.interceptors.request.use(async config => {
+    const token_name = await getLocalTokenName()
+    const token = await getLocalToken()
     // console.log('Token Name:', token_name);
     // console.log('Token Value:', token);
 
@@ -35,7 +36,7 @@ service.interceptors.request.use(config => {
 })
 
 // 响应拦截器
-service.interceptors.response.use(res => {
+service.interceptors.response.use(async res => {
         // 未设置状态码则默认成功状态
         const code = res?.data?.code || 200;
         // 获取错误信息
@@ -46,8 +47,9 @@ service.interceptors.response.use(res => {
         }
         if (code === 401) {
             ElMessage({message: msg, type: 'error'})
-            const token_name = import.meta.env.VITE_BASE_TOKEN_NAME || 'bgi_tools_token'
-            localStorage.removeItem(token_name)
+            // const token_name = import.meta.env.VITE_BASE_TOKEN_NAME || 'bgi_tools_token'
+            // localStorage.removeItem(token_name)
+            await removeLocalToken()
             return Promise.reject(new Error(msg))
         } else if (code === 500) {
             ElMessage({message: msg, type: 'error'})
