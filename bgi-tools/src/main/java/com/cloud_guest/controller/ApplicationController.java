@@ -9,6 +9,7 @@ import com.cloud_guest.domain.dto.ApplicationDto;
 import com.cloud_guest.properties.BgiRedisProperties;
 import com.cloud_guest.redis.config.RedisConfiguration;
 import com.cloud_guest.result.Result;
+import com.cloud_guest.utils.ApplicationContextHolder;
 import com.cloud_guest.utils.ApplicationUtil;
 import com.cloud_guest.utils.bean.MapUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +31,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @Author yan
@@ -43,6 +45,7 @@ public class ApplicationController {
     @Resource
     private RestartEndpoint restartEndpoint;
 
+
     @Login
     @SysLog
     @Operation(summary = "[需要登录]重启")
@@ -51,7 +54,8 @@ public class ApplicationController {
         List<String> ids = dto.getIds();
         String applicationId = ApplicationUtil.getApplicationId();
         if (ids.contains(applicationId)) {
-            restartEndpoint.restart();
+            //restartEndpoint.restart();
+            ApplicationContextHolder.restart();
         } else {
             applicationId = null;
         }
