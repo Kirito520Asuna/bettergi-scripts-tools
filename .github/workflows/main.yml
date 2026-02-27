@@ -278,9 +278,8 @@ jobs:
 
       - name: 10.打包所有 JAR 文件成 ZIP
         run: |
-          # 从重命名后的目录打包文件
-          cd /tmp/renamed-jars
-          zip -j jars-${{ env.TAG_NAME }}.zip *.jar
+          # 从重命名后的目录打包文件（不使用cd）
+          zip -j jars-${{ env.TAG_NAME }}.zip /tmp/renamed-jars/*.jar
           # -j: 仅打包文件，不保留目录结构
           echo "打包完成，ZIP文件内容:"
           unzip -l jars-${{ env.TAG_NAME }}.zip
