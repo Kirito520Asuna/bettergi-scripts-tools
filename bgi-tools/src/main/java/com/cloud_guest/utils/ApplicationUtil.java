@@ -50,6 +50,7 @@ public class ApplicationUtil implements AbsBean {
         //}
 
         List<String> applicationIds = getAllApplicationIds();
+        applicationIds.add(id);
         cacheService.save(application_key, JSONUtil.toJsonStr(applicationIds));
 
 
