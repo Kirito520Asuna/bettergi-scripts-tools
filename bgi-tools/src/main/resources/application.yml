@@ -62,7 +62,7 @@ server:
 
 spring:
   application:
-    name: bgi
+    name: bgi-tools
   servlet:
     multipart:
       max-file-size: 50MB
