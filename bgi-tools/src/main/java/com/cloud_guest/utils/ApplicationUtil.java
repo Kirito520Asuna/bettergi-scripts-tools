@@ -114,7 +114,6 @@ public class ApplicationUtil implements AbsBean {
             List<String> ids = JSONUtil.toList(cache.getData(), String.class);
             list.addAll(ids);
         }
-//如何通过redis知道有实例上线下线 要实时监听
         //List<String> list = new ArrayList<>();
         //list.add(applicationId);
         //list.addAll(nodeApplicationIds);
