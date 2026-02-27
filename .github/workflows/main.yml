@@ -212,21 +212,96 @@ jobs:
             find . -type f \( -path "*/${{ env.JAR_DIR_PREFIX }}/*/target/*.jar" -o -path "*/${{ env.JAR_DIR_PREFIX }}/target/*.jar" \)|| echo "未找到匹配的 JAR 文件"
           fi
 
-      - name: 9.打包所有 JAR 文件成 ZIP
+      - name: 9.重命名 JAR 文件（移除版本号）
         run: |
+          echo "开始重命名 JAR 文件，移除版本号..."
+          
+          # 创建临时目录存储重命名后的文件
+          mkdir -p /tmp/renamed-jars
+          
+          # 根据 JAR_DIR_PREFIX 查找并重命名 JAR 文件
           if [ "${{ env.JAR_DIR_PREFIX }}" = "" ]; then
-            find . -type f -path "*/target/*.jar" -exec zip -j jars-${{ env.TAG_NAME }}.zip {} +
+            echo "查找匹配的 JAR 文件 (*/target/*.jar):"
+            find . -type f -path "*/target/*.jar" -exec bash -c '
+              for jar_file; do
+                if [ -f "$jar_file" ]; then
+                  # 获取不带扩展名的文件名
+                  base_name=$(basename "$jar_file" .jar)
+                  
+                  # 使用正则表达式移除版本号
+                  # 匹配模式：-v1.2.3, -1.2.3, -v1.2.3-beta.1 等版本格式
+                  new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
+                  
+                  # 构造新的文件路径
+                  new_path="/tmp/renamed-jars/${new_name}.jar"
+                  
+                  # 如果名称发生了变化，则复制并重命名文件
+                  if [ "$base_name" != "$new_name" ]; then
+                    echo "重命名: $jar_file -> $new_path"
+                    cp "$jar_file" "$new_path"
+                  else
+                    echo "保持原名: $jar_file -> $new_path"
+                    cp "$jar_file" "$new_path"
+                  fi
+                fi
+              done
+            ' _ {} +
           else
-            find . -type f \( -path "*/${{ env.JAR_DIR_PREFIX }}/*/target/*.jar" -o -path "*/${{ env.JAR_DIR_PREFIX }}/target/*.jar" \) -exec zip -j jars-${{ env.TAG_NAME }}.zip {} +
+            echo "查找匹配的 JAR 文件 (*/${{ env.JAR_DIR_PREFIX }}/*/target/*.jar, */${{ env.JAR_DIR_PREFIX }}/target/*.jar):"
+            find . -type f \( -path "*/${{ env.JAR_DIR_PREFIX }}/*/target/*.jar" -o -path "*/${{ env.JAR_DIR_PREFIX }}/target/*.jar" \) -exec bash -c '
+              for jar_file; do
+                if [ -f "$jar_file" ]; then
+                  # 获取不带扩展名的文件名
+                  base_name=$(basename "$jar_file" .jar)
+                  
+                  # 使用正则表达式移除版本号
+                  new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
+                  
+                  # 构造新的文件路径
+                  new_path="/tmp/renamed-jars/${new_name}.jar"
+                  
+                  # 复制并可能重命名文件
+                  if [ "$base_name" != "$new_name" ]; then
+                    echo "重命名: $jar_file -> $new_path"
+                    cp "$jar_file" "$new_path"
+                  else
+                    echo "保持原名: $jar_file -> $new_path"
+                    cp "$jar_file" "$new_path"
+                  fi
+                fi
+              done
+            ' _ {} +
           fi
+          
+          echo "重命名完成后的文件:"
+          ls -la /tmp/renamed-jars
+
+      - name: 10.打包所有 JAR 文件成 ZIP
+        run: |
+          # 从重命名后的目录打包文件
+          cd /tmp/renamed-jars
+          zip -j jars-${{ env.TAG_NAME }}.zip *.jar
           # -j: 仅打包文件，不保留目录结构
-          # +: 尽量将多个文件放入一个 zip 命令，减少调用次数
+          echo "打包完成，ZIP文件内容:"
+          unzip -l jars-${{ env.TAG_NAME }}.zip
         shell: bash
 
-      - name: 10. 验证 JAR ZIP 文件
-        run: |
-          ls -la jars-${{ env.TAG_NAME }}.zip
-          unzip -l jars-${{ env.TAG_NAME }}.zip
+#      - name: 9.打包所有 JAR 文件成 ZIP
+#        run: |
+#          if [ "${{ env.JAR_DIR_PREFIX }}" = "" ]; then
+#            find . -type f -path "*/target/*.jar" -exec zip -j jars-${{ env.TAG_NAME }}.zip {} +
+#          else
+#            find . -type f \( -path "*/${{ env.JAR_DIR_PREFIX }}/*/target/*.jar" -o -path "*/${{ env.JAR_DIR_PREFIX }}/target/*.jar" \) -exec zip -j jars-${{ env.TAG_NAME }}.zip {} +
+#          fi
+#          # -j: 仅打包文件，不保留目录结构
+#          # +: 尽量将多个文件放入一个 zip 命令，减少调用次数
+#        shell: bash
+#
+#      - name: 10. 验证 JAR ZIP 文件
+#        run: |
+#          ls -la jars-${{ env.TAG_NAME }}.zip
+#          unzip -l jars-${{ env.TAG_NAME }}.zip
+#
 
       - name: 11.解压 ZIP 文件
         run: |
