@@ -28,11 +28,11 @@ public class Minute1Job extends DistributedJob {
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         ThreadPoolTaskExecutor executor = SpringUtil.getBean(ThreadPoolTaskExecutor.class);
         Minute1Job.super.executeInternal(context);
-        log.debug("~~~~~~~~~~~~~~~~~~~~~~~~~{}~~~~~~~~~~~~~~~~~~~~~~~~~",this.getClass().getSimpleName());
-        //CustThreadPoolTaskExecutor runAsync = new CustThreadPoolTaskExecutor().setCustThreadNamePrefix("runAsync");
-        CompletableFuture.runAsync(()->{
-            log.debug("===> {} <===","runAsync");
-        }, executor);
+        //log.debug("~~~~~~~~~~~~~~~~~~~~~~~~~{}~~~~~~~~~~~~~~~~~~~~~~~~~",this.getClass().getSimpleName());
+        ////CustThreadPoolTaskExecutor runAsync = new CustThreadPoolTaskExecutor().setCustThreadNamePrefix("runAsync");
+        //CompletableFuture.runAsync(()->{
+        //    log.debug("===> {} <===","runAsync");
+        //}, executor);
     }
 
 }

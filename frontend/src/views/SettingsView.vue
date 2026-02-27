@@ -134,7 +134,7 @@ const handleRestart = async () => {
   await restart(RestartClick)
   if (info.update.user){
     await removeLocalToken()
-    await toHomePage()
+    await toHomePage(false)
   }
 };
 
