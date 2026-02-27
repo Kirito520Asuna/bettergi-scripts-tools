@@ -250,6 +250,7 @@ public class JwtUtil {
      */
     public static boolean isNotTokenExpired(Claims claims, Date date) {
         Date expiration = claims.getExpiration();
+        //expiration<date
         boolean after = expiration.after(date);
         return after;
     }
