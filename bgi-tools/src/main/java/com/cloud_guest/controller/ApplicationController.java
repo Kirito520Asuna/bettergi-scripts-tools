@@ -42,8 +42,8 @@ import java.util.Set;
 @RequestMapping(value = {"/api/application/", "/jwt/application/"})
 public class ApplicationController {
 
-    @Resource
-    private RestartEndpoint restartEndpoint;
+    //@Resource
+    //private RestartEndpoint restartEndpoint;
 
 
     @Login
