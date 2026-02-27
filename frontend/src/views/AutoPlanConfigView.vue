@@ -55,7 +55,7 @@ const initCountryList = async () => {
     ElMessage.warning('获取国家列表失败，使用默认数据')
   }
   if (!countryList.value)
-    countryList.value = countryListDefault()
+    countryList.value = await countryListDefault()
 }
 const currentConfig = ref(null)
 const materialsOrderMaps = ref(new Map())
