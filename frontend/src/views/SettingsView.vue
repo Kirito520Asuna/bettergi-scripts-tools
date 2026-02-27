@@ -3,11 +3,13 @@ import {onMounted, reactive, ref} from "vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {updateUserInfo} from "@api/auth/login.js";
 import {getTokenInfo, updateToken} from "@api/auth/token.js";
-import {restart, toHomePage} from "@api/web/web.js";
-import router from "@router/router.js";
+import {removeLocalToken, restart, toHomePage} from "@api/web/web.js";
 
 const RestartClick = ref(false)
 const info = reactive({
+  update:{
+    user: false
+  },
   // 用户信息表单
   user: {
     username: '',
@@ -70,6 +72,7 @@ const handleUpdateUserInfo = async () => {
 
     const response = await updateUserInfo(info.user.username, info.user.password);
     if (response.code === 200) {
+      info.update.user = true;
       ElMessage.success('用户信息修改成功，重启服务后生效');
       // 清空表单
       info.user.username = '';
@@ -129,6 +132,9 @@ const handleUpdateToken = async () => {
 // 在 script setup 部分添加重启功能
 const handleRestart = async () => {
   await restart(RestartClick)
+  if (info.update.user){
+    await removeLocalToken()
+  }
 };
 
 // 在 script 中添加跳转逻辑
