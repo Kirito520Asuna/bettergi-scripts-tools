@@ -6,7 +6,6 @@ package com.cloud_guest.utils.jwt;
  * @Description
  */
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.enums.ApiCode;
 import com.cloud_guest.exception.exceptions.GlobalCustomException;
@@ -15,7 +14,6 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
@@ -64,7 +62,7 @@ public class JwtUtil {
     }
 
     public boolean validateToken(String token) {
-        return isTokenExpired(token);
+        return isNotTokenExpired(token);
     }
 
     public static JwtUtil fetchJwtUtils() {
@@ -227,10 +225,10 @@ public class JwtUtil {
      * @return
      * @throws Exception
      */
-    public static boolean isTokenExpired(String token) {
+    public static boolean isNotTokenExpired(String token) {
         try {
             Claims claims = parseJWT(token);
-            return isTokenExpired(claims, new Date());
+            return isNotTokenExpired(claims, new Date());
         } catch (Exception e) {
             log.error("token is invalid:{}", e.getMessage());
             return false;
@@ -239,20 +237,20 @@ public class JwtUtil {
     }
 
     // 判断JWT是否过期
-    public static boolean isTokenExpired(Claims claims) {
-        return isTokenExpired(claims, new Date());
+    public static boolean isNotTokenExpired(Claims claims) {
+        return isNotTokenExpired(claims, new Date());
     }
 
     /**
-     * 判断JWT是否过期
+     * 判断JWT未过期
      *
      * @param claims
      * @param date
      * @return
      */
-    public static boolean isTokenExpired(Claims claims, Date date) {
+    public static boolean isNotTokenExpired(Claims claims, Date date) {
         Date expiration = claims.getExpiration();
-        boolean before = expiration.after(date);
-        return before;
+        boolean after = expiration.after(date);
+        return after;
     }
 }
