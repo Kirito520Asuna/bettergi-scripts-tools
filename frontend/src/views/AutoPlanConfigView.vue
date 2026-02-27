@@ -724,13 +724,15 @@ const batchUpdate = () => {
   const autoLeyLineOutcrop = batch.autoLeyLineOutcrop;
   const autoFight = batch.autoFight;
   configs.value.forEach(config => {
-    if (config.runType === runTypesDefault()[0]) {
-      //秘境
-      config.autoFight.partyName = autoFight.partyName
-    } else if (config.runType === runTypesDefault()[1]) {
-      //地脉
-      config.autoLeyLineOutcrop.team = autoLeyLineOutcrop.team
-      config.autoLeyLineOutcrop.friendshipTeam = autoLeyLineOutcrop.friendshipTeam
+    if (batchJson.value.selectedConfigs.has(config.id)) {
+      if (config.runType === runTypesDefault()[0]) {
+        //秘境
+        config.autoFight.partyName = autoFight.partyName
+      } else if (config.runType === runTypesDefault()[1]) {
+        //地脉
+        config.autoLeyLineOutcrop.team = autoLeyLineOutcrop.team
+        config.autoLeyLineOutcrop.friendshipTeam = autoLeyLineOutcrop.friendshipTeam
+      }
     }
   })
   batchJson.value.batch.show = false
