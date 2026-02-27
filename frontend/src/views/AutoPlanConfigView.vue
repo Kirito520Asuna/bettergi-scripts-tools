@@ -54,7 +54,7 @@ const initCountryList = async () => {
   } catch (e) {
     ElMessage.warning('获取国家列表失败，使用默认数据')
   }
-  if (!countryList.value)
+  if ((!countryList.value) || countryList.value?.length <= 0)
     countryList.value = await countryListDefault()
 }
 const currentConfig = ref(null)
@@ -2045,6 +2045,7 @@ h2 {
   background: #e8e8e8;
   backdrop-filter: blur(10px); /* 毛玻璃效果 */
 }
+
 .batch-item {
   margin-bottom: 4px;
   padding: 16px;
