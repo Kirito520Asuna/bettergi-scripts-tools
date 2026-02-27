@@ -1,11 +1,15 @@
 package com.cloud_guest.utils;
 
+import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.BgiToolsApplication;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 /**
  * @Author yan
@@ -28,6 +32,7 @@ public class ApplicationContextHolder {
     public static void restart() {
         Thread restartThread = new Thread(() -> {
             try {
+                String active = SpringUtil.getBean(Environment.class).getProperty("spring.profiles.active", String.class);
                 Thread.sleep(1000);  // 可选：缓冲时间
 
                 // 1. 关闭旧上下文（触发优雅关闭）
@@ -40,7 +45,7 @@ public class ApplicationContextHolder {
                 application.setWebApplicationType(WebApplicationType.SERVLET);  // ← 关键这一行！
 
                 // 可选：如果有其他配置（如 profiles、banner 等），在这里设置
-                // application.setAdditionalProfiles("dev");
+                application.setAdditionalProfiles(active);
                 // application.setBannerMode(Banner.Mode.OFF);
 
                 // 3. 重新 run
@@ -49,7 +54,7 @@ public class ApplicationContextHolder {
                 // 更新 holder
                 setContext(newContext, args);
 
-               log.info("应用已成功重启");
+                log.info("应用已成功重启");
 
             } catch (Exception e) {
                 log.error("重启失败: " + e.getMessage());
