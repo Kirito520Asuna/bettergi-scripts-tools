@@ -52,11 +52,7 @@ public class LocalLockWrapper extends AbstractLockWrapper {
 
     @Override
     public boolean tryLock() {
-        locked = reentrantLock.tryLock();
-        if (locked) {
-            log.debug("本地锁尝试获取成功: {}", lockKey);
-        }
-        return locked;
+        return tryLock(DEFAULT_WAIT_TIME, TimeUnit.MILLISECONDS);
     }
 
     @Override

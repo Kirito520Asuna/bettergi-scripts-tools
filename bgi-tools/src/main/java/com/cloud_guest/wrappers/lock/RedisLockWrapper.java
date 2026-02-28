@@ -2,7 +2,6 @@ package com.cloud_guest.wrappers.lock;
 
 import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.constants.KeyConstants;
-import com.cloud_guest.utils.LockUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -65,12 +64,7 @@ public class RedisLockWrapper extends AbstractLockWrapper {
         if (rLock == null) {
             return new LocalLockWrapper(lockKey.replace(KeyConstants.redis_lock_key, KeyConstants.local_lock_key)).tryLock();
         }
-
-        locked = rLock.tryLock();
-        if (locked) {
-            log.debug("Redis分布式锁尝试获取成功: {}", lockKey);
-        }
-        return locked;
+        return tryLock(DEFAULT_WAIT_TIME, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -80,7 +74,7 @@ public class RedisLockWrapper extends AbstractLockWrapper {
         }
 
         try {
-            locked = rLock.tryLock(waitTime, timeout, TimeUnit.MILLISECONDS);
+            locked = rLock.tryLock(waitTime, timeout, timeUnit);
             if (locked) {
                 log.debug("Redis分布式锁尝试获取成功: {}", lockKey);
             }
