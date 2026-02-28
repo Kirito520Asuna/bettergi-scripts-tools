@@ -1,6 +1,8 @@
 package com.cloud_guest.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import cn.hutool.json.JSONUtil;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.service.AutoPlanService;
@@ -10,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,7 +55,37 @@ public class AutoPlanServiceImpl implements AutoPlanService {
         }).collect(Collectors.toList());
         return collect;
     }
-
+    @Override
+    public List<String> findUidAll() {
+        List<String> uidList = new ArrayList<>();
+        String uid_all = cacheService.findById(KeyConstants.auto_plan_key_uid_all);
+        if (StrUtil.isNotBlank(uid_all)) {
+            if (JSONUtil.isTypeJSONArray(uid_all)) {
+                 JSONUtil.toList(uid_all, String.class).stream().forEach(uidList::add);
+            }else {
+                uidList.add(uid_all);
+            }
+        }
+        return uidList;
+    }
+    @Override
+    public boolean saveUid(String uid) {
+        if (StrUtil.isBlank(uid)) {
+            return true;
+        }
+        List<String> uidList = new ArrayList<>();
+        String uid_all = cacheService.findById(KeyConstants.auto_plan_key_uid_all);
+        if (StrUtil.isNotBlank(uid_all)) {
+            if (JSONUtil.isTypeJSONArray(uid_all)) {
+                JSONUtil.toList(uid_all, String.class).stream().forEach(uidList::add);
+            }else {
+                uidList.add(uid_all);
+            }
+        }
+        uidList.add(uid);
+        cacheService.save(KeyConstants.auto_plan_key_uid_all, JSONUtil.toJsonStr(uidList));
+        return true;
+    }
     @Override
     public List<Map<String, Object>> findDomainAll() {
         Cache<String> cache = cacheService.find(KeyConstants.auto_plan_key_domain_all);

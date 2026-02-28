@@ -20,6 +20,10 @@ public interface AutoPlanService {
 
     boolean saveDomainAll(String json);
 
+    List<String> findUidAll();
+
+    boolean saveUid(String uid);
+
     List<Map<String, Object>> findDomainAll();
 
     boolean saveCountryAll(String json);
