@@ -271,15 +271,15 @@ Content-Type: application/json
 UID查询(bgi_tools拉取配置api)
 ```http request
 ###
-GET http://localhost:8081/bgi/auto/plan/domain/json?
+GET http://localhost:8081/bgi/auto/plan/json?
     uid={{$random.alphanumeric(8)}}
 
 ###
-GET http://localhost:8081/bgi/api/auto/plan/domain/json?
+GET http://localhost:8081/bgi/api/auto/plan/json?
     uid={{$random.alphanumeric(8)}}
 
 ###
-GET http://localhost:8081/bgi/jwt/auto/plan/domain/json?
+GET http://localhost:8081/bgi/jwt/auto/plan/json?
     uid={{$random.alphanumeric(8)}}
 
 ```
