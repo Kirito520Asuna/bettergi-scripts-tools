@@ -279,18 +279,18 @@ jobs:
       - name: 10.打包所有 JAR 文件成 ZIP
         run: |
           # 从重命名后的目录打包文件（不使用cd）
-          zip -j jars-${{ env.TAG_NAME }}.zip /tmp/renamed-jars/*.jar
+          zip -j jars.zip /tmp/renamed-jars/*.jar
           # -j: 仅打包文件，不保留目录结构
           echo "打包完成，ZIP文件内容:"
-          unzip -l jars-${{ env.TAG_NAME }}.zip
+          unzip -l jars.zip
         shell: bash
 
 #      - name: 9.打包所有 JAR 文件成 ZIP
 #        run: |
 #          if [ "${{ env.JAR_DIR_PREFIX }}" = "" ]; then
-#            find . -type f -path "*/target/*.jar" -exec zip -j jars-${{ env.TAG_NAME }}.zip {} +
+#            find . -type f -path "*/target/*.jar" -exec zip -j jars.zip {} +
 #          else
-#            find . -type f \( -path "*/${{ env.JAR_DIR_PREFIX }}/*/target/*.jar" -o -path "*/${{ env.JAR_DIR_PREFIX }}/target/*.jar" \) -exec zip -j jars-${{ env.TAG_NAME }}.zip {} +
+#            find . -type f \( -path "*/${{ env.JAR_DIR_PREFIX }}/*/target/*.jar" -o -path "*/${{ env.JAR_DIR_PREFIX }}/target/*.jar" \) -exec zip -j jars.zip {} +
 #          fi
 #          # -j: 仅打包文件，不保留目录结构
 #          # +: 尽量将多个文件放入一个 zip 命令，减少调用次数
@@ -298,14 +298,14 @@ jobs:
 #
 #      - name: 10. 验证 JAR ZIP 文件
 #        run: |
-#          ls -la jars-${{ env.TAG_NAME }}.zip
-#          unzip -l jars-${{ env.TAG_NAME }}.zip
+#          ls -la jars.zip
+#          unzip -l jars.zip
 #
 
       - name: 11.解压 ZIP 文件
         run: |
           mkdir -p /tmp/extracted-jars
-          unzip jars-${{ env.TAG_NAME }}.zip -d /tmp/extracted-jars
+          unzip jars.zip -d /tmp/extracted-jars
           echo "解压后的文件:"
           ls -la /tmp/extracted-jars
 
@@ -313,7 +313,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jars-zip
-          path: jars-${{ env.TAG_NAME }}.zip
+          path: jars.zip
 
       - name: 13. 上传单个 JAR 文件
         uses: actions/upload-artifact@v4
@@ -344,7 +344,7 @@ jobs:
       - name: 3. 解压 JAR 到 /tmp/extracted-jars
         run: |
           mkdir -p /tmp/extracted-jars
-          unzip "jars-${{ env.TAG_NAME }}.zip" -d /tmp/extracted-jars
+          unzip "jars.zip" -d /tmp/extracted-jars
           ls -la /tmp/extracted-jars
 
       - name: 4. 安装 Wine 和 MinGW 工具链（cross-compile Windows exe）
@@ -573,7 +573,7 @@ jobs:
           tree bgi-tools || ls -R bgi-tools
 
           # 执行打包
-          ZIP_NAME="${{ github.event.repository.name }}-Windows-${{ env.TAG_NAME }}.zip"
+          ZIP_NAME="${{ github.event.repository.name }}-Windows.zip"
           echo "开始创建 ZIP 包: $ZIP_NAME"
           
           if zip -r "$ZIP_NAME" bgi-tools/*; then
@@ -606,7 +606,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-standalone
-          path: ${{ github.event.repository.name }}-Windows-${{ env.TAG_NAME }}.zip
+          path: ${{ github.event.repository.name }}-Windows.zip
 
       - name: 10. 上传单个 EXE（可选）
         uses: actions/upload-artifact@v4
