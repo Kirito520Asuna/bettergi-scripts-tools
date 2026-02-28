@@ -15,4 +15,6 @@ public interface KeyConstants {
     String redis_file_json_key = "redis:file:json:";
     String task_key = "task:";
     String lock_key = "lock:";
+    String local_lock_key = lock_key + "local:";
+    String redis_lock_key = lock_key + "redis:";
 }
