@@ -17,16 +17,29 @@ import java.util.concurrent.TimeUnit;
 public class RedisLockWrapper extends AbstractLockWrapper {
     private final String lockKey;
     private final long timeout;
+    private final TimeUnit timeUnit;
     private RLock rLock;
     private volatile boolean locked = false;
 
+    @Override
+    public long getWaitTime() {
+        return timeout;
+    }
+    @Override
+    public TimeUnit getTimeUnit() {
+        return timeUnit;
+    }
     public RedisLockWrapper(String lockKey) {
-        this(lockKey, DEFAULT_TIMEOUT);
+        this(lockKey, DEFAULT_TIMEOUT, DEFAULT_TIME_UNIT);
     }
 
     public RedisLockWrapper(String lockKey, long timeout) {
+        this(lockKey, timeout, DEFAULT_TIME_UNIT);
+    }
+    public RedisLockWrapper(String lockKey, long timeout, TimeUnit timeUnit) {
         this.lockKey = KeyConstants.redis_lock_key + lockKey;
         this.timeout = timeout;
+        this.timeUnit = timeUnit;
         try {
             RedissonClient redissonClient = SpringUtil.getBean(RedissonClient.class);
             this.rLock = redissonClient.getLock(this.lockKey);
@@ -45,7 +58,7 @@ public class RedisLockWrapper extends AbstractLockWrapper {
         }
 
         try {
-            locked = rLock.tryLock(DEFAULT_WAIT_TIME, timeout, TimeUnit.MILLISECONDS);
+            locked = rLock.tryLock(timeout, timeUnit);
             if (locked) {
                 log.debug("Redis分布式锁获取成功: {}", lockKey);
             } else {
@@ -64,7 +77,7 @@ public class RedisLockWrapper extends AbstractLockWrapper {
         if (rLock == null) {
             return new LocalLockWrapper(lockKey.replace(KeyConstants.redis_lock_key, KeyConstants.local_lock_key)).tryLock();
         }
-        return tryLock(DEFAULT_WAIT_TIME, TimeUnit.MILLISECONDS);
+        return tryLock(timeout, timeUnit);
     }
 
     @Override

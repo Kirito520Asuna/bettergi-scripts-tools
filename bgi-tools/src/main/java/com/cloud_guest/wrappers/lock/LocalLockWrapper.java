@@ -20,23 +20,34 @@ import java.util.concurrent.locks.ReentrantLock;
 public class LocalLockWrapper extends AbstractLockWrapper {
     private final String lockKey;
     private final long timeout;
+    private final TimeUnit timeUnit;
     private ReentrantLock reentrantLock;
     private volatile boolean locked = false;
-
-    public LocalLockWrapper(String lockKey) {
-        this(lockKey, DEFAULT_TIMEOUT);
+    @Override
+    public long getWaitTime() {
+        return timeout;
     }
-
+    @Override
+    public TimeUnit getTimeUnit() {
+        return timeUnit;
+    }
+    public LocalLockWrapper(String lockKey) {
+        this(lockKey, DEFAULT_TIMEOUT, DEFAULT_TIME_UNIT);
+    }
     public LocalLockWrapper(String lockKey, long timeout) {
-        this.lockKey = KeyConstants.local_lock_key +lockKey;
+        this(lockKey, timeout, DEFAULT_TIME_UNIT);
+    }
+    public LocalLockWrapper(String lockKey, long timeout, TimeUnit timeUnit) {
+        this.lockKey = KeyConstants.local_lock_key + lockKey;
         this.timeout = timeout;
+        this.timeUnit = timeUnit;
         this.reentrantLock = LOCAL_LOCKS.computeIfAbsent(lockKey, k -> new ReentrantLock());
     }
 
     @Override
     public boolean lock() {
         try {
-            locked = reentrantLock.tryLock(timeout, TimeUnit.MILLISECONDS);
+            locked = reentrantLock.tryLock(timeout, timeUnit);
             if (locked) {
                 log.debug("本地锁获取成功: {}", lockKey);
             } else {
@@ -52,7 +63,7 @@ public class LocalLockWrapper extends AbstractLockWrapper {
 
     @Override
     public boolean tryLock() {
-        return tryLock(DEFAULT_WAIT_TIME, TimeUnit.MILLISECONDS);
+        return tryLock(timeout, timeUnit);
     }
 
     @Override

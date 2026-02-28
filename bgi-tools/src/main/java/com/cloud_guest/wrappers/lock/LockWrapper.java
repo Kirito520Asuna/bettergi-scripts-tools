@@ -41,4 +41,16 @@ public interface LockWrapper {
      * @return boolean
      */
     boolean isLocked();
+
+    /**
+     * 获取等待时间
+     * @return
+     */
+    long getWaitTime();
+
+    /**
+     * 获取时间单位
+     * @return
+     */
+    TimeUnit getTimeUnit();
 }
