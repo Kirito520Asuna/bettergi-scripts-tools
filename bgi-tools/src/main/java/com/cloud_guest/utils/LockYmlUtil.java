@@ -4,6 +4,7 @@ import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.utils.yml.YmlUtils;
 import com.cloud_guest.wrappers.lock.LockWrapper;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
@@ -55,7 +56,23 @@ public class LockYmlUtil extends YmlUtils {
             }
         }
     }
-
+    public static void writeValue(File file, Object value, LockWrapper lock) throws IOException {
+        // 尝试获取锁
+        boolean tryLock = lock.tryLock();
+        // 如果获取锁失败，抛出异常提示用户稍后重试
+        if (!tryLock) {
+            throw new GlobalException("存在其他操作，请稍后再试!");
+        }
+        try {
+            // 使用YmlUtils工具类将值写入文件
+            YmlUtils.writeValue(file, value);
+        } finally {
+            // 确保在方法返回前释放锁（如果已被锁定）
+            if (lock.isLocked()) {
+                lock.unlock();
+            }
+        }
+    }
     /**
      * 向指定路径写入值的方法，使用指定的锁键和超时时间获取锁
      * @param path 要写入值的文件路径
