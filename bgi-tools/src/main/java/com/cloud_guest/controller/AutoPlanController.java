@@ -106,10 +106,10 @@ public class AutoPlanController {
     @SysLog
     @Operation(summary = "查询全部UID")
     @GetMapping("uid/all")
-    public Result<List<Long>> uidALL() {
+    public Result<List<String>> uidALL() {
         List<String> uidList = autoPlanService.findUidAll();
-        List<Long> list = uidList.stream().map(uid -> uid.substring(uid.lastIndexOf(":") + 1)).map(Long::parseLong).collect(Collectors.toList());
-        return ok(list);
+        uidList = uidList.stream().map(uid -> uid.substring(uid.lastIndexOf(":") + 1)).collect(Collectors.toList());
+        return ok(uidList);
     }
 
     public static void main(String[] args) {
