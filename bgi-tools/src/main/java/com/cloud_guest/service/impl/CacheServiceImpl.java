@@ -34,28 +34,40 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public boolean removeList(List<String> ids) {
-        //List<String> parentKeys = ids.stream().collect(Collectors.toList());
-        if (ModeUtil.isLocal()) {
-            //LocalCacheUtils.removeList(ids);
-            for (String id : ids) {
-                LocalCacheUtils.remove(id);
-                if (!id.contains("ALL")) {
-                    String parentKey = id.substring(0, id.lastIndexOf(":"));
-                    removeId(parentKey, id);
-                }
-            }
-        } else {
-            RedisService bean = SpringUtil.getBean(RedisService.class);
+        String key = ":db";
+        if (ModeUtil.isRedis()) {
             ids = ids.stream()
                     .map(id -> KeyConstants.redis_file_json_key + id)
                     .collect(Collectors.toList());
-            //bean.delList(ids);
 
-            for (String id : ids) {
-                bean.del(id);
-                if (!id.contains("ALL")) {
-                    String parentKey = id.substring(0, id.lastIndexOf(":"));
-                    removeId(parentKey, id);
+        }
+        for (String id : ids) {
+            LockWrapper lock = LockUtil.getLock(id + key);
+            //List<String> parentKeys = ids.stream().collect(Collectors.toList());
+            boolean tryLock = lock.tryLock();
+            if (!tryLock) {
+                throw new GlobalException("存在其他操作，请稍后再试!");
+            }
+            try {
+                if (ModeUtil.isLocal()) {
+                    //LocalCacheUtils.removeList(ids);
+                    LocalCacheUtils.remove(id);
+                    if (!id.contains("ALL")) {
+                        String parentKey = id.substring(0, id.lastIndexOf(":"));
+                        removeId(parentKey, id);
+                    }
+                } else if (ModeUtil.isRedis()){
+                    RedisService bean = SpringUtil.getBean(RedisService.class);
+                    //bean.delList(ids);
+                    bean.del(id);
+                    if (!id.contains("ALL")) {
+                        String parentKey = id.substring(0, id.lastIndexOf(":"));
+                        removeId(parentKey, id);
+                    }
+                }
+            } finally {
+                if (tryLock) {
+                    lock.unlock();
                 }
             }
         }
@@ -86,7 +98,7 @@ public class CacheServiceImpl implements CacheService {
             if (ModeUtil.isLocal()) {
                 parentKey = id.substring(0, id.lastIndexOf(":"));
                 LocalCacheUtils.put(id, JSONUtil.toJsonStr(cache));
-            } else {
+            } else if (ModeUtil.isRedis()){
                 RedisService bean = SpringUtil.getBean(RedisService.class);
                 String key = KeyConstants.redis_file_json_key + id;
                 bean.save(key, JSONUtil.toJsonStr(cache));
@@ -106,10 +118,10 @@ public class CacheServiceImpl implements CacheService {
     @Override
     public boolean removeId(String key, String id) {
         Set<String> hashSet = new LinkedHashSet<>();
-        String ids;
+        String ids=StrUtil.EMPTY;
         if (ModeUtil.isLocal()) {
             ids = (String) LocalCacheUtils.get(key);
-        } else {
+        } else if (ModeUtil.isRedis()){
             RedisService bean = SpringUtil.getBean(RedisService.class);
             ids = (String) bean.get(key);
         }
@@ -134,7 +146,7 @@ public class CacheServiceImpl implements CacheService {
 
             if (ModeUtil.isLocal()) {
                 LocalCacheUtils.put(key, JSONUtil.toJsonStr(hashSet));
-            } else {
+            } else if (ModeUtil.isRedis()){
                 RedisService bean = SpringUtil.getBean(RedisService.class);
                 bean.save(key, JSONUtil.toJsonStr(hashSet.stream().collect(Collectors.toList())));
             }
@@ -149,10 +161,10 @@ public class CacheServiceImpl implements CacheService {
     @Override
     public boolean saveId(String key, String id) {
         Set<String> hashSet = new LinkedHashSet<>();
-        String ids;
+        String ids=StrUtil.EMPTY;
         if (ModeUtil.isLocal()) {
             ids = (String) LocalCacheUtils.get(key);
-        } else {
+        } else if (ModeUtil.isRedis()){
             RedisService bean = SpringUtil.getBean(RedisService.class);
             ids = (String) bean.get(key);
         }
@@ -177,7 +189,7 @@ public class CacheServiceImpl implements CacheService {
 
             if (ModeUtil.isLocal()) {
                 LocalCacheUtils.put(key, JSONUtil.toJsonStr(hashSet));
-            } else {
+            } else if (ModeUtil.isRedis()){
                 RedisService bean = SpringUtil.getBean(RedisService.class);
                 bean.save(key, JSONUtil.toJsonStr(hashSet.stream().collect(Collectors.toList())));
             }
@@ -191,13 +203,16 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public Cache<String> find(String id) {
-        String o;
+        String o=StrUtil.EMPTY;;
         if (ModeUtil.isLocal()) {
             o = (String) LocalCacheUtils.get(id);
-        } else {
+        } else if (ModeUtil.isRedis()){
             String key = KeyConstants.redis_file_json_key + id;
             RedisService bean = SpringUtil.getBean(RedisService.class);
             o = (String) bean.get(key);
+        }
+        if (StrUtil.isBlank(o)) {
+            return new Cache<>();
         }
         Cache<String> cache = JSONUtil.toBean(o, Cache.class);
         return cache;
