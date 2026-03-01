@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.enums.ApiCode;
 import com.cloud_guest.enums.OSType;
 import com.cloud_guest.exception.exceptions.GlobalException;
@@ -11,9 +12,12 @@ import com.cloud_guest.properties.auth.AuthProperties;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.ApplicationService;
 import com.cloud_guest.service.AuthService;
+import com.cloud_guest.utils.LockUtil;
+import com.cloud_guest.utils.LockYmlUtil;
 import com.cloud_guest.utils.jwt.JwtUtil;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.utils.yml.YmlUtils;
+import com.cloud_guest.wrappers.lock.LockWrapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -106,7 +110,9 @@ public class AuthServiceImpl implements AuthService {
             users.put(usersKey, jsonArray);
             auth.put(authKey, users);
             jsonObject.putAll(auth);
-            YmlUtils.writeValue(file, jsonObject);
+            String lockKey = KeyConstants.load_yml_write_key + ":" + yamlPath;
+            LockWrapper lock = LockUtil.getLock(lockKey);
+            LockYmlUtil.writeValue(file, jsonObject,lock);
             applicationService.saveLoadApplicationYml(jsonObject);
         }
 
