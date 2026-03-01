@@ -5,11 +5,14 @@ import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.Cache;
+import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.redis.service.RedisService;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.utils.LocalCacheUtils;
+import com.cloud_guest.utils.LockUtil;
 import com.cloud_guest.utils.ModeUtil;
 import com.cloud_guest.utils.object.ObjectUtils;
+import com.cloud_guest.wrappers.lock.LockWrapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -31,23 +34,38 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public boolean removeList(List<String> ids) {
-        List<String> parentKeys = ids.stream().collect(Collectors.toList());
+        //List<String> parentKeys = ids.stream().collect(Collectors.toList());
         if (ModeUtil.isLocal()) {
-            LocalCacheUtils.removeList(ids);
+            //LocalCacheUtils.removeList(ids);
+            for (String id : ids) {
+                LocalCacheUtils.remove(id);
+                if (!id.contains("ALL")) {
+                    String parentKey = id.substring(0, id.lastIndexOf(":"));
+                    removeId(parentKey, id);
+                }
+            }
         } else {
             RedisService bean = SpringUtil.getBean(RedisService.class);
             ids = ids.stream()
                     .map(id -> KeyConstants.redis_file_json_key + id)
                     .collect(Collectors.toList());
-            bean.delList(ids);
+            //bean.delList(ids);
+
+            for (String id : ids) {
+                bean.del(id);
+                if (!id.contains("ALL")) {
+                    String parentKey = id.substring(0, id.lastIndexOf(":"));
+                    removeId(parentKey, id);
+                }
+            }
         }
 
-        parentKeys.stream().forEach(id -> {
-            if (!id.contains("ALL")) {
-                String parentKey = id.substring(0, id.lastIndexOf(":"));
-                removeId(parentKey, id);
-            }
-        });
+        //parentKeys.stream().forEach(id -> {
+        //    if (!id.contains("ALL")) {
+        //        String parentKey = id.substring(0, id.lastIndexOf(":"));
+        //        removeId(parentKey, id);
+        //    }
+        //});
 
         return true;
     }
@@ -93,14 +111,25 @@ public class CacheServiceImpl implements CacheService {
                 hashSet.add(ids);
             }
         }
+        String lockKey = key + ":" + id;
+        LockWrapper lock = LockUtil.getLock(lockKey);
+        boolean tryLock = lock.tryLock();
+        if (!tryLock) {
+            throw new GlobalException("存在其他操作，请稍后再试!");
+        }
+        try {
+            hashSet.remove(id);
 
-        hashSet.remove(id);
-
-        if (ModeUtil.isLocal()) {
-            LocalCacheUtils.put(key, JSONUtil.toJsonStr(hashSet));
-        } else {
-            RedisService bean = SpringUtil.getBean(RedisService.class);
-            bean.save(key, JSONUtil.toJsonStr(hashSet.stream().collect(Collectors.toList())));
+            if (ModeUtil.isLocal()) {
+                LocalCacheUtils.put(key, JSONUtil.toJsonStr(hashSet));
+            } else {
+                RedisService bean = SpringUtil.getBean(RedisService.class);
+                bean.save(key, JSONUtil.toJsonStr(hashSet.stream().collect(Collectors.toList())));
+            }
+        } finally {
+            if (tryLock) {
+                lock.unlock();
+            }
         }
         return true;
     }
@@ -125,14 +154,25 @@ public class CacheServiceImpl implements CacheService {
                 hashSet.add(ids);
             }
         }
+        String lockKey = key + ":" + id;
+        LockWrapper lock = LockUtil.getLock(lockKey);
+        boolean tryLock = lock.tryLock();
+        if (!tryLock) {
+            throw new GlobalException("存在其他操作，请稍后再试!");
+        }
+        try {
+            hashSet.add(id);
 
-        hashSet.add(id);
-
-        if (ModeUtil.isLocal()) {
-            LocalCacheUtils.put(key, JSONUtil.toJsonStr(hashSet));
-        } else {
-            RedisService bean = SpringUtil.getBean(RedisService.class);
-            bean.save(key, JSONUtil.toJsonStr(hashSet.stream().collect(Collectors.toList())));
+            if (ModeUtil.isLocal()) {
+                LocalCacheUtils.put(key, JSONUtil.toJsonStr(hashSet));
+            } else {
+                RedisService bean = SpringUtil.getBean(RedisService.class);
+                bean.save(key, JSONUtil.toJsonStr(hashSet.stream().collect(Collectors.toList())));
+            }
+        } finally {
+            if (tryLock) {
+                lock.unlock();
+            }
         }
         return true;
     }
@@ -150,11 +190,13 @@ public class CacheServiceImpl implements CacheService {
         Cache<String> cache = JSONUtil.toBean(o, Cache.class);
         return cache;
     }
+
     @Override
     public String findById(String id) {
         Cache<String> cache = find(id);
         return cache.getData();
     }
+
     @Override
     public <T> T find(String id, Class<T> clazz) {
         Cache<String> cache = find(id);
@@ -165,6 +207,7 @@ public class CacheServiceImpl implements CacheService {
         }
         return null;
     }
+
     @Override
     public <T> List<T> findAll(String key, Class<T> clazz) {
         List<T> list;
