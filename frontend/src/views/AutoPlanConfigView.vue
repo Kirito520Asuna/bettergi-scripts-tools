@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, watch, watchEffect, onMounted, nextTick} from 'vue'
 import {ElMessage, ElMessageBox} from "element-plus";
-import {getBaseCountryJsonAll, getBaseJsonAll, getUidJson, postUidPlan, removeUidList} from "@api/auto_plan/autoPlan";
+import {getBaseCountryJsonAll, getBaseJsonAll, getUidJson, postUidPlan, removeUidList,getAllUid} from "@api/auto_plan/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
 import {
   countryListDefault,
@@ -11,10 +11,66 @@ import {
   runTypesDefault,
   selectedAsDaysMap
 } from "@utils/defaultdata.js";
-import router from "@router/router.js";
+
 import draggable from 'vuedraggable'
 import {debounce} from 'lodash-es';
 import {toHomePage} from "@api/web/web.js";
+const cloud=ref({
+  UidList:[],
+  LoadingUidList: false,
+  lastRequestTime: 0,
+  // 設定冷卻時間（單位：毫秒），例如每 1 秒最多請求 1 次
+  cooldownMs: 1000,
+})
+const querySearchAsync = (queryString, cb) => {
+  if (queryString?.trim() === ""||!queryString) {
+    cb(cloud.value.UidList)
+  }else {
+    cb([])
+  }
+}
+const findAllUid = async () => {
+  const res = await getAllUid()
+  cloud.value.UidList=res
+  cloud.value.lastRequestTime = Date.now()
+}
+const initAllUid = async () => {
+  try {
+    await findAllUid()
+  }catch (e) {
+  }
+}
+const loadCloudUidListIfNeeded = async () => {
+  const now = Date.now()
+
+  // 正在冷卻中 → 直接返回
+  if (now - cloud.value.lastRequestTime < cloud.value.cooldownMs) {
+    // 可選：console.log(`請求太頻繁，距離上次還剩 ${COOLDOWN_MS - (now - lastRequestTime.value)}ms`)
+    return
+  }
+  //  正在加载中 → 直接返回
+  if (cloud.value.LoadingUidList) return
+
+  cloud.value.LoadingUidList = true
+
+  try {
+    await findAllUid()
+    // console.log("获取云端UID列表成功:", cloud.value)
+  } catch (e) {
+    console.error("获取云端UID列表失败", e)
+    // 这里**不弹 ElMessage**，保持安静
+  } finally {
+    cloud.value.LoadingUidList = false
+  }
+}
+// 计算属性：是否有云端数据
+const hasCloudUidList = computed(() => {
+  return cloud.value.UidList.length > 0
+})
+const handleUidSelect = (item) => {
+  uid.value = item
+  ElMessage.success(`已选择云端 UID：${item}`)
+}
 // 配置列表 → 核心数据结构改为 array
 const configs = ref([])
 
@@ -110,6 +166,7 @@ const removeConfigToBackend = async () => {
   ids.push(uid.value)
   const uidStr = ids.join(',');
   await removeUidList(uidStr)
+  cloud.value.UidList= cloud.value.UidList.filter(item => item !== uid.value)
   return
 }
 const submitConfigToBackend = async () => {
@@ -156,6 +213,7 @@ const findDomains = async () => {
     initConfigsId()
   }
 };
+
 const asDaysMap = selectedAsDaysMap()
 onMounted(() => {
   fetchDomains();
@@ -163,6 +221,8 @@ onMounted(() => {
   initRunTypes()
   initLeyLineOutcropTypes()
   initCountryList()
+  initAllUid()
+
 })
 // 在 script 中添加跳转逻辑
 const goToHome = async () => {
@@ -746,9 +806,32 @@ const batchUpdate = () => {
       <div class="fixed-container">
         <h2 class="title">自动体力计划配置列表</h2>
         <div class="config-header">
+          <!-- template 部分保持基本相同，但增加 v-if 判断 -->
           <div class="sort-control-card">
-            <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
+            <el-autocomplete
+                v-model="uid"
+                :fetch-suggestions="querySearchAsync"
+                placeholder="点击可展开云端UID（若有）或 手动输入"
+                :trigger-on-focus="hasCloudUidList"
+            :clearable="true"
+            :show-loading="cloud.LoadingUidList"
+            @select="handleUidSelect"
+            @focus="loadCloudUidListIfNeeded"
+            style="width: 180px;"
+            >
+            <template #default="{ item }">
+              <div class="uid-item">
+                <span class="uid-text">{{ item }}</span>
+<!--                <span v-if="item.lastSync" class="uid-time">最后同步: {{ item.lastSync }}</span>-->
+              </div>
+            </template>
+
+            </el-autocomplete>
           </div>
+
+<!--          <div class="sort-control-card">
+            <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
+          </div>-->
           <!-- 添加配置按钮 -->
           <button @click="addConfig()" class="btn btn-add">➕ 添加一条配置</button>
           <div class="sort-control-card">

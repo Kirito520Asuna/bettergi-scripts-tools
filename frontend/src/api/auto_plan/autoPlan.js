@@ -55,7 +55,18 @@ async function getUidJson(uid){
     // 返回响应数据
     return response.data;
 }
-
+/**
+ * 获取所有用户ID的异步函数
+ * @returns {Promise} 返回包含所有用户ID的数据
+ */
+async function getAllUid(){
+    const response = await service.get('/auto/plan/uid/all')  // 发送GET请求获取所有用户ID
+    // if (response.code === 200){  // 检查响应状态码是否为200
+    //     ElMessage.success("加载成功");  // 如果成功，显示成功消息
+    // }
+    // 返回响应数据
+    return response.data;
+}
 /**
  * 异步删除指定UID的JSON数据
  * @param uidStr
@@ -99,4 +110,5 @@ export {
     removeUidList,
     getBaseJsonAll,
     getBaseCountryJsonAll,
+    getAllUid
 }
