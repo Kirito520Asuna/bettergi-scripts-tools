@@ -5,9 +5,12 @@ import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.Cache;
+import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.service.CacheService;
+import com.cloud_guest.utils.LockUtil;
 import com.cloud_guest.vo.AutoPlanVo;
+import com.cloud_guest.wrappers.lock.LockWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +50,7 @@ public class AutoPlanServiceImpl implements AutoPlanService {
     public List<AutoPlanVo> find(String id) {
         id = KeyConstants.auto_plan_key + id;
         Cache<String> cache = cacheService.find(id);
-        List<Map<String, Object>> list =  cache.toList();
+        List<Map<String, Object>> list = cache.toList();
 
         ObjectMapper bean = SpringUtil.getBean(ObjectMapper.class);
         List<AutoPlanVo> collect = list.stream().map(map -> {
@@ -55,19 +58,21 @@ public class AutoPlanServiceImpl implements AutoPlanService {
         }).collect(Collectors.toList());
         return collect;
     }
+
     @Override
     public List<String> findUidAll() {
         List<String> uidList = new ArrayList<>();
         String uid_all = cacheService.findById(KeyConstants.auto_plan_key_uid_all);
         if (StrUtil.isNotBlank(uid_all)) {
             if (JSONUtil.isTypeJSONArray(uid_all)) {
-                 JSONUtil.toList(uid_all, String.class).stream().forEach(uidList::add);
-            }else {
+                JSONUtil.toList(uid_all, String.class).stream().forEach(uidList::add);
+            } else {
                 uidList.add(uid_all);
             }
         }
         return uidList;
     }
+
     @Override
     public boolean saveUid(String uid) {
         if (StrUtil.isBlank(uid)) {
@@ -78,7 +83,7 @@ public class AutoPlanServiceImpl implements AutoPlanService {
         if (StrUtil.isNotBlank(uid_all)) {
             if (JSONUtil.isTypeJSONArray(uid_all)) {
                 JSONUtil.toList(uid_all, String.class).stream().forEach(uidList::add);
-            }else {
+            } else {
                 uidList.add(uid_all);
             }
         }
@@ -86,6 +91,7 @@ public class AutoPlanServiceImpl implements AutoPlanService {
         cacheService.save(KeyConstants.auto_plan_key_uid_all, JSONUtil.toJsonStr(uidList));
         return true;
     }
+
     @Override
     public List<Map<String, Object>> findDomainAll() {
         Cache<String> cache = cacheService.find(KeyConstants.auto_plan_key_domain_all);
@@ -101,6 +107,7 @@ public class AutoPlanServiceImpl implements AutoPlanService {
     public boolean saveCountryAll(String json) {
         return cacheService.save(KeyConstants.auto_plan_key_country_all, json);
     }
+
     @Override
     public List<Map<String, Object>> findCountryAll() {
         Cache<String> cache = cacheService.find(KeyConstants.auto_plan_key_country_all);
