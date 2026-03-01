@@ -7,12 +7,16 @@ import cn.hutool.json.JSONUtil;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.enums.OSType;
+import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.ApplicationService;
 import com.cloud_guest.service.CacheService;
+import com.cloud_guest.utils.LockUtil;
+import com.cloud_guest.utils.LockYmlUtil;
 import com.cloud_guest.utils.bean.MapUtils;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.utils.yml.YmlUtils;
+import com.cloud_guest.wrappers.lock.LockWrapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -74,8 +78,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                     continue;
                 }
                 jsonObject = setCheckToken(name, value, jsonObject);
-                YmlUtils.writeValue(file, jsonObject);
-            }catch (MismatchedInputException e){
+
+                String lockKey = KeyConstants.load_yml_write_key + ":" + yamlPath;
+                LockWrapper lock = LockUtil.getLock(lockKey);
+                LockYmlUtil.writeValue(file, jsonObject, lock);
+                //YmlUtils.writeValue(file, jsonObject);
+
+            } catch (MismatchedInputException e) {
                 log.warn("{}文件格式不正确/文件为空", yamlPath);
             } catch (Exception e) {
                 if (e.getMessage().contains("文件不存在或为空")) {
@@ -85,14 +94,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                 }
             }
         }
-
         return true;
     }
 
     @Override
     public boolean loadApplicationYml() {
         JSONObject jsonObject = null;
-        //todo: 远程/本地存储加载
         Cache<String> cache = cacheService.find(KeyConstants.load_yml_key);
         if (cache != null) {
             String data = cache.getData();
@@ -106,7 +113,9 @@ public class ApplicationServiceImpl implements ApplicationService {
             try {
                 File file = FileUtil.newFile(yamlPath);
                 if (jsonObject != null) {
-                    YmlUtils.writeValue(file, jsonObject);
+                    String lockKey = KeyConstants.load_yml_write_key + ":" + yamlPath;
+                    LockWrapper lock = LockUtil.getLock(lockKey);
+                    LockYmlUtil.writeValue(file, jsonObject, lock);
                 }
             } catch (Exception e) {
                 if (e.getMessage().contains("文件不存在或为空")) {
@@ -116,6 +125,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 }
             }
         }
+
         return true;
     }
 
@@ -124,7 +134,25 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (jsonObject == null) {
             return false;
         }
-        cacheService.save(KeyConstants.load_yml_key, JSONUtil.toJsonStr(jsonObject));
+        LockWrapper lock = LockUtil.getLock(KeyConstants.load_yml_save_key);
+        boolean tryLock = lock.tryLock();
+        if (!tryLock) {
+            log.warn("获取锁超时，key: {}", KeyConstants.load_yml_save_key);
+            // 改进2: 可以选择抛出异常或返回特定结果
+            throw new GlobalException("存在其他操作，请稍后再试!");
+        }
+        try {
+            cacheService.save(KeyConstants.load_yml_save_key, JSONUtil.toJsonStr(jsonObject));
+        } finally {
+            if (tryLock) {
+                try {
+                    lock.unlock();
+                    log.debug("锁释放成功: {}", KeyConstants.load_yml_save_key);
+                } catch (Exception e) {
+                    log.error("锁释放失败: {}", KeyConstants.load_yml_save_key, e);
+                }
+            }
+        }
         return true;
     }
 
@@ -166,7 +194,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         jsonObject.putAll(checkToken);
 
-        saveLoadApplicationYml(jsonObject);
+        //saveLoadApplicationYml(jsonObject);
         return jsonObject;
     }
 }
