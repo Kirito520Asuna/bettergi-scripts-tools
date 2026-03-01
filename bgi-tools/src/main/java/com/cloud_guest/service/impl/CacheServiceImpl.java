@@ -76,17 +76,29 @@ public class CacheServiceImpl implements CacheService {
         Cache<String> cache = new Cache<>();
         cache.setType("json");
         cache.setData(json);
-        if (ModeUtil.isLocal()) {
-            parentKey = id.substring(0, id.lastIndexOf(":"));
-            LocalCacheUtils.put(id, JSONUtil.toJsonStr(cache));
-        } else {
-            RedisService bean = SpringUtil.getBean(RedisService.class);
-            String key = KeyConstants.redis_file_json_key + id;
-            bean.save(key, JSONUtil.toJsonStr(cache));
-            parentKey = key.substring(0, key.lastIndexOf(":"));
+        String lockKey = id;
+        LockWrapper lock = LockUtil.getLock(lockKey);
+        boolean tryLock = lock.tryLock();
+        if (!tryLock) {
+            throw new GlobalException("存在其他操作，请稍后再试!");
         }
-        if (!id.contains("ALL")) {
-            saveId(parentKey, id);
+        try {
+            if (ModeUtil.isLocal()) {
+                parentKey = id.substring(0, id.lastIndexOf(":"));
+                LocalCacheUtils.put(id, JSONUtil.toJsonStr(cache));
+            } else {
+                RedisService bean = SpringUtil.getBean(RedisService.class);
+                String key = KeyConstants.redis_file_json_key + id;
+                bean.save(key, JSONUtil.toJsonStr(cache));
+                parentKey = key.substring(0, key.lastIndexOf(":"));
+            }
+            if (!id.contains("ALL")) {
+                saveId(parentKey, id);
+            }
+        } finally {
+            if (tryLock) {
+                lock.unlock();
+            }
         }
         return true;
     }
