@@ -103,6 +103,13 @@ public class AutoPlanController {
         List<AutoPlanVo> autoPlanVos = autoPlanService.find(uid);
         return ok(autoPlanVos);
     }
+    @SysLog
+    @Operation(summary = "查询全部UID")
+    @GetMapping("uid/all")
+    public Result<List<String>> uidALL() {
+        List<String> uidList = autoPlanService.findUidAll();
+        return ok(uidList);
+    }
 
     @SysLog
     @Token

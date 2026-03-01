@@ -16,6 +16,8 @@ public interface AutoPlanService {
 
     boolean save(String id, String json);
 
+    List<String> findALLUid();
+
     List<AutoPlanVo> find(String id);
 
     boolean saveDomainAll(String json);

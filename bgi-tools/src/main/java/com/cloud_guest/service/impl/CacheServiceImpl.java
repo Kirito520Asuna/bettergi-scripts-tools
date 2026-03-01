@@ -13,7 +13,6 @@ import com.cloud_guest.utils.LockUtil;
 import com.cloud_guest.utils.ModeUtil;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.wrappers.lock.LockWrapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashSet;
@@ -217,7 +216,18 @@ public class CacheServiceImpl implements CacheService {
         Cache<String> cache = JSONUtil.toBean(o, Cache.class);
         return cache;
     }
-
+    @Override
+    public String findValueByKey(String key) {
+        String o=StrUtil.EMPTY;
+        if (ModeUtil.isLocal()) {
+            o = (String) LocalCacheUtils.get(key);
+        } else if (ModeUtil.isRedis()){
+            String keyRedis = KeyConstants.redis_file_json_key + key;
+            RedisService bean = SpringUtil.getBean(RedisService.class);
+            o = (String) bean.get(keyRedis);
+        }
+        return o;
+    }
     @Override
     public String findById(String id) {
         Cache<String> cache = find(id);

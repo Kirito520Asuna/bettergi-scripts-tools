@@ -5,17 +5,15 @@ import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.Cache;
-import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.service.CacheService;
-import com.cloud_guest.utils.LockUtil;
 import com.cloud_guest.vo.AutoPlanVo;
-import com.cloud_guest.wrappers.lock.LockWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,7 +42,21 @@ public class AutoPlanServiceImpl implements AutoPlanService {
         id = KeyConstants.auto_plan_key + id;
         return cacheService.save(id, json);
     }
+    @Override
+    public List<String> findALLUid() {
+        String id = KeyConstants.auto_plan_key;
+        String jsonUidList = cacheService.findById(id);
+        List<String> uidList = Arrays.asList();
 
+        if (StrUtil.isNotBlank(jsonUidList)) {
+            if (JSONUtil.isTypeJSONArray(jsonUidList)) {
+                JSONUtil.toList(jsonUidList, String.class).stream().forEach(uidList::add);
+            }else {
+                uidList.add(jsonUidList);
+            }
+        }
+        return uidList;
+    }
 
     @Override
     public List<AutoPlanVo> find(String id) {
@@ -62,7 +74,8 @@ public class AutoPlanServiceImpl implements AutoPlanService {
     @Override
     public List<String> findUidAll() {
         List<String> uidList = new ArrayList<>();
-        String uid_all = cacheService.findById(KeyConstants.auto_plan_key_uid_all);
+        String key = KeyConstants.auto_plan_key.substring(0, KeyConstants.auto_plan_key.lastIndexOf(":"));
+        String uid_all = cacheService.findValueByKey(key);
         if (StrUtil.isNotBlank(uid_all)) {
             if (JSONUtil.isTypeJSONArray(uid_all)) {
                 JSONUtil.toList(uid_all, String.class).stream().forEach(uidList::add);
