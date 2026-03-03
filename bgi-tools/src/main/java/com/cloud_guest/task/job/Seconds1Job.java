@@ -26,37 +26,6 @@ import java.util.concurrent.CompletableFuture;
 public class Seconds1Job extends DistributedJob {
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        //设置超时
-        Long timeout = null;
-        boolean taskSettings = ApplicationContextHolder.getTaskSettings();
-        if (!taskSettings) {
-            Optional<TaskInfo> first = QuartzConfig.TASKS.stream().filter(task -> ObjectUtils.equals(task.getJobClass(), Minute1Job.class)).findFirst();
-            TaskInfo taskInfo = null;
-            if (first.isPresent()) {
-                taskInfo = first.get();
-            }
-            if (taskInfo == null) {
-                return;
-            }
-            String cronExpression = taskInfo.getCronExpression();
-            timeout = QuartzUtil.getNextIntervalMillis(cronExpression);
-            if (ObjectUtils.isNotEmpty(timeout)) {
-                timeout += 20;
-                ApplicationContextHolder.setReportedOnlineTimeout(timeout);
-                ApplicationContextHolder.setTaskSettings(!taskSettings);
-            }
-        }
 
-
-        ThreadPoolTaskExecutor executor = SpringUtil.getBean(ThreadPoolTaskExecutor.class);
-        CompletableFuture.runAsync(() -> {
-            // 按顺序执行，确保数据一致性
-            log.debug("检查在线");
-            ApplicationContextHolder.checkAndGetOnline(null);
-            log.debug("清理离线");
-            ApplicationContextHolder.clearOutlineKeys();
-            log.debug("清理重启");
-            ApplicationContextHolder.clearRestartKeys();
-        }, executor);
     }
 }
