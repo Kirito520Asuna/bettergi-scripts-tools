@@ -41,8 +41,8 @@ public class AutoPlanController {
     @SysLog(result = false)
     @Operation(summary = "查询全部国家JSON")
     @GetMapping("country/json/all")
-    public Result<List<Map<String, Object>>> infoCountryAll() {
-        List<Map<String, Object>> list = autoPlanService.findCountryAll();
+    public Result<List<String>> infoCountryAll() {
+        List<String> list = autoPlanService.findCountryAll();
         return ok(list);
     }
     @PostMapping("country/json/all")

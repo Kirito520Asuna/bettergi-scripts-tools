@@ -2,7 +2,6 @@ package com.cloud_guest.service;
 
 import com.cloud_guest.vo.AutoPlanVo;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 
@@ -30,5 +29,5 @@ public interface AutoPlanService {
 
     boolean saveCountryAll(String json);
 
-    List<Map<String, Object>> findCountryAll();
+    List<String> findCountryAll();
 }

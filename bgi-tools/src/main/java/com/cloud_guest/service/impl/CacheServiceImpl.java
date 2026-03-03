@@ -229,7 +229,6 @@ public class CacheServiceImpl implements CacheService {
     @Override
     public Cache<String> find(String id) {
         String o = StrUtil.EMPTY;
-        ;
         if (ModeUtil.isLocal()) {
             o = (String) LocalCacheUtils.get(id);
         } else if (ModeUtil.isRedis()) {

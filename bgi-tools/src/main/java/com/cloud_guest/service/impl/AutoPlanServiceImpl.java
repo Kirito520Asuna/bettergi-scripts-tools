@@ -122,8 +122,8 @@ public class AutoPlanServiceImpl implements AutoPlanService {
     }
 
     @Override
-    public List<Map<String, Object>> findCountryAll() {
+    public List<String> findCountryAll() {
         Cache<String> cache = cacheService.find(KeyConstants.auto_plan_key_country_all);
-        return cache.toList();
+        return cache.toListByString();
     }
 }
