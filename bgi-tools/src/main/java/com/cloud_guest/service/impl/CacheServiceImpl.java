@@ -36,7 +36,7 @@ public class CacheServiceImpl implements CacheService {
         String key = ":db";
         if (ModeUtil.isRedis()) {
             ids = ids.stream()
-                    .map(id -> KeyConstants.redis_file_json_key + id)
+                    .map(id -> id.startsWith(KeyConstants.redis_file_json_key)?id:KeyConstants.redis_file_json_key + id)
                     .collect(Collectors.toList());
 
         }
@@ -99,7 +99,7 @@ public class CacheServiceImpl implements CacheService {
                 LocalCacheUtils.put(id, JSONUtil.toJsonStr(cache));
             } else if (ModeUtil.isRedis()) {
                 RedisService bean = SpringUtil.getBean(RedisService.class);
-                String key = KeyConstants.redis_file_json_key + id;
+                String key = id.startsWith(KeyConstants.redis_file_json_key)?id:KeyConstants.redis_file_json_key + id;
                 bean.save(key, JSONUtil.toJsonStr(cache));
                 parentKey = key.substring(0, key.lastIndexOf(":"));
             }
@@ -147,7 +147,8 @@ public class CacheServiceImpl implements CacheService {
             if (ModeUtil.isLocal()) {
                 LocalCacheUtils.put(key, JSONUtil.toJsonStr(hashSet));
             } else if (ModeUtil.isRedis()) {
-                String keyRedis = KeyConstants.redis_file_json_key + key;
+
+                String keyRedis = key.startsWith(KeyConstants.redis_file_json_key)?key:KeyConstants.redis_file_json_key + key;
                 RedisService bean = SpringUtil.getBean(RedisService.class);
                 bean.save(keyRedis, JSONUtil.toJsonStr(hashSet.stream().collect(Collectors.toList())));
             }
@@ -170,7 +171,7 @@ public class CacheServiceImpl implements CacheService {
             if (ModeUtil.isLocal()) {
                 LocalCacheUtils.remove(key);
             } else if (ModeUtil.isRedis()) {
-                String keyRedis = KeyConstants.redis_file_json_key + key;
+                String keyRedis = key.startsWith(KeyConstants.redis_file_json_key)?key:KeyConstants.redis_file_json_key + key;
                 RedisService bean = SpringUtil.getBean(RedisService.class);
                 bean.del(keyRedis);
             }
@@ -214,7 +215,7 @@ public class CacheServiceImpl implements CacheService {
             if (ModeUtil.isLocal()) {
                 LocalCacheUtils.put(key, JSONUtil.toJsonStr(hashSet));
             } else if (ModeUtil.isRedis()) {
-                String keyRedis = KeyConstants.redis_file_json_key + key;
+                String keyRedis = key.startsWith(KeyConstants.redis_file_json_key)?key:KeyConstants.redis_file_json_key + key;
                 RedisService bean = SpringUtil.getBean(RedisService.class);
                 bean.save(keyRedis, JSONUtil.toJsonStr(hashSet.stream().collect(Collectors.toList())));
             }
@@ -232,7 +233,7 @@ public class CacheServiceImpl implements CacheService {
         if (ModeUtil.isLocal()) {
             o = (String) LocalCacheUtils.get(id);
         } else if (ModeUtil.isRedis()) {
-            String key = KeyConstants.redis_file_json_key + id;
+            String key = id.startsWith(KeyConstants.redis_file_json_key)?id:KeyConstants.redis_file_json_key + id;
             RedisService bean = SpringUtil.getBean(RedisService.class);
             o = (String) bean.get(key);
         }
@@ -249,7 +250,7 @@ public class CacheServiceImpl implements CacheService {
         if (ModeUtil.isLocal()) {
             o = (String) LocalCacheUtils.get(key);
         } else if (ModeUtil.isRedis()) {
-            String keyRedis = KeyConstants.redis_file_json_key + key;
+            String keyRedis = key.startsWith(KeyConstants.redis_file_json_key)?key:KeyConstants.redis_file_json_key + key;
             RedisService bean = SpringUtil.getBean(RedisService.class);
             o = (String) bean.get(keyRedis);
         }
