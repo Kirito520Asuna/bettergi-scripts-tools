@@ -92,6 +92,7 @@ spring:
     host: 127.0.0.1
     port: 6379
     database: 0
+    timeout: 5000 #连接超时时间
     #哨兵
     sentinel:
       master: mymaster   # 哨兵 master-set 名称
