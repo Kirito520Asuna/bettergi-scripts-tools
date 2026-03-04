@@ -1,5 +1,6 @@
 package com.cloud_guest.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
@@ -10,6 +11,7 @@ import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.ApplicationService;
 import com.cloud_guest.service.CacheService;
+import com.cloud_guest.utils.ApplicationUtil;
 import com.cloud_guest.utils.LockUtil;
 import com.cloud_guest.utils.LockYmlUtil;
 import com.cloud_guest.utils.bean.MapUtils;
@@ -59,6 +61,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 jsonObject = setCheckToken(name, value, jsonObject);
                 String lockKey = KeyConstants.load_yml_write_key + ":" + yamlPath;
                 LockWrapper lock = LockUtil.getLock(lockKey);
+                saveLoadApplicationYml(jsonObject);
                 jsonObject.remove(loadYmlSaveUpdateTimeKey);
                 LockYmlUtil.writeValue(file, jsonObject, lock);
                 //YmlUtils.writeValue(file, jsonObject);
@@ -102,6 +105,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         jsonObject.remove(loadYmlSaveUpdateTimeKey);
         List<String> yamlPaths = loadProperties.getYamlPaths();
+        if (CollUtil.isNotEmpty(yamlPaths)) {
+            log.debug("加载{}ms *.yml", loadTime == null ? 0 : loadTime);
+        }
         for (String yamlPath : yamlPaths) {
             try {
                 File file = FileUtil.newFile(yamlPath);
@@ -109,6 +115,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     String lockKey = KeyConstants.load_yml_write_key + ":" + yamlPath;
                     LockWrapper lock = LockUtil.getLock(lockKey);
                     LockYmlUtil.writeValue(file, jsonObject, lock);
+                    log.debug("应用{}加载{}完成", ApplicationUtil.getApplicationId(), yamlPath);
                 }
             } catch (Exception e) {
                 if (e.getMessage().contains("文件不存在或为空")) {

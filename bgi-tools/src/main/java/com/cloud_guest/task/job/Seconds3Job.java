@@ -24,7 +24,6 @@ import java.util.concurrent.CompletableFuture;
 public class Seconds3Job extends DistributedJob {
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        log.debug("加载4s application.yml");
         ApplicationService bean = SpringUtil.getBean(ApplicationService.class);
         bean.loadApplicationYml(4000l);
         ThreadPoolTaskExecutor executor = SpringUtil.getBean(ThreadPoolTaskExecutor.class);
