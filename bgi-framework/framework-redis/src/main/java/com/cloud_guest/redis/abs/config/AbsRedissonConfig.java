@@ -37,6 +37,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -142,6 +143,7 @@ public interface AbsRedissonConfig {
                 SingleServerConfig singleServerConfig = config.useSingleServer();
                 singleServerConfig.setAddress(addresses.stream().findFirst().orElse(new StringBuffer("redis://").append(DEFAULT_REDIS).toString()));
                 singleServerConfig.setDatabase(redisProperties.getDatabase());
+
                 baseConfig = singleServerConfig;
                 break;
         }
@@ -151,7 +153,10 @@ public interface AbsRedissonConfig {
         if (redisProperties.getPassword() != null&& redisProperties.getPassword().trim() != "") {
             baseConfig.setPassword(redisProperties.getPassword());
         }
-
+        Duration connectTimeout = redisProperties.getConnectTimeout();
+        baseConfig.setConnectTimeout((int) connectTimeout.toMillis());
+        Duration timeout = redisProperties.getTimeout();
+        baseConfig.setTimeout((int) timeout.toMillis());
         return Redisson.create(config);
     }
 

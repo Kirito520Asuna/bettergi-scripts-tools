@@ -39,6 +39,7 @@ public interface LockWrapper {
      */
     boolean tryLock(long waitTime,long leaseTime, TimeUnit timeUnit);
 
+    boolean isHeldByCurrentThread();
     /**
      * 释放锁
      */

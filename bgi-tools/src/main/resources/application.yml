@@ -94,7 +94,7 @@ spring:
         singleServerConfig:
           # 解决超时问题（必须调大！）
           timeout: ${spring.redis.timeout:20000}                 # 命令超时 20s（默认 3s）
-          connectTimeout: ${spring.redis.connectTimeout:15000}          # 连接超时 15s
+          connectTimeout: ${spring.redis.connect-timeout:15000}          # 连接超时 15s
           retryAttempts: ${spring.redis.retryAttempts:5}               # 重试 5 次
           retryInterval: ${spring.redis.retryInterval:3000}            # 重试间隔 3s
 
@@ -121,7 +121,7 @@ spring:
         #     - "redis://node3:6379"
         #   password: ${spring.redis.password:}
         #   timeout: ${spring.redis.timeout:20000}                 # 命令超时 20s（默认 3s）
-        #   connectTimeout: ${spring.redis.connectTimeout:15000}          # 连接超时 15s
+        #   connectTimeout: ${spring.redis.connect-timeout:15000}          # 连接超时 15s
         #   retryAttempts: ${spring.redis.retryAttempts:5}               # 重试 5 次
         #   retryInterval: ${spring.redis.retryInterval:3000}            # 重试间隔 3s
         #   checkSlotsInUse: false
@@ -140,7 +140,7 @@ spring:
         #   password: ${spring.redis.password:}
         #   password: ${spring.redis.password:}
         #   timeout: ${spring.redis.timeout:20000}                 # 命令超时 20s（默认 3s）
-        #   connectTimeout: ${spring.redis.connectTimeout:15000}          # 连接超时 15s
+        #   connectTimeout: ${spring.redis.connect-timeout:15000}          # 连接超时 15s
         #   retryAttempts: ${spring.redis.retryAttempts:5}               # 重试 5 次
         #   retryInterval: ${spring.redis.retryInterval:3000}            # 重试间隔 3s
         #   masterConnectionPoolSize: 128
@@ -151,7 +151,11 @@ spring:
     host: 127.0.0.1
     port: 6379
     database: 0
-    timeout: 30000 #连接超时时间
+    #安全
+    username:  #默认为空
+    password:  #默认为空
+    connect-timeout: 30000 #连接超时 30s
+    timeout: 30000 #响应超时时间
     #哨兵
     sentinel:
       master: mymaster   # 哨兵 master-set 名称
@@ -163,9 +167,7 @@ spring:
       nodes:
         - 192.168.6.128:7000
         - 192.168.6.128:7001
-    #安全
-    username:  #默认为空
-    password:  #默认为空
+
 
 #需要验证的接口设置token
 check:

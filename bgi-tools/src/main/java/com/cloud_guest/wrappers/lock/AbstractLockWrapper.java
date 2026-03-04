@@ -1,7 +1,5 @@
 package com.cloud_guest.wrappers.lock;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -24,6 +22,17 @@ public abstract class AbstractLockWrapper implements LockWrapper  {
     // 锁的默认时间单位
     protected static final TimeUnit DEFAULT_TIME_UNIT = TimeUnit.MILLISECONDS;
     protected static final long DEFAULT_LEASE_TIME= 1000L;
+
+     final long waitTime;
+     final long leaseTime;
+     final TimeUnit timeUnit;
+
+    protected AbstractLockWrapper(long waitTime, long leaseTime, TimeUnit timeUnit) {
+        this.waitTime = waitTime;
+        this.leaseTime = leaseTime;
+        this.timeUnit = timeUnit;
+    }
+
     @Override
     public long getWaitTime() {
         return DEFAULT_WAIT_TIME;
@@ -32,5 +41,15 @@ public abstract class AbstractLockWrapper implements LockWrapper  {
     @Override
     public TimeUnit getTimeUnit() {
         return DEFAULT_TIME_UNIT;
+    }
+
+    @Override
+    public boolean tryLock() {
+        return tryLock(waitTime, leaseTime, timeUnit);
+    }
+
+    @Override
+    public boolean tryLock(long waitTime, TimeUnit timeUnit) {
+        return tryLock(waitTime, leaseTime, timeUnit);
     }
 }

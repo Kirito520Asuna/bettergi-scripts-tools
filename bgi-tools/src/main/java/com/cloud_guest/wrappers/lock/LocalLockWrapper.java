@@ -15,9 +15,6 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class LocalLockWrapper extends AbstractLockWrapper {
     private final String lockKey;
-    private final long waitTime;
-    private final long leaseTime;
-    private final TimeUnit timeUnit;
     private ReentrantLock reentrantLock;
     private volatile boolean locked = false;
     private ScheduledFuture<?> scheduledFuture;
@@ -30,8 +27,8 @@ public class LocalLockWrapper extends AbstractLockWrapper {
             synchronized (LocalLockWrapper.class) {
                 if (scheduler == null) {
                     scheduler = Executors.newScheduledThreadPool(
-                        2,
-                        r -> new Thread(r, "local-lock-scheduler")
+                            2,
+                            r -> new Thread(r, "local-lock-scheduler")
                     );
                 }
             }
@@ -58,10 +55,8 @@ public class LocalLockWrapper extends AbstractLockWrapper {
     }
 
     public LocalLockWrapper(String lockKey, long waitTime, long leaseTime, TimeUnit timeUnit) {
-        this.waitTime = waitTime;
-        this.leaseTime = leaseTime;
+        super(waitTime, leaseTime, timeUnit);
         this.lockKey = KeyConstants.local_lock_key + lockKey;
-        this.timeUnit = timeUnit;
         this.reentrantLock = LOCAL_LOCKS.computeIfAbsent(lockKey, k -> new ReentrantLock());
     }
 
@@ -81,31 +76,7 @@ public class LocalLockWrapper extends AbstractLockWrapper {
             return locked;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            log.error("本地锁获取被中断：{}", lockKey, e);
-            return false;
-        }
-    }
-
-    @Override
-    public boolean tryLock() {
-        return tryLock(waitTime, leaseTime, timeUnit);
-    }
-
-    @Override
-    public boolean tryLock(long waitTime, TimeUnit timeUnit) {
-        try {
-            locked = reentrantLock.tryLock(waitTime, timeUnit);
-            if (locked) {
-                log.debug("本地锁尝试获取成功：{}", lockKey);
-                // 如果设置了租约时间，启动自动释放任务
-                if (leaseTime > 0) {
-                    scheduleAutoUnlock();
-                }
-            }
-            return locked;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            log.error("本地锁尝试获取被中断：{}", lockKey, e);
+            log.error("本地锁获取被中断：{}", lockKey, e.getMessage());
             return false;
         }
     }
@@ -124,7 +95,7 @@ public class LocalLockWrapper extends AbstractLockWrapper {
             return locked;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            log.error("本地锁尝试获取被中断：{}", lockKey, e);
+            log.error("本地锁尝试获取被中断：{}", lockKey, e.getMessage());
             return false;
         }
     }
@@ -149,12 +120,17 @@ public class LocalLockWrapper extends AbstractLockWrapper {
                         locked = false;
                     }
                 } catch (Exception e) {
-                    log.error("自动释放本地锁失败：{}", lockKey, e);
+                    log.error("自动释放本地锁失败：{}", lockKey, e.getMessage());
                 }
             }, leaseTime, timeUnit);
         } catch (Exception e) {
-            log.error("安排自动释放任务失败：{}", lockKey, e);
+            log.error("安排自动释放任务失败：{}", lockKey, e.getMessage());
         }
+    }
+
+    @Override
+    public boolean isHeldByCurrentThread() {
+        return reentrantLock.isHeldByCurrentThread();
     }
 
     @Override
