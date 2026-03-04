@@ -6,7 +6,6 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.Cache;
-import com.cloud_guest.enums.OSType;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.ApplicationService;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,27 +44,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public boolean saveToken(String name, String value) {
         List<String> yamlPaths = loadProperties.getYamlPaths();
-
-        OSType currentOSType = OSType.getCurrentOSType();
+        String loadYmlSaveUpdateTimeKey = KeyConstants.load_yml_save_update_time_key;
         for (String yamlPath : yamlPaths) {
-            //File pathFile = new File(yamlPath);
-            OSType osType = OSType.detectByPathFormat(yamlPath);
-            if (ObjectUtils.equals(OSType.UNKNOWN, osType)) {
-                log.debug("{}是相对路径", yamlPath);
-            } else if (OSType.isUnixLike(osType)) {
-                if (!OSType.isUnixLike(null)) {
-                    //地址 linux ,系统非linux
-                    log.warn("[跳过写入][{}]{}是{}绝对路径", currentOSType, yamlPath, "[非类unix系统]");
-                    continue;
-                }
-            } else if (!OSType.isUnixLike(null)) {
-                if (OSType.isUnixLike(osType)) {
-                    //地址 非linux ,系统linux
-                    log.warn("[跳过写入][{}]{}是{}绝对路径", currentOSType, yamlPath, "[非类unix系统]");
-                    continue;
-                }
-            }
-
             try {
                 JSONObject jsonObject = YmlUtils.readValueToJSONObject(yamlPath);
                 //if (jsonObject == null) {
@@ -78,9 +57,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                     continue;
                 }
                 jsonObject = setCheckToken(name, value, jsonObject);
-
                 String lockKey = KeyConstants.load_yml_write_key + ":" + yamlPath;
                 LockWrapper lock = LockUtil.getLock(lockKey);
+                jsonObject.remove(loadYmlSaveUpdateTimeKey);
                 LockYmlUtil.writeValue(file, jsonObject, lock);
                 //YmlUtils.writeValue(file, jsonObject);
 
@@ -98,16 +77,30 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public boolean loadApplicationYml() {
+    public boolean loadApplicationYml(Long loadTime) {
         JSONObject jsonObject = null;
-        Cache<String> cache = cacheService.find(KeyConstants.load_yml_key);
+        Cache<String> cache = cacheService.find(KeyConstants.load_yml_save_key);
         if (cache != null) {
             String data = cache.getData();
             if (StrUtil.isNotBlank(data)) {
                 jsonObject = JSONUtil.toBean(data, JSONObject.class);
             }
+        } else {
+            return false;
         }
-
+        if (ObjectUtils.isEmpty(jsonObject)) {
+            return false;
+        }
+        String loadYmlSaveUpdateTimeKey = KeyConstants.load_yml_save_update_time_key;
+        Long updateTime = (Long) jsonObject.get(loadYmlSaveUpdateTimeKey);
+        if (ObjectUtils.isNotEmpty(updateTime)) {
+            long time = System.currentTimeMillis() - updateTime;
+            //加载n ms内的缓存数据
+            if (ObjectUtils.isNotEmpty(loadTime) && time > loadTime) {
+                return false;
+            }
+        }
+        jsonObject.remove(loadYmlSaveUpdateTimeKey);
         List<String> yamlPaths = loadProperties.getYamlPaths();
         for (String yamlPath : yamlPaths) {
             try {
@@ -134,6 +127,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (jsonObject == null) {
             return false;
         }
+        String loadYmlSaveUpdateTimeKey = KeyConstants.load_yml_save_update_time_key;
+        jsonObject.put(loadYmlSaveUpdateTimeKey, System.currentTimeMillis());
         LockWrapper lock = LockUtil.getLock(KeyConstants.load_yml_save_key);
         boolean tryLock = lock.tryLock();
         if (!tryLock) {
@@ -191,8 +186,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         tokenValue.put(nameKey, StrUtil.isNotBlank(name) ? name : "");
         tokenValue.put(valueKey, StrUtil.isNotBlank(value) ? value : "");
         token.putAll(tokenValue);
-
+        String loadYmlSaveUpdateTimeKey = KeyConstants.load_yml_save_update_time_key;
         jsonObject.putAll(checkToken);
+        jsonObject.put(loadYmlSaveUpdateTimeKey, System.currentTimeMillis());
 
         //saveLoadApplicationYml(jsonObject);
         return jsonObject;

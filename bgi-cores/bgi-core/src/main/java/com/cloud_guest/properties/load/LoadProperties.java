@@ -1,6 +1,8 @@
 package com.cloud_guest.properties.load;
 
 import cn.hutool.extra.spring.SpringUtil;
+import com.cloud_guest.enums.OSType;
+import com.cloud_guest.utils.object.ObjectUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -40,6 +42,31 @@ public class LoadProperties {
             }
             index++;
         }
+
+        List<String> exList = new ArrayList<>();
+        OSType currentOSType = OSType.getCurrentOSType();
+        for (String yamlPath : yamlPaths) {
+            OSType osType = OSType.detectByPathFormat(yamlPath);
+            if(ObjectUtils.equals(OSType.UNKNOWN, osType)){
+                log.debug("{}是相对路径", yamlPath);
+            }else if(OSType.isUnixLike(osType)){
+                if(!OSType.isUnixLike(null)){
+                    //地址 linux ,系统非linux
+                    log.debug("[{}]{}是{}绝对路径",currentOSType, yamlPath,"[非类unix系统]");
+                    exList.add(yamlPath);
+                    continue;
+                }
+            }else if (!OSType.isUnixLike(null)){
+                if(OSType.isUnixLike(osType)){
+                    //地址 非linux ,系统linux
+                    log.debug("[{}]{}是{}绝对路径",currentOSType, yamlPath,"[非类unix系统]");
+                    exList.add(yamlPath);
+                    continue;
+                }
+            }
+        }
+
+        yamlPaths.removeAll(exList);
     }
 
 }

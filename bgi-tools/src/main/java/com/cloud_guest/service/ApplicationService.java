@@ -12,7 +12,12 @@ public interface ApplicationService {
     @SneakyThrows
     boolean saveToken(String name, String value);
 
-    boolean loadApplicationYml();
+    /**
+     * 加载application.yml (加载n ms内的缓冲数据 为空时直接加载忽悠时间判断)
+     * @param loadTime(加载n ms内的缓冲数据 为空时直接加载忽悠时间判断)
+     * @return
+     */
+    boolean loadApplicationYml(Long loadTime);
 
     boolean saveLoadApplicationYml(JSONObject jsonObject);
 

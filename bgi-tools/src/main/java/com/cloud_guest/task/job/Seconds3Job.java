@@ -2,6 +2,7 @@ package com.cloud_guest.task.job;
 
 import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.domain.ApplicationInfo;
+import com.cloud_guest.service.ApplicationService;
 import com.cloud_guest.task.dstributed.DistributedJob;
 import com.cloud_guest.utils.ApplicationContextHolder;
 import com.cloud_guest.utils.ApplicationUtil;
@@ -23,6 +24,9 @@ import java.util.concurrent.CompletableFuture;
 public class Seconds3Job extends DistributedJob {
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+        log.debug("加载4s application.yml");
+        ApplicationService bean = SpringUtil.getBean(ApplicationService.class);
+        bean.loadApplicationYml(4000l);
         ThreadPoolTaskExecutor executor = SpringUtil.getBean(ThreadPoolTaskExecutor.class);
         CompletableFuture.runAsync(() -> {
             //上报在线

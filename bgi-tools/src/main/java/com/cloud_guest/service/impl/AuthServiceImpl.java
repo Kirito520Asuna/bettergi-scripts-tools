@@ -110,6 +110,7 @@ public class AuthServiceImpl implements AuthService {
             users.put(usersKey, jsonArray);
             auth.put(authKey, users);
             jsonObject.putAll(auth);
+            jsonObject.put("updateTime", System.currentTimeMillis());
             String lockKey = KeyConstants.load_yml_write_key + ":" + yamlPath;
             LockWrapper lock = LockUtil.getLock(lockKey);
             LockYmlUtil.writeValue(file, jsonObject,lock);

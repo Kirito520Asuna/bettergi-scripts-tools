@@ -8,6 +8,8 @@ package com.cloud_guest.constants;
 public interface KeyConstants {
     String load_yml_key = "load_yml:ALL";
     String load_yml_save_key = "load_yml:save:ALL";
+    String load_yml_save_update_time_key = "load_yml:save_update_time:ALL";
+
     String load_yml_write_key = "load_yml:write:ALL";
     String auto_plan_key = "AUTO_PLAN:UID:";
     String auto_plan_key_uid_all = "AUTO_PLAN:UID:ALL";

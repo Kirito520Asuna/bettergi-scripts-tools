@@ -210,7 +210,12 @@ public class ApplicationContextHolder {
         CacheService bean = SpringUtil.getBean(CacheService.class);
         // 定义用于存储上线应用信息的缓存键
         String outlineApplicationKey = KeyConstants.outline_application_key;
-
+        // 从缓存中获取键对应的值
+        String onlineApplicationKey = KeyConstants.online_application_key;
+        String valueByKey = bean.findValueByKey(onlineApplicationKey);
+        if (StrUtil.isBlank(valueByKey)) {
+            return new ArrayList<>();
+        }
         // 获取指定键的锁对象
         LockWrapper lock = LockUtil.getLock(outlineApplicationKey);
         boolean tryLock = lock.isLocked();
@@ -223,7 +228,7 @@ public class ApplicationContextHolder {
 
         try {
             // 从缓存中获取键对应的值
-            String valueByKey = bean.findValueByKey(KeyConstants.online_application_key);
+             valueByKey = bean.findValueByKey(onlineApplicationKey);
             // 创建用于存储检查在线键的列表
             List<String> checkOnlineKeys = new ArrayList<>();  // 修复：使用可变列表
 
@@ -287,14 +292,18 @@ public class ApplicationContextHolder {
     public static void clearOutlineKeys() {
         CacheService bean = SpringUtil.getBean(CacheService.class);
         String outlineApplicationKey = KeyConstants.outline_application_key;
-
+        // 第一次检查：不加锁检查是否有值
+        String valueByKey = bean.findValueByKey(outlineApplicationKey);
+        if (StrUtil.isBlank(valueByKey)) {
+            return;
+        }
         LockWrapper lock = LockUtil.getLock(outlineApplicationKey);
         boolean tryLock = lock.tryLock(800l, TimeUnit.MILLISECONDS);
         if (!tryLock) {
             throw new GlobalException("获取锁失败:" + outlineApplicationKey);
         }
         try {
-            String valueByKey = bean.findValueByKey(outlineApplicationKey);
+            valueByKey = bean.findValueByKey(outlineApplicationKey);
             // 创建一个可变列表用于存储重启键
             List<String> keys = new ArrayList<>();  // 修复：使用可变列表
 
@@ -333,6 +342,13 @@ public class ApplicationContextHolder {
         try {
             // 从Spring容器中获取CacheService的Bean实例
             CacheService bean = SpringUtil.getBean(CacheService.class);
+
+            // 第一次检查：不加锁检查是否有值
+            String valueByKey = bean.findValueByKey(restartKey);
+            if (StrUtil.isBlank(valueByKey)) {
+                return;
+            }
+
             LockWrapper lock = LockUtil.getLock(restartKey);
             boolean tryLock = lock.tryLock(800l, TimeUnit.MILLISECONDS);
             if (!tryLock) {
@@ -340,7 +356,7 @@ public class ApplicationContextHolder {
             }
             try {
                 // 根据重启键的键名获取存储的值
-                String valueByKey = bean.findValueByKey(restartKey);
+                valueByKey = bean.findValueByKey(restartKey);
                 // 创建一个可变列表用于存储重启键
                 List<String> restartKeys = new ArrayList<>();  // 修复：使用可变列表
 
