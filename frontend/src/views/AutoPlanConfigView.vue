@@ -215,6 +215,12 @@ const findDomains = async () => {
   try {
     const response = await getUidJson(uid.value)
     configs.value = response;
+    configs.value.forEach(config => {
+      let autoStygianOnslaught = config.autoStygianOnslaught;
+      if (autoStygianOnslaught?.bossNum === null) {
+        autoStygianOnslaught.bossNum = undefined
+      }
+    })
   } catch (error) {
     console.error('请求失败:', error);
     ElMessage.error(error.message);
@@ -725,7 +731,7 @@ const batchJson = ref({
       // useTransientResin: false,        // 使用须臾树脂（须臾=Transient）
       // isNotification: false            // 是否通知
     },
-    autoStygianOnslaught:{
+    autoStygianOnslaught: {
       bossNum: undefined,
       friendshipTeam: "",
     }
@@ -1040,9 +1046,9 @@ const batchUpdate = () => {
                   <span class="drag-handle">☰</span>
                   <span class="physical-name">{{ element.name }}</span>
                   <div class="physical-count">
-                  <span class="physical-count-label">运行次数:</span>
-                  <el-input-number class="physical-count-number" width="10px" v-model="element.count" min="0"
-                                   placeholder="运行次数" style="width: 100px;"></el-input-number>
+                    <span class="physical-count-label">运行次数:</span>
+                    <el-input-number class="physical-count-number" width="10px" v-model="element.count" min="0"
+                                     placeholder="运行次数" style="width: 100px;"></el-input-number>
                   </div>
                   <el-switch
                       v-model="element.open"
@@ -1461,9 +1467,9 @@ const batchUpdate = () => {
                        placeholder="队伍1 / 主C+副C+辅助"/>
               </div>
               <div class="form-group stygianOnslaught">
-              <label>指定刷取战场（可选）：</label>
-<!--              <el-input-number min="1" max="3" v-model="config.autoStygianOnslaught.bossNum"-->
-<!--                               placeholder="战场一,战场二,战场三"/>-->
+                <label>指定刷取战场（可选）：</label>
+                <!--              <el-input-number min="1" max="3" v-model="config.autoStygianOnslaught.bossNum"-->
+                <!--                               placeholder="战场一,战场二,战场三"/>-->
                 <select v-model="config.autoStygianOnslaught.bossNum">
                   <option :value="undefined">请选择</option>
                   <option
@@ -2347,6 +2353,7 @@ h2 {
   border-color: #409eff;
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
+
 .batch-item select {
   width: 25%;
   padding: 10px 12px;

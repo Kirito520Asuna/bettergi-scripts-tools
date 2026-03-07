@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.cloud_guest.aop.validator.NotEmptyList;
 import com.cloud_guest.domain.AutoFight;
 import com.cloud_guest.domain.AutoLeyLineOutcrop;
+import com.cloud_guest.domain.AutoStygianOnslaught;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.view.BasicJsonView;
@@ -40,7 +41,7 @@ public class AutoPlanDTO implements Serializable {
     private List<AutoPlan> autoPlanList = new ArrayList<>();
 
     public void checkValid() {
-        List<String> runTypes = Arrays.asList("秘境", "地脉");
+        List<String> runTypes = Arrays.asList("秘境", "地脉","幽境");
         for (AutoPlan autoPlan : this.autoPlanList) {
             if (!runTypes.contains(autoPlan.getRunType())) {
                 String runTypesStr = runTypes.stream().collect(Collectors.joining(","));
@@ -94,5 +95,8 @@ public class AutoPlanDTO implements Serializable {
         @Schema(description = "地脉参数")
         @JsonProperty("autoLeyLineOutcrop")
         private AutoLeyLineOutcrop autoLeyLineOutcrop;
+        @Schema(description = "幽境参数")
+        @JsonProperty("autoStygianOnslaught")
+        private AutoStygianOnslaught autoStygianOnslaught;
     }
 }

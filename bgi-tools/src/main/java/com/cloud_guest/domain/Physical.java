@@ -20,4 +20,6 @@ public class Physical {
     private String name;
     @JsonProperty("open")
     private boolean open;
+    @JsonProperty("count")
+    private long count;
 }

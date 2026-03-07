@@ -2,6 +2,7 @@ package com.cloud_guest.vo;
 
 import com.cloud_guest.domain.AutoFight;
 import com.cloud_guest.domain.AutoLeyLineOutcrop;
+import com.cloud_guest.domain.AutoStygianOnslaught;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -41,5 +42,8 @@ public class AutoPlanVo implements Serializable {
     @Schema(description = "地脉参数")
     @JsonProperty("autoLeyLineOutcrop")
     private AutoLeyLineOutcrop autoLeyLineOutcrop;
+    @Schema(description = "幽境参数")
+    @JsonProperty("autoStygianOnslaught")
+    private AutoStygianOnslaught autoStygianOnslaught;
 
 }
