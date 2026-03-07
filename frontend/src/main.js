@@ -10,11 +10,17 @@ import {getLocalVersion, setLocalVersion} from "@api/web/web.js";
 
 // 动态设置 favicon（使用 Vite 的 BASE_URL）
 function setupFavicon() {
-    const link = document.querySelector("link[rel~='icon']");
-    if (link) {
-        // 使用 import.meta.env.BASE_URL 获取基础路径
-        const baseUrl = import.meta.env.BASE_URL || '/bgi/ui/';
-        link.href = baseUrl + 'favicon.ico';
+    try {
+        const link = document.querySelector("link[rel~='icon']");
+        if (link && import.meta.env.BASE_URL) {
+            const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+                ? import.meta.env.BASE_URL
+                : import.meta.env.BASE_URL + '/';
+            link.href = `${baseUrl}favicon.ico`;
+            console.log('[Favicon] Set to:', link.href);
+        }
+    } catch (error) {
+        console.error('[Favicon] Setup failed:', error);
     }
 }
 
