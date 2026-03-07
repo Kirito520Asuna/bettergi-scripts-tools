@@ -4676,7 +4676,7 @@ TkSuQmCC" />
     return iconAsMap
 }
 const runTypesDefault = () => {
-    const runTypes = ["秘境","地脉"];
+    const runTypes = ["秘境","地脉","幽境"];
     // ["秘境","地脉"]
     return runTypes;
 }

@@ -1,7 +1,14 @@
 <script setup>
 import {ref, computed, watch, watchEffect, onMounted, nextTick} from 'vue'
 import {ElMessage, ElMessageBox} from "element-plus";
-import {getBaseCountryJsonAll, getBaseJsonAll, getUidJson, postUidPlan, removeUidList,getAllUid} from "@api/auto_plan/autoPlan";
+import {
+  getBaseCountryJsonAll,
+  getBaseJsonAll,
+  getUidJson,
+  postUidPlan,
+  removeUidList,
+  getAllUid
+} from "@api/auto_plan/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
 import {
   countryListDefault,
@@ -15,29 +22,30 @@ import {
 import draggable from 'vuedraggable'
 import {debounce} from 'lodash-es';
 import {toHomePage} from "@api/web/web.js";
-const cloud=ref({
-  UidList:[],
+
+const cloud = ref({
+  UidList: [],
   LoadingUidList: false,
   lastRequestTime: 0,
   // 設定冷卻時間（單位：毫秒），例如每 1 秒最多請求 1 次
   cooldownMs: 1000,
 })
 const querySearchAsync = (queryString, cb) => {
-  if (queryString?.trim() === ""||!queryString) {
+  if (queryString?.trim() === "" || !queryString) {
     cb(cloud.value.UidList)
-  }else {
+  } else {
     cb([])
   }
 }
 const findAllUid = async () => {
   const res = await getAllUid()
-  cloud.value.UidList=res
+  cloud.value.UidList = res
   cloud.value.lastRequestTime = Date.now()
 }
 const initAllUid = async () => {
   try {
     await findAllUid()
-  }catch (e) {
+  } catch (e) {
   }
 }
 const loadCloudUidListIfNeeded = async () => {
@@ -70,6 +78,7 @@ const hasCloudUidList = computed(() => {
 const handleUidSelect = (item) => {
   uid.value = item
   ElMessage.success(`已选择云端 UID：${item}`)
+  findDomains()
 }
 // 配置列表 → 核心数据结构改为 array
 const configs = ref([])
@@ -166,7 +175,7 @@ const removeConfigToBackend = async () => {
   ids.push(uid.value)
   const uidStr = ids.join(',');
   await removeUidList(uidStr)
-  cloud.value.UidList= cloud.value.UidList.filter(item => item !== uid.value)
+  cloud.value.UidList = cloud.value.UidList.filter(item => item !== uid.value)
   return
 }
 const submitConfigToBackend = async () => {
@@ -275,6 +284,18 @@ const addConfig = (config = undefined) => {
         useFragileResin: false,          // 使用脆弱树脂
         useTransientResin: false,        // 使用须臾树脂（须臾=Transient）
         isNotification: false            // 是否通知
+      },
+      // 新添加幽境
+      autoStygianOnslaught: {
+        physical: [
+          {order: 0, name: "浓缩树脂", open: true, count: 1},
+          {order: 1, name: "原粹树脂", open: true, count: 1},
+          {order: 2, name: "须臾树脂", open: false, count: 1},
+          {order: 3, name: "脆弱树脂", open: false, count: 1}
+        ],
+        specifyResinUse: false,// 是否指定使用
+        bossNum: undefined,
+        fightTeamName: "",
       }
     };
   } else {
@@ -429,6 +450,7 @@ const getFinalConfigs = () => {
   return configs.value.map(c => {
     let autoFight = c.autoFight
     let autoLeyLineOutcrop = c.autoLeyLineOutcrop
+    let autoStygianOnslaught = c.autoStygianOnslaught
     if (autoFight.domainName) {
       const info = domainMap.value.get(autoFight.domainName);
       let index = 1
@@ -453,11 +475,17 @@ const getFinalConfigs = () => {
       selectedType: c.selectedType, // 新增字段
       autoFight: autoFight,
       autoLeyLineOutcrop: autoLeyLineOutcrop,
+      autoStygianOnslaught: autoStygianOnslaught,
     };
     if (c.runType === runTypesDefault()[0]) {
       json.autoLeyLineOutcrop = undefined
+      json.autoStygianOnslaught = undefined
     } else if (c.runType === runTypesDefault()[1]) {
       json.autoFight = undefined
+      json.autoStygianOnslaught = undefined
+    } else if (c.runType === runTypesDefault()[2]) {
+      json.autoFight = undefined
+      json.autoLeyLineOutcrop = undefined
     } else {
       /*      ElMessage.error("请选择类型！")
             throw new Error("请选择类型！")*/
@@ -535,6 +563,20 @@ const getFinalConfigsToKey = () => {
       key += (autoLeyLineOutcrop.isNotification || "")
       key += "|"
       key += (autoLeyLineOutcrop.timeout || "")
+    } else if (item.runType === runTypesDefault()[2]) {
+      let autoStygianOnslaught = item.autoStygianOnslaught
+      let physical = autoStygianOnslaught.physical
+      key += (autoStygianOnslaught.bossNum || "")
+      key += "|"
+      key += (autoStygianOnslaught.friendshipTeam || "")
+      key += "|"
+      key += (autoStygianOnslaught.specifyResinUse ? "1" : "")
+      if (autoStygianOnslaught.specifyResinUse) {
+        key += "|"
+        key += (physical.filter(p => p.open).map(p => p.name).join('/') || "")
+        key += "|"
+        key += (physical.filter(p => p.open).map(p => p.count).join('/') || "")
+      }
     }
     key += ","
   })
@@ -590,22 +632,44 @@ const specifyDate = async (item) => {
   }
 }
 const updatePhysicalOrder = (config) => {
-  config.autoFight.physical.forEach((item, index) => {
-    item.order = index;
-  });
-  // 至少保留一个启用
-  const enabledCount = config.autoFight.physical
-      .filter(item => item.open).length
+  if (config.runType === runTypesDefault()[1]) {
+    config.autoFight.physical.forEach((item, index) => {
+      item.order = index;
+    });
+    // 至少保留一个启用
+    const enabledCount = config.autoFight.physical
+        .filter(item => item.open).length
 
-  if (enabledCount === 0) {
-    ElMessage({
-      type: 'error',
-      message: '至少保留一个启用！'
-    })
-    const fallback = config.autoFight.physical.find(
-        item => item.name === '原粹树脂'
-    )
-    if (fallback) fallback.open = true
+    if (enabledCount === 0) {
+      ElMessage({
+        type: 'error',
+        message: '至少保留一个启用！'
+      })
+      const fallback = config.autoFight.physical.find(
+          item => item.name === '原粹树脂'
+      )
+      if (fallback) fallback.open = true
+    }
+  } else if (config.runType === runTypesDefault()[2]) {
+    if (config.autoStygianOnslaught.specifyResinUse) {
+      config.autoStygianOnslaught.physical.forEach((item, index) => {
+        item.order = index;
+      })
+      // 至少保留一个启用
+      const enabledCount = config.autoStygianOnslaught.physical
+          .filter(item => item.open).length
+
+      if (enabledCount === 0) {
+        ElMessage({
+          type: 'error',
+          message: '至少保留一个启用！'
+        })
+        const fallback = config.autoStygianOnslaught.physical.find(
+            item => item.name === '原粹树脂'
+        )
+        if (fallback) fallback.open = true
+      }
+    }
   }
 };
 const copyToClipboard = (text) => {
@@ -627,10 +691,14 @@ const handleCurrentConfig = (config, type) => {
     config.showDaysDialog = true
   } else if (type === "hide-day") {
     config.showDaysDialog = false
-  } else if (type === "show-physical") {
-    config.showPhysicalDialog = true
-  } else if (type === "hide-physical") {
-    config.showPhysicalDialog = false
+  } else if (type === "show-physical-domain") {
+    config.showPhysicalDialogFromDomain = true
+  } else if (type === "hide-physical-domain") {
+    config.showPhysicalDialogFromDomain = false
+  } else if (type === "show-physical-stygianOnslaught") {
+    config.showPhysicalDialogFromStygianOnslaught = true
+  } else if (type === "hide-physical-stygianOnslaught") {
+    config.showPhysicalDialogFromStygianOnslaught = false
   }
   updateCurrentConfig(config)
 }
@@ -656,6 +724,10 @@ const batchJson = ref({
       // useFragileResin: false,          // 使用脆弱树脂
       // useTransientResin: false,        // 使用须臾树脂（须臾=Transient）
       // isNotification: false            // 是否通知
+    },
+    autoStygianOnslaught:{
+      bossNum: undefined,
+      friendshipTeam: "",
     }
   }
 })
@@ -782,6 +854,7 @@ const handleConfigSelection = (configId, isSelected) => {
 const batchUpdate = () => {
   const batch = batchJson.value.batch;
   const autoLeyLineOutcrop = batch.autoLeyLineOutcrop;
+  const autoStygianOnslaught = batch.autoStygianOnslaught;
   const autoFight = batch.autoFight;
   configs.value.forEach(config => {
     if (batchJson.value.selectedConfigs.has(config.id)) {
@@ -792,6 +865,9 @@ const batchUpdate = () => {
         //地脉
         config.autoLeyLineOutcrop.team = autoLeyLineOutcrop.team
         config.autoLeyLineOutcrop.friendshipTeam = autoLeyLineOutcrop.friendshipTeam
+      } else if (config.runType === runTypesDefault()[2]) {
+        config.autoStygianOnslaught.friendshipTeam = autoStygianOnslaught.friendshipTeam
+        config.autoStygianOnslaught.bossNum = autoStygianOnslaught.bossNum
       }
     }
   })
@@ -813,25 +889,25 @@ const batchUpdate = () => {
                 :fetch-suggestions="querySearchAsync"
                 placeholder="设置UID/点击云端配置"
                 :trigger-on-focus="hasCloudUidList"
-            :clearable="true"
-            :show-loading="cloud.LoadingUidList"
-            @select="handleUidSelect"
-            @focus="loadCloudUidListIfNeeded"
-            style="width: 180px;"
+                :clearable="true"
+                :show-loading="cloud.LoadingUidList"
+                @select="handleUidSelect"
+                @focus="loadCloudUidListIfNeeded"
+                style="width: 180px;"
             >
-            <template #default="{ item }">
-              <div class="uid-item">
-                <span class="uid-text">{{ item }}</span>
-<!--                <span v-if="item.lastSync" class="uid-time">最后同步: {{ item.lastSync }}</span>-->
-              </div>
-            </template>
+              <template #default="{ item }">
+                <div class="uid-item">
+                  <span class="uid-text">{{ item }}</span>
+                  <!--                <span v-if="item.lastSync" class="uid-time">最后同步: {{ item.lastSync }}</span>-->
+                </div>
+              </template>
 
             </el-autocomplete>
           </div>
 
-<!--          <div class="sort-control-card">
-            <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
-          </div>-->
+          <!--          <div class="sort-control-card">
+                      <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
+                    </div>-->
           <!-- 添加配置按钮 -->
           <button @click="addConfig()" class="btn btn-add">➕ 添加一条配置</button>
           <div class="sort-control-card">
@@ -910,7 +986,7 @@ const batchUpdate = () => {
         </el-dialog>
         <el-dialog
             v-if="currentConfig"
-            v-model="currentConfig.showPhysicalDialog"
+            v-model="currentConfig.showPhysicalDialogFromDomain"
             title="调整树脂使用顺序与启用状态"
             width="520px"
             direction="rtl"
@@ -938,7 +1014,46 @@ const batchUpdate = () => {
             </draggable>
 
             <div class="dialog-actions" style="margin-top: 24px; text-align: right;">
-              <el-button @click="currentConfig.showPhysicalDialog = false">关闭</el-button>
+              <el-button @click="currentConfig.showPhysicalDialogFromDomain = false">关闭</el-button>
+            </div>
+          </div>
+        </el-dialog>
+        <el-dialog
+            v-if="currentConfig"
+            v-model="currentConfig.showPhysicalDialogFromStygianOnslaught"
+            title="调整树脂使用顺序与启用状态"
+            width="520px"
+            direction="rtl"
+            :close-on-click-modal="false"
+        >
+          <div class="dialog-content">
+            <div class="selector-title">拖拽调整顺序</div>
+            <draggable
+                v-if="currentConfig"
+                v-model="currentConfig.autoStygianOnslaught.physical"
+                item-key="name"
+                handle=".draggable-item"
+                @end="updatePhysicalOrder(currentConfig)"
+            >
+              <template #item="{ element }">
+                <div class="draggable-item">
+                  <span class="drag-handle">☰</span>
+                  <span class="physical-name">{{ element.name }}</span>
+                  <div class="physical-count">
+                  <span class="physical-count-label">运行次数:</span>
+                  <el-input-number class="physical-count-number" width="10px" v-model="element.count" min="0"
+                                   placeholder="运行次数" style="width: 100px;"></el-input-number>
+                  </div>
+                  <el-switch
+                      v-model="element.open"
+                      @change="updatePhysicalOrder(currentConfig)"
+                  />
+                </div>
+              </template>
+            </draggable>
+
+            <div class="dialog-actions" style="margin-top: 24px; text-align: right;">
+              <el-button @click="currentConfig.showPhysicalDialogFromStygianOnslaught = false">关闭</el-button>
             </div>
           </div>
         </el-dialog>
@@ -1037,6 +1152,29 @@ const batchUpdate = () => {
                 <label>好感队伍名称（可选）：</label>
                 <input class="limited-input" v-model="batchJson.batch.autoLeyLineOutcrop.friendshipTeam"
                        placeholder="队伍1"/>
+              </div>
+            </div>
+            <div class="batch-card" style="margin-top: 24px;">
+              <div class="card-header">
+                <label class="result-key">幽境配置</label>
+              </div>
+              <div class="batch-item">
+                <label>队伍名称（可选）：</label>
+                <input class="limited-input" v-model="batchJson.batch.autoStygianOnslaught.friendshipTeam"
+                       placeholder="队伍1 / 主C+副C+辅助"/>
+              </div>
+              <div class="batch-item">
+                <label>指定刷取战场（可选）：</label>
+                <select v-model="batchJson.batch.autoStygianOnslaught.bossNum">
+                  <option :value="undefined">请选择</option>
+                  <option
+                      v-for="type in [{key:'战场一',value:1},{key:'战场二',value:2},{key:'战场三',value:3}] "
+                      :key="type.key"
+                      :value="type.value"
+                  >
+                    {{ type.key }}
+                  </option>
+                </select>
               </div>
             </div>
           </div>
@@ -1214,7 +1352,7 @@ const batchUpdate = () => {
                 <!-- 原 physical-display 改成 -->
                 <div
                     class="physical-display"
-                    @click="handleCurrentConfig(config,'show-physical')"
+                    @click="handleCurrentConfig(config,'show-physical-domain')"
                 >
                 <span>
                   {{
@@ -1314,6 +1452,52 @@ const batchUpdate = () => {
                     default="120"
                     placeholder="0 = 不限制"
                 />
+              </div>
+            </div>
+            <div class="stygianOnslaught-section" v-if="config.runType === runTypes[2]">
+              <div class="form-group stygianOnslaught">
+                <label>队伍名称（可选）：</label>
+                <input class="limited-input" v-model="config.autoStygianOnslaught.friendshipTeam"
+                       placeholder="队伍1 / 主C+副C+辅助"/>
+              </div>
+              <div class="form-group stygianOnslaught">
+              <label>指定刷取战场（可选）：</label>
+<!--              <el-input-number min="1" max="3" v-model="config.autoStygianOnslaught.bossNum"-->
+<!--                               placeholder="战场一,战场二,战场三"/>-->
+                <select v-model="config.autoStygianOnslaught.bossNum">
+                  <option :value="undefined">请选择</option>
+                  <option
+                      v-for="type in [{key:'战场一',value:1},{key:'战场二',value:2},{key:'战场三',value:3}] "
+                      :key="type.key"
+                      :value="type.value"
+                  >
+                    {{ type.key }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group stygianOnslaught">
+                <label>自定义树脂使用：</label>
+                <el-switch
+                    v-model="config.autoStygianOnslaught.specifyResinUse"
+                />
+              </div>
+              <!--          <hr/>-->
+              <div class="form-group stygianOnslaught">
+                <label>自定义树脂使用顺序：</label>
+                <!-- 原 physical-display 改成 -->
+                <div
+                    class="physical-display"
+                    @click="handleCurrentConfig(config,'show-physical-stygianOnslaught')"
+                >
+                <span>
+                  {{
+                    config.autoStygianOnslaught.physical
+                        .filter(p => p.open)
+                        .map(p => p.name + p.count + "次")
+                        .join(' → ') || '未选择'
+                  }}
+                </span>
+                </div>
               </div>
             </div>
             <div class="config-btn">
@@ -2163,5 +2347,23 @@ h2 {
   border-color: #409eff;
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
+.batch-item select {
+  width: 25%;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+  cursor: pointer;
+}
 
+.batch-item select:focus {
+  outline: none;
+  border-color: #409eff;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+}
+
+.batch-item select:hover {
+  border-color: #409eff;
+}
 </style>
