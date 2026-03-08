@@ -111,37 +111,9 @@ const fetchDomains = async () => {
 </script>
 
 <style scoped>
-:root {
-  --sidebar-bg-light: rgba(255, 255, 255, 0.95);
-  --sidebar-bg-dark: rgba(30, 41, 59, 0.95);
-  --sidebar-border-light: rgba(0, 118, 255, 0.73);
-  --sidebar-border-dark: rgba(99, 179, 237, 0.5);
-  --header-bg-light: rgba(255, 255, 255, 0.85);
-  --header-bg-dark: rgba(30, 41, 59, 0.85);
-  --card-bg-light: linear-gradient(135deg, #b6b2b6, #91dcd6);
-  --card-bg-dark: linear-gradient(135deg, #4a5568, #2d3748);
-  --card-header-light: linear-gradient(135deg, #b6b2b6, #00ffff);
-  --card-header-dark: linear-gradient(135deg, #4a5568, #0ea5e9);
-  --text-primary-light: #2c3e50;
-  --text-primary-dark: #e2e8f0;
-  --text-gradient-light: linear-gradient(90deg, #ff6b6b, #ef006a);
-  --text-gradient-dark: linear-gradient(90deg, #fbb6ce, #f687b3);
-}
-
-.home {
+.home{
   width: 100vw;
   height: 100vh !important;
-  background: url("@assets/MHY_XTLL.png");
-  background-attachment: fixed;
-  background-size: cover;
-  background-position: center;
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .home {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  }
 }
 
 .layout {
@@ -157,21 +129,10 @@ const fetchDomains = async () => {
   left: 0;
   width: 260px;
   height: 100vh;
-  border-right: 1px solid var(--sidebar-border-light);
+  border-right: 1px solid rgba(0, 118, 255, 0.73);
   padding: 24px 16px;
   overflow-y: auto;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-  background: var(--sidebar-bg-light);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .sidebar {
-    background: var(--sidebar-bg-dark);
-    border-color: var(--sidebar-border-dark);
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
-  }
 }
 
 .type-group {
@@ -195,47 +156,26 @@ const fetchDomains = async () => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-@media (prefers-color-scheme: dark) {
-  .type-header {
-    color: #63b3ed;
-  }
-}
-
 /* ==================== 右侧主内容 ==================== */
 .header-fixed {
-  width: calc(100% - 560px);
+  width: 20%;
   position: fixed;
   top: 10px;
-  left: 300px;
+  left: 300px; /* 与左侧 sidebar 宽度对齐 */
   right: 300px;
-  background: var(--header-bg-light);
+/*  background: #ffffff;*/
   padding: 16px 40px;
   border-radius: 12px;
   z-index: 10;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px); /* 毛玻璃效果 */
   gap: 20px;
-  transition: all 0.3s ease;
 }
-
-@media (prefers-color-scheme: dark) {
-  .header-fixed {
-    background: var(--header-bg-dark);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-}
-
 .header-fixed h1 {
   font-size: 26px;
   font-weight: 700;
   color: #4195ff;
   margin-bottom: 4px;
-}
-
-@media (prefers-color-scheme: dark) {
-  .header-fixed h1 {
-    color: #63b3ed;
-  }
 }
 
 .header-fixed h2 {
@@ -246,15 +186,9 @@ const fetchDomains = async () => {
   margin-top: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  .header-fixed h2 {
-    color: #fbb6ce;
-  }
-}
-
 .main-content {
-  margin-left: 260px;
-  margin-top: 80px;
+  margin-left: 260px;          /* 关键修复：避免与左侧 fixed 重叠 */
+  margin-top: 80px; /* 为固定头部预留空间 */
   flex: 1;
   padding: 24px 40px;
   overflow-y: auto;
@@ -267,12 +201,6 @@ const fetchDomains = async () => {
   margin-bottom: 4px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .main-content h1 {
-    color: #63b3ed;
-  }
-}
-
 .main-content h2 {
   font-size: 16px;
   color: #e6a327;
@@ -281,33 +209,20 @@ const fetchDomains = async () => {
   margin-top: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  .main-content h2 {
-    color: #fbb6ce;
-  }
-}
-
-/* 树形结构 */
+/* 树形结构 - 保留你的原背景 */
 .card-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 自适应列数 */
+  gap: 20px; /* 卡片间距 */
   padding: 20px 0;
 }
 
 .card {
-  background: var(--card-bg-light);
+  background: linear-gradient(135deg, #b6b2b6, #91dcd6);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .card {
-    background: var(--card-bg-dark);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
@@ -315,24 +230,12 @@ const fetchDomains = async () => {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-@media (prefers-color-scheme: dark) {
-  .card:hover {
-    box-shadow: 0 8px 20px rgba(99, 179, 237, 0.25);
-  }
-}
-
 .card-header {
   padding: 16px 20px;
-  background: var(--card-header-light);
+  background: linear-gradient(135deg, #b6b2b6, #00ffff);
   color: #ffffff;
   font-weight: 600;
   font-size: 18px;
-}
-
-@media (prefers-color-scheme: dark) {
-  .card-header {
-    background: var(--card-header-dark);
-  }
 }
 
 .card-body {
@@ -348,21 +251,16 @@ const fetchDomains = async () => {
 .card-list-items li {
   padding: 8px 0;
   font-size: 15px;
+ /* color: rgba(149, 31, 77, 0.78);*/
   border-bottom: 1px solid #f1f5f9;
-  color: transparent;
-  background: var(--text-gradient-light);
-  -webkit-background-clip: text;
-  background-clip: text;
-  font-size: 1.2rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
 
-@media (prefers-color-scheme: dark) {
-  .card-list-items li {
-    background: var(--text-gradient-dark);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
+  color: transparent;
+  background: linear-gradient(90deg, #ff6b6b, #ef006a); /* 渐变色方向和颜色 */
+  -webkit-background-clip: text; /* 兼容 WebKit 内核浏览器 */
+  background-clip: text;/* 将背景裁剪为文字形状*/
+  color: transparent; /* 文字颜色设为透明 */
+  font-size: 1.2rem; /* 可根据需要调整字体大小 */
+  font-weight: 600; /* 可根据需要调整字体粗细 */
 }
 
 .card-list-items li:last-child {
@@ -375,29 +273,15 @@ const fetchDomains = async () => {
 
 .tree-node {
   margin-bottom: 16px;
-  background: var(--card-bg-light);
+  background: linear-gradient(135deg, #b6b2b6, #91dcd6);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(230, 227, 227, 0.1);
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .tree-node {
-    background: var(--card-bg-dark);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
 }
 
 .tree-node:hover {
   box-shadow: 0 10px 25px -5px rgba(138, 35, 35, 0.1);
   transform: translateY(-2px);
-}
-
-@media (prefers-color-scheme: dark) {
-  .tree-node:hover {
-    box-shadow: 0 10px 25px -5px rgba(99, 179, 237, 0.2);
-  }
 }
 
 .node-header {
@@ -408,24 +292,10 @@ const fetchDomains = async () => {
   background: linear-gradient(135deg, #b6b2b6, #91dcd6);
   cursor: pointer;
   position: relative;
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .node-header {
-    color: #e2e8f0;
-    background: var(--card-bg-dark);
-  }
 }
 
 .node-header:hover {
   background: linear-gradient(135deg, #b6b2b6, #00ffff);
-}
-
-@media (prefers-color-scheme: dark) {
-  .node-header:hover {
-    background: linear-gradient(135deg, #4a5568, #0ea5e9);
-  }
 }
 
 .node-header::after {
@@ -437,36 +307,16 @@ const fetchDomains = async () => {
   transition: transform 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  .node-header::after {
-    color: #cbd5e1;
-  }
-}
-
 .tree-node:has(.node-list:not([style*="none"])) .node-header::after {
   transform: rotate(90deg);
   color: #3b82f6;
 }
 
-@media (prefers-color-scheme: dark) {
-  .tree-node:has(.node-list:not([style*="none"])) .node-header::after {
-    color: #63b3ed;
-  }
-}
-
 .node-list {
   list-style: none;
   padding: 0;
-  background: var(--card-bg-light);
+  background: linear-gradient(135deg, #b6b2b6, #91dcd6);
   border-top: 1px solid #e2e8f0;
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .node-list {
-    background: var(--card-bg-dark);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
 }
 
 .node-list li {
@@ -474,25 +324,11 @@ const fetchDomains = async () => {
   font-size: 15px;
   color: rgba(0, 0, 0, 0.78);
   border-bottom: 1px solid #f1f5f9;
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .node-list li {
-    color: rgba(255, 255, 255, 0.85);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
 }
 
 .node-list li:hover {
   background: linear-gradient(135deg, #b6b2b6, #00ffe9);
   padding-left: 32px;
-}
-
-@media (prefers-color-scheme: dark) {
-  .node-list li:hover {
-    background: linear-gradient(135deg, #4a5568, #0ea5e9);
-  }
 }
 
 /* 空状态 */
@@ -503,11 +339,18 @@ const fetchDomains = async () => {
   font-size: 16px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .main-content > div:last-child {
-    color: #718096;
-  }
-}
+/*!* 固定底部按钮 *!
+.fixed-footer {
+  position: fixed;
+  bottom: 0;
+  left: 260px;
+  right: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}*/
 
 .btn.secondary {
   padding: 10px 24px;
@@ -518,182 +361,10 @@ const fetchDomains = async () => {
   cursor: pointer;
 }
 
-/* 手机端适配 */
+/* 响应式 */
 @media (max-width: 768px) {
-  .sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    border-right: none;
-    border-bottom: 1px solid var(--sidebar-border-light);
-    padding: 15px;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .sidebar {
-      border-bottom-color: var(--sidebar-border-dark);
-    }
-  }
-
-  .layout {
-    flex-direction: column;
-  }
-
-  .header-fixed {
-    position: relative;
-    width: calc(100% - 30px);
-    left: 15px;
-    right: 15px;
-    top: 0;
-    padding: 12px 20px;
-  }
-
-  .header-fixed h1 {
-    font-size: 20px;
-  }
-
-  .header-fixed h2 {
-    font-size: 14px;
-    margin-bottom: 15px;
-  }
-
-  .main-content {
-    margin-left: 0;
-    margin-top: 0;
-    padding: 15px;
-  }
-
-  .main-content h1 {
-    font-size: 20px;
-  }
-
-  .main-content h2 {
-    font-size: 14px;
-  }
-
-  .card-list {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-
-  .card {
-    border-radius: 10px;
-  }
-
-  .card-header {
-    padding: 12px 16px;
-    font-size: 16px;
-  }
-
-  .card-body {
-    padding: 12px 16px;
-  }
-
-  .card-list-items li {
-    font-size: 1rem;
-    padding: 6px 0;
-  }
-
-  .tree-view {
-    max-width: 100%;
-  }
-
-  .tree-node {
-    border-radius: 10px;
-  }
-
-  .node-header {
-    padding: 14px 18px;
-    font-size: 15px;
-  }
-
-  .node-header::after {
-    right: 18px;
-    font-size: 18px;
-  }
-
-  .node-list li {
-    padding: 12px 20px;
-    font-size: 14px;
-  }
-
-  .type-header {
-    padding: 12px 16px;
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  .sidebar {
-    padding: 12px;
-  }
-
-  .header-fixed {
-    width: calc(100% - 24px);
-    left: 12px;
-    right: 12px;
-    padding: 10px 15px;
-  }
-
-  .header-fixed h1 {
-    font-size: 18px;
-  }
-
-  .header-fixed h2 {
-    font-size: 12px;
-  }
-
-  .main-content {
-    padding: 12px;
-  }
-
-  .card-header {
-    padding: 10px 14px;
-    font-size: 15px;
-  }
-
-  .card-body {
-    padding: 10px 14px;
-  }
-
-  .card-list-items li {
-    font-size: 0.9rem;
-  }
-
-  .node-header {
-    padding: 12px 16px;
-    font-size: 14px;
-  }
-
-  .node-header::after {
-    font-size: 16px;
-    right: 16px;
-  }
-
-  .node-list li {
-    padding: 10px 16px;
-    font-size: 13px;
-  }
-
-  .type-header {
-    padding: 10px 14px;
-    font-size: 13px;
-  }
-}
-
-/* 横屏手机适配 */
-@media (max-width: 768px) and (orientation: landscape) {
-  .main-content {
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
-  }
-
-  .card-list {
-    gap: 10px;
-  }
-
-  .card {
-    margin-bottom: 0;
-  }
+  .sidebar { width: 220px; }
+  .main-content { margin-left: 220px; }
+  .fixed-footer { left: 220px; }
 }
 </style>

@@ -230,64 +230,33 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-:root {
-  --page-bg-light: url("@assets/MHY_XTLL.png");
-  --page-bg-dark: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  --container-bg-light: #fadbd8;
-  --container-bg-dark: rgba(45, 55, 72, 0.8);
-  --upload-bg-light: #fafafa;
-  --upload-bg-dark: rgba(30, 41, 59, 0.6);
-  --upload-border-light: #bbb;
-  --upload-border-dark: rgba(99, 179, 237, 0.5);
-  --code-bg-light: #ececea;
-  --code-bg-dark: rgba(30, 41, 59, 0.8);
-  --text-primary-light: #2c3e50;
-  --text-primary-dark: #e2e8f0;
-  --table-header-light: rgb(177, 182, 189);
-  --table-header-dark: rgba(75, 85, 99, 0.9);
-}
-
-.home {
+.home{
+/*  padding: 20px;*/
+  /*margin: 0 auto;*/
   min-height: 100vh;
   align-items: center;
   justify-content: center;
-  background: var(--page-bg-light);
-  background-attachment: fixed;
-  background-size: cover;
+  background: url("@assets/MHY_XTLL.png");
+  /* 关键：固定背景，不随滚动重复或变形 */
+  background-attachment: fixed;         /* ← 核心属性 */
+  background-size: cover;               /* 覆盖整个容器 */
   background-position: center;
-  transition: all 0.3s ease;
 }
-
-@media (prefers-color-scheme: dark) {
-  .home {
-    background: var(--page-bg-dark);
-  }
-}
-
 .markdown-container {
   padding: 20px;
+  /*  max-width: 960px;*/
   max-width: 60%;
   margin: 0 auto;
-  background: var(--container-bg-light);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .markdown-container {
-    background: var(--container-bg-dark);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  }
+  background: #fadbd8;
+  /*background: linear-gradient(135deg, rgba(84, 197, 243, 0.67), rgba(86, 197, 204, 0.66)) !important; !* 添加渐变背景 *!*/
 }
 
 .upload-area {
-  border: 2px dashed var(--upload-border-light);
+  border: 2px dashed #bbb;
   border-radius: 12px;
   padding: 80px 24px;
   text-align: center;
-  background: var(--upload-bg-light);
+  background: #fafafa;
   transition: all 0.25s ease;
   min-height: 240px;
   display: flex;
@@ -295,24 +264,11 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-@media (prefers-color-scheme: dark) {
-  .upload-area {
-    background: var(--upload-bg-dark);
-    border-color: var(--upload-border-dark);
-  }
-}
-
 .upload-area.drag-over {
   border-color: #409eff;
   background: #ecf5ff;
   border-width: 3px;
   box-shadow: 0 0 12px rgba(64, 158, 255, 0.3);
-}
-
-@media (prefers-color-scheme: dark) {
-  .upload-area.drag-over {
-    background: rgba(50, 60, 80, 0.8);
-  }
 }
 
 .upload-btn {
@@ -328,51 +284,35 @@ onUnmounted(() => {
 }
 
 .rendered-content {
-  line-height: 1.8;
-  color: var(--text-primary-light);
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .rendered-content {
-    color: var(--text-primary-dark);
-  }
+  /*line-height: 2.7;*/
 }
 
 .rendered-content :deep(pre),
 .rendered-content :deep(pre code),
 .rendered-content :deep(code) {
-  white-space: pre-wrap !important;
-  margin: 0.4em 0 !important;
-  padding: 0.1em 0.5em !important;
-  background: var(--code-bg-light);
+  /* line-height: 3 !important;       !* 推荐 1.4 ~ 1.6，代码最舒适 *!*/
+  white-space: pre-wrap !important; /* 保留换行，但允许自动换行 */
+  margin: 0.4em 0 !important; /* 上下外边距减小 */
+  padding: 0.1em 0.5em !important; /* 上下内边距减小，左右稍宽一点好看 */
+  background: #ececea;
+  /*background: linear-gradient(135deg, rgba(242, 197, 92), rgb(242, 197, 92)) !important; !* 添加渐变背景 *!*/
   border-radius: 10px;
-  font-size: 0.94em;
+  /*overflow-x: auto;*/
+  font-size: 0.94em; /* 字体略小一点，节省高度*/
   color: rgb(255, 0, 107);
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-  transition: all 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(pre),
-  .rendered-content :deep(pre code),
-  .rendered-content :deep(code) {
-    background: var(--code-bg-dark);
-    color: #fbb6ce;
-  }
-}
-
+/* 如果你用了 hljs 的类，也可以针对它设置 */
 .rendered-content :deep(.hljs) {
+  /*line-height: 3 !important;*/
   color: rgb(186, 112, 7);
-  transition: all 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(.hljs) {
-    color: #f6ad55;
-  }
-}
-
+/*!* 防止其他地方的 line-height 继承干扰 *!
+.rendered-content :deep(pre *) {
+  line-height: 3 !important;
+}*/
 .loading,
 .error {
   text-align: center;
@@ -384,23 +324,14 @@ onUnmounted(() => {
   color: #909399;
 }
 
-@media (prefers-color-scheme: dark) {
-  .loading {
-    color: #a0aec0;
-  }
-}
-
 .error {
   color: #f56c6c;
 }
 
-@media (prefers-color-scheme: dark) {
-  .error {
-    color: #fc8181;
-  }
-}
-
 /* Mermaid 相关样式 */
+/* Mermaid 强制优化样式 - sequenceDiagram 专用：浅色背景 + 文字不粗 + 高对比 */
+
+/* 整体容器 */
 .rendered-content :deep(.mermaid) {
   margin: 2rem 0;
   padding: 1rem;
@@ -416,61 +347,36 @@ onUnmounted(() => {
   display: block;
 }
 
+/* participant / actor 框背景 - 强制浅色 */
 .rendered-content :deep(.mermaid .actor rect),
 .rendered-content :deep(.mermaid g rect.actor) {
-  fill: #f1f5f9 !important;
-  stroke: #cbd5e1 !important;
+  fill: #f1f5f9 !important; /* 非常浅灰白 */
+  stroke: #cbd5e1 !important; /* 浅灰边框 */
   stroke-width: 1.8px !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(.mermaid .actor rect),
-  .rendered-content :deep(.mermaid g rect.actor) {
-    fill: #374151 !important;
-    stroke: #6b7280 !important;
-  }
-}
-
+/* 消息文字（箭头上的文字） - 深色、不粗 */
 .rendered-content :deep(.mermaid .messageText tspan),
 .rendered-content :deep(.mermaid .messageText text),
 .rendered-content :deep(.mermaid .signalText) {
-  fill: #111827 !important;
-  font-weight: normal !important;
-  stroke: none !important;
-  font-size: 14px !important;
+  fill: #111827 !important; /* 深灰，几乎黑 */
+  font-weight: normal !important; /* 不加粗 */
+  stroke: none !important; /* 移除任何描边，避免变粗 */
+  font-size: 14px !important; /* 可微调大小 */
 }
 
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(.mermaid .messageText tspan),
-  .rendered-content :deep(.mermaid .messageText text),
-  .rendered-content :deep(.mermaid .signalText) {
-    fill: #f3f4f6 !important;
-  }
-}
-
+/* participant / actor 文字（框上面的名字） - 深色、不粗 */
 .rendered-content :deep(.mermaid .actor text) {
-  fill: #0f172a !important;
+  fill: #0f172a !important; /* 深 slate */
   font-weight: normal !important;
   stroke: none !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(.mermaid .actor text) {
-    fill: #f9fafb !important;
-  }
-}
-
+/* Note 框（如果你的图有 Note） - 浅黄色背景 + 深文字 */
 .rendered-content :deep(.mermaid .note rect) {
-  fill: #fefce8 !important;
+  fill: #fefce8 !important; /* 浅黄/米白，避免黑 */
   stroke: #ca8a04 !important;
   stroke-width: 1.5px !important;
-}
-
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(.mermaid .note rect) {
-    fill: #422006 !important;
-    stroke: #fbbf24 !important;
-  }
 }
 
 .rendered-content :deep(.mermaid .note text) {
@@ -478,12 +384,7 @@ onUnmounted(() => {
   font-weight: normal !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(.mermaid .note text) {
-    fill: #fcd34d !important;
-  }
-}
-
+/* 箭头/连线 - 中灰可见 */
 .rendered-content :deep(.mermaid .messageLine0 path),
 .rendered-content :deep(.mermaid .messageLine1 path),
 .rendered-content :deep(.mermaid .edgePath path) {
@@ -491,106 +392,57 @@ onUnmounted(() => {
   stroke-width: 1.4px !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(.mermaid .messageLine0 path),
-  .rendered-content :deep(.mermaid .messageLine1 path),
-  .rendered-content :deep(.mermaid .edgePath path) {
-    stroke: #9ca3af !important;
-  }
-}
-
 .rendered-content :deep(.mermaid marker path) {
   fill: #64748b !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(.mermaid marker path) {
-    fill: #9ca3af !important;
-  }
-}
-
+/* 序号（autonumber）文字 - 保持清晰 */
 .rendered-content :deep(.mermaid .sequence-number) {
   fill: #6b7280 !important;
   font-weight: normal !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(.mermaid .sequence-number) {
-    fill: #d1d5db !important;
-  }
-}
-
-/* Markdown 表格样式 */
+/* Markdown 表格样式 - 美化 + 响应式 + 横向滚动 */
 .rendered-content :deep(table) {
   max-width: 80%;
-  border-collapse: separate;
-  border-spacing: 0;
+  /*width: 100%;
+  max-width: 100%;*/
+  border-collapse: separate; /* 必须改为 separate 才能实现圆角 */
+  border-spacing: 0; /* 去除单元格间距 */
   margin: 1.5em 0;
   font-size: 0.95em;
   overflow-x: auto;
   display: block;
-  border-radius: 7px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(table) {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
+  border-radius: 7px; /* 表格整体圆角 */
+  overflow: hidden; /* 让内部内容不溢出圆角 */
+  /*border: 1px solid #000000;          !* 外边框黑色 *!*/
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 可选：轻微阴影增加立体感 */
 }
 
 .rendered-content :deep(table thead th),
 .rendered-content :deep(table thead td) {
-  background: var(--table-header-light);
+  background: rgb(177, 182, 189); /* 表头浅灰背景 */
+  /*  background: linear-gradient(135deg, rgb(124, 123, 123), rgb(255, 255, 255)) !important;*/
   color: #1e293b;
+  /*  font-weight: 600;*/
   text-align: left;
   padding: 0.75em 1em;
-  border-bottom: 1px solid #000000;
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(table thead th),
-  .rendered-content :deep(table thead td) {
-    background: var(--table-header-dark);
-    color: #e2e8f0;
-    border-bottom-color: #9ca3af;
-  }
+  /* border-bottom: 2px solid #cbd5e1;*/
+  border-bottom: 1px solid #000000; /* 表头下边线黑色 */
 }
 
 .rendered-content :deep(table tbody tr) {
-  border-bottom: 1px solid #000000;
+  border-bottom: 1px solid #000000; /* 行间分隔线黑色 */
   transition: background 0.2s;
   background: linear-gradient(135deg, rgb(198, 51, 159), rgb(255, 255, 255)) !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(table tbody tr) {
-    border-bottom-color: #9ca3af;
-    background: linear-gradient(135deg, rgba(198, 51, 159, 0.4), rgba(45, 55, 72, 0.6)) !important;
-  }
-}
-
 .rendered-content :deep(table tbody tr:nth-child(odd)) {
-  background: linear-gradient(135deg, rgb(193, 154, 57), rgb(255, 255, 255)) !important;
-}
-
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(table tbody tr:nth-child(odd)) {
-    background: linear-gradient(135deg, rgba(193, 154, 57, 0.3), rgba(45, 55, 72, 0.6)) !important;
-  }
+  background: linear-gradient(135deg, rgb(193, 154, 57), rgb(255, 255, 255)) !important; /* 隔行浅色（zebra stripe） */
 }
 
 .rendered-content :deep(table tbody tr:hover) {
-  background: linear-gradient(135deg, rgb(0, 248, 255), rgb(255, 255, 255)) !important;
-}
-
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(table tbody tr:hover) {
-    background: linear-gradient(135deg, rgba(0, 248, 255, 0.3), rgba(45, 55, 72, 0.8)) !important;
-  }
+  background: linear-gradient(135deg, rgb(0, 248, 255), rgb(255, 255, 255)) !important; /* 鼠标悬停高亮 */
 }
 
 .rendered-content :deep(table td),
@@ -598,18 +450,9 @@ onUnmounted(() => {
   padding: 0.75em 1em;
   vertical-align: top;
   border: 1px solid #e2e8f0;
-  color: var(--text-primary-light);
-  transition: all 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  .rendered-content :deep(table td),
-  .rendered-content :deep(table th) {
-    border-color: #4a5568;
-    color: var(--text-primary-dark);
-  }
-}
-
+/* 表格对齐支持（通过 Markdown 语法 :--: | :--- | ---:） */
 .rendered-content :deep(table th.align-center),
 .rendered-content :deep(table td.align-center) {
   text-align: center;
@@ -620,123 +463,40 @@ onUnmounted(() => {
   text-align: right;
 }
 
-/* 响应式设计 */
+/* 响应式：小屏幕时允许横向滚动 */
 @media (max-width: 768px) {
-  .markdown-container {
-    max-width: 95%;
-    padding: 15px;
-  }
-
-  .upload-area {
-    padding: 50px 20px;
-    min-height: 180px;
-  }
-
-  .upload-btn {
-    font-size: 1rem;
-  }
-
   .rendered-content :deep(table) {
-    max-width: 100%;
     font-size: 0.9em;
   }
 
   .rendered-content :deep(table td),
   .rendered-content :deep(table th) {
     padding: 0.6em 0.8em;
-    font-size: 0.85rem;
   }
+}
 
-  .rendered-content :deep(pre),
-  .rendered-content :deep(pre code),
-  .rendered-content :deep(code) {
-    font-size: 0.85em;
-    padding: 0.1em 0.4em;
-  }
+/* 如果表格很宽，强制横向滚动 */
+.rendered-content :deep(table-wrapper) {
+  overflow-x: auto;
+  margin: 1em 0;
+}
 
-  .rendered-content :deep(.mermaid) {
-    padding: 0.5rem;
-    margin: 1rem 0;
+/* 暗黑模式额外保障（保持浅背景 + 深文字） */
+@media (prefers-color-scheme: dark) {
+  .rendered-content :deep(.mermaid .actor rect),
+  .rendered-content :deep(.mermaid g rect.actor) {
+    fill: #e5e7eb !important; /* 稍亮的浅灰 */
   }
 
   .rendered-content :deep(.mermaid .messageText tspan),
   .rendered-content :deep(.mermaid .messageText text),
   .rendered-content :deep(.mermaid .signalText),
   .rendered-content :deep(.mermaid .actor text) {
-    font-size: 12px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .markdown-container {
-    max-width: 98%;
-    padding: 12px;
-    border-radius: 8px;
+    fill: #111827 !important;
   }
 
-  .upload-area {
-    padding: 40px 15px;
-    min-height: 150px;
-    border-radius: 8px;
-  }
-
-  .upload-btn {
-    font-size: 0.95rem;
-  }
-
-  .rendered-content :deep(table) {
-    font-size: 0.85em;
-  }
-
-  .rendered-content :deep(table td),
-  .rendered-content :deep(table th) {
-    padding: 0.5em 0.6em;
-    font-size: 0.8rem;
-  }
-
-  .rendered-content :deep(pre),
-  .rendered-content :deep(pre code),
-  .rendered-content :deep(code) {
-    font-size: 0.8em;
-    border-radius: 6px;
-  }
-
-  .rendered-content {
-    line-height: 1.6;
-  }
-
-  .rendered-content :deep(h1) {
-    font-size: 1.5rem;
-  }
-
-  .rendered-content :deep(h2) {
-    font-size: 1.3rem;
-  }
-
-  .rendered-content :deep(h3) {
-    font-size: 1.1rem;
-  }
-}
-
-/* 横屏手机适配 */
-@media (max-width: 768px) and (orientation: landscape) {
-  .home {
-    background-position: center top;
-  }
-
-  .markdown-container {
-    max-height: 90vh;
-    overflow-y: auto;
-    margin: 20px auto;
-  }
-
-  .upload-area {
-    min-height: 120px;
-    padding: 30px 15px;
-  }
-
-  .rendered-content :deep(.mermaid) {
-    max-height: 60vh;
+  .rendered-content :deep(.mermaid .note rect) {
+    fill: #fefce8 !important;
   }
 }
 </style>

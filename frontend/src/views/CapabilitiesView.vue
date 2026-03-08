@@ -265,60 +265,25 @@ const copyToClipboard = (text) => {
 
 
 <style scoped>
-:root {
-  --page-bg-light: url("@assets/MHY_XTLL.png");
-  --page-bg-dark: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  --container-bg-light: linear-gradient(135deg, #f5f7fa, #e4edf9);
-  --container-bg-dark: linear-gradient(135deg, #1e2a3a, #2d3748);
-  --card-bg-light: #ffffff;
-  --card-bg-dark: rgba(45, 55, 72, 0.8);
-  --text-primary-light: #2c3e50;
-  --text-primary-dark: #e2e8f0;
-  --text-secondary-light: #3498db;
-  --text-secondary-dark: #63b3ed;
-  --input-bg-light: #ffffff;
-  --input-bg-dark: rgba(30, 41, 59, 0.8);
-  --input-border-light: #ddd;
-  --input-border-dark: rgba(99, 179, 237, 0.3);
-  --item-bg-light: #fafafa;
-  --item-bg-dark: rgba(50, 60, 80, 0.6);
-  --header-bg-light: #ead152;
-  --header-bg-dark: rgba(234, 209, 82, 0.3);
-  --result-bg-light: linear-gradient(135deg, #ddb568, #ffffff);
-  --result-bg-dark: linear-gradient(135deg, #4a5568, #2d3748);
-  --list-item-bg-light: linear-gradient(135deg, #c22dd1, #91dcd6);
-  --list-item-bg-dark: linear-gradient(135deg, #6b21a3, #3184ce);
-}
-
 .home {
   min-height: 100vh;
-  background: var(--page-bg-light);
-  background-attachment: fixed;
-  background-size: cover;
+  /*  padding: 20px;*/
+  /*margin: 0 auto;*/
+  background: url("@assets/MHY_XTLL.png");
+  /* 关键：固定背景，不随滚动重复或变形 */
+  background-attachment: fixed; /* ← 核心属性 */
+  background-size: cover; /* 覆盖整个容器 */
   background-position: center;
-  transition: all 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  .home {
-    background: var(--page-bg-dark);
-  }
-}
-
+/* 容器布局 */
 .container {
   min-width: 70%;
   margin: 0 auto;
   padding: 20px;
-  background: var(--container-bg-light);
+  background: linear-gradient(135deg, #f5f7fa, #e4edf9);
   min-height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .container {
-    background: var(--container-bg-dark);
-  }
 }
 
 .title {
@@ -326,34 +291,18 @@ const copyToClipboard = (text) => {
   font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 30px;
-  color: var(--text-primary-light);
+  color: #2c3e50;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  .title {
-    color: var(--text-primary-dark);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-}
-
+/* 卡片样式 */
 .card {
-  background: var(--card-bg-light);
+  background: #ffffff;
   border-radius: 12px;
   padding: 25px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   margin-bottom: 30px;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-@media (prefers-color-scheme: dark) {
-  .card {
-    background: var(--card-bg-dark);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
@@ -361,27 +310,15 @@ const copyToClipboard = (text) => {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
-@media (prefers-color-scheme: dark) {
-  .card:hover {
-    box-shadow: 0 10px 25px rgba(99, 179, 237, 0.2);
-  }
-}
-
 .section-title {
   font-size: 1.8rem;
   font-weight: 600;
   margin-bottom: 20px;
-  color: var(--text-secondary-light);
+  color: #3498db;
   text-align: center;
-  transition: all 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  .section-title {
-    color: var(--text-secondary-dark);
-  }
-}
-
+/* 表单项 */
 .form-group {
   margin-bottom: 20px;
 }
@@ -391,33 +328,16 @@ const copyToClipboard = (text) => {
   font-size: 1rem;
   font-weight: 500;
   margin-bottom: 8px;
-  color: var(--text-primary-light);
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .label {
-    color: var(--text-primary-dark);
-  }
+  color: #2c3e50;
 }
 
 .input {
   width: 80%;
   padding: 12px 15px;
-  border: 1px solid var(--input-border-light);
+  border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 1rem;
-  background: var(--input-bg-light);
-  color: var(--text-primary-light);
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .input {
-    background: var(--input-bg-dark);
-    border-color: var(--input-border-dark);
-    color: var(--text-primary-dark);
-  }
+  transition: border-color 0.3s ease;
 }
 
 .input:focus {
@@ -426,21 +346,14 @@ const copyToClipboard = (text) => {
   box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
 }
 
-@media (prefers-color-scheme: dark) {
-  .input:focus {
-    border-color: #63b3ed;
-    box-shadow: 0 0 5px rgba(99, 179, 237, 0.4);
-  }
-}
-
 .input.small {
-  width: 150px;
+  width: 150px; /* 固定宽度 */
   display: inline-block;
   margin-right: 10px;
 }
 
 .btn.danger {
-  width: 80px;
+  width: 80px; /* 固定宽度 */
   padding: 8px 12px;
 }
 
@@ -455,6 +368,7 @@ const copyToClipboard = (text) => {
   margin-bottom: 4px;
 }
 
+/* 按钮样式 */
 .btn {
   padding: 12px 20px;
   border: none;
@@ -485,150 +399,98 @@ const copyToClipboard = (text) => {
   transform: scale(1.05);
 }
 
-.btn.danger {
-  background: #e74c3c;
-  color: white;
-}
-
 .btn.danger:hover {
   background: #c0392b;
   transform: scale(1.05);
 }
 
+/* 文件上传 */
 .file-input {
   margin-bottom: 15px;
   padding: 10px;
-  border: 1px dashed var(--text-secondary-light);
+  border: 1px dashed #3498db;
   border-radius: 8px;
   width: 100%;
   cursor: pointer;
-  background: var(--input-bg-light);
-  color: var(--text-primary-light);
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .file-input {
-    background: var(--input-bg-dark);
-    color: var(--text-primary-dark);
-    border-color: var(--text-secondary-dark);
-  }
 }
 
 .file-input:hover {
   background: #f1f8ff;
 }
 
-@media (prefers-color-scheme: dark) {
-  .file-input:hover {
-    background: rgba(50, 60, 80, 0.8);
-  }
-}
-
 .result-all {
   display: grid;
   grid-template-columns:
-  8fr
-  auto;
+  8fr        /* 输出值 */
+  auto; /* 复制按钮 */
   align-items: center;
 }
 
+/* 结果展示 */
 .result {
-  background: var(--result-bg-light);
+  background: linear-gradient(135deg, #ddb568, #ffffff); /* 添加渐变背景 */
   padding: 15px;
   border-radius: 8px;
   margin-top: 15px;
   white-space: pre-wrap;
   font-family: monospace;
   font-size: 0.9rem;
-  color: rgb(230, 0, 103);
-  transition: all 0.3s ease;
+  color: rgb(230, 0, 103); /* 修改为你想要的颜色 */
 }
 
-@media (prefers-color-scheme: dark) {
-  .result {
-    background: var(--result-bg-dark);
-    color: #fbb6ce;
-  }
-}
-
+/* 列表项 */
 .one-item {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: center; /* 垂直居中对齐 */
+  gap: 10px; /* 子元素之间的间距 */
   padding: 15px;
   border: 1px solid #eee;
   border-radius: 8px;
   margin-bottom: 10px;
-  background: var(--item-bg-light);
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .one-item {
-    background: var(--item-bg-dark);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
+  background: #fafafa;
 }
 
 .label {
-  white-space: nowrap;
+  /* text-align: center;*/
+  white-space: nowrap; /* 防止换行 */
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: ellipsis; /* 超出部分用省略号表示 */
   max-width: 100%;
 }
 
 .list-item {
-  background: var(--list-item-bg-light) !important;
-  border-radius: 12px !important;
-  padding: 10px !important;
+  /*background: #91dcd6 !important;*/
+  background: linear-gradient(135deg, #c22dd1, #91dcd6) !important; /* 添加渐变背景 */
+  border-radius: 12px !important; /* 添加圆角 */
+  padding: 10px !important; /* 可选：增加内边距以提升视觉效果 */
   box-sizing: border-box;
-}
-
-@media (prefers-color-scheme: dark) {
-  .list-item {
-    background: var(--list-item-bg-dark) !important;
-  }
 }
 
 .list-one-item {
   display: grid;
   grid-template-columns:
-  1fr
-  2fr
-  2fr
-  2fr
-  2fr
-  1fr;
+  1fr        /* 序号 */
+  2fr        /* 任务 key */
+  2fr        /* cron 表达式 */
+  2fr        /* 开始时间戳 */
+  2fr        /* 结束时间戳 */
+  1fr; /* 操作按钮 */
+
+  /*text-align: center;*/
   align-items: center;
   gap: 10px;
-  padding: 5px 5px;
+
+  padding: 5px 5px; /* 减少垂直内边距 */
   border: 1px solid #eee;
   border-radius: 8px;
-  background: var(--item-bg-light);
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .list-one-item {
-    background: var(--item-bg-dark);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
+  background: #fafafa;
 }
 
 .one-item.header {
   text-align: center;
-  background: var(--header-bg-light);
+  background: #ead152;
   font-weight: 600;
-  color: var(--text-primary-light);
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .one-item.header {
-    background: var(--header-bg-dark);
-    color: var(--text-primary-dark);
-  }
+  color: #2c3e50;
 }
 
 .actions {
@@ -642,11 +504,11 @@ const copyToClipboard = (text) => {
   background-color: #3498db;
   color: white;
   border: none;
-  height: 24px;
+  height: 24px; /* 明确设置按钮高度 */
   border-radius: 5px;
   cursor: pointer;
   font-size: 0.8rem;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
 .copy-btn:hover {
@@ -664,19 +526,12 @@ const copyToClipboard = (text) => {
   width: 100%;
   max-width: 400px;
   padding: 30px;
-  border: 2px dashed var(--text-secondary-light);
+  border: 2px dashed #3498db;
   border-radius: 12px;
   text-align: center;
-  background-color: var(--input-bg-light);
+  background-color: #f9f9f9;
   transition: all 0.3s ease;
   cursor: pointer;
-}
-
-@media (prefers-color-scheme: dark) {
-  .file-upload-area {
-    background-color: var(--input-bg-dark);
-    border-color: var(--text-secondary-dark);
-  }
 }
 
 .file-upload-area:hover {
@@ -684,41 +539,20 @@ const copyToClipboard = (text) => {
   border-color: #2980b9;
 }
 
-@media (prefers-color-scheme: dark) {
-  .file-upload-area:hover {
-    background-color: rgba(50, 60, 80, 0.8);
-    border-color: #63b3ed;
-  }
-}
-
 .file-input {
-  display: none;
+  display: none; /* 隐藏默认 input */
 }
 
 .upload-icon {
   font-size: 2rem;
-  color: var(--text-secondary-light);
+  color: #3498db;
   margin-bottom: 10px;
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .upload-icon {
-    color: var(--text-secondary-dark);
-  }
 }
 
 .upload-text {
   font-size: 1rem;
-  color: var(--text-primary-light);
+  color: #2c3e50;
   margin: 0;
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .upload-text {
-    color: var(--text-primary-dark);
-  }
 }
 
 .file-info {
@@ -726,24 +560,17 @@ const copyToClipboard = (text) => {
   color: #7f8c8d;
   margin-top: 10px;
 }
-
-@media (prefers-color-scheme: dark) {
-  .file-info {
-    color: #a0aec0;
-  }
-}
-
 .fixed-footer {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  z-index: 1000;
+  z-index: 1000; /* 确保按钮在其他元素之上 */
 }
 
 .fixed-footer .btn {
   padding: 10px 15px;
   font-size: 1rem;
-  background: rgba(52, 152, 219, 0.8);
+  background: rgba(52, 152, 219, 0.8); /* 半透明背景 */
   color: white;
   border: none;
   border-radius: 8px;
@@ -751,198 +578,10 @@ const copyToClipboard = (text) => {
   transition: all 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  .fixed-footer .btn {
-    background: rgba(99, 179, 237, 0.8);
-  }
-}
-
 .fixed-footer .btn:hover {
-  background: rgba(41, 128, 185, 1);
+  background: rgba(41, 128, 185, 1); /* 悬停时加深背景 */
   transform: scale(1.05);
 }
 
-@media (prefers-color-scheme: dark) {
-  .fixed-footer .btn:hover {
-    background: rgba(9, 132, 227, 1);
-  }
-}
 
-/* 手机端适配 */
-@media (max-width: 768px) {
-  .container {
-    min-width: 95%;
-    padding: 15px;
-  }
-
-  .title {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-  }
-
-  .section-title {
-    font-size: 1.4rem;
-    margin-bottom: 15px;
-  }
-
-  .card {
-    padding: 20px 15px;
-    margin-bottom: 20px;
-  }
-
-  .input {
-    width: 100%;
-    font-size: 14px;
-    padding: 10px 12px;
-  }
-
-  .input.small {
-    width: 120px;
-  }
-
-  .btn {
-    padding: 10px 15px;
-    font-size: 0.9rem;
-    margin-right: 8px;
-    margin-bottom: 8px;
-  }
-
-  .btn.danger {
-    width: auto;
-    padding: 10px 15px;
-  }
-
-  .form-group {
-    margin-bottom: 15px;
-  }
-
-  .field {
-    margin-right: 10px;
-  }
-
-  .list-one-item {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    text-align: left;
-  }
-
-  .one-item {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 12px;
-  }
-
-  .label {
-    white-space: normal;
-  }
-
-  .result-all {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .copy-btn {
-    width: 100%;
-    margin-left: 0;
-    height: 32px;
-  }
-
-  .file-upload-area {
-    padding: 20px;
-    max-width: 100%;
-  }
-
-  .upload-icon {
-    font-size: 1.5rem;
-  }
-
-  .upload-text {
-    font-size: 0.9rem;
-  }
-
-  .fixed-footer {
-    bottom: 10px;
-    right: 10px;
-  }
-
-  .fixed-footer .btn {
-    padding: 8px 12px;
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
-    min-width: 98%;
-    padding: 10px;
-  }
-
-  .title {
-    font-size: 1.5rem;
-  }
-
-  .section-title {
-    font-size: 1.2rem;
-  }
-
-  .card {
-    padding: 15px 12px;
-  }
-
-  .input {
-    font-size: 13px;
-    padding: 8px 10px;
-  }
-
-  .input.small {
-    width: 100px;
-  }
-
-  .btn {
-    padding: 8px 12px;
-    font-size: 0.85rem;
-    border-radius: 6px;
-  }
-
-  .list-one-item {
-    padding: 8px;
-  }
-
-  .one-item {
-    padding: 10px;
-  }
-
-  .result {
-    font-size: 0.8rem;
-    padding: 10px;
-  }
-
-  .fixed-footer .btn {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-    border-radius: 6px;
-  }
-}
-
-/* 横屏手机适配 */
-@media (max-width: 768px) and (orientation: landscape) {
-  .container {
-    max-height: 90vh;
-    overflow-y: auto;
-    padding-bottom: 60px;
-  }
-
-  .title {
-    font-size: 1.6rem;
-    margin-bottom: 15px;
-  }
-
-  .card {
-    margin-bottom: 15px;
-  }
-
-  .form-group {
-    margin-bottom: 10px;
-  }
-}
 </style>
