@@ -1,40 +1,60 @@
+:root {
+    --home-bg-light: url("@assets/MHY_XTLL.png");
+    --home-bg-dark: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    --logo-border-light: #6a89cc;
+    --logo-border-dark: #74b9ff;
+    --btn-bg-light: rgba(52, 152, 219, 0.8);
+    --btn-bg-dark: rgba(116, 185, 255, 0.8);
+    --btn-hover-light: rgba(41, 128, 185, 1);
+    --btn-hover-dark: rgba(9, 132, 227, 1);
+    --restart-overlay-light: rgba(0, 0, 0, 0.75);
+    --restart-overlay-dark: rgba(0, 0, 0, 0.85);
+    --modal-bg-light: white;
+    --modal-bg-dark: rgba(30, 30, 46, 0.95);
+}
+
 html, body {
     margin: 0;
     padding: 0;
     height: 100%;
 }
-/* 页面全屏背景 */
+
 .home {
-    /*  display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      width: 100vw;*/
-    /*  background: linear-gradient(135deg, #a1c4fd, #c2e9fb);*/
     min-width: 768px;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: url("@assets/MHY_XTLL.png") ;
-    /* 关键：固定背景，不随滚动重复或变形 */
-    background-attachment: fixed; /* ← 核心属性 */
-    background-size: cover; /* 覆盖整个容器 */
+    background: var(--home-bg-light);
+    background-attachment: fixed;
+    background-size: cover;
     background-position: center;
-    /*  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;*/
+    transition: all 0.3s ease;
 }
 
-/* Logo 圆角 */
+@media (prefers-color-scheme: dark) {
+    .home {
+        background: var(--home-bg-dark);
+        min-width: auto;
+    }
+}
+
 .logo {
     width: 100px;
     height: 100px;
     object-fit: cover;
     border-radius: 50%;
     margin-bottom: 25px;
-    border: 3px solid #6a89cc;
+    border: 3px solid var(--logo-border-light);
+    transition: all 0.3s ease;
 }
-/*返回主页*/
-/* 固定按钮样式 */
+
+@media (prefers-color-scheme: dark) {
+    .logo {
+        border-color: var(--logo-border-dark);
+    }
+}
+
 .fixed-footer {
   position: fixed;
   bottom: 20px;
@@ -44,41 +64,53 @@ html, body {
 
 .fixed-footer .btn {
   padding: 10px 15px;
-  background: rgba(52, 152, 219, 0.8);
+  background: var(--btn-bg-light);
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
-/*.btn.secondary {
-    padding: 10px 24px;
-    background: #6b7280;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}*/
+
+@media (prefers-color-scheme: dark) {
+    .fixed-footer .btn {
+        background: var(--btn-bg-dark);
+    }
+}
+
 .fixed-footer .btn:hover {
-  background: rgba(41, 128, 185, 1);
+  background: var(--btn-hover-light);
   transform: scale(1.05);
 }
 
-/*重启*/
+@media (prefers-color-scheme: dark) {
+    .fixed-footer .btn:hover {
+        background: var(--btn-hover-dark);
+    }
+}
+
 .restart-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.75);
+    background: var(--restart-overlay-light);
     z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
-    user-select: none; /* 防止選取文字 */
+    user-select: none;
     -webkit-user-select: none;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+    .restart-overlay {
+        background: var(--restart-overlay-dark);
+    }
 }
 
 .restart-modal {
-    background: white;
+    background: var(--modal-bg-light);
     padding: 2.5rem;
     border-radius: 12px;
     text-align: center;
@@ -86,4 +118,90 @@ html, body {
     max-width: 420px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     pointer-events: auto;
+    transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+    .restart-modal {
+        background: var(--modal-bg-dark);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* 手机端适配 */
+@media (max-width: 768px) {
+    .home {
+        min-width: auto;
+        background-position: center top;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+
+    .logo {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 15px;
+        border-width: 2px;
+    }
+
+    .fixed-footer {
+        bottom: 15px;
+        right: 15px;
+    }
+
+    .fixed-footer .btn {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .restart-overlay {
+        padding: 15px;
+    }
+
+    .restart-modal {
+        width: 100%;
+        max-width: 380px;
+        padding: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .home {
+        padding: 10px;
+    }
+
+    .logo {
+        width: 50px;
+        height: 50px;
+    }
+
+    .fixed-footer {
+        bottom: 10px;
+        right: 10px;
+    }
+
+    .fixed-footer .btn {
+        padding: 6px 10px;
+        font-size: 13px;
+        border-radius: 6px;
+    }
+
+    .restart-modal {
+        padding: 1.5rem;
+        min-width: 280px;
+        max-width: 95vw;
+    }
+}
+
+/* 横屏手机适配 */
+@media (max-width: 768px) and (orientation: landscape) {
+    .home {
+        align-items: flex-start;
+        padding-top: 30px;
+    }
+
+    .restart-modal {
+        max-height: 85vh;
+        overflow-y: auto;
+    }
 }

@@ -274,19 +274,49 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+:root {
+  --page-bg-light: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --page-bg-dark: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  --card-bg-light: white;
+  --card-bg-dark: rgba(45, 55, 72, 0.8);
+  --form-bg-light: #f8f9fa;
+  --form-bg-dark: rgba(30, 41, 59, 0.6);
+  --text-primary-light: #2c3e50;
+  --text-primary-dark: #e2e8f0;
+  --border-light: rgba(255, 255, 255, 0.2);
+  --border-dark: rgba(255, 255, 255, 0.1);
+  --divider-light: #dee2e6;
+  --divider-dark: rgba(255, 255, 255, 0.15);
+}
 
 .settings {
   padding: 30px;
   min-width: 1200px;
   margin: 0 auto;
+  background: var(--page-bg-light);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .settings {
+    background: var(--page-bg-dark);
+    min-width: auto;
+  }
 }
 
 .settings-container {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: transparent;
   border-radius: 20px;
   padding: 40px;
   box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
   backdrop-filter: blur(10px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .settings-container {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  }
 }
 
 .settings-title {
@@ -296,10 +326,16 @@ onMounted(async () => {
   font-size: 32px;
   font-weight: 600;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
 }
 
+@media (prefers-color-scheme: dark) {
+  .settings-title {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  }
+}
 
-.settings-grid {
+.setting-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 30px;
@@ -308,17 +344,31 @@ onMounted(async () => {
 
 .setting-card {
   max-width: 500px;
-  background: white;
+  background: var(--card-bg-light);
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  .setting-card {
+    background: var(--card-bg-dark);
+    border-color: var(--border-dark);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .setting-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+@media (prefers-color-scheme: dark) {
+  .setting-card:hover {
+    box-shadow: 0 15px 35px rgba(99, 179, 237, 0.25);
+  }
 }
 
 .card-header {
@@ -345,21 +395,28 @@ onMounted(async () => {
 }
 
 @media (max-width: 768px) {
-  .settings-grid {
+  .setting-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
 }
 
-
 .setting-section {
-  background: white;
+  background: var(--card-bg-light);
   border-radius: 15px;
   padding: 30px;
   margin-bottom: 30px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  .setting-section {
+    background: var(--card-bg-dark);
+    border-color: var(--border-dark);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .setting-section:hover {
@@ -367,18 +424,31 @@ onMounted(async () => {
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
 }
 
+@media (prefers-color-scheme: dark) {
+  .setting-section:hover {
+    box-shadow: 0 15px 35px rgba(99, 179, 237, 0.25);
+  }
+}
+
 .setting-section:last-child {
   margin-bottom: 0;
 }
 
 .section-title {
-  color: #2c3e50;
+  color: var(--text-primary-light);
   font-size: 22px;
   font-weight: 600;
   margin-bottom: 25px;
   padding-bottom: 15px;
   border-bottom: 3px solid #667eea;
   position: relative;
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .section-title {
+    color: var(--text-primary-dark);
+  }
 }
 
 .section-title::after {
@@ -394,9 +464,17 @@ onMounted(async () => {
 
 .form-container {
   padding: 25px;
-  background: #f8f9fa;
+  background: var(--form-bg-light);
   border-radius: 12px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--divider-light);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .form-container {
+    background: var(--form-bg-dark);
+    border-color: var(--divider-dark);
+  }
 }
 
 .form-container .el-form-item {
@@ -406,7 +484,13 @@ onMounted(async () => {
 .form-container .el-form-item:last-child {
   margin-bottom: 0;
   padding-top: 15px;
-  border-top: 1px dashed #dee2e6;
+  border-top: 1px dashed var(--divider-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  .form-container .el-form-item:last-child {
+    border-top-color: var(--divider-dark);
+  }
 }
 
 .form-container .el-button {
@@ -443,18 +527,49 @@ onMounted(async () => {
   border-color: #667eea;
 }
 
-/* 在样式部分添加 */
+@media (prefers-color-scheme: dark) {
+  :deep(.el-input__wrapper) {
+    background: rgba(30, 41, 59, 0.6);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  :deep(.el-input__wrapper:hover) {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  :deep(.el-input__wrapper.is-focus) {
+    box-shadow: 0 4px 15px rgba(99, 179, 237, 0.4);
+    border-color: #63b3ed;
+  }
+
+  :deep(.el-input__inner) {
+    color: var(--text-primary-dark);
+  }
+
+  :deep(.el-input__inner::placeholder) {
+    color: #a0aec0;
+  }
+}
+
 .fixed-bottom-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  /*background: linear-gradient(90deg, #ff6b6b, #ee5a52);*/
   padding: 20px;
   text-align: center;
   box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .fixed-bottom-bar {
+    background: rgba(30, 41, 59, 0.9);
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.4);
+  }
 }
 
 .restart-button {
@@ -468,6 +583,7 @@ onMounted(async () => {
   border: none;
   box-shadow: 0 4px 15px rgba(238, 90, 82, 0.4);
   transition: all 0.3s ease;
+  color: white;
 }
 
 .restart-button:hover {
@@ -488,7 +604,9 @@ onMounted(async () => {
 @media (max-width: 768px) {
   .settings {
     padding: 15px;
-    min-width: 768px;
+    min-width: auto;
+    width: 100%;
+    border-radius: 0;
   }
 
   .settings-container {
@@ -499,6 +617,14 @@ onMounted(async () => {
   .settings-title {
     font-size: 26px;
     margin-bottom: 30px;
+  }
+
+  .setting-grid {
+    gap: 20px;
+  }
+
+  .setting-card {
+    max-width: 100%;
   }
 
   .setting-section {
@@ -524,12 +650,23 @@ onMounted(async () => {
   .form-container .el-button:last-child {
     margin-bottom: 0;
   }
+
+  .fixed-bottom-bar {
+    padding: 15px;
+  }
+
+  .restart-button {
+    height: 45px;
+    font-size: 16px;
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
   .settings {
-   min-width: 480px;
+    padding: 10px;
   }
+
   .settings-container {
     padding: 20px;
   }
@@ -545,6 +682,62 @@ onMounted(async () => {
   .form-container {
     padding: 15px;
   }
+
+  .card-header {
+    padding: 15px;
+  }
+
+  .card-title {
+    font-size: 16px;
+  }
+
+  .card-icon {
+    font-size: 20px;
+  }
+
+  .card-content {
+    padding: 20px;
+  }
+
+  .section-title {
+    font-size: 16px;
+  }
+
+  .form-container .el-form-item {
+    margin-bottom: 20px;
+  }
+
+  .fixed-bottom-bar {
+    padding: 12px;
+  }
+
+  .restart-button {
+    height: 42px;
+    font-size: 15px;
+    border-radius: 20px;
+  }
 }
 
+/* 横屏手机适配 */
+@media (max-width: 768px) and (orientation: landscape) {
+  .settings {
+    max-height: 100vh;
+    overflow-y: auto;
+    padding-bottom: 100px;
+  }
+
+  .settings-container {
+    margin-bottom: 0;
+  }
+
+  .setting-section {
+    margin-bottom: 15px;
+  }
+
+  .fixed-bottom-bar {
+    position: relative;
+    margin-top: 20px;
+  }
+}
 </style>
+

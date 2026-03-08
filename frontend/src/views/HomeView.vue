@@ -296,37 +296,60 @@ const toClick = async (item) => {
 
 </script>
 <style scoped>
+:root {
+  --home-bg-light: url("@assets/MHY_XTLL.png");
+  --card-bg-light: rgba(255, 255, 255, 0.95);
+  --card-bg-dark: rgba(30, 30, 46, 0.85);
+  --card-border-light: rgba(255, 255, 255, 0.25);
+  --card-border-dark: rgba(255, 255, 255, 0.1);
+  --title-gradient-light: linear-gradient(90deg, #6a89cc, #3498db);
+  --title-gradient-dark: linear-gradient(90deg, #74b9ff, #0984e3);
+  --text-primary-light: #2c3e50;
+  --text-primary-dark: #dfe6e9;
+  --text-secondary-light: #7f8c8d;
+  --text-secondary-dark: #b2bec3;
+  --feature-item-light: #ffffff;
+  --feature-item-dark: rgba(50, 50, 70, 0.6);
+  --shadow-light: rgba(0, 255, 246, 0.2);
+  --shadow-dark: rgba(0, 0, 0, 0.35);
+}
 
-/* 页面全屏背景 */
 .home {
-  /*  display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    width: 100vw;*/
-  /*  background: linear-gradient(135deg, #a1c4fd, #c2e9fb);*/
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: url("@assets/MHY_XTLL.png");
-  /* 关键：固定背景，不随滚动重复或变形 */
-  background-attachment: fixed; /* ← 核心属性 */
-  background-size: cover; /* 覆盖整个容器 */
+  background: var(--home-bg-light);
+  background-attachment: fixed;
+  background-size: cover;
   background-position: center;
-  /*  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;*/
+  transition: all 0.3s ease;
 }
 
-/* 中间卡片 */
+@media (prefers-color-scheme: dark) {
+  .home {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  }
+}
+
 .welcome-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--card-bg-light);
   padding: 50px 50px;
   border-radius: 25px;
-  box-shadow: 0 15px 35px rgba(0, 255, 246, 0.2);
+  box-shadow: 0 15px 35px var(--shadow-light);
   text-align: center;
   max-width: 600px;
   width: 80%;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
+  border: 1px solid var(--card-border-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  .welcome-card {
+    background: var(--card-bg-dark);
+    box-shadow: 0 15px 35px var(--shadow-dark);
+    border-color: var(--card-border-dark);
+  }
 }
 
 .welcome-card:hover {
@@ -334,27 +357,40 @@ const toClick = async (item) => {
   box-shadow: 0 20px 40px rgba(255, 0, 181, 0.3);
 }
 
-/* Logo 圆角 */
+@media (prefers-color-scheme: dark) {
+  .welcome-card:hover {
+    box-shadow: 0 20px 40px rgba(116, 185, 255, 0.3);
+  }
+}
+
 .logo {
-  /* width: 50px;
-   height: 50px;*/
   object-fit: cover;
   border-radius: 50%;
   margin-bottom: 25px;
   border: 3px solid #6a89cc;
+  transition: all 0.3s ease;
 }
 
-/* 主标题美化 */
+@media (prefers-color-scheme: dark) {
+  .logo {
+    border-color: #74b9ff;
+  }
+}
+
 .title {
-  /* font-size: 36px;*/
-  /*font-weight: 800;*/
-  /*  margin-bottom: 5px;*/
   color: transparent;
-  background: linear-gradient(90deg, #6a89cc, #3498db);
+  background: var(--title-gradient-light);
   -webkit-background-clip: text;
   background-clip: text;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .title {
+    background: var(--title-gradient-dark);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .title:hover {
@@ -362,14 +398,23 @@ const toClick = async (item) => {
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 副标题美化 */
+@media (prefers-color-scheme: dark) {
+  .title:hover {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  }
+}
+
 .subtitle {
-  /* font-size: 20px;*/
-  color: #7f8c8d;
-  /*margin-bottom: 40px;*/
+  color: var(--text-secondary-light);
   opacity: 0;
   animation: fadeIn 1s ease-in-out forwards;
   font-style: italic;
+}
+
+@media (prefers-color-scheme: dark) {
+  .subtitle {
+    color: var(--text-secondary-dark);
+  }
 }
 
 @keyframes fadeIn {
@@ -383,18 +428,15 @@ const toClick = async (item) => {
   }
 }
 
-/* 功能区域 */
 .feature-section {
-  /*margin-top: 10px;*/
 }
 
-/* 美化 section-title */
 .section-title {
   font-size: 22px;
   font-weight: 700;
   margin-bottom: 20px;
   color: transparent;
-  background: linear-gradient(90deg, #6a89cc, #3498db);
+  background: var(--title-gradient-light);
   -webkit-background-clip: text;
   background-clip: text;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -402,9 +444,22 @@ const toClick = async (item) => {
   text-align: center;
 }
 
+@media (prefers-color-scheme: dark) {
+  .section-title {
+    background: var(--title-gradient-dark);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+}
+
 .section-title:hover {
   transform: scale(1.05);
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  .section-title:hover {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  }
 }
 
 .feature-container {
@@ -422,17 +477,32 @@ const toClick = async (item) => {
 .feature-item {
   display: flex;
   align-items: center;
-  background: #ffffff;
+  background: var(--feature-item-light);
   border-radius: 12px;
   padding: 15px 20px;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .feature-item {
+    background: var(--feature-item-dark);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
 }
 
 .feature-item:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+@media (prefers-color-scheme: dark) {
+  .feature-item:hover {
+    box-shadow: 0 8px 20px rgba(116, 185, 255, 0.25);
+  }
 }
 
 .icon {
@@ -445,7 +515,7 @@ const toClick = async (item) => {
 .icon svg {
   width: 100%;
   height: 100%;
-  fill: currentColor; /* 让颜色跟随 CSS color */
+  fill: currentColor;
 }
 
 .name {
@@ -457,10 +527,22 @@ const toClick = async (item) => {
   font-weight: 500;
 }
 
-/* 类型区分 */
+@media (prefers-color-scheme: dark) {
+  .name {
+    color: #74b9ff;
+  }
+}
+
 .link-item {
   background: #e8f8f5;
   color: #27ae60;
+}
+
+@media (prefers-color-scheme: dark) {
+  .link-item {
+    background: rgba(39, 174, 96, 0.2);
+    color: #58d68d;
+  }
 }
 
 .swagger-item {
@@ -468,9 +550,23 @@ const toClick = async (item) => {
   color: #f39c12;
 }
 
+@media (prefers-color-scheme: dark) {
+  .swagger-item {
+    background: rgba(243, 156, 18, 0.2);
+    color: #f5b041;
+  }
+}
+
 .routes-item {
   background: #fadbd8;
   color: #e74c3c;
+}
+
+@media (prefers-color-scheme: dark) {
+  .routes-item {
+    background: rgba(231, 76, 60, 0.2);
+    color: #ec7063;
+  }
 }
 
 .restart-overlay {
@@ -481,7 +577,7 @@ const toClick = async (item) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  user-select: none; /* 防止選取文字 */
+  user-select: none;
   -webkit-user-select: none;
 }
 
@@ -496,175 +592,172 @@ const toClick = async (item) => {
   pointer-events: auto;
 }
 
-/* 响应式设计 */
+@media (prefers-color-scheme: dark) {
+  .restart-modal {
+    background: rgba(30, 30, 46, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* 手机端适配 */
 @media (max-width: 768px) {
-  .feature-container {
-    grid-template-columns: 1fr;
+  .home {
+    background-position: center top;
   }
 
   .welcome-card {
-    padding: 30px 40px;
+    width: 90%;
+    padding: 30px 25px;
+    margin: 20px 15px;
+  }
+
+  .logo {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
   }
 
   .title {
-    font-size: 36px;
-    font-weight: 800;
-    color: transparent;
-    background: linear-gradient(90deg, #6a89cc, #3498db);
-    -webkit-background-clip: text;
-    background-clip: text;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .title:hover {
-    transform: scale(1.05);
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-size: 28px;
   }
 
   .subtitle {
-    font-size: 20px;
+    font-size: 16px;
+    margin-bottom: 25px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  .feature-container {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .feature-column {
+    gap: 8px;
+  }
+
+  .feature-item {
+    padding: 12px 18px;
+    border-radius: 10px;
+  }
+
+  .icon {
+    width: 1em;
+    height: 1em;
+    margin-right: 10px;
+  }
+
+  .name {
+    font-size: 15px;
   }
 
   .restart-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none; /* 防止選取文字 */
-    -webkit-user-select: none;
+    padding: 15px;
   }
 
   .restart-modal {
-    background: white;
-    padding: 2.5rem;
-    border-radius: 12px;
-    text-align: center;
-    min-width: 320px;
-    max-width: 420px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    pointer-events: auto;
+    width: 100%;
+    max-width: 380px;
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-card {
+    width: 95%;
+    padding: 25px 20px;
+    border-radius: 20px;
   }
 
-  /*
-    !* 禁止點擊 overlay 本身關閉（點 modal 內部還是可以操作） *!
-    .restart-overlay {
-      pointer-events: auto;
-    }
-
-    .restart-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(8px); !* 強毛玻璃，增加沉浸感 *!
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-      pointer-events: all; !* 完全攔截互動 *!
-    }
-
-    .restart-modal {
-      background: rgba(20, 20, 28, 0.95); !* 深黑半透，與紅色對比強 *!
-      border: 2px solid #ff4d4f; !* 紅色邊框警示 *!
-      border-radius: 16px;
-      padding: 2.5rem 4rem 3.5rem;
-      min-width: 420px;
-      max-width: 520px;
-      text-align: center;
-      box-shadow: 0 30px 80px rgba(255, 77, 79, 0.25), !* 紅色光暈陰影 *! 0 0 0 1px rgba(255, 77, 79, 0.15) inset,
-      inset 0 0 40px rgba(0, 0, 0, 0.6);
-      animation: modalPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-      pointer-events: auto;
-    }*/
-  @keyframes modalPop {
-    0% {
-      opacity: 0;
-      transform: scale(0.7) translateY(40px);
-    }
-    60% {
-      opacity: 1;
-      transform: scale(1.05) translateY(-10px);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
+  .logo {
+    width: 50px;
+    height: 50px;
+    border-width: 2px;
   }
 
-  .warning-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1.8rem;
-    gap: 1rem;
+  .title {
+    font-size: 24px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .section-title {
+    font-size: 16px;
+  }
+
+  .feature-item {
+    padding: 10px 15px;
+  }
+
+  .name {
+    font-size: 14px;
+  }
+
+  .restart-modal {
+    padding: 1.5rem;
+    min-width: 280px;
   }
 
   .warning-icon {
-    width: 60px;
-    height: 60px;
-    background: #ff4d4f;
-    color: white;
-    font-size: 2.8rem;
-    font-weight: bold;
-    line-height: 60px;
-    border-radius: 50%;
-    box-shadow: 0 0 30px rgba(255, 77, 79, 0.6);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% {
-      box-shadow: 0 0 20px rgba(255, 77, 79, 0.4);
-    }
-    50% {
-      box-shadow: 0 0 40px rgba(255, 77, 79, 0.8);
-    }
-  }
-
-  .warning-header h3 {
-    color: #ff4d4f;
-    font-size: 1.9rem;
-    font-weight: 800;
-    margin: 0;
-    text-shadow: 0 2px 10px rgba(255, 77, 79, 0.5);
+    width: 50px;
+    height: 50px;
+    font-size: 2.2rem;
+    line-height: 50px;
   }
 
   .spinner {
-    width: 90px;
-    height: 90px;
-    border: 10px solid rgba(255, 77, 79, 0.2);
-    border-top: 10px solid #ff4d4f;
-    border-radius: 50%;
-    animation: spin 1.3s linear infinite;
-    margin: 0 auto 2rem;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
+    width: 70px;
+    height: 70px;
+    border-width: 8px;
   }
 
   .loading-text {
-    font-size: 1.65rem;
-    font-weight: 700;
-    color: #ffcccc;
-    margin-bottom: 1.2rem;
-    letter-spacing: 1px;
+    font-size: 1.4rem;
   }
 
   .hint {
-    color: #ff9999;
-    font-size: 1.1rem;
-    line-height: 1.7;
-    margin: 0;
-    opacity: 0.95;
+    font-size: 0.95rem;
+  }
+}
+
+/* 横屏手机适配 */
+@media (max-width: 768px) and (orientation: landscape) {
+  .welcome-card {
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 20px 30px;
+  }
+
+  .logo {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 10px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+
+  .feature-container {
+    gap: 6px;
+  }
+
+  .feature-item {
+    padding: 10px 15px;
   }
 }
 </style>
+
 
 

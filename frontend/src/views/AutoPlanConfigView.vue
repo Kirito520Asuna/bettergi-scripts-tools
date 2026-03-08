@@ -1532,25 +1532,36 @@ const batchUpdate = () => {
   </div>
 </template>
 
-<style>
+<style scoped>
+:root {
+  --page-bg-light: url("@assets/MHY_XTLL.png");
+  --page-bg-dark: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  --card-bg-light: linear-gradient(135deg, #b6b2b6, #91dcd6);
+  --card-bg-dark: linear-gradient(135deg, #4a5568, #2d3748);
+  --text-primary-light: #333;
+  --text-primary-dark: #e2e8f0;
+  --input-bg-light: #fff;
+  --input-bg-dark: rgba(30, 41, 59, 0.8);
+  --border-light: #dcdfe6;
+  --border-dark: rgba(99, 179, 237, 0.3);
+  --result-bg-light: linear-gradient(135deg, #ffda47, #ffffff);
+  --result-bg-dark: linear-gradient(135deg, #4a5568, #2d3748);
+}
+
 /* 页面全屏背景 */
 .home {
-  /*  display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    width: 100vw;*/
-  /*  background: linear-gradient(135deg, #a1c4fd, #c2e9fb);*/
   min-height: 100vh;
-  /*  //display: flex;
-    //align-items: center;
-    //justify-content: center;*/
-  background: url("@assets/MHY_XTLL.png");
-  /* 关键：固定背景，不随滚动重复或变形 */
-  background-attachment: fixed; /* ← 核心属性 */
-  background-size: cover; /* 覆盖整个容器 */
+  background: var(--page-bg-light);
+  background-attachment: fixed;
+  background-size: cover;
   background-position: center;
-  /*  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;*/
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .home {
+    background: var(--page-bg-dark);
+  }
 }
 
 /* 整体容器 */
@@ -1563,24 +1574,33 @@ const batchUpdate = () => {
 
 /* 固定容器样式 */
 .fixed-container {
-  position: fixed; /* 固定定位 */
-  top: 0; /* 距离顶部为 0 */
-  left: 0; /* 距离左侧为 0 */
-  width: 100%; /* 占满整个视口宽度 */
-  z-index: 1000; /* 确保在最上层 */
-  backdrop-filter: blur(10px); /* 毛玻璃效果 */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 添加阴影 */
-  border-radius: 12px; /* 添加圆角 */
-  padding: 10px 20px; /* 内边距 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .fixed-container {
+    background: rgba(30, 41, 59, 0.9);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
 }
 
 /* 内容区域补偿高度 */
 .content-area {
-  margin-top: 300px; /* 根据 .fixed-container 的实际高度调整 */
+  margin-top: 300px;
   width: 100%;
 }
 
-/* 标题样式（保持原有样式） */
+/* 标题样式 */
 .title {
   font-size: 36px;
   font-weight: 800;
@@ -1598,29 +1618,59 @@ const batchUpdate = () => {
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+@media (prefers-color-scheme: dark) {
+  .title {
+    background: linear-gradient(90deg, #fbb6ce, #d53f8c);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+}
 
 /* 标题样式 */
 h2 {
   text-align: center;
-  color: #333;
+  color: var(--text-primary-light);
   font-size: 1.8rem;
   margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  h2 {
+    color: var(--text-primary-dark);
+  }
 }
 
 /* UID 输入框 */
 .uid-input {
   max-width: 100px;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  background: var(--input-bg-light);
+  color: var(--text-primary-light);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .uid-input {
+    background: var(--input-bg-dark);
+    border-color: var(--border-dark);
+    color: var(--text-primary-dark);
+  }
 }
 
 .uid-input:focus {
   border-color: #409eff;
   outline: none;
   box-shadow: 0 0 5px rgba(64, 158, 255, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  .uid-input:focus {
+    border-color: #63b3ed;
+    box-shadow: 0 0 5px rgba(99, 179, 237, 0.5);
+  }
 }
 
 /* 添加配置按钮 */
@@ -1632,40 +1682,48 @@ h2 {
   border-radius: 8px;
   cursor: pointer;
   font-size: 1rem;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .add-config-btn:hover {
   background-color: #66b1ff;
+  transform: translateY(-2px);
 }
 
 .config-header {
   display: flex;
-  flex-wrap: wrap; /* 允许子元素换行 */
-  gap: 20px; /* 设置子元素之间的间距 */
-  justify-content: flex-start; /* 子元素左对齐 */
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: flex-start;
   padding: 10px;
 }
 
 .config-list {
   display: flex;
-  flex-wrap: wrap; /* 允许子元素换行 */
-  gap: 20px; /* 设置子元素之间的间距 */
-  justify-content: flex-start; /* 子元素左对齐 */
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: flex-start;
 }
 
 /* 配置项卡片 */
 .config-item {
   max-width: 300px;
-  background: linear-gradient(135deg, #b6b2b6, #91dcd6);
+  background: var(--card-bg-light);
   border: 1px solid #b9bcc6;
   border-radius: 12px;
   padding: 10px;
   margin-bottom: 10px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  /* 禁止超出框限制*/
-  overflow: visible; /* 禁止内容超出容器 */
+  transition: all 0.3s ease;
+  overflow: visible;
+}
+
+@media (prefers-color-scheme: dark) {
+  .config-item {
+    background: var(--card-bg-dark);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
 }
 
 .config-item:hover {
@@ -1673,28 +1731,40 @@ h2 {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
+@media (prefers-color-scheme: dark) {
+  .config-item:hover {
+    box-shadow: 0 4px 20px rgba(99, 179, 237, 0.25);
+  }
+}
+
 /* 配置标题 */
 .config-item h3 {
   margin-top: 0;
-  color: #333;
+  color: var(--text-primary-light);
   font-size: 1rem;
+  transition: all 0.3s ease;
 }
 
-/* 配置按钮容器 - 均匀分布 */
+@media (prefers-color-scheme: dark) {
+  .config-item h3 {
+    color: var(--text-primary-dark);
+  }
+}
+
+/* 配置按钮容器 */
 .config-btn {
   display: flex;
-  justify-content: space-between; /* 横向均匀分布 */
-  align-items: center; /* 垂直居中对齐 */
-  gap: 12px; /* 元素间间距 */
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   margin-top: 16px;
   padding: 8px 0;
 }
 
-/* 确保按钮在容器中有合适的最小宽度 */
 .config-btn .btn {
-  flex: 1; /* 平均分配空间 */
-  min-width: 120px; /* 最小宽度 */
-  text-align: center; /* 文字居中 */
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
 }
 
 /* 删除按钮 */
@@ -1706,11 +1776,12 @@ h2 {
   border-radius: 6px;
   cursor: pointer;
   float: right;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .remove-btn:hover {
   background-color: #ff4d4f;
+  transform: scale(1.05);
 }
 
 /* 表单项通用样式 */
@@ -1719,38 +1790,66 @@ h2 {
 }
 
 .form-group label {
-  font-size: 0.9rem; /* 从默认大小减小 */
-  /*  display: block;
-    margin-bottom: 5px;
-    font-weight: bold;*/
-  color: #606266;
+  font-size: 0.9rem;
+  color: var(--text-primary-light);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .form-group label {
+    color: var(--text-primary-dark);
+  }
 }
 
 .form-group select {
   align-items: center;
-  /* width: 80%;*/
   padding: 8px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--border-light);
   border-radius: 6px;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  background: var(--input-bg-light);
+  color: var(--text-primary-light);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .form-group select {
+    background: var(--input-bg-dark);
+    border-color: var(--border-dark);
+    color: var(--text-primary-dark);
+  }
 }
 
 .days-display {
   padding: 8px 12px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--border-light);
   border-radius: 6px;
-  background: #fff;
+  background: var(--input-bg-light);
   cursor: pointer;
   min-height: 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   transition: all 0.2s;
+  color: var(--text-primary-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  .days-display {
+    background: var(--input-bg-dark);
+    border-color: var(--border-dark);
+    color: var(--text-primary-dark);
+  }
 }
 
 .days-display:hover {
   border-color: #409eff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .days-display:hover {
+    border-color: #63b3ed;
+  }
 }
 
 .days-display.has-selection {
@@ -1769,15 +1868,24 @@ h2 {
   min-width: 80px;
 }
 
-
 .form-group input {
   align-items: center;
   width: 40%;
   padding: 8px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--border-light);
   border-radius: 6px;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  background: var(--input-bg-light);
+  color: var(--text-primary-light);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .form-group input {
+    background: var(--input-bg-dark);
+    border-color: var(--border-dark);
+    color: var(--text-primary-dark);
+  }
 }
 
 .form-group select:focus,
@@ -1787,18 +1895,21 @@ h2 {
   box-shadow: 0 0 5px rgba(64, 158, 255, 0.5);
 }
 
-.leyLineOutcrop-section .checkbox-group {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 強制兩欄 */
-  gap: 16px 32px; /* 行距 16px，列距 32px 可調 */
-  margin: 16px 0 24px;
-  padding: 12px 0;
-  border-top: 1px dashed rgba(100, 100, 100, 0.15); /* 可選：加條分隔線好看 */
+@media (prefers-color-scheme: dark) {
+  .form-group select:focus,
+  .form-group input:focus {
+    border-color: #63b3ed;
+    box-shadow: 0 0 5px rgba(99, 179, 237, 0.5);
+  }
 }
 
-.leyLineOutcrop-section .checkbox-group .el-checkbox {
-  /* 可選：讓文字靠左對齊 */
-  justify-self: start;
+.leyLineOutcrop-section .checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 32px;
+  margin: 16px 0 24px;
+  padding: 12px 0;
+  border-top: 1px dashed rgba(100, 100, 100, 0.15);
 }
 
 /* 结果展示区域 */
@@ -1810,24 +1921,31 @@ h2 {
 }
 
 .result-key {
-  background-color: #ffffff; /* 白色背景 */
-  color: #000000; /* 黑色文字 */
-  padding: 10px 15px; /* 内边距 */
-  border-radius: 8px; /* 圆角 */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
-  display: inline-block; /* 确保样式生效 */
-  font-weight: bold; /* 加粗文字 */
-  transition: all 0.3s ease; /* 平滑过渡效果 */
+  background-color: var(--input-bg-light);
+  color: var(--text-primary-light);
+  padding: 10px 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .result-key {
+    background-color: var(--input-bg-dark);
+    color: var(--text-primary-dark);
+  }
 }
 
 .result-key:hover {
-  transform: translateY(-2px); /* 悬停时轻微上移 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬停时增强阴影 */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .result {
   flex: 1;
-  background: linear-gradient(135deg, #ffda47, #ffffff);
+  background: var(--result-bg-light);
   padding: 15px;
   border-radius: 8px;
   white-space: pre-wrap;
@@ -1835,6 +1953,14 @@ h2 {
   font-size: 0.9rem;
   color: #ff09c5;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .result {
+    background: var(--result-bg-dark);
+    color: #fbb6ce;
+  }
 }
 
 .copy-btn {
@@ -1844,11 +1970,12 @@ h2 {
   padding: 10px 15px;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .copy-btn:hover {
   background-color: #85ce61;
+  transform: translateY(-2px);
 }
 
 .sort-control-card {
@@ -1857,21 +1984,19 @@ h2 {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-
-  background-color: #85ce61; /* 白色背景 */
-  color: #000000; /* 黑色文字 */
-  padding: 4px 8px; /* 内边距 */
-  border-radius: 8px; /* 圆角 */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
-  border: none; /* 去除边框 */
-  font-weight: bold; /* 加粗文字 */
-  transition: all 0.3s ease; /* 平滑过渡效果 */
+  background-color: #85ce61;
+  color: #000000;
+  padding: 4px 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
 }
 
 .sort-control-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35),
-  inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   border-color: rgba(96, 165, 250, 0.4);
 }
 
@@ -1882,7 +2007,6 @@ h2 {
   letter-spacing: 0.3px;
 }
 
-/* 讓 switch 看起來更精緻（可選） */
 :deep(.el-switch__core) {
   border-color: rgba(96, 165, 250, 0.5) !important;
 }
@@ -1893,61 +2017,54 @@ h2 {
 }
 
 .btn.btn-add {
-  background-color: #85ce61; /* 白色背景 */
-  color: #000000; /* 黑色文字 */
-  padding: 10px 20px; /* 内边距 */
-  border-radius: 8px; /* 圆角 */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
-  border: none; /* 去除边框 */
-  font-weight: bold; /* 加粗文字 */
-  transition: all 0.3s ease; /* 平滑过渡效果 */
+  background-color: #85ce61;
+  color: #000000;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
 }
 
 .btn.btn-submit:hover {
-  transform: translateY(-2px); /* 悬停时轻微上移 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬停时增强阴影 */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn.btn-submit {
-  background-color: #18c3e8; /* 白色背景 */
-  color: #000000; /* 黑色文字 */
-  padding: 10px 20px; /* 内边距 */
-  border-radius: 8px; /* 圆角 */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
-  border: none; /* 去除边框 */
-  font-weight: bold; /* 加粗文字 */
-  transition: all 0.3s ease; /* 平滑过渡效果 */
+  background-color: #18c3e8;
+  color: #000000;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
 }
 
 .btn.btn-add:hover {
-  transform: translateY(-2px); /* 悬停时轻微上移 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬停时增强阴影 */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn.danger {
-  background-color: #e19025; /* 白色背景 */
-  color: #000000; /* 黑色文字 */
-  padding: 10px 20px; /* 内边距 */
-  border-radius: 8px; /* 圆角 */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
-  border: none; /* 去除边框 */
-  font-weight: bold; /* 加粗文字 */
-  transition: all 0.3s ease; /* 平滑过渡效果 */
+  background-color: #e19025;
+  color: #000000;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
 }
 
 .btn.danger:hover {
-  transform: translateY(-2px); /* 悬停时轻微上移 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬停时增强阴影 */
-}
-
-.btn.danger:hover {
-  background: #c0392b;
-  transform: scale(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .limited-input {
-  /* width: 200px; !* 限制输入框宽度 *!*/
-  /* 禁止超出框限制*/
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1958,7 +2075,6 @@ h2 {
   color: #999;
   cursor: not-allowed;
 }
-
 
 .drag-handle {
   cursor: move;
@@ -1972,10 +2088,18 @@ h2 {
   align-items: center;
   gap: 12px;
   padding: 8px 12px;
-  background: #fff;
-  border: 1px solid #eee;
+  background: var(--input-bg-light);
+  border: 1px solid var(--border-light);
   border-radius: 6px;
   margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .draggable-item {
+    background: var(--input-bg-dark);
+    border-color: var(--border-dark);
+  }
 }
 
 .actions {
@@ -1985,7 +2109,7 @@ h2 {
 
 .physical-display {
   padding: 8px 12px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--border-light);
   border-radius: 6px;
   background: #f5f7fa;
   cursor: pointer;
@@ -1994,6 +2118,15 @@ h2 {
   justify-content: space-between;
   transition: all 0.2s;
   min-height: 36px;
+  color: var(--text-primary-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  .physical-display {
+    background: var(--input-bg-dark);
+    border-color: var(--border-dark);
+    color: var(--text-primary-dark);
+  }
 }
 
 .physical-display:hover {
@@ -2001,21 +2134,11 @@ h2 {
   background: #ecf5ff;
 }
 
-.draggable-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  background: #fff;
-  border: 1px solid #ebeef5;
-  border-radius: 6px;
-  margin-bottom: 8px;
-}
-
-.drag-handle {
-  cursor: move;
-  font-size: 1.3rem;
-  color: #909399;
+@media (prefers-color-scheme: dark) {
+  .physical-display:hover {
+    border-color: #63b3ed;
+    background: rgba(50, 60, 80, 0.8);
+  }
 }
 
 .physical-name {
@@ -2079,7 +2202,7 @@ h2 {
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  backdrop-filter: blur(10px); /* 毛玻璃效果 */
+  backdrop-filter: blur(10px);
 }
 
 .card-header {
@@ -2087,7 +2210,7 @@ h2 {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background: linear-gradient(135deg, #29cbc5, #cf12e3); /* 添加渐变背景 */
+  background: linear-gradient(135deg, #29cbc5, #cf12e3);
   border-bottom: 1px solid #e9ecef;
 }
 
@@ -2101,8 +2224,8 @@ h2 {
 .code-block {
   margin: 0;
   padding: 16px;
-  background: linear-gradient(135deg, #ddb568, #ffffff); /* 添加渐变背景 */
-  color: rgb(230, 0, 103); /* 修改为你想要的颜色 */
+  background: linear-gradient(135deg, #ddb568, #ffffff);
+  color: rgb(230, 0, 103);
   font-family: 'Consolas', 'Courier New', monospace;
   font-size: 0.94rem;
   line-height: 1.5;
@@ -2113,17 +2236,12 @@ h2 {
 }
 
 .external-pop-up-frame {
-  /* 讓彈窗有「浮在背景上」的氛圍 */
   position: relative;
-  z-index: 2000; /* 確保蓋過其他內容 */
+  z-index: 2000;
 }
 
-/* 對所有從這裡彈出的 el-dialog / el-drawer 生效 */
 .external-pop-up-frame .el-dialog,
 .external-pop-up-frame .el-drawer {
-  /*  --el-dialog-bg-color         : rgba(206, 210, 225, 0.88) !important;*/
-  /*background                   : linear-gradient(135deg, #5b818c, #38e0c2);*/
-  /*  --el-overlay-bg-color        : rgba(224, 208, 208, 0.65) !important;*/
   max-width: 500px;
   backdrop-filter: blur(12px) saturate(1.6);
   border: 1px solid rgba(100, 160, 255, 0.25);
@@ -2132,7 +2250,6 @@ h2 {
   overflow: hidden;
 }
 
-/* 標題區域加強 */
 .external-pop-up-frame .el-dialog__header,
 .external-pop-up-frame .el-drawer__header {
   color: #e4e8ea;
@@ -2140,15 +2257,12 @@ h2 {
   padding: 16px 24px;
 }
 
-/* 內容區域 */
 .external-pop-up-frame .el-dialog__body,
 .external-pop-up-frame .el-drawer__body {
   background: transparent;
-  /*  color                        : #e2e8f0;*/
   padding: 20px 24px;
 }
 
-/* 按鈕區域（footer） */
 .external-pop-up-frame .el-dialog__footer {
   background: rgba(0, 0, 0, 0.2);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -2165,6 +2279,14 @@ h2 {
   border-radius: 8px;
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .batch-operation {
+    background: linear-gradient(135deg, #2d3748, #1a202c);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .select-all-container {
@@ -2179,6 +2301,12 @@ h2 {
   font-size: 0.9rem;
 }
 
+@media (prefers-color-scheme: dark) {
+  .selected-count {
+    color: #63b3ed;
+  }
+}
+
 /* 批量操作按钮区域美化 */
 .batch-buttons {
   display: flex;
@@ -2190,7 +2318,7 @@ h2 {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
-  overflow: visible; /* 禁止内容超出容器 */
+  overflow: visible;
 }
 
 .batch-buttons:hover {
@@ -2198,7 +2326,6 @@ h2 {
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* 批量操作按钮美化 */
 .batch-buttons .btn {
   position: relative;
   overflow: hidden;
@@ -2248,7 +2375,6 @@ h2 {
   box-shadow: 0 4px 12px rgba(0, 198, 255, 0.4);
 }
 
-/* 按钮图标动画 */
 .batch-buttons .btn i {
   margin-right: 8px;
   transition: transform 0.3s ease;
@@ -2258,25 +2384,10 @@ h2 {
   transform: scale(1.2) rotate(10deg);
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .batch-buttons {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .batch-buttons .btn {
-    width: 100%;
-    text-align: center;
-  }
-}
-
-/* 按钮按下效果 */
 .batch-buttons .btn:active {
   transform: translateY(0) scale(0.98);
   transition: all 0.1s ease;
 }
-
 
 .config-header {
   display: flex;
@@ -2286,7 +2397,7 @@ h2 {
 }
 
 .config-checkbox {
-  zoom: 1.2; /* 稍微放大复选框 */
+  zoom: 1.2;
 }
 
 .config-item {
@@ -2299,10 +2410,22 @@ h2 {
   border-left-color: #409eff;
 }
 
-/* 当配置被选中时的样式 */
+@media (prefers-color-scheme: dark) {
+  .config-item:hover {
+    border-left-color: #63b3ed;
+  }
+}
+
 .config-item:has(.config-checkbox:checked) {
   background: rgba(64, 158, 255, 0.05);
   border-left-color: #409eff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .config-item:has(.config-checkbox:checked) {
+    background: rgba(99, 179, 237, 0.1);
+    border-left-color: #63b3ed;
+  }
 }
 
 .batch-drawer {
@@ -2318,7 +2441,15 @@ h2 {
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   background: #e8e8e8;
-  backdrop-filter: blur(10px); /* 毛玻璃效果 */
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .batch-card {
+    background: rgba(45, 55, 72, 0.8);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .batch-item {
@@ -2326,26 +2457,45 @@ h2 {
   padding: 16px;
   border-radius: 8px;
   transition: all 0.3s ease;
+  background: var(--input-bg-light);
 }
 
-/*.batch-item:hover {
-  border-color: #409eff;
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
-}*/
+@media (prefers-color-scheme: dark) {
+  .batch-item {
+    background: var(--input-bg-dark);
+  }
+}
 
 .batch-item label {
   font-weight: 500;
-  color: #495057;
+  color: var(--text-primary-light);
   margin-bottom: 8px;
   display: block;
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .batch-item label {
+    color: var(--text-primary-dark);
+  }
 }
 
 .batch-item .limited-input {
   width: 20%;
   padding: 10px 12px;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--border-light);
   border-radius: 4px;
-  transition: border-color 0.3s ease;
+  background: var(--input-bg-light);
+  color: var(--text-primary-light);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .batch-item .limited-input {
+    background: var(--input-bg-dark);
+    border-color: var(--border-dark);
+    color: var(--text-primary-dark);
+  }
 }
 
 .batch-item .limited-input:focus {
@@ -2354,14 +2504,30 @@ h2 {
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
+@media (prefers-color-scheme: dark) {
+  .batch-item .limited-input:focus {
+    border-color: #63b3ed;
+    box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.2);
+  }
+}
+
 .batch-item select {
   width: 25%;
   padding: 10px 12px;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--border-light);
   border-radius: 4px;
-  background-color: #fff;
-  transition: border-color 0.3s ease;
+  background-color: var(--input-bg-light);
+  color: var(--text-primary-light);
+  transition: all 0.3s ease;
   cursor: pointer;
+}
+
+@media (prefers-color-scheme: dark) {
+  .batch-item select {
+    background-color: var(--input-bg-dark);
+    border-color: var(--border-dark);
+    color: var(--text-primary-dark);
+  }
 }
 
 .batch-item select:focus {
@@ -2370,7 +2536,213 @@ h2 {
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
+@media (prefers-color-scheme: dark) {
+  .batch-item select:focus {
+    border-color: #63b3ed;
+    box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.2);
+  }
+}
+
 .batch-item select:hover {
   border-color: #409eff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .batch-item select:hover {
+    border-color: #63b3ed;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .container {
+    width: 95%;
+    padding: 15px;
+  }
+
+  .fixed-container {
+    position: relative;
+    border-radius: 8px;
+    padding: 15px;
+  }
+
+  .content-area {
+    margin-top: 20px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .config-list {
+    flex-direction: column;
+  }
+
+  .config-item {
+    max-width: 100%;
+  }
+
+  .config-btn {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .config-btn .btn {
+    width: 100%;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+  }
+
+  .uid-input {
+    max-width: 100%;
+  }
+
+  .add-config-btn {
+    width: 100%;
+  }
+
+  .checkbox-group {
+    gap: 12px 20px;
+  }
+
+  .result-all {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .result {
+    width: 100%;
+  }
+
+  .copy-btn {
+    width: 100%;
+  }
+
+  .batch-operation {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .batch-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .batch-buttons .btn {
+    width: 100%;
+  }
+
+  .fixed-trigger {
+    width: 50px;
+    height: 150px;
+    right: 5px;
+  }
+
+  .fixed-trigger i {
+    font-size: 1.5rem;
+  }
+
+  .fixed-trigger span {
+    font-size: 0.8rem;
+  }
+
+  .draggable-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .physical-display {
+    width: 100%;
+  }
+
+  .batch-item .limited-input,
+  .batch-item select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: 98%;
+    padding: 10px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  .fixed-container {
+    padding: 12px;
+  }
+
+  .config-item {
+    padding: 8px;
+  }
+
+  .form-group {
+    margin-bottom: 12px;
+  }
+
+  .days-display {
+    font-size: 0.9rem;
+  }
+
+  .checkbox-group {
+    gap: 10px 16px;
+  }
+
+  .checkbox-label {
+    min-width: 60px;
+    font-size: 0.85rem;
+  }
+
+  .result {
+    font-size: 0.8rem;
+    padding: 10px;
+  }
+
+  .batch-item {
+    padding: 12px;
+  }
+
+  .batch-item label {
+    font-size: 0.9rem;
+  }
+}
+
+/* 横屏手机适配 */
+@media (max-width: 768px) and (orientation: landscape) {
+  .home {
+    background-position: center top;
+  }
+
+  .container {
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding-bottom: 60px;
+  }
+
+  .fixed-container {
+    margin-bottom: 15px;
+  }
+
+  .config-item {
+    margin-bottom: 8px;
+  }
+
+  .batch-item {
+    margin-bottom: 6px;
+  }
 }
 </style>
