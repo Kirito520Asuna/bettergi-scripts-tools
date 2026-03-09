@@ -397,7 +397,7 @@ function changShowDaysButton(config) {
   } else if (config.days && config.days.length <= 0) {
     config.dayName = undefined
   }
-  if ((!excludeDomainTypes.value.includes(config.selectedType)) && config.autoFight.sundaySelectedValue) {
+  if (runTypesDefault[0] === config.runType && (!excludeDomainTypes.value.includes(config.selectedType)) && config.autoFight.sundaySelectedValue) {
     // 实时监听 days 与 asDaysMap.get(sundaySelectedValue) 是否相同
     const daysFromMap = asDaysMap.get(config.autoFight.sundaySelectedValue + "");
     if (daysFromMap && Array.isArray(daysFromMap)) {
@@ -418,24 +418,26 @@ watchEffect(
     () => configs.value,
     (newConfigs) => {
       newConfigs.forEach(config => {
-        let domainName = config.autoFight.domainName
-        if (!domainName) {
-          return
-        }
-        const domain = domainMap.value.get(domainName)
-        if (Array.isArray(config.days) && config.days.length > 0) {
-          config.dayName = config.days.map(dayIndex => weekDays[dayIndex]).join(', ')
-        } else {
-          config.dayName = ''
-        }
-
-        if (domain.hasOrder && domain.list?.length > 0) {
-          // 自动选第一个（也可改为 undefined，让用户手动选）
-          if (!config.autoFight.sundaySelectedValue) {
-            config.autoFight.sundaySelectedValue = domain.list[0]
+        if (runTypesDefault[0] === config.runType ) {
+          let domainName = config.autoFight?.domainName
+          if (!domainName) {
+            return
           }
-        } else {
-          config.autoFight.sundaySelectedValue = config.autoFight.sundaySelectedValue || undefined
+          const domain = domainMap.value.get(domainName)
+          if (Array.isArray(config.days) && config.days.length > 0) {
+            config.dayName = config.days.map(dayIndex => weekDays[dayIndex]).join(', ')
+          } else {
+            config.dayName = ''
+          }
+
+          if (domain.hasOrder && domain.list?.length > 0) {
+            // 自动选第一个（也可改为 undefined，让用户手动选）
+            if (!config.autoFight.sundaySelectedValue) {
+              config.autoFight.sundaySelectedValue = domain.list[0]
+            }
+          } else {
+            config.autoFight.sundaySelectedValue = config.autoFight.sundaySelectedValue || undefined
+          }
         }
         handleSundaySelection(config)
         changShowDaysButton(config);
