@@ -457,7 +457,7 @@ const getFinalConfigs = () => {
     let autoFight = c.autoFight
     let autoLeyLineOutcrop = c.autoLeyLineOutcrop
     let autoStygianOnslaught = c.autoStygianOnslaught
-    if (autoFight.domainName) {
+    if (autoFight?.domainName) {
       const info = domainMap.value.get(autoFight.domainName);
       let index = 1
       for (let item of info.list) {
