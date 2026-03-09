@@ -457,17 +457,6 @@ const getFinalConfigs = () => {
     let autoFight = c.autoFight
     let autoLeyLineOutcrop = c.autoLeyLineOutcrop
     let autoStygianOnslaught = c.autoStygianOnslaught
-    if (autoFight?.domainName) {
-      const info = domainMap.value.get(autoFight.domainName);
-      let index = 1
-      for (let item of info.list) {
-        if (autoFight.sundaySelectedValue === item) {
-          // autoFight.sundaySelectedName = autoFight.sundaySelectedValue
-          autoFight.sundaySelectedValue = index
-        }
-        index++
-      }
-    }
     // c.autoFight.physical.sort((a, b) => a.order - b.order)
     changShowDaysButton(c)
     let json = {
@@ -486,6 +475,19 @@ const getFinalConfigs = () => {
     if (c.runType === runTypesDefault()[0]) {
       json.autoLeyLineOutcrop = undefined
       json.autoStygianOnslaught = undefined
+
+      if (autoFight.domainName) {
+        const info = domainMap.value.get(autoFight.domainName);
+        let index = 1
+        for (let item of info.list) {
+          if (autoFight.sundaySelectedValue === item) {
+            // autoFight.sundaySelectedName = autoFight.sundaySelectedValue
+            autoFight.sundaySelectedValue = index
+          }
+          index++
+        }
+      }
+      json.autoFight = autoFight
     } else if (c.runType === runTypesDefault()[1]) {
       json.autoFight = undefined
       json.autoStygianOnslaught = undefined
