@@ -3,7 +3,7 @@ name: Sync to Gitee
 on:
   # push:  # 如需 push 触发可取消注释
   #   branches:
-  #     - main
+  #     - master
   #   tags:
   #     - '**'
   schedule:
@@ -59,7 +59,7 @@ jobs:
           
           GITEE_URL="https://${GITEE_USERNAME}:${GITEE_TOKEN}@gitee.com/${GITEE_USERNAME}/bettergi-scripts-tools.git"
           
-          if GITEE_SHA=$(git ls-remote "$GITEE_URL" main 2>/dev/null | awk '{print $1}'); then
+          if GITEE_SHA=$(git ls-remote "$GITEE_URL" master 2>/dev/null | awk '{print $1}'); then
             if [ -n "$GITEE_SHA" ]; then
               echo "Gitee 最新提交：$GITEE_SHA"
               if [ "$LOCAL_SHA" = "$GITEE_SHA" ]; then
@@ -108,8 +108,8 @@ jobs:
           echo "✓ Gitee remote 配置完成"
           echo ""
           
-          echo "📦 推送主分支 (main)..."
-          git push -f gitee main:main
+          echo "📦 推送主分支 (master)..."
+          git push -f gitee master:master
           echo "✓ 主分支推送完成"
           echo ""
           
@@ -131,13 +131,11 @@ jobs:
           
           echo "📦 ${mode_text}同步 GitHub Releases 到 Gitee..."
           
-          # 使用 gh + Gitee API 同步 release 元数据（标题、描述等）
-          # 注意：gh 在 ubuntu-latest 已预装
-          
+          # 使用 gh + Gitee API 同步 release 元数据
           gh release list --json tagName,title,body --jq '.[] | {tag: .tagName, name: .title, body: .body}' | while IFS= read -r rel_json; do
             tag=$(echo "$rel_json" | jq -r '.tag')
             name=$(echo "$rel_json" | jq -r '.name // .tag')
-            body=$(echo "$rel_json" | jq -r '.body // ""' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')  # 处理多行 & 转义
+            body=$(echo "$rel_json" | jq -r '.body // ""' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
           
             echo "处理 Release: $tag ($name)"
           
@@ -164,7 +162,7 @@ jobs:
             fi
           done
           
-          echo "✓ Releases 元数据同步完成（附件暂未同步，如需可加下载-上传逻辑）"
+          echo "✓ Releases 元数据同步完成（附件暂未同步，如需可加逻辑）"
 
       - name: 验证同步结果
         if: steps.check_changes.outputs.has_changes == 'true' || steps.force_mode.outputs.force_mode == 'true'
@@ -182,8 +180,8 @@ jobs:
           
           GITEE_URL="https://${GITEE_USERNAME}:${GITEE_TOKEN}@gitee.com/${GITEE_USERNAME}/bettergi-scripts-tools.git"
           
-          echo "检查主分支..."
-          if git ls-remote --heads "$GITEE_URL" main | grep -q 'refs/heads/main'; then
+          echo "检查主分支 (master)..."
+          if git ls-remote --heads "$GITEE_URL" master | grep -q 'refs/heads/master'; then
             echo "✅ 主分支已同步"
           else
             echo "❌ 主分支同步失败"
