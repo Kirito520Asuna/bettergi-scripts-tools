@@ -578,7 +578,7 @@ const getFinalConfigsToKey = () => {
       let physical = autoStygianOnslaught.physical
       key += (autoStygianOnslaught.bossNum || "")
       key += "|"
-      key += (autoStygianOnslaught.friendshipTeam || "")
+      key += (autoStygianOnslaught.fightTeamName || "")
       key += "|"
       key += (autoStygianOnslaught.specifyResinUse ? "1" : "")
       if (autoStygianOnslaught.specifyResinUse) {
@@ -737,7 +737,7 @@ const batchJson = ref({
     },
     autoStygianOnslaught: {
       bossNum: undefined,
-      friendshipTeam: "",
+      fightTeamName: "",
     }
   }
 })
@@ -876,7 +876,7 @@ const batchUpdate = () => {
         config.autoLeyLineOutcrop.team = autoLeyLineOutcrop.team
         config.autoLeyLineOutcrop.friendshipTeam = autoLeyLineOutcrop.friendshipTeam
       } else if (config.runType === runTypesDefault()[2]) {
-        config.autoStygianOnslaught.friendshipTeam = autoStygianOnslaught.friendshipTeam
+        config.autoStygianOnslaught.fightTeamName = autoStygianOnslaught.fightTeamName
         config.autoStygianOnslaught.bossNum = autoStygianOnslaught.bossNum
       }
     }
@@ -1170,7 +1170,7 @@ const batchUpdate = () => {
               </div>
               <div class="batch-item">
                 <label>队伍名称（可选）：</label>
-                <input class="limited-input" v-model="batchJson.batch.autoStygianOnslaught.friendshipTeam"
+                <input class="limited-input" v-model="batchJson.batch.autoStygianOnslaught.fightTeamName"
                        placeholder="队伍1 / 主C+副C+辅助"/>
               </div>
               <div class="batch-item">
@@ -1467,13 +1467,11 @@ const batchUpdate = () => {
             <div class="stygianOnslaught-section" v-if="config.runType === runTypes[2]">
               <div class="form-group stygianOnslaught">
                 <label>队伍名称（可选）：</label>
-                <input class="limited-input" v-model="config.autoStygianOnslaught.friendshipTeam"
+                <input class="limited-input" v-model="config.autoStygianOnslaught.fightTeamName"
                        placeholder="队伍1 / 主C+副C+辅助"/>
               </div>
               <div class="form-group stygianOnslaught">
                 <label>指定刷取战场（可选）：</label>
-                <!--              <el-input-number min="1" max="3" v-model="config.autoStygianOnslaught.bossNum"-->
-                <!--                               placeholder="战场一,战场二,战场三"/>-->
                 <select v-model="config.autoStygianOnslaught.bossNum">
                   <option :value="undefined">请选择</option>
                   <option

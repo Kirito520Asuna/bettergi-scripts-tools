@@ -112,10 +112,6 @@ public class AutoPlanController {
         return ok(uidList);
     }
 
-    public static void main(String[] args) {
-        String s = "a:ssss";
-        System.out.println(s.substring(s.lastIndexOf(":") + 1));
-    }
     @SysLog
     @Token
     @Operation(summary = "[需要登录/授权token]批量删除UID映射JSON")
