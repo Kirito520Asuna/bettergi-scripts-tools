@@ -239,6 +239,62 @@ jobs:
 #         gitee_upload_retry_times: 3
 #         debug: false
 
+      - name: 同步 GitHub Releases 到 Gitee（不包含附件）
+        if: steps.check_changes.outputs.has_changes == 'true' || steps.force_mode.outputs.force_mode == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GITEE_OWNER: ${{ secrets.GITEE_USERNAME }}
+          GITEE_REPO: bettergi-scripts-tools
+        run: |
+          echo "📦 同步 GitHub Releases 到 Gitee（不包含附件）..."
+          
+          # 获取 GitHub release 列表
+          releases=$(gh release list --json tagName,name,body --jq '.[] | {tag: .tagName, name: .name, body: .body}')
+          
+          echo "$releases" | jq -c '.' | while read release; do
+            tag=$(echo "$release" | jq -r '.tag')
+            name=$(echo "$release" | jq -r '.name // "'$tag'"')
+            body=$(echo "$release" | jq -r '.body // ""' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+          
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "处理 Release: $tag"
+            echo "  标题: $name"
+            echo "  描述长度: ${#body} 字符"
+          
+            # 查询 Gitee release 是否存在
+            gitee_release=$(curl -s -H "Authorization: token $GITEE_TOKEN" \
+              "https://gitee.com/api/v5/repos/$GITEE_OWNER/$GITEE_REPO/releases/tags/$tag")
+          
+            gitee_id=$(echo "$gitee_release" | jq -r '.id // empty')
+          
+            if [ -z "$gitee_id" ]; then
+              echo "  Gitee release 不存在 → 创建"
+              create_resp=$(curl -s -X POST \
+                -H "Authorization: token $GITEE_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{\"tag_name\":\"$tag\",\"name\":\"$name\",\"body\":\"$body\",\"target_commitish\":\"$tag\"}" \
+                "https://gitee.com/api/v5/repos/$GITEE_OWNER/$GITEE_REPO/releases")
+          
+              gitee_id=$(echo "$create_resp" | jq -r '.id')
+          
+              if [ -z "$gitee_id" ] || [ "$gitee_id" = "null" ]; then
+                echo "    ❌ 创建失败: $(echo "$create_resp" | jq -r '.message // "未知错误"')"
+              else
+                echo "    ✓ 创建成功 (ID: $gitee_id)"
+              fi
+            else
+              echo "  Gitee release 已存在 (ID: $gitee_id) → 更新"
+              update_resp=$(curl -s -X PATCH \
+                -H "Authorization: token $GITEE_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{\"name\":\"$name\",\"body\":\"$body\"}" \
+                "https://gitee.com/api/v5/repos/$GITEE_OWNER/$GITEE_REPO/releases/$gitee_id")
+              echo "    ✓ 更新完成"
+            fi
+          done
+          
+          echo "✓ Releases 同步完成（不包含附件）"
 
       - name: 验证同步结果
         if: steps.check_changes.outputs.has_changes == 'true' || steps.force_mode.outputs.force_mode == 'true'
