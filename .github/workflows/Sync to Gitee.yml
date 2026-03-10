@@ -1,0 +1,78 @@
+name: Sync to Gitee
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '**'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出完整历史记录
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 配置 git 用户信息
+        run: |
+          git config --global user.name  "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
+      - name: 添加带认证的 Gitee 远程仓库
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          # 先移除旧的（防止冲突）
+          git remote remove gitee 2>/dev/null || true
+
+          # 使用 token 认证的 HTTPS 地址
+          git remote add gitee "https://${{ secrets.GITEE_USERNAME }}:${GITEE_TOKEN}@gitee.com/${{ secrets.GITEE_USERNAME }}/bettergi-scripts-tools.git"
+
+          # 验证是否添加成功
+          git remote -v | grep gitee || { echo "❌ 添加 Gitee remote 失败"; exit 1; }
+
+      - name: 强制镜像推送（分支 + 标签全部同步）
+        run: |
+          echo "🔄 开始完整镜像推送..."
+          echo ""
+
+          # --mirror 会推送所有 refs（包括 heads 和 tags），并删除 Gitee 端多余的引用
+          # 如果你不希望删除 Gitee 多余的 refs，可改为下面两行：
+          # git push gitee --all
+          # git push gitee --tags --force
+          git push --mirror gitee || {
+            echo "❌ git push --mirror 失败！"
+            echo "可能原因：token 权限不足、Gitee 有保护规则、网络问题等"
+            exit 1
+          }
+
+          echo ""
+          echo "🎉 镜像推送完成"
+
+      - name: 验证同步结果
+        run: |
+          echo "══════════════════════════════════════════"
+          echo "Gitee 同步验证"
+          echo "══════════════════════════════════════════"
+          echo ""
+          echo "Gitee 分支："
+          git ls-remote --heads gitee
+          echo ""
+          echo "Gitee 标签（最近 10 个）："
+          git ls-remote --tags gitee | grep -v '\^{}' | sort -V | tail -n 10 || echo "(无标签或出错)"
+          echo ""
+          echo "✓ 验证完成"
+          echo "Gitee 仓库：https://gitee.com/${{ secrets.GITEE_USERNAME }}/bettergi-scripts-tools"
+
+      - name: 输出总结（无论成功失败都显示）
+        if: always()
+        run: |
+          echo "======================================"
+          echo "Sync to Gitee ${{ job.status == 'success' && '✅ 成功' || '❌ 失败' }}"
+          echo "触发方式：${{ github.event_name }}"
+          echo "Gitee 地址：https://gitee.com/${{ secrets.GITEE_USERNAME }}/bettergi-scripts-tools"
+          echo "======================================"
