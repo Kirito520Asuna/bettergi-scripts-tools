@@ -905,6 +905,8 @@ jobs:
             ${{ github.workspace }}/artifacts/windows-exes/*.exe
             ${{ github.workspace }}/artifacts/windows-standalone/*.zip
           body: |
+            **下载地址**
+             https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-jar-linux.outputs.tag_name }}
             **发布信息**
             - 标签：${{ needs.build-jar-linux.outputs.tag_name }}
             - Java 版本：${{ needs.build-jar-linux.outputs.java_version }}
@@ -921,6 +923,7 @@ jobs:
             
             **系统要求**：Windows 10/11 x64  
             **运行方式**：推荐使用独立包，双击即跑
+           
             如有问题欢迎反馈！
           draft: ${{ github.event.inputs.draft || false }}
           prerelease: ${{ github.event.inputs.prerelease || false }}
