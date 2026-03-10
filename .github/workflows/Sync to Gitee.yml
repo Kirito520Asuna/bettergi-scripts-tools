@@ -118,113 +118,127 @@ jobs:
           git push -f gitee --tags
           echo "✓ 标签推送完成（共 $local_tag_count 个）"
 
+#      - name: 同步 GitHub Releases 到 Gitee 发行版（含附件）
+#        if: (steps.check_changes.outputs.has_changes == 'true' || steps.force_mode.outputs.force_mode == 'true') && (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch')
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+#          GITEE_OWNER: ${{ secrets.GITEE_USERNAME }}
+#          GITEE_REPO: bettergi-scripts-tools
+#          TEMP_DIR: release_assets_temp
+#        run: |
+#          mode_text=""
+#          [[ "${{ steps.force_mode.outputs.force_mode }}" == "true" ]] && mode_text="[强制推送模式] "
+#
+#          echo "📦 ${mode_text}同步 GitHub Releases 到 Gitee（包括附件）..."
+#
+#          mkdir -p "$TEMP_DIR"
+#
+#          # 步骤1: 获取所有 release 的 tagName 列表（gh release list 只支持有限字段）
+#          tags=$(gh release list --json tagName --jq '.[].tagName')
+#
+#          if [ -z "$tags" ]; then
+#            echo "ℹ️ 仓库中没有 Releases，跳过同步"
+#            exit 0
+#          fi
+#
+#          echo "发现 $(echo "$tags" | wc -l | xargs) 个 Releases，开始逐个处理..."
+#
+#          # 步骤2: 逐个处理每个 tag
+#          for tag in $tags; do
+#            echo ""
+#            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+#            echo "处理 Release: $tag"
+#
+#            # 获取完整 release 信息（包括 name/body/assets）
+#            release_json=$(gh release view "$tag" --json name,body,assets --jq '{name: .name, body: .body // "", assets: .assets}')
+#
+#            name=$(echo "$release_json" | jq -r '.name // "'"${tag}"'"')
+#            body=$(echo "$release_json" | jq -r '.body' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+#
+#            echo "  标题: $name"
+#            echo "  描述长度: ${#body} 字符"
+#
+#            # 步骤3: 检查/创建/更新 Gitee release，获取 ID
+#            gitee_release_json=$(curl -s -H "Authorization: token $GITEE_TOKEN" \
+#              "https://gitee.com/api/v5/repos/$GITEE_OWNER/$GITEE_REPO/releases/tags/$tag")
+#
+#            gitee_release_id=$(echo "$gitee_release_json" | jq -r '.id // empty')
+#
+#            if [ -z "$gitee_release_id" ]; then
+#              echo "  Gitee release 不存在 → 创建"
+#              create_resp=$(curl -s -X POST \
+#                -H "Authorization: token $GITEE_TOKEN" \
+#                -H "Content-Type: application/json" \
+#                -d "{\"tag_name\":\"$tag\",\"name\":\"$name\",\"body\":\"$body\",\"target_commitish\":\"$tag\"}" \
+#                "https://gitee.com/api/v5/repos/$GITEE_OWNER/$GITEE_REPO/releases")
+#
+#              gitee_release_id=$(echo "$create_resp" | jq -r '.id')
+#              if [ -z "$gitee_release_id" ] || [ "$gitee_release_id" = "null" ]; then
+#                echo "❌ 创建失败: $(echo "$create_resp" | jq -r '.message // "未知错误"')"
+#                continue
+#              fi
+#            else
+#              echo "  Gitee release 已存在 (ID: $gitee_release_id) → 更新"
+#              curl -s -X PATCH \
+#                -H "Authorization: token $GITEE_TOKEN" \
+#                -H "Content-Type: application/json" \
+#                -d "{\"name\":\"$name\",\"body\":\"$body\"}" \
+#                "https://gitee.com/api/v5/repos/$GITEE_OWNER/$GITEE_REPO/releases/$gitee_release_id" > /dev/null
+#            fi
+#
+#            # 步骤4: 下载 GitHub assets
+#            echo "  下载附件..."
+#            rm -rf "$TEMP_DIR"/*
+#            asset_count=$(echo "$release_json" | jq '.assets | length')
+#            if [ "$asset_count" -gt 0 ]; then
+#              gh release download "$tag" --dir "$TEMP_DIR" --clobber || echo "  下载部分失败，继续处理已下载文件..."
+#            else
+#              echo "  无附件"
+#            fi
+#
+#            # 步骤5: 上传每个附件到 Gitee（覆盖同名）
+#            uploaded=0
+#            for asset_file in "$TEMP_DIR"/*; do
+#              if [ -f "$asset_file" ]; then
+#                filename=$(basename "$asset_file")
+#                echo "  上传: $filename"
+#
+#                upload_resp=$(curl -s -X POST \
+#                  -H "Authorization: token $GITEE_TOKEN" \
+#                  --form "file=@\"$asset_file\";filename=\"$filename\"" \
+#                  --form "name=$filename" \
+#                  "https://gitee.com/api/v5/repos/$GITEE_OWNER/$GITEE_REPO/releases/$gitee_release_id/assets?name=$filename")
+#
+#                if echo "$upload_resp" | grep -q '"id"'; then
+#                  echo "    ✓ 成功"
+#                  ((uploaded++))
+#                else
+#                  echo "    ❌ 失败: $(echo "$upload_resp" | jq -r '.message // "未知错误"')"
+#                fi
+#              fi
+#            done
+#
+#            echo "  本 release 上传附件: $uploaded / $asset_count"
+#          done
+#
+#          rm -rf "$TEMP_DIR"
+#          echo ""
+#          echo "✓ Releases（含附件）同步完成"
+
       - name: 同步 GitHub Releases 到 Gitee 发行版（含附件）
         if: (steps.check_changes.outputs.has_changes == 'true' || steps.force_mode.outputs.force_mode == 'true') && (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
-          GITEE_OWNER: ${{ secrets.GITEE_USERNAME }}
-          GITEE_REPO: bettergi-scripts-tools
-          TEMP_DIR: release_assets_temp
-        run: |
-          mode_text=""
-          [[ "${{ steps.force_mode.outputs.force_mode }}" == "true" ]] && mode_text="[强制推送模式] "
-          
-          echo "📦 ${mode_text}同步 GitHub Releases 到 Gitee（包括附件）..."
-          
-          mkdir -p "$TEMP_DIR"
-          
-          # 步骤1: 获取所有 release 的 tagName 列表（gh release list 只支持有限字段）
-          tags=$(gh release list --json tagName --jq '.[].tagName')
-          
-          if [ -z "$tags" ]; then
-            echo "ℹ️ 仓库中没有 Releases，跳过同步"
-            exit 0
-          fi
-          
-          echo "发现 $(echo "$tags" | wc -l | xargs) 个 Releases，开始逐个处理..."
-          
-          # 步骤2: 逐个处理每个 tag
-          for tag in $tags; do
-            echo ""
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "处理 Release: $tag"
-          
-            # 获取完整 release 信息（包括 name/body/assets）
-            release_json=$(gh release view "$tag" --json name,body,assets --jq '{name: .name, body: .body // "", assets: .assets}')
-          
-            name=$(echo "$release_json" | jq -r '.name // "'"${tag}"'"')
-            body=$(echo "$release_json" | jq -r '.body' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-          
-            echo "  标题: $name"
-            echo "  描述长度: ${#body} 字符"
-          
-            # 步骤3: 检查/创建/更新 Gitee release，获取 ID
-            gitee_release_json=$(curl -s -H "Authorization: token $GITEE_TOKEN" \
-              "https://gitee.com/api/v5/repos/$GITEE_OWNER/$GITEE_REPO/releases/tags/$tag")
-          
-            gitee_release_id=$(echo "$gitee_release_json" | jq -r '.id // empty')
-          
-            if [ -z "$gitee_release_id" ]; then
-              echo "  Gitee release 不存在 → 创建"
-              create_resp=$(curl -s -X POST \
-                -H "Authorization: token $GITEE_TOKEN" \
-                -H "Content-Type: application/json" \
-                -d "{\"tag_name\":\"$tag\",\"name\":\"$name\",\"body\":\"$body\",\"target_commitish\":\"$tag\"}" \
-                "https://gitee.com/api/v5/repos/$GITEE_OWNER/$GITEE_REPO/releases")
-          
-              gitee_release_id=$(echo "$create_resp" | jq -r '.id')
-              if [ -z "$gitee_release_id" ] || [ "$gitee_release_id" = "null" ]; then
-                echo "❌ 创建失败: $(echo "$create_resp" | jq -r '.message // "未知错误"')"
-                continue
-              fi
-            else
-              echo "  Gitee release 已存在 (ID: $gitee_release_id) → 更新"
-              curl -s -X PATCH \
-                -H "Authorization: token $GITEE_TOKEN" \
-                -H "Content-Type: application/json" \
-                -d "{\"name\":\"$name\",\"body\":\"$body\"}" \
-                "https://gitee.com/api/v5/repos/$GITEE_OWNER/$GITEE_REPO/releases/$gitee_release_id" > /dev/null
-            fi
-          
-            # 步骤4: 下载 GitHub assets
-            echo "  下载附件..."
-            rm -rf "$TEMP_DIR"/*
-            asset_count=$(echo "$release_json" | jq '.assets | length')
-            if [ "$asset_count" -gt 0 ]; then
-              gh release download "$tag" --dir "$TEMP_DIR" --clobber || echo "  下载部分失败，继续处理已下载文件..."
-            else
-              echo "  无附件"
-            fi
-          
-            # 步骤5: 上传每个附件到 Gitee（覆盖同名）
-            uploaded=0
-            for asset_file in "$TEMP_DIR"/*; do
-              if [ -f "$asset_file" ]; then
-                filename=$(basename "$asset_file")
-                echo "  上传: $filename"
-          
-                upload_resp=$(curl -s -X POST \
-                  -H "Authorization: token $GITEE_TOKEN" \
-                  --form "file=@\"$asset_file\";filename=\"$filename\"" \
-                  --form "name=$filename" \
-                  "https://gitee.com/api/v5/repos/$GITEE_OWNER/$GITEE_REPO/releases/$gitee_release_id/assets?name=$filename")
-          
-                if echo "$upload_resp" | grep -q '"id"'; then
-                  echo "    ✓ 成功"
-                  ((uploaded++))
-                else
-                  echo "    ❌ 失败: $(echo "$upload_resp" | jq -r '.message // "未知错误"')"
-                fi
-              fi
-            done
-          
-            echo "  本 release 上传附件: $uploaded / $asset_count"
-          done
-          
-          rm -rf "$TEMP_DIR"
-          echo ""
-          echo "✓ Releases（含附件）同步完成"
+        uses: trustedinster/sync-release-gitee@v1.3
+        with:
+         gitee_owner: ${{ secrets.GITEE_USERNAME }}
+         gitee_repo: bettergi-scripts-tools
+         gitee_token: ${{ secrets.GITEE_TOKEN }}
+         github_owner: ${{ github.repository_owner }}
+         github_repo: ${{ github.event.repository.name }}
+         gitee_upload_retry_times: 3
+         debug: false
+
+
       - name: 验证同步结果
         if: steps.check_changes.outputs.has_changes == 'true' || steps.force_mode.outputs.force_mode == 'true'
         env:
