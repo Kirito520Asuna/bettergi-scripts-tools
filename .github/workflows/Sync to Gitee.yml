@@ -249,16 +249,28 @@ jobs:
         run: |
           echo "📦 同步 GitHub Releases 到 Gitee（不包含附件）..."
           
-          # 获取 GitHub release 列表
-          releases=$(gh release list --json tagName,name,body --jq '.[] | {tag: .tagName, name: .name, body: .body}')
+          # 步骤1: 获取所有 release 的 tagName
+          tags=$(gh release list --json tagName --jq '.[].tagName')
           
-          echo "$releases" | jq -c '.' | while read release; do
-            tag=$(echo "$release" | jq -r '.tag')
-            name=$(echo "$release" | jq -r '.name // "'$tag'"')
-            body=$(echo "$release" | jq -r '.body // ""' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+          if [ -z "$tags" ]; then
+            echo "ℹ️ 仓库中没有 Releases，跳过同步"
+            exit 0
+          fi
           
+          echo "发现 $(echo "$tags" | wc -w) 个 Releases，开始逐个处理..."
+          
+          # 步骤2: 逐个处理每个 tag
+          for tag in $tags; do
+            echo ""
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "处理 Release: $tag"
+          
+            # 获取 release 详细信息
+            release_json=$(gh release view "$tag" --json name,body --jq '{name: .name, body: .body // ""}')
+          
+            name=$(echo "$release_json" | jq -r '.name // "'"$tag"'"')
+            body=$(echo "$release_json" | jq -r '.body' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+          
             echo "  标题: $name"
             echo "  描述长度: ${#body} 字符"
           
