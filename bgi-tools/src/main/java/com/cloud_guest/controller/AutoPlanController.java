@@ -7,6 +7,7 @@ import com.cloud_guest.domain.dto.AutoPlanDTO;
 import com.cloud_guest.domain.dto.AutoPlanJsonDto;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AutoPlanService;
+import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.view.BasicJsonView;
 import com.cloud_guest.vo.AutoPlanVo;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -38,6 +39,7 @@ public class AutoPlanController {
 
     @Resource
     private AutoPlanService autoPlanService;
+
     @SysLog(result = false)
     @Operation(summary = "查询全部国家JSON")
     @GetMapping("country/json/all")
@@ -45,13 +47,14 @@ public class AutoPlanController {
         List<String> list = autoPlanService.findCountryAll();
         return ok(list);
     }
+
     @PostMapping("country/json/all")
     @SysLog
     @Token
     @Operation(summary = "[需要登录/授权token]存储全部国家JSON")
     public Result<String> saveCountryAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
-                                        @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
-                                        @RequestBody AutoPlanJsonDto dto) {
+                                         @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
+                                         @RequestBody AutoPlanJsonDto dto) {
         autoPlanService.saveCountryAll(dto.getJson());
         return ok();
     }
@@ -99,10 +102,19 @@ public class AutoPlanController {
     @SysLog
     @Operation(summary = "查询UID映射JSON")
     @GetMapping("json")
-    public Result<List<AutoPlanVo>> info(@RequestParam String uid) {
+    public Result<List<AutoPlanVo>> info(@RequestParam String uid, @RequestParam(required = false) Boolean enable) {
+        if (ObjectUtils.isEmpty(enable)) {
+            enable = true;
+        }
         List<AutoPlanVo> autoPlanVos = autoPlanService.find(uid);
+        if (enable) {
+            autoPlanVos = autoPlanVos.stream()
+                    .filter(item -> item.getEnable())
+                    .collect(Collectors.toList());
+        }
         return ok(autoPlanVos);
     }
+
     @SysLog
     @Operation(summary = "查询全部UID")
     @GetMapping("uid/all")

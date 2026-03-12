@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.cloud_guest.aop.validator.NotEmptyList;
 import com.cloud_guest.domain.AutoFight;
 import com.cloud_guest.domain.AutoLeyLineOutcrop;
+import com.cloud_guest.domain.AutoPlan;
 import com.cloud_guest.domain.AutoStygianOnslaught;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.utils.object.ObjectUtils;
@@ -69,34 +70,5 @@ public class AutoPlanDTO implements Serializable {
         }
     }
 
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Data
-    public static class AutoPlan {
-        @NotNull
-        @Schema(description = "执行顺序")
-        @JsonProperty("order")
-        private Integer order;
-        @Schema(description = "执行日期")
-        @JsonProperty("days")
-        private List<Integer> days;
-        @JsonProperty("dayName")
-        private String dayName;
-        //@Schema(description = "执行类型(展示用)")
-        @JsonProperty("selectedType")
-        private String selectedType;
-        @Schema(description = "执行类型(秘境|地脉)")
-        @NotBlank
-        @JsonProperty("runType")
-        private String runType;
-        @Schema(description = "秘境参数")
-        @JsonProperty("autoFight")
-        private AutoFight autoFight;
-        @Schema(description = "地脉参数")
-        @JsonProperty("autoLeyLineOutcrop")
-        private AutoLeyLineOutcrop autoLeyLineOutcrop;
-        @Schema(description = "幽境参数")
-        @JsonProperty("autoStygianOnslaught")
-        private AutoStygianOnslaught autoStygianOnslaught;
-    }
+
 }

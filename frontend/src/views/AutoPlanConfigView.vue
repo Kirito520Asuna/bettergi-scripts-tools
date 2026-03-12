@@ -257,7 +257,7 @@ const addConfig = (config = undefined) => {
       // day: undefined,
       days: [],
       runType: runTypesDefault()[0],//先写死 预留地脉类型
-
+      enable: true,
       dayName: undefined,
       showDaysSelector: false,   // ← 新增
       showPhysicalSelector: false,   // ← 新增
@@ -467,6 +467,7 @@ const getFinalConfigs = () => {
       days: c.days,
       dayName: c.dayName,
       runType: c.runType,
+      enable: c.enable,
       // daysName: c.daysName,
       // physical: c.physical,
       selectedType: c.selectedType, // 新增字段
@@ -1218,6 +1219,13 @@ const batchUpdate = () => {
                        max="99999999"
                        placeholder="建议 1~10"/>
                 <span style="color: red;">数值高的优先执行</span>
+              </div>
+              <div class="form-group common">
+                <label>是否启用：</label>
+                <el-switch
+                    v-model="config.enable"
+                />
+                <span style="color: red;">是否启用本计划</span>
               </div>
               <div class="form-group common">
                 <label>执行日：</label>
