@@ -104,14 +104,12 @@ public class AutoPlanController {
     @Operation(summary = "查询UID映射JSON")
     @GetMapping("json")
     public Result<List<AutoPlanVo>> info(@RequestParam String uid, @RequestParam(required = false) Boolean enable) {
-        if (ObjectUtils.isEmpty(enable)) {
-            enable = true;
-        }
         List<AutoPlanVo> autoPlanVos = autoPlanService.find(uid);
-        if (enable) {
+        if (ObjectUtils.isNotEmpty(enable)) {
             //过滤启用
+            Boolean finalEnable = enable;
             autoPlanVos = autoPlanVos.stream()
-                    .filter(item -> item.getEnable())
+                    .filter(item -> ObjectUtils.equals(item.getEnable(), finalEnable))
                     .collect(Collectors.toList());
         }
         return ok(autoPlanVos);
