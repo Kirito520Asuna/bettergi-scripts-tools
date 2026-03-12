@@ -12,6 +12,7 @@ import com.cloud_guest.view.BasicJsonView;
 import com.cloud_guest.vo.AutoPlanVo;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -108,6 +109,7 @@ public class AutoPlanController {
         }
         List<AutoPlanVo> autoPlanVos = autoPlanService.find(uid);
         if (enable) {
+            //过滤启用
             autoPlanVos = autoPlanVos.stream()
                     .filter(item -> item.getEnable())
                     .collect(Collectors.toList());

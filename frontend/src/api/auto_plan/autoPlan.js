@@ -48,7 +48,7 @@ async function postUidPlan(uid, autoPlanList=[]) {
  * @returns {Promise<Object>} 返回包含响应数据的Promise对象
  */
 async function getUidJson(uid){
-    const response = await service.get('/auto/plan/json', {params: {uid: uid}})
+    const response = await service.get('/auto/plan/json', {params: {uid: uid,enable: false}})
     if (response.code === 200){
         ElMessage.success("加载成功");
     }
