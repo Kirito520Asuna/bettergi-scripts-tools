@@ -45,8 +45,8 @@ public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter, A
         // 检查是否为受保护路径
         boolean isProtectedPath = false;
         for (String path : fetchProtectedPaths()) {
-            if (fetchPathMatcher().match(path, requestPath)) {
-                isProtectedPath = true;
+            isProtectedPath = fetchPathMatcher().match(path, requestPath);
+            if (isProtectedPath) {
                 break;
             }
         }
