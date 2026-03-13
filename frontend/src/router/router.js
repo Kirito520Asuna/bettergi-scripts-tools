@@ -14,13 +14,13 @@ const routes = [
             asSubParentTitle: '主页功能',
             icon: 'icon-home'
         },
-        component: () => import('@main/views/HomeView'),
+        component: () => import('@views/HomeView.vue'),
         children: []
     },
     {
         path: '/settings',
         name: 'settings',
-        component: () => import('@main/views/SettingsView'),
+        component: () => import('@views/SettingsView.vue'),
         meta: {
             excludeInMenu: true,
             isRoot: true,
@@ -33,7 +33,7 @@ const routes = [
     {
         path: '/login',
         name: 'login',
-        component: () => import('@main/views/Login'),
+        component: () => import('@views/Login.vue'),
         meta: {
             excludeInMenu: true,
             isRoot: true,
@@ -46,7 +46,7 @@ const routes = [
     {
         path: '/capabilities',
         name: 'capabilities',
-        component: () => import('@main/views/CapabilitiesView'),
+        component: () => import('@views/CapabilitiesView.vue'),
         meta: {
             isRoot: true,
             title: '程序功能演示',
@@ -59,7 +59,7 @@ const routes = [
     {
         path: '/Markdown',
         name: 'Markdown',
-        component: () => import('@main/views/MarkdownView'),
+        component: () => import('@views/MarkdownView.vue'),
         meta: {
             isRoot: true,
             title: 'Markdown渲染',
@@ -85,7 +85,7 @@ const routes = [
     {
         path: '/AutoPlanDomain',
         name: 'AutoPlanDomain',
-        component: () => import('@main/views/AutoPlanDomainView'),
+        component: () => import('@views/AutoPlanDomainView.vue'),
         meta: {
             isRoot: true,
             title: '全部秘境展示',
