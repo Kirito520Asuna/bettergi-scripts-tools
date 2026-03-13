@@ -934,10 +934,10 @@ const batchUpdate = () => {
                 @change="debouncedSort"
             />
           </div>
-          <button @click="submitConfigToBackend" class="btn btn-submit">同步到云端</button>
-          <button @click="findDomains" class="btn btn-submit">加载云端配置</button>
-          <button @click="removeConfigToBackend" class="btn danger">🗑️ 移除云端配置</button>
-          <button @click="removeConfigAll" class="btn danger">🗑️ 清除全部</button>
+          <button @click="submitConfigToBackend" class="btn btn-submit">☁️🚀同步到云端</button>
+          <button @click="findDomains" class="btn btn-submit">☁️🔄加载云端配置</button>
+          <button @click="removeConfigToBackend" class="btn danger">☁️🗑️移除云端配置</button>
+          <button @click="removeConfigAll" class="btn danger">🗑️清除全部</button>
 
         </div>
 
