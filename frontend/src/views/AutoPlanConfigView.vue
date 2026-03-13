@@ -888,6 +888,7 @@ const batchUpdate = () => {
     }
   })
   batchJson.value.batch.show = false
+  batchJson.value.batch.common.enable=true
 }
 
 </script>
