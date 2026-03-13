@@ -28,7 +28,7 @@ public class AuthContextUtil {
      *
      * @return 当前用户的ID，如果是匿名用户则返回null
      */
-    public static String getUsernameIdNoThrow() {
+    public static String getUsernameNoThrow() {
         // 获取当前认证用户的用户名
         String userId = getAuthentication().getName();
         // 检查是否为匿名用户，如果是则设置为null

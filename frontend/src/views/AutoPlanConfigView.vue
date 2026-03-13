@@ -419,7 +419,7 @@ watchEffect(
     () => configs.value,
     (newConfigs) => {
       newConfigs.forEach(config => {
-        if (runTypesDefault()[0] === config.runType ) {
+        if (runTypesDefault()[0] === config.runType) {
           let domainName = config.autoFight?.domainName
           if (!domainName) {
             return
@@ -721,6 +721,9 @@ const batchJson = ref({
   selectedConfigs: new Set(),
   batch: {
     show: false,
+    common: {
+      enable: true,
+    },
     autoFight: {
       partyName: "",
     },
@@ -881,6 +884,7 @@ const batchUpdate = () => {
         config.autoStygianOnslaught.fightTeamName = autoStygianOnslaught.fightTeamName
         config.autoStygianOnslaught.bossNum = autoStygianOnslaught.bossNum
       }
+      config.enable = batch.common.enable
     }
   })
   batchJson.value.batch.show = false
@@ -1140,6 +1144,18 @@ const batchUpdate = () => {
             <span style="font-weight: bold; color: #409eff;">批量配置</span>
           </template>
           <div class="drawer-content">
+            <div class="batch-card" style="margin-top: 24px;">
+              <div class="card-header">
+                <label class="result-key">通用配置</label>
+              </div>
+              <div class="batch-item">
+                <label>启用计划：</label>
+                <el-switch
+                    v-model="batchJson.batch.common.enable"
+                />
+                <span style="color: red;">是否启用</span>
+              </div>
+            </div>
             <div class="batch-card" style="margin-top: 24px;">
               <div class="card-header">
                 <label class="result-key">秘境配置</label>

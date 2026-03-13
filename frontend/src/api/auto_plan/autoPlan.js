@@ -48,7 +48,7 @@ async function postUidPlan(uid, autoPlanList=[]) {
  * @returns {Promise<Object>} 返回包含响应数据的Promise对象
  */
 async function getUidJson(uid){
-    const response = await service.get('/auto/plan/json', {params: {uid: uid}})
+    const response = await service.get('/jwt/auto/plan/json', {params: {uid: uid}})
     if (response.code === 200){
         ElMessage.success("加载成功");
     }
@@ -73,7 +73,7 @@ async function getAllUid(){
  * @returns {Promise<any>}
  */
 async function removeUidList(uidStr){
-    const response = await service.delete('/auto/plan/json',{params: {uidStr: uidStr}});
+    const response = await service.delete('/jwt/auto/plan/json',{params: {uidStr: uidStr}});
     if (response.code === 200){
         ElMessage.success("删除成功");
     }
