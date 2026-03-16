@@ -11,6 +11,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.GroupedOpenApi;
+import org.springdoc.core.SpringDocConfigProperties;
 import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
@@ -37,7 +40,6 @@ public interface AbsSwagger {
     String jwtGroupName = "jwt";
     String otherGroupName = "other";
     String GroupSuffix = "_Group";
-    String securitySchemeName = "bearerAuth";
 
     default <T> T defaultIfEmpty(T object, T defaultValue) {
         return ObjectUtil.isEmpty(object) ? defaultValue : object;
@@ -74,6 +76,45 @@ public interface AbsSwagger {
         return authorization;
     }
 
+    default List<GroupSwagger> buildGroupSwaggerList() {
+        String pathApi = new StringBuilder().append("/api/**").toString();
+        List<String> pathsApi = CollUtil.newArrayList(pathApi);
+        SwaggerParameter sign = new SwaggerParameter()
+                .setName("sign").setDescription("签名")
+                .setStringSchemaDefault("签名sign")
+                .setRequired(true);
+        SwaggerParameter timestamp = new SwaggerParameter()
+                .setName("timestamp").setDescription("时间戳")
+                .setStringSchemaDefault(String.valueOf(System.currentTimeMillis() + 3000))
+                .setRequired(true);
+        List<SwaggerParameter> swaggerParameters = CollUtil.newArrayList(sign, timestamp);
+        //加入全局
+        List<Parameter> parameterListApi = swaggerParameters.stream().filter(ObjectUtil::isNotEmpty)
+                .map(this::buildHeaderParameter).collect(Collectors.toList());
+        GroupSwagger groupSwaggerApi = buildGroup(apiGroupName, false, pathsApi, parameterListApi, null);
+        //jwt
+        String pathJwt = new StringBuilder().append("/jwt/**").toString();
+        List<String> pathsJwt = CollUtil.newArrayList(pathJwt);
+        List<Parameter> parameterListJwt = CollUtil.newArrayList(buildSecurityHeaderParameter(getAuthorization()));
+        boolean authSecurityGroup = true;
+        GroupSwagger groupSwaggerJwt = buildGroup(jwtGroupName, authSecurityGroup, pathsJwt, parameterListJwt, null);
+        //other
+        String apiPath = new StringBuilder().append("/api/**").toString();
+        String jwtPath = new StringBuilder().append("/jwt/**").toString();
+        List<String> excludePaths = CollUtil.newArrayList(apiPath, jwtPath);
+        GroupSwagger groupSwaggerOther = buildGroup(otherGroupName, false, null, null, excludePaths);
+
+        List<GroupSwagger> list = CollUtil.newArrayList();
+        list.add(groupSwaggerApi);
+        list.add(groupSwaggerJwt);
+        list.add(groupSwaggerOther);
+
+
+        //SpringDocConfigProperties bean = SpringUtil.getBean(SpringDocConfigProperties.class);
+
+        return list;
+    }
+
     /**
      * 安全模式，这里配置通过请求头 Authorization 传递 token 参数
      */
@@ -89,6 +130,16 @@ public interface AbsSwagger {
     }
     /*####################################################################################################################################################################################################################################################*/
 
+    default GroupSwagger buildGroup(String groupName, boolean AuthSecurityGroup, List<String> paths, List<Parameter> parameterList, List<String> excludePaths) {
+        GroupSwagger groupSwagger = new GroupSwagger()
+                .setGroupName(groupName)
+                .setAuthSecurityGroup(AuthSecurityGroup)
+                .setPaths(paths)
+                .setParameterList(parameterList)
+                .setExcludePaths(excludePaths);
+        return groupSwagger;
+    }
+
     /**
      * 配置api组
      * 注意请和yaml中配置的组名不要重复(俩者配置同时生效)
@@ -98,40 +149,8 @@ public interface AbsSwagger {
 
     //@Lazy//懒加载
     default GroupedOpenApi buildApiGroupedOpenApi() {
-        String path = new StringBuilder().append("/api/**").toString();
-        List<String> paths = CollUtil.newArrayList(path);
-
-        SwaggerParameter sign = new SwaggerParameter()
-                .setName("sign").setDescription("签名")
-                .setStringSchemaDefault("签名sign")
-                .setRequired(true);
-
-        SwaggerParameter timestamp = new SwaggerParameter()
-                .setName("timestamp").setDescription("时间戳")
-                .setStringSchemaDefault(String.valueOf(System.currentTimeMillis() + 3000))
-                .setRequired(true);
-
-        List<SwaggerParameter> swaggerParameters = CollUtil.newArrayList(sign, timestamp);
-        //加入全局
-        List<Parameter> parameterList = swaggerParameters.stream().filter(ObjectUtil::isNotEmpty)
-                .map(this::buildHeaderParameter).collect(Collectors.toList());
-
-        //Parameter signParameter = buildHeaderParameter("sign", "验签",
-        //        null, "验签1"
-        //        , null, null).required(true);
-        //
-        //Parameter timestampParameter = buildHeaderParameter("timestamp", "时间戳",
-        //        null, System.currentTimeMillis() + 3000 + ""
-        //        , null, "时间戳1").required(true);
-        //
-        ////加入全局
-        //List<Parameter> parameterList = CollUtil.newArrayList(signParameter, timestampParameter);
-
-        GroupSwagger groupSwagger = new GroupSwagger()
-                .setGroupName(apiGroupName)
-                .setPaths(paths)
-                .setParameterList(parameterList);
-
+        GroupSwagger groupSwagger = buildGroupSwaggerList()
+                .stream().filter(o -> ObjectUtil.equals(o.getGroupName(), apiGroupName)).findFirst().get();
         GroupedOpenApi groupedOpenApi = buildGroupedOpenApi(groupSwagger);
         return groupedOpenApi;
     }
@@ -145,19 +164,12 @@ public interface AbsSwagger {
 
     //@Lazy//懒加载
     default GroupedOpenApi buildJwtGroupedOpenApi() {
-        String path = new StringBuilder().append("/jwt/**").toString();
-
-        List<String> paths = CollUtil.newArrayList(path);
-        List<Parameter> parameterList = CollUtil.newArrayList(buildSecurityHeaderParameter(getAuthorization()));
-
-        GroupSwagger groupSwagger = new GroupSwagger()
-                .setGroupName(jwtGroupName)
-                .setPaths(paths)
-                .setParameterList(parameterList);
-
+        GroupSwagger groupSwagger = buildGroupSwaggerList()
+                .stream().filter(o -> ObjectUtil.equals(o.getGroupName(), jwtGroupName)).findFirst().get();
         GroupedOpenApi groupedOpenApi = buildGroupedOpenApi(groupSwagger);
         return groupedOpenApi;
     }
+
 
     /**
      * 配置other组
@@ -168,14 +180,8 @@ public interface AbsSwagger {
 
     //@Lazy//懒加载
     default GroupedOpenApi buildOtherGroupedOpenApi() {
-        //无需验证，无组必传参数
-        String apiPath = new StringBuilder().append("/api/**").toString();
-        String jwtPath = new StringBuilder().append("/jwt/**").toString();
-
-        List<String> excludePaths = CollUtil.newArrayList(apiPath, jwtPath);
-        GroupSwagger groupSwagger = new GroupSwagger()
-                .setGroupName(otherGroupName)
-                .setExcludePaths(excludePaths);
+        GroupSwagger groupSwagger = buildGroupSwaggerList()
+                .stream().filter(o -> ObjectUtil.equals(o.getGroupName(), otherGroupName)).findFirst().get();
         GroupedOpenApi groupedOpenApi = buildGroupedOpenApi(groupSwagger);
         return groupedOpenApi;
     }
@@ -189,6 +195,10 @@ public interface AbsSwagger {
          * 组名
          */
         String groupName;
+        /**
+         * 是安全组
+         */
+        boolean authSecurityGroup;
         /**
          * 路径
          */
@@ -208,19 +218,21 @@ public interface AbsSwagger {
         List<String> paths = groupSwagger.getPaths();
         List<String> excludePaths = groupSwagger.getExcludePaths();
         List<Parameter> parameterList = groupSwagger.getParameterList();
-        return buildGroupedOpenApi(groupName, paths, excludePaths, parameterList);
+        boolean authSecurityGroup = groupSwagger.isAuthSecurityGroup();
+        return buildGroupedOpenApi(groupName, authSecurityGroup, paths, excludePaths, parameterList);
     }
 
     /**
-     * 配置 ，组|指定路径|全局 --必传参数
+     * 配置 ，组|是安全组|指定路径|全局 --必传参数
      *
-     * @param groupName     该组名
-     * @param paths         该组路径
-     * @param excludePaths  该组排除路径
-     * @param parameterList 该组参数
+     * @param groupName         该组名
+     * @param authSecurityGroup 是安全组
+     * @param paths             该组路径
+     * @param excludePaths      该组排除路径
+     * @param parameterList     该组参数
      * @return
      */
-    default GroupedOpenApi buildGroupedOpenApi(String groupName, List<String> paths, List<String> excludePaths, List<Parameter> parameterList) {
+    default GroupedOpenApi buildGroupedOpenApi(String groupName, boolean authSecurityGroup, List<String> paths, List<String> excludePaths, List<Parameter> parameterList) {
         GroupedOpenApi.Builder builder = GroupedOpenApi.builder();
         if (StrUtil.isNotBlank(groupName)) {
             //加组配置
@@ -236,61 +248,66 @@ public interface AbsSwagger {
             String[] pathsToExclude = excludePaths.toArray(new String[excludePaths.size()]);
             builder.pathsToExclude(pathsToExclude);
         }
-
-        // ========== 添加 Bearer 认证配置 ==========
-        // 获取安全方案名称（例如从配置文件读取，若无则使用默认值）
-    /*    SwaggerConfiguration bean = SpringUtil.getBean(SwaggerConfiguration.class);
-
-        String authSchemeName = bean.getAuthorization(); // 你可以从 getAuthorization() 或配置中获取
-        if (StrUtil.isBlank(authSchemeName)) {
-            authSchemeName = HttpHeaders.AUTHORIZATION;
-        }
-        // 如果希望支持多个名称，需注意不要覆盖，这里只使用一个
-        String finalAuthSchemeName = authSchemeName;
-        builder.addOpenApiCustomiser(openApi -> {
-            //// 创建 Components 并添加安全方案
-            //Components components = new Components();
-            //components.addSecuritySchemes(authSchemeName,
-            //        new SecurityScheme()
-            //                .type(SecurityScheme.Type.HTTP)   // 必须为 HTTP
-            //                .scheme("bearer")                 // 必须为 bearer
-            //                .bearerFormat("JWT")              // 可选，提示 token 格式
-            //                .description("请输入 JWT 令牌（无需 Bearer 前缀）")
-            //);
-            //openApi.components(components);
-            //
-            //// 将安全方案添加到全局安全要求中
-            //openApi.addSecurityItem(new SecurityRequirement().addList(authSchemeName));
-
-            openApi.getPaths().values().forEach(pathItem -> {
-                pathItem.readOperations().forEach(operation -> {
-                    List<Parameter> parameters = operation.getParameters();
-                    if (CollUtil.isNotEmpty(parameters)) {
-                        parameters.add(buildSecurityHeaderParameter(finalAuthSchemeName));
-                        //parameters.add(buildSecurityHeaderParameter(getAuthorization()));
-                    }
-                });
-            });
-        });*/
-        // ========================================
-        if (CollUtil.isNotEmpty(parameterList)) {
-            builder.addOperationCustomizer(
-                    //加全局变量
-                    (operation, handlerMethod) -> {
-                        //Operation reOperation = new Operation();
-                        for (Parameter parameter : parameterList) {
-//                            parameter.setRequired(true);
-                            //再原有方法参数基础上添加全局参数
-                            operation.addParametersItem(parameter);
-                            //reOperation = operation.addParametersItem(parameter);
+        //全局已加
+          /*      // ========== 添加 Bearer 认证配置 ==========
+                // 获取安全方案名称（例如从配置文件读取，若无则使用默认值）
+                if (authSecurityGroup) {
+                    String securitySchemeName = getAuthorization();
+                    builder.addOpenApiCustomiser(openApi -> {
+                        Components components = openApi.getComponents();
+                        if (components == null) {
+                            components = new Components();
+                            openApi.components(components);
                         }
-                        //该方法会覆盖原有参数
-                        //Operation parameters = operation.parameters(parameterList);
+
+                        if (!components.getSecuritySchemes().containsKey(securitySchemeName)) {
+                            components.addSecuritySchemes(securitySchemeName,
+                                    new SecurityScheme()
+                                            .type(SecurityScheme.Type.HTTP)
+                                            .scheme("bearer")
+                                            .bearerFormat("JWT")
+                                            .description("请输入 JWT 令牌（无需 Bearer 前缀）")
+                            );
+                        }
+
+                        List<SecurityRequirement> security = openApi.getSecurity();
+                        Boolean hasSecurityRequirement = CollUtil.isNotEmpty(security) && security.stream()
+                                .anyMatch(req -> req.containsKey(securitySchemeName));
+                        if (!hasSecurityRequirement) {
+                            openApi.addSecurityItem(new SecurityRequirement().addList(securitySchemeName));
+                        }
+                    });
+
+                    builder.addOperationCustomizer((operation, handlerMethod) -> {
+                        List<Parameter> parameters = operation.getParameters();
+                        Boolean hasAuthParameter = CollUtil.isNotEmpty(parameters) && parameters.stream()
+                                .anyMatch(p -> securitySchemeName.equals(p.getName()));
+                        if (!hasAuthParameter) {
+                            operation.addParametersItem(buildSecurityHeaderParameter(securitySchemeName));
+                        }
                         return operation;
-                        //return reOperation;
-                    }
-            );
-        }
+                    });
+                }
+
+
+                if (CollUtil.isNotEmpty(parameterList)) {
+
+                    builder.addOperationCustomizer(
+                            //加全局变量
+                            (operation, handlerMethod) -> {
+                                List<Parameter> operationParams = operation.getParameters();
+                                for (Parameter parameter : parameterList) {
+                                    Boolean hasParameter = CollUtil.isNotEmpty(operationParams) &&
+                                            operationParams.stream()
+                                                    .anyMatch(p -> ObjectUtil.equals(parameter.getName(), p.getName()));
+                                    if (!hasParameter) {
+                                        operation.addParametersItem(parameter);
+                                    }
+                                }
+                                return operation;
+                            }
+                    );
+                }*/
         return builder.build();
     }
 
@@ -306,7 +323,6 @@ public interface AbsSwagger {
      * @return 认证参数
      */
     default Parameter buildSecurityHeaderParameter(String authorization) {
-        //String authorization = getAuthorization();
         Parameter parameter = new Parameter()
                 .name(authorization) // header 名
                 .description("认证 Token")// 描述
@@ -415,91 +431,91 @@ public interface AbsSwagger {
                                 .description("鉴权token")));
         return api;
     }
+
     /**
      * 构建 Authorization 认证请求头参数
      * <p>
      * 解决 Knife4j <a href="https://github.com/xiaoymin/knife4j/issues/545">Authorize 未生效，请求header里未包含参数</a>
-     *
+     * <p>
      * 构建全局 OpenAPI 自定义器，用于配置 API 文档中的安全认证相关信息
+     *
      * @return 返回一个 GlobalOpenApiCustomizer 实例，用于自定义 OpenAPI 规范
      */
     default GlobalOpenApiCustomizer buildGlobalOpenApiCustomizer() {
-        //
+        //return openApi -> {
+        //    openApi.getPaths().values().stream()
+        //            .flatMap(pathItem -> pathItem.readOperations().stream())
+        //            .forEach(operation -> operation.security(openApi.getSecurity()));
+        //};
+        List<GroupSwagger> groupSwaggerList = buildGroupSwaggerList();
         return openApi -> {
-            openApi.getPaths().values().stream()
-                    .flatMap(pathItem -> pathItem.readOperations().stream())
-                    .forEach(operation -> operation.security(openApi.getSecurity()));
+            groupSwaggerList.stream().forEach(group -> {
+
+                List<Parameter> parameterList = group.getParameterList();
+                // 既没有认证需求也没有自定义参数时跳过
+                if (!group.isAuthSecurityGroup() && CollUtil.isEmpty(parameterList)) {
+                    return;
+                }
+                openApi.getPaths().entrySet().stream()
+                        .filter(entry -> {
+                            String path = entry.getKey();
+
+                            // 如果同时配置了 paths 和 excludePaths
+                            if (CollUtil.isNotEmpty(group.getPaths()) && CollUtil.isNotEmpty(group.getExcludePaths())) {
+                                boolean matchesPath = group.getPaths().stream()
+                                        .anyMatch(pattern -> path.matches(pattern.replace("**", ".*")));
+                                boolean notExcluded = !group.getExcludePaths().stream()
+                                        .anyMatch(pattern -> path.matches(pattern.replace("**", ".*")));
+                                return matchesPath && notExcluded;
+                            }
+
+                            // 只配置了 paths
+                            if (CollUtil.isNotEmpty(group.getPaths())) {
+                                return group.getPaths().stream()
+                                        .anyMatch(pattern -> path.matches(pattern.replace("**", ".*")));
+                            }
+
+                            // 只配置了 excludePaths（other 组场景）
+                            if (CollUtil.isNotEmpty(group.getExcludePaths())) {
+                                return !group.getExcludePaths().stream()
+                                        .anyMatch(pattern -> path.matches(pattern.replace("**", ".*")));
+                            }
+
+                            // 都没配置，默认包含
+                            return true;
+                        })
+                        .flatMap(entry -> entry.getValue().readOperations().stream())
+                        .forEach(operation -> {
+
+                            // 认证配置
+                            if (group.isAuthSecurityGroup()) {
+                                String securitySchemeName = getAuthorization();
+                                //添加认证
+                                List<SecurityRequirement> security = operation.getSecurity();
+                                Boolean hasSecurityRequirement = CollUtil.isNotEmpty(security) && security.stream()
+                                        .anyMatch(req -> req.containsKey(securitySchemeName));
+                                if (!hasSecurityRequirement) {
+                                    operation.addSecurityItem(new SecurityRequirement().addList(securitySchemeName));
+                                }
+                            }
+
+                            // 自定义参数配置
+                            if (CollUtil.isNotEmpty(group.getParameterList())) {
+                                List<Parameter> operationParams = operation.getParameters();
+                                parameterList.forEach(parameter -> {
+                                    Boolean hasParameter = CollUtil.isNotEmpty(operationParams) &&
+                                            operationParams.stream()
+                                                    .anyMatch(p -> ObjectUtil.equals(parameter.getName(), p.getName()));
+                                    if (!hasParameter) {
+                                        operation.addParametersItem(parameter);
+                                    }
+                                });
+                            }
+                        });
+            });
         };
     }
-//    default GlobalOpenApiCustomizer buildGlobalOpenApiCustomizer() {
-//        // ========== 添加 Bearer 认证配置 ==========
-//        // 获取安全方案名称（例如从配置文件读取，若无则使用默认值）
-//        SwaggerConfiguration bean = SpringUtil.getBean(SwaggerConfiguration.class);
-//
-//        String authSchemeName = bean.getAuthorization(); // 你可以从 getAuthorization() 或配置中获取
-//        if (StrUtil.isBlank(authSchemeName)) {
-//            authSchemeName = HttpHeaders.AUTHORIZATION;
-//        }
-//        // 如果希望支持多个名称，需注意不要覆盖，这里只使用一个
-//        String finalAuthSchemeName = authSchemeName;
-//        return openApi -> {
-//
 
-    /// *            //// 创建 Components 并添加安全方案
-//            Components components = new Components();
-//            components.addSecuritySchemes(finalAuthSchemeName,
-//                    new SecurityScheme()
-//                            .type(SecurityScheme.Type.HTTP)   // 必须为 HTTP
-//                            .scheme("bearer")                 // 必须为 bearer
-//                            .bearerFormat("JWT")              // 可选，提示 token 格式
-//                            .description("请输入 JWT 令牌（无需 Bearer 前缀）")
-//            );
-//            openApi.components(components);
-//
-//            // 将安全方案添加到全局安全要求中
-//            openApi.addSecurityItem(new SecurityRequirement().addList(finalAuthSchemeName));*/
-//
-//
-//            openApi.getPaths().values().forEach(pathItem -> {
-//                pathItem.readOperations().forEach(operation -> {
-//                    List<Parameter> parameters = operation.getParameters();
-//                    if (CollUtil.isNotEmpty(parameters)) {
-//                        parameters.add(buildSecurityHeaderParameter(finalAuthSchemeName));
-//                        //parameters.add(buildSecurityHeaderParameter(getAuthorization()));
-//                    }
-//                });
-//            });
-//
-//
-//            // ========================================
-//
-//            //if (ObjectUtil.isNotEmpty(openApi)) {
-//            //    openApi.getPaths().forEach((path, pathItem) -> {
-//            //        boolean pathBool = false;
-//            //        //log.info("path:{};pathItem:{};", path, pathItem);
-//            //        List<String> list = getPrefixByAuthorization();
-//            //        if (CollUtil.isEmpty(list)) {
-//            //            pathBool = true;
-//            //        } else {
-//            //            for (String prefix : list) {
-//            //                if (path.startsWith(prefix)) {
-//            //                    pathBool = true;
-//            //                    break;
-//            //                }
-//            //            }
-//            //        }
-//            //        if (pathBool) {
-//            //            pathItem.readOperations().forEach(operation ->
-//            //                    operation.addSecurityItem(new SecurityRequirement().addList(HttpHeaders.AUTHORIZATION))
-//            //            );
-//            //
-//            //
-//            //
-//            //        }
-//            //    });
-//            //}
-//        };
-//    }
     default GlobalOpenApiCustomizer buildOpenApiCustomizer() {
         GlobalOpenApiCustomizer customizer = buildGlobalOpenApiCustomizer();
         return customizer;
