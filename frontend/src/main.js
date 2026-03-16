@@ -20,13 +20,13 @@ function setupFavicon() {
 
 async function updateTitleWithVersion() {
     let version = await getLocalVersion();
-
-    if (!version) {
-        try {
-            const response = await getVersion();
-            version = response?.data || response?.result || response;
-        } catch (e) {
+    try {
+        const response = await getVersion();
+        const versionTemp = response?.data || response?.result || response;
+        if (versionTemp && versionTemp !== version) {
+            version = versionTemp;
         }
+    } catch (e) {
     }
 
     if (version) {
