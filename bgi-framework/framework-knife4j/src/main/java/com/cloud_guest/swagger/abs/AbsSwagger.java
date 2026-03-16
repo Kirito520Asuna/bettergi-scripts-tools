@@ -3,6 +3,7 @@ package com.cloud_guest.swagger.abs;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.cloud_guest.swagger.config.SwaggerConfiguration;
 import com.github.xiaoymin.knife4j.core.util.StrUtil;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -22,10 +23,7 @@ import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +37,7 @@ public interface AbsSwagger {
     String jwtGroupName = "jwt";
     String otherGroupName = "other";
     String GroupSuffix = "_Group";
+    String securitySchemeName = "bearerAuth";
 
     default <T> T defaultIfEmpty(T object, T defaultValue) {
         return ObjectUtil.isEmpty(object) ? defaultValue : object;
@@ -109,7 +108,7 @@ public interface AbsSwagger {
 
         SwaggerParameter timestamp = new SwaggerParameter()
                 .setName("timestamp").setDescription("时间戳")
-                .setStringSchemaDefault(String.valueOf(System.currentTimeMillis()+ 3000))
+                .setStringSchemaDefault(String.valueOf(System.currentTimeMillis() + 3000))
                 .setRequired(true);
 
         List<SwaggerParameter> swaggerParameters = CollUtil.newArrayList(sign, timestamp);
@@ -181,7 +180,8 @@ public interface AbsSwagger {
         return groupedOpenApi;
     }
 
-    @Data @Accessors(chain = true)
+    @Data
+    @Accessors(chain = true)
     @NoArgsConstructor
     @AllArgsConstructor
     class GroupSwagger {
@@ -202,13 +202,15 @@ public interface AbsSwagger {
          */
         List<Parameter> parameterList;
     }
-    default GroupedOpenApi buildGroupedOpenApi(GroupSwagger groupSwagger){
+
+    default GroupedOpenApi buildGroupedOpenApi(GroupSwagger groupSwagger) {
         String groupName = groupSwagger.getGroupName();
         List<String> paths = groupSwagger.getPaths();
         List<String> excludePaths = groupSwagger.getExcludePaths();
         List<Parameter> parameterList = groupSwagger.getParameterList();
         return buildGroupedOpenApi(groupName, paths, excludePaths, parameterList);
     }
+
     /**
      * 配置 ，组|指定路径|全局 --必传参数
      *
@@ -234,24 +236,65 @@ public interface AbsSwagger {
             String[] pathsToExclude = excludePaths.toArray(new String[excludePaths.size()]);
             builder.pathsToExclude(pathsToExclude);
         }
+
+        // ========== 添加 Bearer 认证配置 ==========
+        // 获取安全方案名称（例如从配置文件读取，若无则使用默认值）
+    /*    SwaggerConfiguration bean = SpringUtil.getBean(SwaggerConfiguration.class);
+
+        String authSchemeName = bean.getAuthorization(); // 你可以从 getAuthorization() 或配置中获取
+        if (StrUtil.isBlank(authSchemeName)) {
+            authSchemeName = HttpHeaders.AUTHORIZATION;
+        }
+        // 如果希望支持多个名称，需注意不要覆盖，这里只使用一个
+        String finalAuthSchemeName = authSchemeName;
+        builder.addOpenApiCustomiser(openApi -> {
+            //// 创建 Components 并添加安全方案
+            //Components components = new Components();
+            //components.addSecuritySchemes(authSchemeName,
+            //        new SecurityScheme()
+            //                .type(SecurityScheme.Type.HTTP)   // 必须为 HTTP
+            //                .scheme("bearer")                 // 必须为 bearer
+            //                .bearerFormat("JWT")              // 可选，提示 token 格式
+            //                .description("请输入 JWT 令牌（无需 Bearer 前缀）")
+            //);
+            //openApi.components(components);
+            //
+            //// 将安全方案添加到全局安全要求中
+            //openApi.addSecurityItem(new SecurityRequirement().addList(authSchemeName));
+
+            openApi.getPaths().values().forEach(pathItem -> {
+                pathItem.readOperations().forEach(operation -> {
+                    List<Parameter> parameters = operation.getParameters();
+                    if (CollUtil.isNotEmpty(parameters)) {
+                        parameters.add(buildSecurityHeaderParameter(finalAuthSchemeName));
+                        //parameters.add(buildSecurityHeaderParameter(getAuthorization()));
+                    }
+                });
+            });
+        });*/
+        // ========================================
         if (CollUtil.isNotEmpty(parameterList)) {
             builder.addOperationCustomizer(
                     //加全局变量
                     (operation, handlerMethod) -> {
-                        Operation reOperation = new Operation();
+                        //Operation reOperation = new Operation();
                         for (Parameter parameter : parameterList) {
 //                            parameter.setRequired(true);
                             //再原有方法参数基础上添加全局参数
-                            reOperation = operation.addParametersItem(parameter);
+                            operation.addParametersItem(parameter);
+                            //reOperation = operation.addParametersItem(parameter);
                         }
                         //该方法会覆盖原有参数
                         //Operation parameters = operation.parameters(parameterList);
-                        return reOperation;
+                        return operation;
+                        //return reOperation;
                     }
             );
         }
         return builder.build();
     }
+
+
     /*####################################################################################################################################################################################################################################################*/
 
 
@@ -271,7 +314,8 @@ public interface AbsSwagger {
                 .schema(new StringSchema()
                         // ._default("Bearer ") // 最好关闭
                         .name(authorization).description("认证 Token"))//
-                .required(true);
+                .required(true)
+                .schema(new io.swagger.v3.oas.models.media.StringSchema());
         return parameter;
     }
 
@@ -366,41 +410,96 @@ public interface AbsSwagger {
                 .components(new Components()
                         .addSecuritySchemes(authorization, new SecurityScheme().name(authorization)
                                 .type(SecurityScheme.Type.HTTP)
-                                .scheme("Bearer ")
+                                .scheme("bearer")
                                 .in(SecurityScheme.In.HEADER)
                                 .description("鉴权token")));
         return api;
     }
-
+    /**
+     * 构建 Authorization 认证请求头参数
+     * <p>
+     * 解决 Knife4j <a href="https://github.com/xiaoymin/knife4j/issues/545">Authorize 未生效，请求header里未包含参数</a>
+     *
+     * 构建全局 OpenAPI 自定义器，用于配置 API 文档中的安全认证相关信息
+     * @return 返回一个 GlobalOpenApiCustomizer 实例，用于自定义 OpenAPI 规范
+     */
     default GlobalOpenApiCustomizer buildGlobalOpenApiCustomizer() {
-        //Logger log = LoggerFactory.getLogger(getClass());
-        //log.info("start");
+        //
         return openApi -> {
-            if (ObjectUtil.isNotEmpty(openApi)) {
-                openApi.getPaths().forEach((path, pathItem) -> {
-                    boolean pathBool = false;
-                    //log.info("path:{};pathItem:{};", path, pathItem);
-                    List<String> list = getPrefixByAuthorization();
-                    if (CollUtil.isEmpty(list)) {
-                        pathBool = true;
-                    } else {
-                        for (String prefix : list) {
-                            if (path.startsWith(prefix)) {
-                                pathBool = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (pathBool) {
-                        pathItem.readOperations().forEach(operation ->
-                                operation.addSecurityItem(new SecurityRequirement().addList(HttpHeaders.AUTHORIZATION))
-                        );
-                    }
-                });
-            }
+            openApi.getPaths().values().stream()
+                    .flatMap(pathItem -> pathItem.readOperations().stream())
+                    .forEach(operation -> operation.security(openApi.getSecurity()));
         };
     }
+//    default GlobalOpenApiCustomizer buildGlobalOpenApiCustomizer() {
+//        // ========== 添加 Bearer 认证配置 ==========
+//        // 获取安全方案名称（例如从配置文件读取，若无则使用默认值）
+//        SwaggerConfiguration bean = SpringUtil.getBean(SwaggerConfiguration.class);
+//
+//        String authSchemeName = bean.getAuthorization(); // 你可以从 getAuthorization() 或配置中获取
+//        if (StrUtil.isBlank(authSchemeName)) {
+//            authSchemeName = HttpHeaders.AUTHORIZATION;
+//        }
+//        // 如果希望支持多个名称，需注意不要覆盖，这里只使用一个
+//        String finalAuthSchemeName = authSchemeName;
+//        return openApi -> {
+//
 
+    /// *            //// 创建 Components 并添加安全方案
+//            Components components = new Components();
+//            components.addSecuritySchemes(finalAuthSchemeName,
+//                    new SecurityScheme()
+//                            .type(SecurityScheme.Type.HTTP)   // 必须为 HTTP
+//                            .scheme("bearer")                 // 必须为 bearer
+//                            .bearerFormat("JWT")              // 可选，提示 token 格式
+//                            .description("请输入 JWT 令牌（无需 Bearer 前缀）")
+//            );
+//            openApi.components(components);
+//
+//            // 将安全方案添加到全局安全要求中
+//            openApi.addSecurityItem(new SecurityRequirement().addList(finalAuthSchemeName));*/
+//
+//
+//            openApi.getPaths().values().forEach(pathItem -> {
+//                pathItem.readOperations().forEach(operation -> {
+//                    List<Parameter> parameters = operation.getParameters();
+//                    if (CollUtil.isNotEmpty(parameters)) {
+//                        parameters.add(buildSecurityHeaderParameter(finalAuthSchemeName));
+//                        //parameters.add(buildSecurityHeaderParameter(getAuthorization()));
+//                    }
+//                });
+//            });
+//
+//
+//            // ========================================
+//
+//            //if (ObjectUtil.isNotEmpty(openApi)) {
+//            //    openApi.getPaths().forEach((path, pathItem) -> {
+//            //        boolean pathBool = false;
+//            //        //log.info("path:{};pathItem:{};", path, pathItem);
+//            //        List<String> list = getPrefixByAuthorization();
+//            //        if (CollUtil.isEmpty(list)) {
+//            //            pathBool = true;
+//            //        } else {
+//            //            for (String prefix : list) {
+//            //                if (path.startsWith(prefix)) {
+//            //                    pathBool = true;
+//            //                    break;
+//            //                }
+//            //            }
+//            //        }
+//            //        if (pathBool) {
+//            //            pathItem.readOperations().forEach(operation ->
+//            //                    operation.addSecurityItem(new SecurityRequirement().addList(HttpHeaders.AUTHORIZATION))
+//            //            );
+//            //
+//            //
+//            //
+//            //        }
+//            //    });
+//            //}
+//        };
+//    }
     default GlobalOpenApiCustomizer buildOpenApiCustomizer() {
         GlobalOpenApiCustomizer customizer = buildGlobalOpenApiCustomizer();
         return customizer;
