@@ -4,10 +4,11 @@ import {ElMessage, ElMessageBox} from "element-plus";
 import {updateUserInfo} from "@api/auth/login.js";
 import {getTokenInfo, updateToken} from "@api/auth/token.js";
 import {removeLocalToken, restart, toHomePage} from "@api/web/web.js";
+import {backup, recovery} from "@api/data/BackupRecover.js";
 
 const RestartClick = ref(false)
 const info = reactive({
-  update:{
+  update: {
     user: false
   },
   // 用户信息表单
@@ -132,12 +133,103 @@ const handleUpdateToken = async () => {
 // 在 script setup 部分添加重启功能
 const handleRestart = async () => {
   await restart(RestartClick)
-  if (info.update.user){
+  if (info.update.user) {
     await removeLocalToken()
     await toHomePage(false)
   }
 };
+// 数据备份与恢复相关
+const dataBackupRecover = reactive({
+  // backupFileInput: null,
+  isBackingUp: false,
+  isRecovering: false,
+})
+const backupFileInput = ref(null)
+// 数据备份
+const handleBackup = async () => {
+  try {
+    await ElMessageBox.confirm('确定要备份数据吗？系统将生成 JSON 格式备份文件并下载', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'info'
+    });
 
+    dataBackupRecover.isBackingUp = true;
+
+    const blob = await backup();
+
+    if (blob && blob.size > 0) {
+      const fileName = `bgi-tools_backup_${new Date().getTime()}.json`;
+
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+
+      ElMessage.success('数据备份成功，文件已下载');
+    } else {
+      throw new Error('备份失败：返回数据为空');
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('数据备份失败:', error);
+      ElMessage.error('数据备份失败：' + (error.message || '未知错误'));
+    }
+  } finally {
+    dataBackupRecover.isBackingUp = false;
+  }
+}
+
+
+// 触发文件选择
+const triggerFileSelect = () => {
+  if (backupFileInput.value) {
+    backupFileInput.value.click();
+  }
+}
+// 处理拖拽文件
+const handleDrop = (event) => {
+  //提示写这 弹窗提示
+  const files = event.dataTransfer.files;
+  if (files && files.length > 0) {
+    const file = files[0];
+    if (file.name.endsWith('.json')) {
+      handleFileChange({target: {files: [file]}});
+    } else {
+      ElMessage.error('请选择 .json 格式的备份文件');
+    }
+  }
+}
+
+// 处理文件选择和恢复
+const handleFileChange = async (event) => {
+  const file = event.target.files[0];
+  if (!file) {
+    return;
+  }
+
+  try {
+    await ElMessageBox.confirm(`确定要从备份文件 "${file.name}" 恢复数据吗？此操作将覆盖当前数据，请谨慎操作！`, '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    });
+    dataBackupRecover.isRecovering = true;
+    await recovery(file);
+    ElMessage.success('数据恢复成功');
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('数据恢复失败:', error);
+      ElMessage.error('数据恢复失败：' + (error.message || '未知错误'));
+    }
+  } finally {
+    dataBackupRecover.isRecovering = false;
+    event.target.value = '';
+  }
+}
 // 在 script 中添加跳转逻辑
 const goToHome = async () => {
   // router.push('/'); // 假设主页路径是 '/'
@@ -208,13 +300,20 @@ onMounted(async () => {
                       clearable
                   />
                 </el-form-item>
-                <el-form-item>
+<!--                <el-form-item class="submit">
                   <el-button type="primary" @click="handleUpdateUserInfo">
                     修改用户信息
                   </el-button>
                   <el-button @click="resetUserInfoForm">重置</el-button>
-                </el-form-item>
+                </el-form-item>-->
               </el-form>
+
+              <div class="submit">
+                <el-button type="primary" @click="handleUpdateUserInfo">
+                  修改用户信息
+                </el-button>
+                <el-button @click="resetUserInfoForm">重置</el-button>
+              </div>
             </div>
           </div>
 
@@ -242,15 +341,85 @@ onMounted(async () => {
                       clearable
                   />
                 </el-form-item>
-                <el-form-item>
+<!--                <el-form-item>
                   <el-button type="primary" @click="handleUpdateToken">
                     修改Token信息
                   </el-button>
                   <el-button @click="loadTokenInfo">刷新</el-button>
-                </el-form-item>
+                </el-form-item>-->
               </el-form>
+
+              <div class="submit">
+                <el-button type="primary" @click="handleUpdateToken">
+                  修改Token信息
+                </el-button>
+                <el-button @click="loadTokenInfo">刷新</el-button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 数据备份与恢复 -->
+          <div class="setting-card">
+            <div class="card-header">
+              <h3 class="card-title">数据备份与恢复</h3>
+              <div class="card-icon">💾</div>
+            </div>
+            <div class="card-content">
+              <div class="backup-input-container">
+                <div class="backup-tips">
+                  <p style="color: red;"><strong>提示：</strong></p>
+                  <ul>
+                    <li>备份数据将生成 JSON 文件并自动下载</li>
+                    <li>恢复数据前请确保已保存重要数据</li>
+                    <li>恢复操作不可逆，请谨慎操作</li>
+                  </ul>
+                </div>
+
+                <input
+                    ref="backupFileInput"
+                    type="file"
+                    accept=".json"
+                    style="display: none;"
+                    @change="handleFileChange"
+                />
+                <div
+                    class="file-drop-zone"
+                    @click="triggerFileSelect"
+                    @dragover.prevent
+                    @drop.prevent="handleDrop"
+                >
+                  <div class="drop-zone-content">
+                    <div class="drop-icon">📁</div>
+                    <p class="drop-text">点击选择文件或拖拽到此处</p>
+                    <p class="drop-hint">仅支持 .json 格式的备份文件</p>
+                    <!--            提示写在这      -->
+                  </div>
+                </div>
+              </div>
+              <div class="backup-recover-actions">
+                <el-button
+                    type="success"
+                    @click="handleBackup"
+                    :loading="dataBackupRecover.isBackingUp"
+                    class="action-button"
+                >
+                  {{ dataBackupRecover.isBackingUp ? '备份中...' : '⬇️备份数据' }}
+                </el-button>
+
+                <el-button
+                    type="warning"
+                    @click="triggerFileSelect"
+                    :loading="dataBackupRecover.isRecovering"
+                    class="action-button"
+                >
+                  {{ dataBackupRecover.isRecovering ? '恢复中...' : '⬆️恢复数据' }}
+                </el-button>
+              </div>
             </div>
           </div>
+
+
         </div>
       </div>
     </div>
@@ -343,7 +512,17 @@ onMounted(async () => {
 .card-content {
   padding: 25px;
 }
+.submit {
+  display: flex;
+  justify-content: center;
+  padding-top: 24px;
+  margin-top: auto;
+/*  border-top: 1px solid var(--el-border-color-light);*/
+}
 
+.submit .el-button {
+  min-width: 120px;
+}
 @media (max-width: 768px) {
   .settings-grid {
     grid-template-columns: 1fr;
@@ -484,6 +663,114 @@ onMounted(async () => {
   margin-bottom: 90px;
 }
 
+.action-button {
+  flex: 1;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.file-drop-zone {
+  background: #e8e8e8;
+  margin-top: 20px;
+  padding: 40px 20px;
+  border: 2px dashed #667eea;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.file-drop-zone:hover {
+  border-color: #764ba2;
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  transform: scale(1.02);
+}
+
+.file-drop-zone.drag-over {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  transform: scale(1.03);
+}
+.backup-recover-actions{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.backup-input-container {
+  display: grid;
+  grid-template-columns: 4fr 5fr;
+  gap: 12px;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 8px 3px;
+  /*height: 200px;*/
+/*  padding: 40px 20px;*/
+}
+.backup-input-container > input,
+.backup-input-container > div {
+  min-width: 0;
+  max-width: 100%;
+}
+.drop-zone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+}
+
+.drop-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.7;
+}
+
+.drop-text {
+  font-size: 16px;
+  color: #2c3e50;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.drop-hint {
+  font-size: 13px;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.backup-tips {
+  background: #e8e8e8;
+  padding: 2px 2px;
+  border-radius: 10px;
+  border-left: 4px solid #667eea;
+}
+
+.backup-tips p {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.backup-tips ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #555;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.backup-tips li {
+  margin-bottom: 5px;
+}
+
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .settings {
@@ -528,8 +815,9 @@ onMounted(async () => {
 
 @media (max-width: 480px) {
   .settings {
-   min-width: 480px;
+    min-width: 480px;
   }
+
   .settings-container {
     padding: 20px;
   }
