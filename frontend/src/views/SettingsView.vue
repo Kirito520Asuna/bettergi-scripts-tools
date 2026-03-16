@@ -451,7 +451,7 @@ onMounted(async () => {
 }
 
 .settings-container {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 80%);
   border-radius: 20px;
   padding: 40px;
   box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
@@ -460,11 +460,19 @@ onMounted(async () => {
 
 .settings-title {
   text-align: center;
-  color: white;
+  /*color: white;*/
   margin-bottom: 40px;
   font-size: 32px;
   font-weight: 600;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+  color: transparent;
+  background: linear-gradient(90deg, #ff6b6b, #ef006a); /* 渐变色方向和颜色 */
+  -webkit-background-clip: text; /* 兼容 WebKit 内核浏览器 */
+  background-clip: text;/* 将背景裁剪为文字形状*/
+  color: transparent; /* 文字颜色设为透明 */
+  /*font-size: 1.2rem; !* 可根据需要调整字体大小 *!
+  font-weight: 600; !* 可根据需要调整字体粗细 *!*/
 }
 
 
@@ -477,7 +485,7 @@ onMounted(async () => {
 
 .setting-card {
   max-width: 500px;
-  background: white;
+  background: whitesmoke;
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
@@ -491,7 +499,7 @@ onMounted(async () => {
 }
 
 .card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #13cec9 100%);
   color: white;
   padding: 20px;
   display: flex;
@@ -503,6 +511,12 @@ onMounted(async () => {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
+
+  color: transparent;
+  background: linear-gradient(90deg, #ff6b6b, #ef006a); /* 渐变色方向和颜色 */
+  -webkit-background-clip: text; /* 兼容 WebKit 内核浏览器 */
+  background-clip: text;/* 将背景裁剪为文字形状*/
+  color: transparent; /* 文字颜色设为透明 */
 }
 
 .card-icon {
@@ -705,7 +719,7 @@ onMounted(async () => {
 }
 .backup-input-container {
   display: grid;
-  grid-template-columns: 4fr 5fr;
+  grid-template-columns: 5fr 5fr;
   gap: 12px;
   align-items: center;
   box-sizing: border-box;
