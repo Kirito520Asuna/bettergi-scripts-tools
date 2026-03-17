@@ -850,7 +850,7 @@ jobs:
           
           # 初始化默认值
           DESC="${{ github.event.inputs.desc || '' }}"
-          GitHub_Release_Text_Path="${{ github.event.inputs.gitHub_release_text_path || 'GitHub_Release.txt' }}"
+          GitHub_Release_Text_Path="${{ github.event.inputs.gitHub_release_text_path || 'GitHub-Release.txt' }}"
           # 移除可能存在的前导斜杠
           GitHub_Release_Text_Path="${GitHub_Release_Text_Path#/}"
           # 构造文件路径（使用正确的仓库路径）
