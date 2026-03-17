@@ -1,6 +1,7 @@
 package com.cloud_guest.vo;
 
 
+import com.cloud_guest.utils.ApplicationUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +19,8 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class SystemInfoVO {
-
+    @Schema(description = "应用ID")
+    private String applicationId = ApplicationUtil.getApplicationId();
     @Schema(description = "主机名")
     private String hostName;
 

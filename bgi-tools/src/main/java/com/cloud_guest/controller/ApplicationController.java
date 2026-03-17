@@ -14,6 +14,7 @@ import com.cloud_guest.utils.ApplicationUtil;
 import com.cloud_guest.utils.SystemUtils;
 import com.cloud_guest.utils.bean.MapUtils;
 import com.cloud_guest.vo.SystemInfoVO;
+import com.github.xiaoymin.knife4j.core.util.StrUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,10 +31,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @Author yan
@@ -76,8 +74,16 @@ public class ApplicationController {
     @SysLog
     @Operation(summary = "获取系统信息")
     @GetMapping("sys/info")
-    public Result<SystemInfoVO> sysInfo() {
-        SystemInfoVO systemInfo = SystemUtils.getSystemInfo();
+    public Result<SystemInfoVO> sysInfo(@RequestParam String ids) {
+        List<String> applicationIds = new ArrayList<>();
+        if (StrUtil.isNotBlank(ids)) {
+            Arrays.stream(ids.split(",")).forEach(applicationIds::add);
+        }
+        String applicationId = ApplicationUtil.getApplicationId();
+        SystemInfoVO systemInfo = null;
+        if (applicationIds.contains(applicationId)) {
+            systemInfo = SystemUtils.getSystemInfo();
+        }
         return Result.ok(systemInfo);
     }
 /*    @Login

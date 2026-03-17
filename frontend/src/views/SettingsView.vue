@@ -3,9 +3,8 @@ import {onMounted, onUnmounted, reactive, ref} from "vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {updateUserInfo} from "@api/auth/login.js";
 import {getTokenInfo, updateToken} from "@api/auth/token.js";
-import {removeLocalToken, restart, toHomePage} from "@api/web/web.js";
+import {getAllSystemInfo, removeLocalToken, restart, toHomePage} from "@api/web/web.js";
 import {backup, recovery} from "@api/data/BackupRecover.js";
-import {getSystemInfo} from "@api/sys/sys.js";
 
 const RestartClick = ref(false)
 const info = reactive({
@@ -235,14 +234,23 @@ const handleFileChange = async (event) => {
 let refreshTimer = null
 const systemInfo = ref(null)
 const autoRefresh = ref(false)
+const systemInfoList = ref([])
+const activeHostIndex = ref(0)
 
 const loadSystemInfo = async () => {
   try {
-    const response = await getSystemInfo();
-    systemInfo.value = response;
+    // const response = await getSystemInfo();
+    const response = await getAllSystemInfo()
+    systemInfoList.value = response
+    systemInfo.value = systemInfoList.value[activeHostIndex.value];
   } catch (error) {
     console.error('获取系统信息失败:', error);
   }
+}
+
+const switchHost = (index) => {
+  activeHostIndex.value = index;
+  systemInfo.value = systemInfoList.value[index];
 }
 
 const toggleAutoRefresh = () => {
@@ -331,7 +339,7 @@ onUnmounted(() => {
           <!-- 系统信息卡片 -->
           <div class="setting-card system-info-card">
             <div class="card-header">
-              <h3 class="card-title">📊 系统信息</h3>
+              <h3 class="card-title">系统信息</h3>
               <div class="card-actions">
                 <el-button
                     type="success"
@@ -354,6 +362,18 @@ onUnmounted(() => {
               <div class="card-icon">💻</div>
             </div>
             <div class="card-content">
+              <div v-if="systemInfoList.length > 0" class="host-tabs">
+                <div
+                    v-for="(info, index) in systemInfoList"
+                    :key="index"
+                    class="host-tab"
+                    :class="{ 'active': activeHostIndex === index }"
+                    @click="switchHost(index)"
+                >
+                  <span class="host-tab-icon">🖥️</span>
+                  <span class="host-tab-name">{{ info.hostName || `主机 ${index + 1}` }}</span>
+                </div>
+              </div>
               <div v-if="systemInfo" class="system-info-content">
                 <div class="info-row">
                   <span class="info-label">主机名:</span>
@@ -1018,6 +1038,50 @@ onUnmounted(() => {
   margin-right: 6px;
   font-size: 16px;
   transition: transform 0.3s ease;
+}
+
+.host-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e9ecef;
+  overflow-x: auto;
+}
+
+.host-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.host-tab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+}
+
+.host-tab.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.host-tab-icon {
+  font-size: 18px;
+}
+
+.host-tab-name {
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .button-icon.rotating {
