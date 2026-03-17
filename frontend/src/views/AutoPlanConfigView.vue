@@ -1562,3 +1562,20 @@ const batchUpdate = () => {
 <style scoped>
 @import '@assets/css/auto_plan_config.css';
 </style>
+<style>
+/* 抽屉自定义样式 */
+.result-drawer {
+  width: 80% !important;
+  background: #fadbd8 !important;
+  backdrop-filter: blur(6px) !important;
+  border-left: 2px solid rgba(100, 160, 255, 0.3) !important;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15) !important;
+}
+.batch-drawer {
+  min-width: 60% !important;
+  background: #e8f4f8 !important;
+  backdrop-filter: blur(6px) !important;
+  border-left: 2px solid rgba(100, 160, 255, 0.3) !important;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15) !important;
+}
+</style>
