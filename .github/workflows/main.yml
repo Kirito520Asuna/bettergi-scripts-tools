@@ -839,6 +839,10 @@ jobs:
     needs: [ build-jar-linux, build-exe ]
     if: ${{ needs.build-jar-linux.outputs.push_to_github_release == 'true' }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: 1. 设置发布信息
         run: |
           echo "当前工作目录：$(pwd)"
