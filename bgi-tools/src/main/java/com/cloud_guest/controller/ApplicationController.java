@@ -11,7 +11,9 @@ import com.cloud_guest.redis.config.RedisConfiguration;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.utils.ApplicationContextHolder;
 import com.cloud_guest.utils.ApplicationUtil;
+import com.cloud_guest.utils.SystemUtils;
 import com.cloud_guest.utils.bean.MapUtils;
+import com.cloud_guest.vo.SystemInfoVO;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -68,6 +70,15 @@ public class ApplicationController {
     public Result applicationIds() {
         List<String> applicationIds = ApplicationUtil.getAllApplicationIds();
         return Result.ok(applicationIds);
+    }
+
+    @Login
+    @SysLog
+    @Operation(summary = "获取系统信息")
+    @GetMapping("sys/info")
+    public Result<SystemInfoVO> sysInfo() {
+        SystemInfoVO systemInfo = SystemUtils.getSystemInfo();
+        return Result.ok(systemInfo);
     }
 /*    @Login
     @SysLog

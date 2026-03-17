@@ -1,10 +1,11 @@
 <script setup>
-import {onMounted, reactive, ref} from "vue";
+import {onMounted, onUnmounted, reactive, ref} from "vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {updateUserInfo} from "@api/auth/login.js";
 import {getTokenInfo, updateToken} from "@api/auth/token.js";
 import {removeLocalToken, restart, toHomePage} from "@api/web/web.js";
 import {backup, recovery} from "@api/data/BackupRecover.js";
+import {getSystemInfo} from "@api/sys/sys.js";
 
 const RestartClick = ref(false)
 const info = reactive({
@@ -230,6 +231,59 @@ const handleFileChange = async (event) => {
     event.target.value = '';
   }
 }
+
+let refreshTimer = null
+const systemInfo = ref(null)
+const autoRefresh = ref(false)
+
+const loadSystemInfo = async () => {
+  try {
+    const response = await getSystemInfo();
+    systemInfo.value = response;
+  } catch (error) {
+    console.error('获取系统信息失败:', error);
+  }
+}
+
+const toggleAutoRefresh = () => {
+  if (autoRefresh.value) {
+    loadSystemInfo()
+    refreshTimer = setInterval(() => {
+      loadSystemInfo()
+    }, 5000)
+    ElMessage.success('已开启自动刷新')
+  } else {
+    if (refreshTimer) {
+      clearInterval(refreshTimer)
+      refreshTimer = null
+    }
+    ElMessage.info('已关闭自动刷新')
+  }
+}
+
+const formatUptime = (seconds) => {
+  if (!seconds) return '0 秒'
+  const days = Math.floor(seconds / 86400)
+  const hours = Math.floor((seconds % 86400) / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const secs = seconds % 60
+
+  let result = ''
+  if (days > 0) result += `${days}天 `
+  if (hours > 0) result += `${hours}小时 `
+  if (minutes > 0) result += `${minutes}分 `
+  result += `${secs}秒`
+
+  return result
+}
+
+const getMemoryColor = (value) => {
+  if (value < 60) return '#67c23a'
+  if (value < 80) return '#e6a23c'
+  return '#f56c6c'
+}
+
+
 // 在 script 中添加跳转逻辑
 const goToHome = async () => {
   // router.push('/'); // 假设主页路径是 '/'
@@ -239,6 +293,12 @@ const goToHome = async () => {
 // 组件挂载时加载Token信息
 onMounted(async () => {
   await loadTokenInfo();
+  await loadSystemInfo();
+})
+onUnmounted(() => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+  }
 })
 </script>
 
@@ -267,6 +327,87 @@ onMounted(async () => {
       <div class="settings-container">
         <h2 class="settings-title">系统设置</h2>
         <div class="settings-grid">
+
+          <!-- 系统信息卡片 -->
+          <div class="setting-card system-info-card">
+            <div class="card-header">
+              <h3 class="card-title">📊 系统信息</h3>
+              <div class="card-actions">
+                <el-button
+                    type="success"
+                    size="small"
+                    @click="loadSystemInfo"
+                    :loading="!systemInfo"
+                    class="refresh-button"
+                    round
+                >
+                  <span class="button-icon" :class="{ 'rotating': !systemInfo }">🔄</span>
+                  <span class="button-text">刷新</span>
+                </el-button>
+                <el-switch
+                    v-model="autoRefresh"
+                    @change="toggleAutoRefresh"
+                    active-text="自动刷新"
+                    style="margin-right: 12px; color: #ca8a04"
+                />
+              </div>
+              <div class="card-icon">💻</div>
+            </div>
+            <div class="card-content">
+              <div v-if="systemInfo" class="system-info-content">
+                <div class="info-row">
+                  <span class="info-label">主机名:</span>
+                  <span class="info-value">{{ systemInfo.hostName }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">IP 地址:</span>
+                  <span class="info-value">{{ systemInfo.ipAddress }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">操作系统:</span>
+                  <span class="info-value">{{ systemInfo.osName }} {{ systemInfo.osVersion }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">系统架构:</span>
+                  <span class="info-value">{{ systemInfo.osArch }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">JVM:</span>
+                  <span class="info-value">{{ systemInfo.jvmName }} {{ systemInfo.jvmVersion }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">启动时间:</span>
+                  <span class="info-value">{{ systemInfo.jvmStartTime }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">运行时长:</span>
+                  <span class="info-value uptime-value">{{ formatUptime(systemInfo.jvmUptimeSeconds) }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">CPU 核心:</span>
+                  <span class="info-value">{{ systemInfo.cpuCores }} 核</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">内存使用:</span>
+                  <span class="info-value memory-usage">
+                    {{ systemInfo.heapUsedMB }} MB / {{ systemInfo.heapMaxMB }} MB
+                  </span>
+                </div>
+                <el-progress
+                    :percentage="Math.round((systemInfo.heapUsedMB / systemInfo.heapMaxMB) * 100)"
+                    :color="getMemoryColor"
+                    :stroke-width="8"
+                    :show-text="false"
+                />
+              </div>
+              <div v-else class="loading-system-info">
+                <div class="spinner-small"></div>
+                <p>加载中...</p>
+              </div>
+            </div>
+          </div>
+
+
           <!-- 用户信息修改 -->
           <div class="setting-card">
             <div class="card-header">
@@ -300,12 +441,12 @@ onMounted(async () => {
                       clearable
                   />
                 </el-form-item>
-<!--                <el-form-item class="submit">
-                  <el-button type="primary" @click="handleUpdateUserInfo">
-                    修改用户信息
-                  </el-button>
-                  <el-button @click="resetUserInfoForm">重置</el-button>
-                </el-form-item>-->
+                <!--                <el-form-item class="submit">
+                                  <el-button type="primary" @click="handleUpdateUserInfo">
+                                    修改用户信息
+                                  </el-button>
+                                  <el-button @click="resetUserInfoForm">重置</el-button>
+                                </el-form-item>-->
               </el-form>
 
               <div class="submit">
@@ -341,12 +482,12 @@ onMounted(async () => {
                       clearable
                   />
                 </el-form-item>
-<!--                <el-form-item>
-                  <el-button type="primary" @click="handleUpdateToken">
-                    修改Token信息
-                  </el-button>
-                  <el-button @click="loadTokenInfo">刷新</el-button>
-                </el-form-item>-->
+                <!--                <el-form-item>
+                                  <el-button type="primary" @click="handleUpdateToken">
+                                    修改Token信息
+                                  </el-button>
+                                  <el-button @click="loadTokenInfo">刷新</el-button>
+                                </el-form-item>-->
               </el-form>
 
               <div class="submit">
@@ -360,7 +501,7 @@ onMounted(async () => {
           </div>
 
           <!-- 数据备份与恢复 -->
-          <div class="setting-card">
+          <div class="setting-card system-info-card">
             <div class="card-header">
               <h3 class="card-title">数据备份与恢复</h3>
               <div class="card-icon">💾</div>
@@ -469,7 +610,7 @@ onMounted(async () => {
   color: transparent;
   background: linear-gradient(90deg, #ff6b6b, #ef006a); /* 渐变色方向和颜色 */
   -webkit-background-clip: text; /* 兼容 WebKit 内核浏览器 */
-  background-clip: text;/* 将背景裁剪为文字形状*/
+  background-clip: text; /* 将背景裁剪为文字形状*/
   color: transparent; /* 文字颜色设为透明 */
   /*font-size: 1.2rem; !* 可根据需要调整字体大小 *!
   font-weight: 600; !* 可根据需要调整字体粗细 *!*/
@@ -515,7 +656,7 @@ onMounted(async () => {
   color: transparent;
   background: linear-gradient(90deg, #ff6b6b, #ef006a); /* 渐变色方向和颜色 */
   -webkit-background-clip: text; /* 兼容 WebKit 内核浏览器 */
-  background-clip: text;/* 将背景裁剪为文字形状*/
+  background-clip: text; /* 将背景裁剪为文字形状*/
   color: transparent; /* 文字颜色设为透明 */
 }
 
@@ -526,17 +667,19 @@ onMounted(async () => {
 .card-content {
   padding: 25px;
 }
+
 .submit {
   display: flex;
   justify-content: center;
   padding-top: 24px;
   margin-top: auto;
-/*  border-top: 1px solid var(--el-border-color-light);*/
+  /*  border-top: 1px solid var(--el-border-color-light);*/
 }
 
 .submit .el-button {
   min-width: 120px;
 }
+
 @media (max-width: 768px) {
   .settings-grid {
     grid-template-columns: 1fr;
@@ -712,11 +855,13 @@ onMounted(async () => {
   background: rgba(102, 126, 234, 0.1);
   transform: scale(1.03);
 }
-.backup-recover-actions{
+
+.backup-recover-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+
 .backup-input-container {
   display: grid;
   grid-template-columns: 5fr 5fr;
@@ -725,13 +870,15 @@ onMounted(async () => {
   box-sizing: border-box;
   padding: 8px 3px;
   /*height: 200px;*/
-/*  padding: 40px 20px;*/
+  /*  padding: 40px 20px;*/
 }
+
 .backup-input-container > input,
 .backup-input-container > div {
   min-width: 0;
   max-width: 100%;
 }
+
 .drop-zone-content {
   display: flex;
   flex-direction: column;
@@ -784,6 +931,120 @@ onMounted(async () => {
   margin-bottom: 5px;
 }
 
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+:deep(.el-switch__label) {
+  color: white;
+  font-size: 13px;
+}
+
+:deep(.el-switch.is-checked .el-switch__label) {
+  color: #667eea;
+}
+
+.system-info-card {
+  grid-column: span 2;
+  max-width: 100%;
+}
+
+.system-info-content {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.info-row {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 10px;
+  border-left: 4px solid #667eea;
+  transition: all 0.3s ease;
+}
+
+.info-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.info-label {
+  font-size: 13px;
+  color: #7f8c8d;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 15px;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.uptime-value {
+  color: #667eea;
+  font-size: 16px;
+}
+
+.memory-usage {
+  color: #e74c3c;
+  font-size: 14px;
+}
+
+.loading-system-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #7f8c8d;
+}
+
+.spinner-small {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+.button-icon {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.button-icon.rotating {
+  animation: rotate 1s linear infinite;
+}
+.button-text {
+  letter-spacing: 1px;
+}
+
+:deep(.el-switch) {
+  --el-switch-on-color: rgba(255, 255, 255, 0.5);
+  --el-switch-off-color: rgba(255, 255, 255, 0.3);
+}
+
+:deep(.el-switch__label) {
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+:deep(.el-switch.is-checked .el-switch__label) {
+  color: white;
+}
+
+:deep(.el-switch__core) {
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
 
 /* 响应式设计 */
 @media (max-width: 768px) {
