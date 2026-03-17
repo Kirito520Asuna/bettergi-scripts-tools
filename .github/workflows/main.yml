@@ -227,14 +227,14 @@ jobs:
                 if [ -f "$jar_file" ]; then
                   # 获取不带扩展名的文件名
                   base_name=$(basename "$jar_file" .jar)
-                  
+          
                   # 使用正则表达式移除版本号
                   # 匹配模式：-v1.2.3, -1.2.3, -v1.2.3-beta.1 等版本格式
                   new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
-                  
+          
                   # 构造新的文件路径
                   new_path="/tmp/renamed-jars/${new_name}.jar"
-                  
+          
                   # 如果名称发生了变化，则复制并重命名文件
                   if [ "$base_name" != "$new_name" ]; then
                     echo "重命名: $jar_file -> $new_path"
@@ -253,13 +253,13 @@ jobs:
                 if [ -f "$jar_file" ]; then
                   # 获取不带扩展名的文件名
                   base_name=$(basename "$jar_file" .jar)
-                  
+          
                   # 使用正则表达式移除版本号
                   new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
-                  
+          
                   # 构造新的文件路径
                   new_path="/tmp/renamed-jars/${new_name}.jar"
-                  
+          
                   # 复制并可能重命名文件
                   if [ "$base_name" != "$new_name" ]; then
                     echo "重命名: $jar_file -> $new_path"
@@ -285,22 +285,22 @@ jobs:
           unzip -l jars.zip
         shell: bash
 
-#      - name: 9.打包所有 JAR 文件成 ZIP
-#        run: |
-#          if [ "${{ env.JAR_DIR_PREFIX }}" = "" ]; then
-#            find . -type f -path "*/target/*.jar" -exec zip -j jars.zip {} +
-#          else
-#            find . -type f \( -path "*/${{ env.JAR_DIR_PREFIX }}/*/target/*.jar" -o -path "*/${{ env.JAR_DIR_PREFIX }}/target/*.jar" \) -exec zip -j jars.zip {} +
-#          fi
-#          # -j: 仅打包文件，不保留目录结构
-#          # +: 尽量将多个文件放入一个 zip 命令，减少调用次数
-#        shell: bash
-#
-#      - name: 10. 验证 JAR ZIP 文件
-#        run: |
-#          ls -la jars.zip
-#          unzip -l jars.zip
-#
+      #      - name: 9.打包所有 JAR 文件成 ZIP
+      #        run: |
+      #          if [ "${{ env.JAR_DIR_PREFIX }}" = "" ]; then
+      #            find . -type f -path "*/target/*.jar" -exec zip -j jars.zip {} +
+      #          else
+      #            find . -type f \( -path "*/${{ env.JAR_DIR_PREFIX }}/*/target/*.jar" -o -path "*/${{ env.JAR_DIR_PREFIX }}/target/*.jar" \) -exec zip -j jars.zip {} +
+      #          fi
+      #          # -j: 仅打包文件，不保留目录结构
+      #          # +: 尽量将多个文件放入一个 zip 命令，减少调用次数
+      #        shell: bash
+      #
+      #      - name: 10. 验证 JAR ZIP 文件
+      #        run: |
+      #          ls -la jars.zip
+      #          unzip -l jars.zip
+      #
 
       - name: 11.解压 ZIP 文件
         run: |
@@ -843,14 +843,20 @@ jobs:
         run: |
           echo "当前工作目录：$(pwd)"
           echo "🚀 发布到 GitHub Release"
-      
+          
           # 初始化默认值
           DESC="${{ github.event.inputs.desc || '' }}"
           GitHub_Release_Text_Path="${{ github.event.inputs.gitHub_release_text_path || 'GitHub_Release.txt' }}"
-      
+          # 移除可能存在的前导斜杠
+          GitHub_Release_Text_Path="${GitHub_Release_Text_Path#/}"
           # 构造文件路径（使用正确的仓库路径）
           GitHub_Release_Path="${{ github.workspace }}/$GitHub_Release_Text_Path"
-      
+          # 添加调试信息
+          echo "🔍 工作目录：${{ github.workspace }}"
+          echo "🔍 相对路径：${GitHub_Release_Text_Path}"
+          echo "🔍 完整路径：${GitHub_Release_Path}"
+          ls -la "${{ github.workspace }}/"
+          
           # 读取文件内容并处理
           if [ -f "$GitHub_Release_Path" ]; then
             GitHub_Release=$(cat "$GitHub_Release_Path")
@@ -867,11 +873,11 @@ jobs:
             DESC="$GitHub_Release"
             echo "DESC 未设置，使用文件内容：$DESC"
           fi
-      
+          
           # 写入环境变量
           echo "DESC=$DESC" >> $GITHUB_ENV
           echo "GITHUB_RELEASE=$GitHub_Release" >> $GITHUB_ENV
-      
+          
           echo "═══════════════════════════════════════════"
           echo "最终设置值："
           echo "  DESC           : $DESC"
@@ -918,12 +924,12 @@ jobs:
             ### 📦 其他文件
             - jars-*.zip：原始 JAR 包
             - 单个 .jar / .exe
-      
+            
             ${{ env.DESC }}
             
             **系统要求**：Windows 10/11 x64  
             **运行方式**：推荐使用独立包，双击即跑
-           
+            
             如有问题欢迎反馈！
           draft: ${{ github.event.inputs.draft || false }}
           prerelease: ${{ github.event.inputs.prerelease || false }}
