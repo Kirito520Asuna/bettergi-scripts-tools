@@ -878,9 +878,13 @@ jobs:
             echo "DESC 未设置，使用文件内容：$DESC"
           fi
           
-          # 写入环境变量
-          echo "DESC=$DESC" >> $GITHUB_ENV
-          echo "GITHUB_RELEASE=$GitHub_Release" >> $GITHUB_ENV
+          # 写入环境变量（使用 EOF 分隔符支持多行内容）
+          echo "DESC<<EOF" >> $GITHUB_ENV
+          echo "$DESC" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "GITHUB_RELEASE<<EOF" >> $GITHUB_ENV
+          echo "$GitHub_Release" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
           
           echo "═══════════════════════════════════════════"
           echo "最终设置值："
