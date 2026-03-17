@@ -57,6 +57,7 @@ public class DataBackupRecoveryServiceImpl implements DataBackupRecoveryService 
     @Override
     public boolean recovery(Map<String, Object> map) {
         Map<String, Object> hashMap = Maps.newLinkedHashMap();
+        hashMap.putAll(map);
         if (ModeUtil.isLocal()) {
             hashMap.forEach((k, v) -> LocalCacheUtils.put(k, v));
         } else if (ModeUtil.isRedis()) {
