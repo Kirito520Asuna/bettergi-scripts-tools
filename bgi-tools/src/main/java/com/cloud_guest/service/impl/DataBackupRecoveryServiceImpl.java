@@ -29,13 +29,17 @@ public class DataBackupRecoveryServiceImpl implements DataBackupRecoveryService 
         if (ModeUtil.isLocal()) {
             Map<String, Object> cacheMap = LocalCacheUtils.getLocalCacheMap();
             map.putAll(cacheMap);
-        } else
-        if (ModeUtil.isRedis()) {
+        } else if (ModeUtil.isRedis()) {
             RedisService bean = SpringUtil.getBean(RedisService.class);
             Collection<String> keys = bean.keys(KeyConstants.redis_file_json_key + "*");
             log.debug("{}", keys);
             keys.forEach(key -> {
                 Object o = bean.get(key);
+
+                if (key.startsWith(KeyConstants.redis_file_json_key)) {
+                    key = key.replace(KeyConstants.redis_file_json_key, "");
+                }
+
                 map.put(key, o);
             });
         }
@@ -53,20 +57,13 @@ public class DataBackupRecoveryServiceImpl implements DataBackupRecoveryService 
     @Override
     public boolean recovery(Map<String, Object> map) {
         Map<String, Object> hashMap = Maps.newLinkedHashMap();
-        map.forEach((k, v) -> {
-            if (k.startsWith(KeyConstants.redis_file_json_key)) {
-                k=k.replace(KeyConstants.redis_file_json_key, "");
-            }
-            hashMap.put(k, v);
-        });
         if (ModeUtil.isLocal()) {
             hashMap.forEach((k, v) -> LocalCacheUtils.put(k, v));
-        } else
-        if (ModeUtil.isRedis()) {
+        } else if (ModeUtil.isRedis()) {
             RedisService bean = SpringUtil.getBean(RedisService.class);
             hashMap.forEach((k, v) -> {
                 if (!k.startsWith(KeyConstants.redis_file_json_key)) {
-                    k=KeyConstants.redis_file_json_key + k;
+                    k = KeyConstants.redis_file_json_key + k;
                 }
                 bean.save(k, v);
             });
