@@ -1,0 +1,165 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+/* 页面全屏背景 */
+.home {
+    /*  display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      width: 100vw;*/
+    /*  background: linear-gradient(135deg, #a1c4fd, #c2e9fb);*/
+    min-width: 768px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url("@assets/MHY_XTLL.png") ;
+    /* 关键：固定背景，不随滚动重复或变形 */
+    background-attachment: fixed; /* ← 核心属性 */
+    background-size: cover; /* 覆盖整个容器 */
+    background-position: center;
+    /*  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;*/
+}
+
+/* Logo 圆角 */
+.logo {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 25px;
+    border: 3px solid #6a89cc;
+}
+/*返回主页*/
+/* 固定按钮样式 */
+.fixed-footer {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.fixed-footer .btn {
+  padding: 10px 15px;
+  background: rgba(52, 152, 219, 0.8);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+/*.btn.secondary {
+    padding: 10px 24px;
+    background: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}*/
+.fixed-footer .btn:hover {
+  background: rgba(41, 128, 185, 1);
+  transform: scale(1.05);
+}
+
+/*重启*/
+.restart-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none; /* 防止選取文字 */
+    -webkit-user-select: none;
+}
+
+.restart-modal {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 320px;
+    max-width: 420px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    pointer-events: auto;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .home {
+    min-width: auto;
+    background-attachment: scroll;
+    background-position: center top;
+  }
+
+  .logo {
+    width: 80px;
+    height: 80px;
+    border-width: 2px;
+    margin-bottom: 20px;
+  }
+
+  .fixed-footer {
+    bottom: 15px;
+    right: 15px;
+  }
+
+  .fixed-footer .btn {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+  }
+
+  .restart-overlay {
+    align-items: flex-end;
+    padding: 20px;
+  }
+
+  .restart-modal {
+    padding: 2rem;
+    min-width: 280px;
+    max-width: 90%;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home {
+    background-size: cover;
+    background-position: center 30%;
+  }
+
+  .logo {
+    width: 60px;
+    height: 60px;
+    border-width: 2px;
+    margin-bottom: 15px;
+  }
+
+  .fixed-footer {
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .fixed-footer .btn {
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 5px;
+  }
+
+  .restart-overlay {
+    padding: 15px;
+  }
+
+  .restart-modal {
+    padding: 1.5rem;
+    min-width: 260px;
+    max-width: 95%;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  }
+}

@@ -1,8 +1,4 @@
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-}
+
 /* 页面全屏背景 */
 .home {
     /*  display: flex;
@@ -11,12 +7,11 @@ html, body {
       min-height: 100vh;
       width: 100vw;*/
     /*  background: linear-gradient(135deg, #a1c4fd, #c2e9fb);*/
-    min-width: 768px;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: url("@assets/MHY_XTLL.png") ;
+    background: url("@assets/MHY_XTLL.png");
     /* 关键：固定背景，不随滚动重复或变形 */
     background-attachment: fixed; /* ← 核心属性 */
     background-size: cover; /* 覆盖整个容器 */
@@ -24,47 +19,162 @@ html, body {
     /*  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;*/
 }
 
+/* 中间卡片 */
+.welcome-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 50px 50px;
+    border-radius: 25px;
+    box-shadow: 0 15px 35px rgba(0, 255, 246, 0.2);
+    text-align: center;
+    max-width: 600px;
+    width: 80%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.welcome-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(255, 0, 181, 0.3);
+}
+
 /* Logo 圆角 */
 .logo {
-    width: 100px;
-    height: 100px;
+    /* width: 50px;
+     height: 50px;*/
     object-fit: cover;
     border-radius: 50%;
     margin-bottom: 25px;
     border: 3px solid #6a89cc;
 }
-/*返回主页*/
-/* 固定按钮样式 */
-.fixed-footer {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
+
+/* 主标题美化 */
+.title {
+    /* font-size: 36px;*/
+    /*font-weight: 800;*/
+    /*  margin-bottom: 5px;*/
+    color: transparent;
+    background: linear-gradient(90deg, #6a89cc, #3498db);
+    -webkit-background-clip: text;
+    background-clip: text;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
 }
 
-.fixed-footer .btn {
-  padding: 10px 15px;
-  background: rgba(52, 152, 219, 0.8);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.title:hover {
+    transform: scale(1.05);
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
-/*.btn.secondary {
-    padding: 10px 24px;
-    background: #6b7280;
-    color: white;
-    border: none;
-    border-radius: 8px;
+
+/* 副标题美化 */
+.subtitle {
+    /* font-size: 20px;*/
+    color: #7f8c8d;
+    /*margin-bottom: 40px;*/
+    opacity: 0;
+    animation: fadeIn 1s ease-in-out forwards;
+    font-style: italic;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 功能区域 */
+.feature-section {
+    /*margin-top: 10px;*/
+}
+
+/* 美化 section-title */
+.section-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: transparent;
+    background: linear-gradient(90deg, #6a89cc, #3498db);
+    -webkit-background-clip: text;
+    background-clip: text;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.section-title:hover {
+    transform: scale(1.05);
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.feature-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.feature-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 15px 20px;
     cursor: pointer;
-}*/
-.fixed-footer .btn:hover {
-  background: rgba(41, 128, 185, 1);
-  transform: scale(1.05);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/*重启*/
+.feature-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.icon {
+    display: inline-block;
+    width: 1.2em;
+    height: 1.2em;
+    line-height: 1;
+}
+
+.icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor; /* 让颜色跟随 CSS color */
+}
+
+.name {
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    color: #3498db;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* 类型区分 */
+.link-item {
+    background: #e8f8f5;
+    color: #27ae60;
+}
+
+.swagger-item {
+    background: #fef9e7;
+    color: #f39c12;
+}
+
+.routes-item {
+    background: #fadbd8;
+    color: #e74c3c;
+}
+
 .restart-overlay {
     position: fixed;
     inset: 0;
@@ -86,4 +196,233 @@ html, body {
     max-width: 420px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     pointer-events: auto;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .home {
+        background-attachment: scroll;
+        background-position: center top;
+        padding: 20px;
+    }
+
+    .welcome-card {
+        width: 90%;
+        max-width: 500px;
+        padding: 40px 35px;
+        border-radius: 20px;
+    }
+
+    .logo {
+        width: 80px;
+        height: 80px;
+        border-width: 2px;
+        margin-bottom: 20px;
+    }
+
+    .title {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    .subtitle {
+        font-size: 18px;
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-size: 20px;
+        margin-bottom: 18px;
+    }
+
+    .feature-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .feature-item {
+        padding: 14px 18px;
+        border-radius: 10px;
+    }
+
+    .icon {
+        width: 1.1em;
+        height: 1.1em;
+    }
+
+    .name {
+        font-size: 15px;
+    }
+
+    .restart-overlay {
+        align-items: flex-end;
+        padding: 20px;
+    }
+
+    .restart-modal {
+        min-width: 280px;
+        max-width: 90%;
+        padding: 2rem;
+        border-radius: 10px;
+    }
+
+    .warning-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 2.4rem;
+        line-height: 50px;
+    }
+
+    .warning-header h3 {
+        font-size: 1.7rem;
+    }
+
+    .spinner {
+        width: 70px;
+        height: 70px;
+        border-width: 8px;
+    }
+
+    .loading-text {
+        font-size: 1.5rem;
+    }
+
+    .hint {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .home {
+        background-size: cover;
+        background-position: center 30%;
+        padding: 15px;
+    }
+
+    .welcome-card {
+        width: 95%;
+        padding: 30px 25px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 255, 246, 0.15);
+    }
+
+    .welcome-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 15px 30px rgba(255, 0, 181, 0.2);
+    }
+
+    .logo {
+        width: 60px;
+        height: 60px;
+        border-width: 2px;
+        margin-bottom: 16px;
+    }
+
+    .title {
+        font-size: 24px;
+    }
+
+    .title:hover {
+        transform: scale(1.03);
+    }
+
+    .subtitle {
+        font-size: 16px;
+        margin-bottom: 25px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    .section-title:hover {
+        transform: scale(1.03);
+    }
+
+    .feature-container {
+        gap: 10px;
+    }
+
+    .feature-column {
+        gap: 8px;
+    }
+
+    .feature-item {
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .feature-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    }
+
+    .icon {
+        width: 1em;
+        height: 1em;
+    }
+
+    .name {
+        font-size: 14px;
+    }
+
+    .link-item {
+        background: #d5f5e8;
+    }
+
+    .swagger-item {
+        background: #fef3cd;
+    }
+
+    .routes-item {
+        background: #fadbd8;
+    }
+
+    .restart-overlay {
+        padding: 15px;
+    }
+
+    .restart-modal {
+        min-width: 260px;
+        max-width: 95%;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+    }
+
+    .warning-header {
+        gap: 0.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .warning-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 2rem;
+        line-height: 45px;
+        box-shadow: 0 0 20px rgba(255, 77, 79, 0.5);
+    }
+
+    .warning-header h3 {
+        font-size: 1.5rem;
+    }
+
+    .spinner {
+        width: 60px;
+        height: 60px;
+        border-width: 6px;
+        margin-bottom: 1.5rem;
+    }
+
+    .loading-text {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+
+    .hint {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
 }
