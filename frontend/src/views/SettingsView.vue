@@ -341,7 +341,7 @@ onUnmounted(() => {
                     class="refresh-button"
                     round
                 >
-                  <span class="button-icon" :class="{ 'rotating': !systemInfo }">🔄</span>
+                  <span class="button-icon" :class="{ 'rotating': !systemInfo }">↻</span>
                   <span class="button-text">刷新</span>
                 </el-button>
                 <el-switch
