@@ -17,8 +17,8 @@ async function getVersion() {
     return response.data
 }
 
-async function getSystemInfo() {
-    const response = await service.get('/jwt/application/sys/info')
+async function getSystemInfo(ids="") {
+    const response = await service.get('/jwt/application/sys/info',{params:{ids:ids}})
     return response.data
 }
 

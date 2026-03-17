@@ -1,5 +1,5 @@
 import {ElMessage, ElMessageBox} from "element-plus";
-import {getApplicationIds, restartService} from "@api/sys/sys.js";
+import {getApplicationIds, getSystemInfo, restartService} from "@api/sys/sys.js";
 import router from "@router/router.js";
 
 /**
@@ -93,6 +93,50 @@ async function restart(restartClickRef, applicationIds, restartTimeout = 3 * 60 
 }
 
 /**
+ * 获取所有系统信息
+ * @param {Array} applicationIds - 应用程序ID列表
+ * @param {Number} restartTimeout - 重启超时时间（毫秒），默认为3分钟
+ * @returns {Array} 返回系统信息列表
+ */
+async function getAllSystemInfo(applicationIds, restartTimeout = 3 * 60 * 1000) {
+    let systemInfoList = []; // 存储系统信息的列表
+    // 如果没有提供applicationIds或applicationIds为空数组，则获取所有应用程序ID
+    if ((!applicationIds) || applicationIds?.length === 0) {
+        try {
+            const applicationIds1 = await getApplicationIds(); // 获取应用程序ID
+            if (applicationIds1.data)
+                applicationIds = applicationIds1.data; // 更新applicationIds
+        } catch (error) {
+            // 错误处理
+        }
+    }
+    const list = applicationIds; // 获取应用程序ID列表
+
+    let ids = [...list]; // 复制应用程序ID列表
+    const startTime = Date.now(); // 记录开始时间
+    // 循环获取系统信息，直到所有应用程序ID都被处理
+    while (ids.length > 0) {
+        // 检查是否超时
+        const currentTime = Date.now(); // 获取当前时间
+        const elapsedTime = currentTime - startTime; // 计算经过的时间
+
+        // 如果超过超时时间，抛出错误
+        if (elapsedTime > restartTimeout) {
+            ElMessage.error(`重启超时（超过${restartTimeout / 1000}秒），强制退出`);
+            throw new Error(`Restart timeout after ${restartTimeout / 1000} seconds`);
+        }
+const key=ids.join(",")
+        const systemInfo = await getSystemInfo(key); // 获取系统信息
+        if (systemInfo) {
+            ids = ids.filter(id => id !== systemInfo.applicationId)
+            systemInfoList.push(systemInfo); // 添加系统信息到列表
+        }
+    }
+
+    return systemInfoList; // 返回系统信息列表
+}
+
+/**
  * 前往主页的异步函数
  * 使用ElMessageBox显示确认对话框，用户确认后跳转到主页
  */
@@ -134,9 +178,11 @@ async function removeLocalToken() {
     const token_name = await getLocalTokenName()// 从环境变量获取令牌名称，如果不存在则使用默认名称'bgi_tools_token'// 从环境变量获取令牌名称，如果不存在则使用默认名称'bgi_tools_token'
     localStorage.removeItem(token_name) // 从localStorage中移除指定名称的令牌
 }
+
 async function removeLocalVersion() {
     localStorage.removeItem("bgi-tools-version")
 }
+
 async function setLocalVersion(version) {
     localStorage.setItem("bgi-tools-version", version)
 }
@@ -174,5 +220,6 @@ export {
     getLocalTokenName,
     setLocalVersion,
     removeLocalVersion,
-    getLocalVersion
+    getLocalVersion,
+    getAllSystemInfo,
 }
