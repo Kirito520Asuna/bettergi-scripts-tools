@@ -132,9 +132,14 @@ jobs:
           # 读取指定文件获取环境变量
           echo "::group::🔍 从 POM 读取配置"
           
-          echo "正在执行：mvn help:evaluate -Dexpression=java.version"
-          JAVA_VERSION_MVN=$(mvn help:evaluate -Dexpression=java.version -q -DforceStdout)
-          echo "✓ Java 版本读取结果：$JAVA_VERSION_MVN"
+          # 方法 1: 直接从 XML 解析（更可靠）
+          echo "正在解析 pom.xml 文件..."
+          JAVA_VERSION_XML=$(grep -oP '<java\.version>\K[^<]+' pom.xml | head -1)
+          echo "✓ pom.xml 中的 java.version: $JAVA_VERSION_XML"
+          
+          # 方法 2: Maven 命令读取
+          JAVA_VERSION_MVN=$(mvn help:evaluate -Dexpression=java.version -q -DforceStdout || echo "")
+          echo "✓ Maven 读取的 java.version: $JAVA_VERSION_MVN"
           
           echo "正在执行：mvn help:evaluate -Dexpression=project.version"
           TAG_NAME_MVN=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
