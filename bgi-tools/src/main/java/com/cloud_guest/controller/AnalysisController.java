@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
-import javax.annotation.Resource;
-import javax.validation.constraints.NotBlank;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.ArrayList;
 import java.util.Arrays;

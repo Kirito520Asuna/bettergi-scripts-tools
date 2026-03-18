@@ -7,8 +7,8 @@ import com.cloud_guest.redis.ban.SimpleBanManager;
 import com.cloud_guest.redis.service.RedisService;
 import com.cloud_guest.redis.service.impl.SimpleRedisService;
 
-import javax.annotation.Resource;
 
+import jakarta.annotation.Resource;
 import org.redisson.api.RedissonClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;

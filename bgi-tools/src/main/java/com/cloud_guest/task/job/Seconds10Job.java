@@ -14,7 +14,7 @@ import org.quartz.JobExecutionException;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.concurrent.CompletableFuture;
 
 /**

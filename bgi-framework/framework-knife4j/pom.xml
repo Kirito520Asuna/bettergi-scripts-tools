@@ -13,7 +13,7 @@
 
     <properties>
         <!--swagger 版本-->
-        <knife4j.version>4.1.0</knife4j.version>
+        <knife4j.version>4.5.0</knife4j.version>
         <springdoc-openapi.version>1.6.15</springdoc-openapi.version>
         <swagger.core.version>2.2.20</swagger.core.version>
         <swagger.version>1.6.16</swagger.version>
@@ -96,16 +96,23 @@
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
+        <!--        <dependency>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>javax.servlet-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </dependency>-->
     </dependencies>
 
 </project>

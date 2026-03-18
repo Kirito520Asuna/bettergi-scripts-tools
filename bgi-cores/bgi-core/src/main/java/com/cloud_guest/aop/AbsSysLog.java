@@ -3,6 +3,7 @@ package com.cloud_guest.aop;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.extra.servlet.ServletUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
@@ -16,7 +17,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
@@ -55,7 +56,7 @@ public interface AbsSysLog extends AbsAop {
 
             String method = request.getMethod();
 
-            Map<String, String> paramMap = ServletUtil.getParamMap(request);
+            Map<String, String> paramMap = JakartaServletUtil.getParamMap(request);
             log().debug("parse:{}", JSONUtil.parse(paramMap, JSON_CONFIG));
 
             String title = sysLog.title();

@@ -11,7 +11,7 @@ import com.cloud_guest.redis.config.RedissonConfig;
 import com.cloud_guest.redis.exception.RedisException;
 import com.cloud_guest.redis.service.RedisService;
 import com.alibaba.ttl.TransmittableThreadLocal;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;

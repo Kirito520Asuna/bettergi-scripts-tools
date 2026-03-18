@@ -7,7 +7,7 @@ import com.cloud_guest.service.CacheService;
 import com.cloud_guest.service.FileJsonService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 
 /**

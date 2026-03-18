@@ -11,7 +11,7 @@ import com.cloud_guest.vo.AutoPlanVo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

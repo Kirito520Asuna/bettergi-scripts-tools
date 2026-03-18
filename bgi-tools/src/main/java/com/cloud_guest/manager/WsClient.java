@@ -1,6 +1,6 @@
 package com.cloud_guest.manager;
 
-import javax.websocket.*;
+import jakarta.websocket.*;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 
