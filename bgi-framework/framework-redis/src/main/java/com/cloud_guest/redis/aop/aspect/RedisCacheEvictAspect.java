@@ -10,7 +10,7 @@ import com.cloud_guest.redis.config.RedissonConfig;
 import com.cloud_guest.redis.service.RedisService;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

@@ -10,7 +10,7 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +34,10 @@ import java.util.Map;
 @ConditionalOnBean(SwaggerConfiguration.class)
 public class SwaggerConfig implements AbsSwagger {
     @Lazy
+    //@Resource
     @Resource
     private SwaggerConfiguration config;
+
 
     @Override
     public String getAuthorization() {

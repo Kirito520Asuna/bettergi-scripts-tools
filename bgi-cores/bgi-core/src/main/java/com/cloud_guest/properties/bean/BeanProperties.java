@@ -4,7 +4,7 @@ package com.cloud_guest.properties.bean;
 
 import com.cloud_guest.aop.bean.AbsBean;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 /**
  * @Author yan

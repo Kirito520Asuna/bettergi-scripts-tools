@@ -15,7 +15,7 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.Ordered;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 

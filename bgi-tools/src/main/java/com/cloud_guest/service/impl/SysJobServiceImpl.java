@@ -15,8 +15,8 @@ import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;

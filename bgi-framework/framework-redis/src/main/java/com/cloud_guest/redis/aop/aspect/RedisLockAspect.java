@@ -6,7 +6,7 @@ import com.cloud_guest.redis.abs.aop.AbsRedisAspect;
 import com.cloud_guest.redis.aop.redis.RedisLock;
 import com.cloud_guest.redis.config.RedissonConfig;
 import com.cloud_guest.redis.exception.RedisException;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;

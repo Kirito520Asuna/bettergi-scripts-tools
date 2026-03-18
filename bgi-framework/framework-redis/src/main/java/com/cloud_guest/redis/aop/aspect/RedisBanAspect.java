@@ -9,7 +9,7 @@ import com.cloud_guest.redis.ban.BanType;
 import com.cloud_guest.redis.ban.SimpleBanManager;
 import com.cloud_guest.redis.config.RedissonConfig;
 import com.cloud_guest.redis.exception.BanException;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -23,7 +23,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Set;
 
-import static cn.hutool.extra.servlet.ServletUtil.getClientIP;
+import static cn.hutool.extra.servlet.JakartaServletUtil.getClientIP;
 
 
 /**
@@ -71,6 +71,7 @@ public class RedisBanAspect implements AbsRedisAspect {
             return joinPoint.proceed();
         }
         HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
+
         String ipAddress = getClientIP(request);
         BanConfiguration banConfiguration = DEFAULT_BAN_CONFIGURATION;
         boolean globalBanEnabled = banConfiguration.isGlobalBanEnabled();
