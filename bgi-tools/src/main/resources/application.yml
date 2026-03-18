@@ -176,7 +176,7 @@ check:
     name:  # token名称 默认为空
     value: # token值 默认为空
 bgi-tools:
-  version: 0.0.6
+  version: 0.0.7-dev
 #设置默认账号密码
 auth:
   enabled: true
