@@ -31,7 +31,7 @@ on:
       java_version:
         description: '输入 Java 版本 (如 8, 11, 17)'
         required: true
-        default: '8'
+        default: '21'
       jar_dir_prefix:
         description: 'JAR 文件前缀 (如 bgi-tools 或留空)'
         default: ''
