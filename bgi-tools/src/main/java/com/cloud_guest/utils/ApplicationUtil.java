@@ -3,16 +3,15 @@ package com.cloud_guest.utils;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdUtil;
 import com.cloud_guest.aop.bean.AbsBean;
-import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.ApplicationInfo;
-import com.cloud_guest.service.CacheService;
+import com.cloud_guest.domain.SystemInfo;
 import com.cloud_guest.utils.object.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import jakarta.annotation.Resource;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,14 +25,18 @@ import java.util.stream.Collectors;
 public class ApplicationUtil implements AbsBean {
     private static ApplicationInfo applicationInfo = new ApplicationInfo(null, 0l, System.currentTimeMillis());
     private static boolean initEnd = false;
+    private static SystemInfo systemInfo;
+
     @PostConstruct
     @Override
     public void init() {
         AbsBean.super.init();
         log.debug("==> 初始化ApplicationUtil <==");
         initApplicationInfo();
+        systemInfo = SystemUtils.initSystemInfo();
         initEnd = true;
     }
+
     @PreDestroy
     @Override
     public void destroy() {
@@ -62,9 +65,11 @@ public class ApplicationUtil implements AbsBean {
     public static void destroyApplicationInfo() {
         ApplicationContextHolder.clearReportedOnline(applicationInfo);
     }
+
     public static void setCronExpression(String cronExpression) {
         applicationInfo.setCronExpression(cronExpression);
     }
+
     public static void setTimeout(Long timeout) {
         applicationInfo.setTimeout(timeout);
     }
@@ -90,5 +95,14 @@ public class ApplicationUtil implements AbsBean {
 
     public static List<String> getAllApplicationIds() {
         return getAllOnlineApplicationInfos().stream().map(ApplicationInfo::getApplicationId).collect(Collectors.toList());
+    }
+
+    public static SystemInfo getNewSystemInfo() {
+        SystemInfo info = SystemUtils.updateSystemInfo(systemInfo);
+        try {
+            return info;
+        } finally {
+            systemInfo = info;
+        }
     }
 }

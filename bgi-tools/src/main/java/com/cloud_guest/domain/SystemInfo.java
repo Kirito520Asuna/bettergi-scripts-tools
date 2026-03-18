@@ -1,7 +1,8 @@
-package com.cloud_guest.vo;
+package com.cloud_guest.domain;
 
 
 import com.cloud_guest.utils.ApplicationUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +19,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class SystemInfoVO {
+public class SystemInfo {
     @Schema(description = "应用ID")
     private String applicationId = ApplicationUtil.getApplicationId();
     @Schema(description = "主机名")
@@ -44,6 +45,8 @@ public class SystemInfoVO {
 
     @Schema(description = "JVM 启动时间")
     private String jvmStartTime;
+    @JsonIgnore
+    private Long jvmStartTimeStamp;
 
     @Schema(description = "JVM 运行时长 (秒)")
     private Long jvmUptimeSeconds;

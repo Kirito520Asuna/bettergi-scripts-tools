@@ -2,7 +2,7 @@ package com.cloud_guest.utils;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
-import com.cloud_guest.vo.SystemInfoVO;
+import com.cloud_guest.domain.SystemInfo;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.management.ManagementFactory;
@@ -31,8 +31,8 @@ public class SystemUtils {
      *
      * @return SystemInfoVO
      */
-    public static SystemInfoVO getSystemInfo() {
-        SystemInfoVO vo = new SystemInfoVO();
+    public static SystemInfo initSystemInfo() {
+        SystemInfo vo = new SystemInfo();
 
         Properties props = System.getProperties();
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
@@ -57,6 +57,7 @@ public class SystemUtils {
                 //.setJvmStartTime(new java.util.Date(runtimeMXBean.getStartTime()))
                 .setJvmStartTime(DateUtil.format(new java.util.Date(runtimeMXBean.getStartTime()), DatePattern.NORM_DATETIME_PATTERN))
                 .setJvmUptimeSeconds((System.currentTimeMillis() - runtimeMXBean.getStartTime()) / 1000)
+                .setJvmStartTimeStamp(runtimeMXBean.getStartTime())
                 .setHeapInitMB(heapUsage.getInit() / 1024 / 1024)
                 .setHeapMaxMB(heapUsage.getMax() / 1024 / 1024)
                 .setHeapUsedMB(heapUsage.getUsed() / 1024 / 1024)
@@ -67,12 +68,16 @@ public class SystemUtils {
 
         return vo;
     }
+    public static SystemInfo updateSystemInfo(SystemInfo systemInfo) {
+        systemInfo.setJvmUptimeSeconds((System.currentTimeMillis() - systemInfo.getJvmStartTimeStamp()) / 1000);
+        return systemInfo;
+    }
 
     /**
      * 打印系统信息到控制台
      */
     public static void printSystemInfo() {
-        SystemInfoVO info = getSystemInfo();
+        SystemInfo info = initSystemInfo();
         System.out.println("========== 系统信息 ==========");
         System.out.println("主机名：" + info.getHostName());
         System.out.println("IP 地址：" + info.getIpAddress());

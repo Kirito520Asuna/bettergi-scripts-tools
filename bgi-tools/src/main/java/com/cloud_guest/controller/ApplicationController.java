@@ -1,36 +1,18 @@
 package com.cloud_guest.controller;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.extra.spring.SpringUtil;
-import cn.hutool.json.JSONObject;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Login;
 import com.cloud_guest.domain.dto.ApplicationDto;
-import com.cloud_guest.properties.BgiRedisProperties;
-import com.cloud_guest.redis.config.RedisConfiguration;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.utils.ApplicationContextHolder;
 import com.cloud_guest.utils.ApplicationUtil;
 import com.cloud_guest.utils.SystemUtils;
-import com.cloud_guest.utils.bean.MapUtils;
-import com.cloud_guest.vo.SystemInfoVO;
+import com.cloud_guest.domain.SystemInfo;
 import com.github.xiaoymin.knife4j.core.util.StrUtil;
 import io.swagger.v3.oas.annotations.Operation;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
-import org.springframework.cloud.context.refresh.ContextRefresher;
-import org.springframework.cloud.context.restart.RestartEndpoint;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.env.Environment;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
 import java.util.*;
 
 /**
@@ -74,15 +56,15 @@ public class ApplicationController {
     @SysLog
     @Operation(summary = "获取系统信息")
     @GetMapping("sys/info")
-    public Result<SystemInfoVO> sysInfo(@RequestParam String ids) {
+    public Result<SystemInfo> sysInfo(@RequestParam String ids) {
         List<String> applicationIds = new ArrayList<>();
         if (StrUtil.isNotBlank(ids)) {
             Arrays.stream(ids.split(",")).forEach(applicationIds::add);
         }
         String applicationId = ApplicationUtil.getApplicationId();
-        SystemInfoVO systemInfo = null;
+        SystemInfo systemInfo = null;
         if (applicationIds.contains(applicationId)) {
-            systemInfo = SystemUtils.getSystemInfo();
+            systemInfo = ApplicationUtil.getNewSystemInfo();
         }
         return Result.ok(systemInfo);
     }
