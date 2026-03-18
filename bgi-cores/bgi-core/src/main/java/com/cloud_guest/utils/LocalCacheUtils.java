@@ -4,7 +4,10 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
+import com.cloud_guest.enums.OSType;
+import com.cloud_guest.utils.object.ObjectUtils;
 import com.google.common.collect.Maps;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -13,6 +16,8 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
+
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -68,13 +73,33 @@ public class LocalCacheUtils {
         writeLocal(getLocalCacheJsonFilePath());
         log.info("保存本地缓存成功");
     }
-    public static Map<String, Object> getLocalCacheMap(){
+
+    public static Map<String, Object> getLocalCacheMap() {
         return LOCAL_CACHE_MAP;
     }
+
     public static String getLocalCacheJsonFilePath() {
         Environment env = SpringUtil.getBean(Environment.class);
-        String localCacheJsonFilePath  = env.getProperty("local.cache.json-file-path", "../../.././cache/local-cache.json");
-        return localCacheJsonFilePath;
+        String configPath = env.getProperty("local.cache.json-file-path", "cache/local-cache.json");
+
+        File file = new File(configPath);
+        if (!file.isAbsolute()) {
+            String userDir = System.getProperty("user.dir");
+            // 更好的做法
+            File fileTemp = new File(userDir, configPath);
+            try {
+                configPath = fileTemp.getCanonicalPath();
+            } catch (Exception e) {
+                log.error("获取缓存文件路径失败：{}", e.getMessage());
+                return configPath;
+            }
+        }
+        try {
+            return file.getCanonicalPath();
+        } catch (Exception e) {
+            log.error("获取缓存文件路径失败：{}", e.getMessage());
+            return configPath;
+        }
     }
 
     public static void writeLocal(String localCacheJsonFilePath) {
