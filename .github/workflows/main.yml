@@ -128,13 +128,26 @@ jobs:
           AUTO=false
           PUSH_TO_DOCKER_REGISTRY=false
           PUSH_TO_GITHUB_RELEASE=false
+          
+          # 读取指定文件获取环境变量
+          echo "::group::🔍 从 POM 读取配置"
+          
+          echo "正在执行：mvn help:evaluate -Dexpression=java.version"
+          JAVA_VERSION_MVN=$(mvn help:evaluate -Dexpression=java.version -q -DforceStdout)
+          echo "✓ Java 版本读取结果：$JAVA_VERSION_MVN"
+          
+          echo "正在执行：mvn help:evaluate -Dexpression=project.version"
+          TAG_NAME_MVN=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "✓ 项目版本读取结果：$TAG_NAME_MVN"
+          
+          echo "::endgroup::"  
 
           # 核心判断：自动发布或手动发布
           if [[ "$EVENT_NAME" == "push" ]] && [[ "$TAG_NAME" == v* ]]; then
             AUTO=true
             # 读取指定文件获取环境变量
-            JAVA_VERSION=$(mvn help:evaluate -Dexpression=java.version -q -DforceStdout)
-            TAG_NAME=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            JAVA_VERSION=$JAVA_VERSION_MVN
+            TAG_NAME=$TAG_NAME_MVN
           
             PUSH_TO_DOCKER_REGISTRY=true
             PUSH_TO_GITHUB_RELEASE=true
@@ -142,7 +155,6 @@ jobs:
             [[ "${{ inputs.push_to_docker_registry }}" == "true" ]] && PUSH_TO_DOCKER_REGISTRY=true
             [[ "${{ inputs.push_to_github_release }}" == "true" ]] && PUSH_TO_GITHUB_RELEASE=true
           fi
-
           # 写入环境变量
           echo "AUTO=$AUTO" >> $GITHUB_ENV
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
