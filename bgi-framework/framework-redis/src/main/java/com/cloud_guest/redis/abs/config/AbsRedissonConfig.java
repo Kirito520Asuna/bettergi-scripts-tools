@@ -57,7 +57,7 @@ public interface AbsRedissonConfig {
     String DEFAULT_REDIS = "127.0.0.1:6379";
 
     enum RedisMode {
-        single, cluster, sentinel;
+        none,single, cluster, sentinel;
     }
 
     /**
@@ -154,9 +154,13 @@ public interface AbsRedissonConfig {
             baseConfig.setPassword(redisProperties.getPassword());
         }
         Duration connectTimeout = redisProperties.getConnectTimeout();
-        baseConfig.setConnectTimeout((int) connectTimeout.toMillis());
+        if (connectTimeout != null) {
+            baseConfig.setConnectTimeout((int) connectTimeout.toMillis());
+        }
         Duration timeout = redisProperties.getTimeout();
-        baseConfig.setTimeout((int) timeout.toMillis());
+        if (timeout != null) {
+            baseConfig.setTimeout((int) timeout.toMillis());
+        }
         return Redisson.create(config);
     }
 

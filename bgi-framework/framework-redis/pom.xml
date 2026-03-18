@@ -12,7 +12,7 @@
     <artifactId>framework-redis</artifactId>
 
     <properties>
-        <redisson.version>3.45.1</redisson.version>
+        <redisson.version>4.3.0</redisson.version>
         <jakarta.servlet-api.version>6.0.0</jakarta.servlet-api.version>
         <commons-io.version>2.13.0</commons-io.version>
         <commons-jexl3.version>3.1</commons-jexl3.version>
@@ -221,8 +221,6 @@
             <scope>test</scope>
             <optional>true</optional><!--不传递-->
         </dependency>
-
-
 
     </dependencies>
 

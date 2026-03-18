@@ -89,6 +89,7 @@ spring:
   redis:
     # Redisson 内嵌配置（关键部分）
     redisson:
+#      file: classpath:redisson.yml
       config: |
         # ────────────── 单机模式（single）示例 ──────────────
         singleServerConfig:

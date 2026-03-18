@@ -1,5 +1,7 @@
 package com.cloud_guest.redis.config;
 
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.spring.starter.RedissonAutoConfiguration;
 import org.redisson.spring.starter.RedissonAutoConfigurationV2;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -18,14 +20,18 @@ import org.springframework.context.annotation.Configuration;
         prefix = "spring.redis",
         name = "mode",
         havingValue = "none",
-        matchIfMissing = true
+        matchIfMissing = true // 没有配置就加载
 )
 @EnableAutoConfiguration(exclude = {
         RedisAutoConfiguration.class,
         RedisRepositoriesAutoConfiguration.class,
         RedissonAutoConfigurationV2.class,
-        RedissonAutoConfiguration.class
 })
+@Slf4j
 public class DisabledRedisConfig {
     // 空类，或放一些 none 模式下的 mock bean（可选）
+    @PostConstruct
+    public void init() {
+        log.debug("Redis is disabled");
+    }
 }
