@@ -265,5 +265,5 @@ const copyToClipboard = (text) => {
 
 
 <style scoped>
-@import "@assets/css/capabilities.css";
+@import "@css/capabilities.css";
 </style>

@@ -230,5 +230,5 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@import '@assets/css/markdown.css';
+@import '@css/markdown.css';
 </style>

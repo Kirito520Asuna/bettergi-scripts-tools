@@ -296,7 +296,7 @@ const toClick = async (item) => {
 
 </script>
 <style scoped>
-@import '@assets/css/home.css';
+@import '@css/home.css';
 </style>
 
 

@@ -69,5 +69,5 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-@import '@assets/css/login.css';
+@import '@css/login.css';
 </style>

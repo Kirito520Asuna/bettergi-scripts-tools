@@ -111,5 +111,5 @@ const fetchDomains = async () => {
 </script>
 
 <style scoped>
-@import "@assets/css/auto_plan_domain.css";
+@import "@css/auto_plan_domain.css";
 </style>
