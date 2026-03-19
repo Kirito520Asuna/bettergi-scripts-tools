@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConditionalOnProperty(
-        prefix = "spring.redis",
+        prefix = "spring.data.redis",
         name = "mode",
         havingValue = "none",
         matchIfMissing = true // 没有配置就加载

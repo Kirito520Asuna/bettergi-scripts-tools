@@ -80,14 +80,73 @@ spring:
       #throw-exception-if-no-handler-found: true   # 可选，404 时抛异常方便调试
       #web:
       #resources:
-      #static-locations:
+    #static-locations:
     #- classpath:/static/ui/
     # 默认已经包含 classpath:/static/，通常不需要额外配置
     # 如果你把 dist 放在其他位置，可以加
     # static-locations: classpath:/static/,classpath:/public/
   #redis
-
   redis:
+    # Redisson 内嵌配置（关键部分）
+    redisson:
+      file: classpath:redisson-single.yml
+    #      config: |
+    #        # ────────────── 单机模式（single）示例 ──────────────
+    #        singleServerConfig:
+    #          # 解决超时问题（必须调大！）
+    #          timeout: ${spring.redis.timeout:20000}                 # 命令超时 20s（默认 3s）
+    #          connectTimeout: ${spring.redis.connect-timeout:15000}          # 连接超时 15s
+    #          retryAttempts: ${spring.redis.retryAttempts:5}               # 重试 5 次
+    #          retryInterval: ${spring.redis.retryInterval:3000}            # 重试间隔 3s
+    #
+    #          # 连接池调优（高并发推荐）
+    #          connectionPoolSize: 128
+    #          connectionMinimumIdleSize: 32
+    #          subscriptionConnectionPoolSize: 50
+    #          subscriptionConnectionMinimumIdleSize: 10
+    #
+    #          pingConnectionInterval: 30000  # 保活 ping 每 30s
+    #          keepAlive: true
+    #          tcpNoDelay: true
+    #
+    #        # 全局参数（可选，放根级别）
+    #        threads: 32                      # 业务线程数
+    #        nettyThreads: 32                 # Netty IO 线程
+    #        # codec: !<org.redisson.codec.JsonJacksonCodec> {}   # 换成 JSON 序列化（可选，默认 JDK）
+    #
+    #        # 如果是集群模式，注释掉上面的 singleServerConfig，启用下面
+    #        # clusterServersConfig:
+    #        #   nodeAddresses:
+    #        #     - "redis://node1:6379"
+    #        #     - "redis://node2:6379"
+    #        #     - "redis://node3:6379"
+    #        #   password: ${spring.redis.password:}
+    #        #   timeout: ${spring.redis.timeout:20000}                 # 命令超时 20s（默认 3s）
+    #        #   connectTimeout: ${spring.redis.connect-timeout:15000}          # 连接超时 15s
+    #        #   retryAttempts: ${spring.redis.retryAttempts:5}               # 重试 5 次
+    #        #   retryInterval: ${spring.redis.retryInterval:3000}            # 重试间隔 3s
+    #        #   checkSlotsInUse: false
+    #        #   masterConnectionPoolSize: 128
+    #        #   masterConnectionMinimumIdleSize: 32
+    #        #   slaveConnectionPoolSize: 128
+    #        #   slaveConnectionMinimumIdleSize: 32
+    #        #   readMode: "SLAVE"
+    #
+    #        # 如果是哨兵模式，注释掉上面，启用下面
+    #        # sentinelServersConfig:
+    #        #   masterName: mymaster
+    #        #   sentinelAddresses:
+    #        #     - "redis://sentinel1:26379"
+    #        #     - "redis://sentinel2:26379"
+    #        #   password: ${spring.redis.password:}
+    #        #   password: ${spring.redis.password:}
+    #        #   timeout: ${spring.redis.timeout:20000}                 # 命令超时 20s（默认 3s）
+    #        #   connectTimeout: ${spring.redis.connect-timeout:15000}          # 连接超时 15s
+    #        #   retryAttempts: ${spring.redis.retryAttempts:5}               # 重试 5 次
+    #        #   retryInterval: ${spring.redis.retryInterval:3000}            # 重试间隔 3s
+    #        #   masterConnectionPoolSize: 128
+    #        #   masterConnectionMinimumIdleSize: 32
+
     mode: none
     host: 127.0.0.1
     port: 6379
@@ -98,10 +157,15 @@ spring:
     retryInterval: 3000
     connect-timeout: 30000
     timeout: 30000
-    # Redisson 内嵌配置（关键部分）
-    redisson:
-      file: classpath:redisson-${spring.redis.mode:none}.yml
-
+    cluster:
+      nodes:
+        - 192.168.6.128:7000
+        - 192.168.6.128:7001
+    sentinel:
+      master: mymaster
+      nodes:
+        - 192.168.6.128:26379
+        - 192.168.6.128:26380
   data:
     redis:
       mode: ${spring.redis.mode:none} # none:不使用redis，single:使用单体,cluster:使用集群，sentinel:使用哨兵
