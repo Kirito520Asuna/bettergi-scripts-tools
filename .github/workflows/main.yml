@@ -560,26 +560,26 @@ jobs:
           ls -la /tmp/extracted-jars /tmp/extracted-exes || echo "目录检查"
 
           # 创建最终打包目录
-          mkdir -p bgi-tools
+          mkdir -p ${{ github.event.repository.name }}
 
           # 拷贝所有 exe 到打包目录根目录
           echo "拷贝 exe 文件..."
-          cp /tmp/extracted-exes/*.exe bgi-tools/ 2>/dev/null || echo "警告：没有找到 exe 文件"
+          cp /tmp/extracted-exes/*.exe ${{ github.event.repository.name }}/ 2>/dev/null || echo "警告：没有找到 exe 文件"
 
           # 创建 jre 子目录，并从 /tmp/extracted-jars/jre 拷贝过来
-          echo "拷贝 JRE 到 /tmp/extracted-exes/jre → bgi-tools/jre"
+          echo "拷贝 JRE 到 /tmp/extracted-exes/jre → ${{ github.event.repository.name }}/jre"
           mkdir -p /tmp/extracted-exes/jre
           cp -r /tmp/extracted-jars/jre/* /tmp/extracted-exes/jre/ 2>/dev/null || echo "警告：JRE 拷贝失败（可能 jre 不存在）"
           
           # 再把 /tmp/extracted-exes/jre 拷贝到打包目录
-          cp -r /tmp/extracted-exes/jre bgi-tools/ 2>/dev/null || echo "警告：最终 jre 拷贝失败"
+          cp -r /tmp/extracted-exes/jre ${{ github.event.repository.name }}/ 2>/dev/null || echo "警告：最终 jre 拷贝失败"
 
           # 配置文件
           if [ -f src/main/resources/application-prod.yml ]; then
-            cp src/main/resources/application-prod.yml bgi-tools/
+            cp src/main/resources/application-prod.yml ${{ github.event.repository.name }}/
             echo "已拷贝 application-prod.yml"
           else
-            cat > bgi-tools/application-prod.yml << 'EOF'
+            cat > ${{ github.event.repository.name }}/application-prod.yml << 'EOF'
           server:
             port: 8081
           ws:
@@ -590,14 +590,14 @@ jobs:
           fi
 
           # 预览打包内容
-          echo "bgi-tools 最终内容预览："
-          tree bgi-tools || ls -R bgi-tools
+          echo "${{ github.event.repository.name }} 最终内容预览："
+          tree ${{ github.event.repository.name }} || ls -R ${{ github.event.repository.name }}
 
           # 执行打包
           ZIP_NAME="${{ github.event.repository.name }}-Windows.zip"
           echo "开始创建 ZIP 包: $ZIP_NAME"
           
-          if zip -r "$ZIP_NAME" bgi-tools/*; then
+          if zip -r "$ZIP_NAME" ${{ github.event.repository.name }}/*; then
             echo "✅ 打包成功"
           
             # 验证打包结果
