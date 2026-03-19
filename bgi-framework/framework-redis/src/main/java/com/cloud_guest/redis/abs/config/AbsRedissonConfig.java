@@ -4,6 +4,7 @@ package com.cloud_guest.redis.abs.config;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONNull;
 import cn.hutool.json.JSONUtil;
@@ -57,7 +58,7 @@ public interface AbsRedissonConfig {
     String DEFAULT_REDIS = "127.0.0.1:6379";
 
     enum RedisMode {
-        none,single, cluster, sentinel;
+        none, single, cluster, sentinel;
     }
 
     /**
@@ -97,15 +98,6 @@ public interface AbsRedissonConfig {
         }
         log.debug("RedisProperties:{}", JSONUtil.toJsonStr(redisProperties));
         switch (redisModeEnum) {
-            //case none:
-            //    // 不连接Redis
-            //    baseConfig = config.useSingleServer()
-            //            .setAddress("redis://localhost:0")
-            //            .setPassword("password")
-            //            .setTimeout(1000)
-            //            .setConnectionMinimumIdleSize(0)
-            //            .setConnectionPoolSize(0);
-            //    break;
             case cluster:
                 RedisProperties.Cluster cluster = redisProperties.getCluster();
                 List<String> nodes = cluster.getNodes();
@@ -124,12 +116,7 @@ public interface AbsRedissonConfig {
                 sentinelServersConfig
                         .setMasterName(sentinel.getMaster())
                         .addSentinelAddress(sentinelNodes.toArray(new String[0]));
-                if (redisProperties.getPassword() != null&& redisProperties.getPassword().trim() != "") {
-                    sentinelServersConfig.setPassword(sentinel.getPassword());
-                }
-                if (redisProperties.getUsername() != null&& redisProperties.getUsername().trim() != "") {
-                    sentinelServersConfig.setUsername(sentinel.getUsername());
-                }
+
                 baseConfig = sentinelServersConfig;
                 break;
             case single: // 单机模式 传递默认default
@@ -147,11 +134,14 @@ public interface AbsRedissonConfig {
                 baseConfig = singleServerConfig;
                 break;
         }
-        if (redisProperties.getUsername() != null && redisProperties.getUsername().trim() != "") {
-            baseConfig.setUsername(redisProperties.getUsername());
+        String username = redisProperties.getUsername();
+        String password = redisProperties.getPassword();
+
+        if (StrUtil.isNotBlank(username)) {
+            baseConfig.setUsername(username);
         }
-        if (redisProperties.getPassword() != null&& redisProperties.getPassword().trim() != "") {
-            baseConfig.setPassword(redisProperties.getPassword());
+        if (StrUtil.isNotBlank(password)) {
+            baseConfig.setPassword(password);
         }
         Duration connectTimeout = redisProperties.getConnectTimeout();
         if (connectTimeout != null) {

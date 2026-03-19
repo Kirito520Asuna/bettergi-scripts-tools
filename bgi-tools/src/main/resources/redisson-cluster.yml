@@ -1,0 +1,16 @@
+ #如果是集群模式，注释掉上面的 singleServerConfig，启用下面
+clusterServersConfig:
+   nodeAddresses: ${spring.data.redis.cluster.nodes:}
+   timeout: ${spring.data.redis.timeout:20000}                 # 命令超时 20s（默认 3s）
+   connectTimeout: ${spring.data.redis.connect-timeout:15000}          # 连接超时 15s
+   retryAttempts: ${spring.data.redis.retryAttempts:5}               # 重试 5 次
+   retryInterval: ${spring.data.redis.retryInterval:3000}            # 重试间隔 3s
+   checkSlotsInUse: false
+   masterConnectionPoolSize: 128
+   masterConnectionMinimumIdleSize: 32
+   slaveConnectionPoolSize: 128
+   slaveConnectionMinimumIdleSize: 32
+   readMode: "SLAVE"
+
+username: ${spring.data.redis.username:}
+password: ${spring.data.redis.password:}

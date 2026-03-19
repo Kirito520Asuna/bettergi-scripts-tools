@@ -1,0 +1,14 @@
+# 如果是哨兵模式，注释掉上面，启用下面
+sentinelServersConfig:
+   masterName: ${spring.redis.sentinel.master:}
+   sentinelAddresses: ${spring.redis.sentinel.nodes:}
+
+   timeout: ${spring.data.redis.timeout:20000}                 # 命令超时 20s（默认 3s）
+   connectTimeout: ${spring.data.redis.connect-timeout:15000}          # 连接超时 15s
+   retryAttempts: ${spring.data.redis.retryAttempts:5}               # 重试 5 次
+   retryInterval: ${spring.data.redis.retryInterval:3000}            # 重试间隔 3s
+   masterConnectionPoolSize: 128
+   masterConnectionMinimumIdleSize: 32
+
+username: ${spring.data.redis.username:}
+password: ${spring.data.redis.password:}
