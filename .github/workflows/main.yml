@@ -941,7 +941,7 @@ jobs:
             ${{ github.workspace }}/artifacts/windows-standalone/*.zip
           body: |
             **下载地址**
-             https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-jar-linux.outputs.tag_name }}
+            Github: https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-jar-linux.outputs.tag_name }}
             **发布信息**
             - 标签：${{ needs.build-jar-linux.outputs.tag_name }}
             - Java 版本：${{ needs.build-jar-linux.outputs.java_version }}

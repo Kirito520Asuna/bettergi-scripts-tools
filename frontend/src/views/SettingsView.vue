@@ -604,5 +604,5 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-@import "@/assets/css/settings.css";
+@import "@css/settings.css";
 </style>

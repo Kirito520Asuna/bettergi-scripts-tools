@@ -1560,7 +1560,7 @@ const batchUpdate = () => {
   </div>
 </template>
 <style scoped>
-@import '@assets/css/auto_plan_config.css';
+@import '@css/auto_plan_config.css';
 </style>
 <style>
 /* 抽屉自定义样式 */
