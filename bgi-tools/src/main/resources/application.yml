@@ -136,8 +136,8 @@ auth:
   enabled: true
   token-name: bgi_tools_token
   ttl:
-    expiration-ms: 604800000 # 24小时
-    refresh-interval-expiration-ms: 3600000 # 1小时
+    expiration-ms: 604800000 # 7天
+    refresh-interval-expiration-ms: 86400000 # 24小时
   users:
     - username: bgi_tools
       password: bgi_tools
