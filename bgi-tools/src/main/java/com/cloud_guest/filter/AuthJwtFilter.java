@@ -27,7 +27,7 @@ public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter, A
 
     @Override
     public boolean setToken(String token) {
-        log().debug("setToken: {}", token);
+        //log().debug("setToken: {}", token);
         boolean validateToken = jwtUtil.validateToken(token);
         if (validateToken) {
             String username = jwtUtil.getUsernameFromToken(token);

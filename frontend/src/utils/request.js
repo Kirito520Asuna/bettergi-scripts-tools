@@ -65,7 +65,7 @@ service.interceptors.response.use(async res => {
             //响应头获取 token
             const newToken = res.headers[tokenName] || res.headers['authorization'];
             if (newToken) {
-                console.log('newToken:', newToken);
+                // console.log('newToken:', newToken);
                 await setLocalToken(newToken)
             }
             return Promise.resolve(res.data);
