@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public interface AbsAuth {
     /**
      * 获取需要保护的路径列表
+     *
      * @return 返回一个包含需要保护路径的字符串数组
      */
     default String[] fetchProtectedPaths() {
@@ -24,6 +25,7 @@ public interface AbsAuth {
         String[] protectedPaths = "/jwt/**".split(",");
         return protectedPaths;
     }
+
     /**
      * 获取一个AntPathMatcher实例的默认方法
      * AntPathMatcher是Spring框架中用于匹配URL路径的工具类
@@ -35,6 +37,7 @@ public interface AbsAuth {
         // 创建并返回一个新的AntPathMatcher对象
         return new AntPathMatcher();
     }
+
     /**
      * 检查token是否合法
      *
@@ -55,16 +58,22 @@ public interface AbsAuth {
             String token = "";
             if (authHeader.startsWith(bearer)) {
                 token = authHeader.substring(bearer.length());
-            }else {
+            } else {
                 token = authHeader;
             }
             token = token.trim();
 
             if (StrUtil.isNotBlank(token)) {
+                preSetToken(token, request, response);
                 return setToken(token);
             }
         }
         return false;
+    }
+
+
+    default void preSetToken(String token, HttpServletRequest request, HttpServletResponse response) {
+
     }
 
     default boolean setToken(String token) {

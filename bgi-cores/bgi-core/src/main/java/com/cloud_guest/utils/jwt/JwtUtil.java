@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
+
 import javax.crypto.SecretKey;
 import java.util.Base64;
 import java.util.Date;
@@ -33,24 +34,31 @@ public class JwtUtil {
     private String secret;
     private String header = HttpHeaders.AUTHORIZATION;
     private String isSuer = "bgi-tools";
-    @Resource
-    private AuthProperties authProperties;
+    //@Resource
+    //private AuthProperties authProperties;
 
     @PostConstruct
     public void init() {
-        AuthProperties.Jwt jwt = authProperties.getJwt();
-        secret = jwt.getSecret();
-        expire = jwt.getExpirationMs();
-        expireLong = expire * 30;
-
+        try {
+            AuthProperties.Jwt jwt = fetchAuthProperties().getJwt();
+            secret = jwt.getSecret();
+            expire = jwt.getExpirationMs();
+            expireLong = expire * 30;
+        } catch (Exception e) {
+            log.error("JwtUtil init error: {}", e.getMessage());
+        }
     }
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(authProperties.getJwt().getSecret().getBytes());
+        return Keys.hmacShaKeyFor(fetchAuthProperties().getJwt().getSecret().getBytes());
     }
 
     public String generateToken(String username) {
         return createJWT(username);
+    }
+
+    public String generateToken(String username, Long ttlMillis) {
+        return createJWT(username, ttlMillis);
     }
 
     public String getUsernameFromToken(String token) {
@@ -63,6 +71,16 @@ public class JwtUtil {
 
     public boolean validateToken(String token) {
         return isNotTokenExpired(token);
+    }
+
+    public static AuthProperties fetchAuthProperties() {
+        AuthProperties authProperties = new AuthProperties();
+        try {
+            authProperties = SpringUtil.getBean(AuthProperties.class);
+        } catch (Exception e) {
+            log.warn("未找到AuthProperties Bean");
+        }
+        return authProperties;
     }
 
     public static JwtUtil fetchJwtUtils() {
@@ -236,6 +254,17 @@ public class JwtUtil {
 
     }
 
+    public static boolean isNotTokenExpired(String token, Date date) {
+        try {
+            Claims claims = parseJWT(token);
+            return isNotTokenExpired(claims, date);
+        } catch (Exception e) {
+            log.error("token is invalid:{}", e.getMessage());
+            return false;
+        }
+
+    }
+
     // 判断JWT是否过期
     public static boolean isNotTokenExpired(Claims claims) {
         return isNotTokenExpired(claims, new Date());
@@ -253,5 +282,18 @@ public class JwtUtil {
         //expiration<date
         boolean after = expiration.after(date);
         return after;
+    }
+
+    public static void main(String[] args) {
+        String username = "admin";
+        Long ttlMillis = 1000 * 60 * 60 * 24 * 30L;
+        String jwt = createJWT(username, ttlMillis);
+        long currentTimeMillis = System.currentTimeMillis();
+        currentTimeMillis -= 1000 * 60 * 60 * 24;
+        Date date = new Date(currentTimeMillis);
+        boolean notTokenExpired = isNotTokenExpired(jwt, date);
+        if (notTokenExpired) {
+            System.out.println("即将过期");
+        }
     }
 }
