@@ -125,7 +125,7 @@ async function getAllSystemInfo(applicationIds, restartTimeout = 3 * 60 * 1000) 
             ElMessage.error(`重启超时（超过${restartTimeout / 1000}秒），强制退出`);
             throw new Error(`Restart timeout after ${restartTimeout / 1000} seconds`);
         }
-const key=ids.join(",")
+        const key = ids.join(",")
         const systemInfo = await getSystemInfo(key); // 获取系统信息
         if (systemInfo) {
             ids = ids.filter(id => id !== systemInfo.applicationId)
@@ -180,15 +180,22 @@ async function removeLocalToken() {
 }
 
 async function removeLocalVersion() {
-    localStorage.removeItem("bgi-tools-version")
+    const versionName = await getLocalVersionName();
+    localStorage.removeItem(versionName)
 }
 
 async function setLocalVersion(version) {
-    localStorage.setItem("bgi-tools-version", version)
+    const versionName = await getLocalVersionName();
+    localStorage.setItem(versionName, version)
 }
 
 async function getLocalVersion() {
-    return localStorage.getItem("bgi-tools-version")
+    const versionName = await getLocalVersionName();
+    return localStorage.getItem(versionName)
+}
+
+async function getLocalVersionName() {
+    return "bgi-tools-version"
 }
 
 
