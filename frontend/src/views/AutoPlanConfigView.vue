@@ -725,15 +725,15 @@ const batchJson = ref({
       enable: true,
     },
     autoFight: {
-      partyName: "",
+      partyName: undefined,
     },
     autoLeyLineOutcrop: {
       // count: 1,                        // 刷几次（0=自动/无限）
       // country: countryListDefault()[0],                     // 国家地区
       // leyLineOutcropType: leyLineOutcropTypeNamesDefault()[0], // 需映射为经验/摩拉
       // useAdventurerHandbook: false,    // 是否使用冒险之证
-      friendshipTeam: "",              // 好感队伍ID
-      team: "",                        // 主队伍ID
+      friendshipTeam: undefined,              // 好感队伍ID
+      team: undefined,                        // 主队伍ID
       // timeout: 120,                      // 超时时间（秒）
       // isGoToSynthesizer: false,        // 是否前往合成台
       // useFragileResin: false,          // 使用脆弱树脂
@@ -742,7 +742,7 @@ const batchJson = ref({
     },
     autoStygianOnslaught: {
       bossNum: undefined,
-      fightTeamName: "",
+      fightTeamName: undefined,
     }
   }
 })
@@ -875,15 +875,21 @@ const batchUpdate = () => {
     if (batchJson.value.selectedConfigs.has(config.id)) {
       if (config.runType === runTypesDefault()[0]) {
         //秘境
+        if (autoFight.partyName)
         config.autoFight.partyName = autoFight.partyName
       } else if (config.runType === runTypesDefault()[1]) {
         //地脉
+        if (autoLeyLineOutcrop.team)
         config.autoLeyLineOutcrop.team = autoLeyLineOutcrop.team
+        if (autoLeyLineOutcrop.friendshipTeam)
         config.autoLeyLineOutcrop.friendshipTeam = autoLeyLineOutcrop.friendshipTeam
       } else if (config.runType === runTypesDefault()[2]) {
+        if (autoLeyLineOutcrop.fightTeamName)
         config.autoStygianOnslaught.fightTeamName = autoStygianOnslaught.fightTeamName
+        if (autoLeyLineOutcrop.bossNum)
         config.autoStygianOnslaught.bossNum = autoStygianOnslaught.bossNum
       }
+      if (batch.common.enable!==undefined)
       config.enable = batch.common.enable
     }
   })
@@ -972,249 +978,6 @@ const batchUpdate = () => {
             批量修改
           </button>
         </div>
-      </div>
-
-      <div class="external-pop-up-frame">
-        <!-- 弹窗 -->
-        <el-dialog
-            v-if="currentConfig"
-            v-model="currentConfig.showDaysDialog"
-            title="选择执行日期"
-            width="480px"
-            :close-on-click-modal="false"
-            append-to-body
-        >
-
-          <div class="dialog-content">
-            <div class="checkbox-group">
-              <label v-for="(dayName, idx) in weekDays" :key="idx" class="checkbox-label">
-                <el-checkbox :label="idx" v-model="currentConfig.days">
-                  {{ dayName }}
-                </el-checkbox>
-              </label>
-            </div>
-
-            <div class="dialog-actions">
-              <el-button @click="currentConfig.showDaysDialog = false">取消</el-button>
-              <el-button type="primary" @click="handleDaysConfirm(currentConfig)">确定</el-button>
-              <el-button type="danger" plain size="small" @click="clearDays(currentConfig)">清空</el-button>
-            </div>
-          </div>
-        </el-dialog>
-        <el-dialog
-            v-if="currentConfig"
-            v-model="currentConfig.showPhysicalDialogFromDomain"
-            title="调整树脂使用顺序与启用状态"
-            width="520px"
-            direction="rtl"
-            :close-on-click-modal="false"
-        >
-          <div class="dialog-content">
-            <div class="selector-title">拖拽调整顺序</div>
-            <draggable
-                v-if="currentConfig"
-                v-model="currentConfig.autoFight.physical"
-                item-key="name"
-                handle=".draggable-item"
-                @end="updatePhysicalOrder(currentConfig)"
-            >
-              <template #item="{ element }">
-                <div class="draggable-item">
-                  <span class="drag-handle">☰</span>
-                  <span class="physical-name">{{ element.name }}</span>
-                  <el-switch
-                      v-model="element.open"
-                      @change="updatePhysicalOrder(currentConfig)"
-                  />
-                </div>
-              </template>
-            </draggable>
-
-            <div class="dialog-actions" style="margin-top: 24px; text-align: right;">
-              <el-button @click="currentConfig.showPhysicalDialogFromDomain = false">关闭</el-button>
-            </div>
-          </div>
-        </el-dialog>
-        <el-dialog
-            v-if="currentConfig"
-            v-model="currentConfig.showPhysicalDialogFromStygianOnslaught"
-            title="调整树脂使用顺序与启用状态"
-            width="520px"
-            direction="rtl"
-            :close-on-click-modal="false"
-        >
-          <div class="dialog-content">
-            <div class="selector-title">拖拽调整顺序</div>
-            <draggable
-                v-if="currentConfig"
-                v-model="currentConfig.autoStygianOnslaught.physical"
-                item-key="name"
-                handle=".draggable-item"
-                @end="updatePhysicalOrder(currentConfig)"
-            >
-              <template #item="{ element }">
-                <div class="draggable-item">
-                  <span class="drag-handle">☰</span>
-                  <span class="physical-name">{{ element.name }}</span>
-                  <div class="physical-count">
-                    <span class="physical-count-label">运行次数:</span>
-                    <el-input-number class="physical-count-number" width="10px" v-model="element.count" min="0"
-                                     placeholder="运行次数" style="width: 100px;"></el-input-number>
-                  </div>
-                  <el-switch
-                      v-model="element.open"
-                      @change="updatePhysicalOrder(currentConfig)"
-                  />
-                </div>
-              </template>
-            </draggable>
-
-            <div class="dialog-actions" style="margin-top: 24px; text-align: right;">
-              <el-button @click="currentConfig.showPhysicalDialogFromStygianOnslaught = false">关闭</el-button>
-            </div>
-          </div>
-        </el-dialog>
-        <!-- 主内容区保持原样，只在最外层加一个抽屉 -->
-        <el-drawer
-            v-model="showResultDrawer"
-            direction="rtl"
-            :with-header="true"
-            :close-on-press-escape="true"
-            :modal="true"
-            class="result-drawer"
-        >
-          <template #header>
-            <span style="font-weight: bold; color: #409eff;">配置结果预览</span>
-          </template>
-
-          <div class="drawer-content">
-            <!-- Json 配置卡片 -->
-            <div class="result-card">
-              <div class="card-header">
-                <label class="result-key">Json配置</label>
-                <el-tooltip content="复制到剪贴板" placement="top">
-                  <el-button
-                      type="primary"
-                      size="small"
-                      icon="DocumentCopy"
-                      @click="copyToClipboard(getFinalConfigsMapShow())"
-                  >
-                    复制
-                  </el-button>
-                </el-tooltip>
-              </div>
-              <pre class="result code-block">{{ getFinalConfigsMapShow() || '暂无返回数据' }}</pre>
-            </div>
-
-            <!-- 语法 key 卡片 -->
-            <div class="result-card" style="margin-top: 24px;">
-              <div class="card-header">
-                <label class="result-key">语法key</label>
-                <el-tooltip content="复制到剪贴板" placement="top">
-                  <el-button
-                      type="success"
-                      size="small"
-                      icon="DocumentCopy"
-                      @click="copyToClipboard(getFinalConfigsToKey())"
-                  >
-                    复制
-                  </el-button>
-                </el-tooltip>
-              </div>
-              <pre class="result code-block">{{ getFinalConfigsToKey() || '暂无返回数据' }}</pre>
-            </div>
-          </div>
-
-          <!-- 可选：底部操作 -->
-          <template #footer>
-            <div style="text-align: right;">
-              <el-button @click="showResultDrawer = false">关闭</el-button>
-            </div>
-          </template>
-        </el-drawer>
-        <el-drawer
-            v-model="batchJson.batch.show"
-            direction="rtl"
-
-            :with-header="true"
-            :close-on-press-escape="true"
-            :modal="true"
-            class="batch-drawer"
-        >
-          <template #header>
-            <span style="font-weight: bold; color: #409eff;">批量配置</span>
-          </template>
-          <div class="drawer-content">
-            <div class="batch-card" style="margin-top: 24px;">
-              <div class="card-header">
-                <label class="result-key">通用配置</label>
-              </div>
-              <div class="batch-item">
-                <label>启用计划：</label>
-                <el-switch
-                    v-model="batchJson.batch.common.enable"
-                />
-                <span style="color: red;">是否启用</span>
-              </div>
-            </div>
-            <div class="batch-card" style="margin-top: 24px;">
-              <div class="card-header">
-                <label class="result-key">秘境配置</label>
-              </div>
-              <div class="batch-item">
-                <label>队伍名称（可选）：</label>
-                <input class="limited-input" v-model="batchJson.batch.autoFight.partyName"
-                       placeholder="队伍1 / 主C+副C+辅助"/>
-              </div>
-            </div>
-
-            <div class="batch-card" style="margin-top: 24px;">
-              <div class="card-header">
-                <label class="result-key">地脉配置</label>
-              </div>
-              <div class="batch-item">
-                <label>队伍名称（可选）：</label>
-                <input class="limited-input" v-model="batchJson.batch.autoLeyLineOutcrop.team"
-                       placeholder="队伍1 / 主C+副C+辅助"/>
-              </div>
-              <div class="batch-item">
-                <label>好感队伍名称（可选）：</label>
-                <input class="limited-input" v-model="batchJson.batch.autoLeyLineOutcrop.friendshipTeam"
-                       placeholder="队伍1"/>
-              </div>
-            </div>
-            <div class="batch-card" style="margin-top: 24px;">
-              <div class="card-header">
-                <label class="result-key">幽境配置</label>
-              </div>
-              <div class="batch-item">
-                <label>队伍名称（可选）：</label>
-                <input class="limited-input" v-model="batchJson.batch.autoStygianOnslaught.fightTeamName"
-                       placeholder="队伍1 / 主C+副C+辅助"/>
-              </div>
-              <div class="batch-item">
-                <label>指定刷取战场（可选）：</label>
-                <select v-model="batchJson.batch.autoStygianOnslaught.bossNum">
-                  <option :value="undefined">请选择</option>
-                  <option
-                      v-for="type in [{key:'战场一',value:1},{key:'战场二',value:2},{key:'战场三',value:3}] "
-                      :key="type.key"
-                      :value="type.value"
-                  >
-                    {{ type.key }}
-                  </option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- 可选：底部操作 -->
-          <template #footer>
-            <div style="text-align: right;">
-              <el-button @click="batchUpdate">📝批量修改</el-button>
-            </div>
-          </template>
-        </el-drawer>
       </div>
 
       <div class="content-area">
@@ -1550,6 +1313,249 @@ const batchUpdate = () => {
                   <i class="el-icon-document"></i>
                   <span>sous</span>
                 </div>-->
+      </div>
+
+      <div class="external-pop-up-frame">
+        <!-- 弹窗 -->
+        <el-dialog
+            v-if="currentConfig"
+            v-model="currentConfig.showDaysDialog"
+            title="选择执行日期"
+            width="480px"
+            :close-on-click-modal="false"
+            append-to-body
+        >
+
+          <div class="dialog-content">
+            <div class="checkbox-group">
+              <label v-for="(dayName, idx) in weekDays" :key="idx" class="checkbox-label">
+                <el-checkbox :label="idx" v-model="currentConfig.days">
+                  {{ dayName }}
+                </el-checkbox>
+              </label>
+            </div>
+
+            <div class="dialog-actions">
+              <el-button @click="currentConfig.showDaysDialog = false">取消</el-button>
+              <el-button type="primary" @click="handleDaysConfirm(currentConfig)">确定</el-button>
+              <el-button type="danger" plain size="small" @click="clearDays(currentConfig)">清空</el-button>
+            </div>
+          </div>
+        </el-dialog>
+        <el-dialog
+            v-if="currentConfig"
+            v-model="currentConfig.showPhysicalDialogFromDomain"
+            title="调整树脂使用顺序与启用状态"
+            width="520px"
+            direction="rtl"
+            :close-on-click-modal="false"
+        >
+          <div class="dialog-content">
+            <div class="selector-title">拖拽调整顺序</div>
+            <draggable
+                v-if="currentConfig"
+                v-model="currentConfig.autoFight.physical"
+                item-key="name"
+                handle=".draggable-item"
+                @end="updatePhysicalOrder(currentConfig)"
+            >
+              <template #item="{ element }">
+                <div class="draggable-item">
+                  <span class="drag-handle">☰</span>
+                  <span class="physical-name">{{ element.name }}</span>
+                  <el-switch
+                      v-model="element.open"
+                      @change="updatePhysicalOrder(currentConfig)"
+                  />
+                </div>
+              </template>
+            </draggable>
+
+            <div class="dialog-actions" style="margin-top: 24px; text-align: right;">
+              <el-button @click="currentConfig.showPhysicalDialogFromDomain = false">关闭</el-button>
+            </div>
+          </div>
+        </el-dialog>
+        <el-dialog
+            v-if="currentConfig"
+            v-model="currentConfig.showPhysicalDialogFromStygianOnslaught"
+            title="调整树脂使用顺序与启用状态"
+            width="520px"
+            direction="rtl"
+            :close-on-click-modal="false"
+        >
+          <div class="dialog-content">
+            <div class="selector-title">拖拽调整顺序</div>
+            <draggable
+                v-if="currentConfig"
+                v-model="currentConfig.autoStygianOnslaught.physical"
+                item-key="name"
+                handle=".draggable-item"
+                @end="updatePhysicalOrder(currentConfig)"
+            >
+              <template #item="{ element }">
+                <div class="draggable-item">
+                  <span class="drag-handle">☰</span>
+                  <span class="physical-name">{{ element.name }}</span>
+                  <div class="physical-count">
+                    <span class="physical-count-label">运行次数:</span>
+                    <el-input-number class="physical-count-number" width="10px" v-model="element.count" min="0"
+                                     placeholder="运行次数" style="width: 100px;"></el-input-number>
+                  </div>
+                  <el-switch
+                      v-model="element.open"
+                      @change="updatePhysicalOrder(currentConfig)"
+                  />
+                </div>
+              </template>
+            </draggable>
+
+            <div class="dialog-actions" style="margin-top: 24px; text-align: right;">
+              <el-button @click="currentConfig.showPhysicalDialogFromStygianOnslaught = false">关闭</el-button>
+            </div>
+          </div>
+        </el-dialog>
+        <!-- 主内容区保持原样，只在最外层加一个抽屉 -->
+        <el-drawer
+            v-model="showResultDrawer"
+            direction="rtl"
+            :with-header="true"
+            :close-on-press-escape="true"
+            :modal="true"
+            class="result-drawer"
+        >
+          <template #header>
+            <span style="font-weight: bold; color: #409eff;">配置结果预览</span>
+          </template>
+
+          <div class="drawer-content">
+            <!-- Json 配置卡片 -->
+            <div class="result-card">
+              <div class="card-header">
+                <label class="result-key">Json配置</label>
+                <el-tooltip content="复制到剪贴板" placement="top">
+                  <el-button
+                      type="primary"
+                      size="small"
+                      icon="DocumentCopy"
+                      @click="copyToClipboard(getFinalConfigsMapShow())"
+                  >
+                    复制
+                  </el-button>
+                </el-tooltip>
+              </div>
+              <pre class="result code-block">{{ getFinalConfigsMapShow() || '暂无返回数据' }}</pre>
+            </div>
+
+            <!-- 语法 key 卡片 -->
+            <div class="result-card" style="margin-top: 24px;">
+              <div class="card-header">
+                <label class="result-key">语法key</label>
+                <el-tooltip content="复制到剪贴板" placement="top">
+                  <el-button
+                      type="success"
+                      size="small"
+                      icon="DocumentCopy"
+                      @click="copyToClipboard(getFinalConfigsToKey())"
+                  >
+                    复制
+                  </el-button>
+                </el-tooltip>
+              </div>
+              <pre class="result code-block">{{ getFinalConfigsToKey() || '暂无返回数据' }}</pre>
+            </div>
+          </div>
+
+          <!-- 可选：底部操作 -->
+          <template #footer>
+            <div style="text-align: right;">
+              <el-button @click="showResultDrawer = false">关闭</el-button>
+            </div>
+          </template>
+        </el-drawer>
+        <el-drawer
+            v-model="batchJson.batch.show"
+            direction="rtl"
+
+            :with-header="true"
+            :close-on-press-escape="true"
+            :modal="true"
+            class="batch-drawer"
+        >
+          <template #header>
+            <span style="font-weight: bold; color: #409eff;">批量配置</span>
+          </template>
+          <div class="drawer-content">
+            <div class="batch-card" style="margin-top: 24px;">
+              <div class="card-header">
+                <label class="result-key">通用配置</label>
+              </div>
+              <div class="batch-item">
+                <label>启用计划：</label>
+                <el-switch
+                    v-model="batchJson.batch.common.enable"
+                />
+                <span style="color: red;">是否启用</span>
+              </div>
+            </div>
+            <div class="batch-card" style="margin-top: 24px;">
+              <div class="card-header">
+                <label class="result-key">秘境配置</label>
+              </div>
+              <div class="batch-item">
+                <label>队伍名称（可选）：</label>
+                <input class="limited-input" v-model="batchJson.batch.autoFight.partyName"
+                       placeholder="队伍1 / 主C+副C+辅助"/>
+              </div>
+            </div>
+
+            <div class="batch-card" style="margin-top: 24px;">
+              <div class="card-header">
+                <label class="result-key">地脉配置</label>
+              </div>
+              <div class="batch-item">
+                <label>队伍名称（可选）：</label>
+                <input class="limited-input" v-model="batchJson.batch.autoLeyLineOutcrop.team"
+                       placeholder="队伍1 / 主C+副C+辅助"/>
+              </div>
+              <div class="batch-item">
+                <label>好感队伍名称（可选）：</label>
+                <input class="limited-input" v-model="batchJson.batch.autoLeyLineOutcrop.friendshipTeam"
+                       placeholder="队伍1"/>
+              </div>
+            </div>
+            <div class="batch-card" style="margin-top: 24px;">
+              <div class="card-header">
+                <label class="result-key">幽境配置</label>
+              </div>
+              <div class="batch-item">
+                <label>队伍名称（可选）：</label>
+                <input class="limited-input" v-model="batchJson.batch.autoStygianOnslaught.fightTeamName"
+                       placeholder="队伍1 / 主C+副C+辅助"/>
+              </div>
+              <div class="batch-item">
+                <label>指定刷取战场（可选）：</label>
+                <select v-model="batchJson.batch.autoStygianOnslaught.bossNum">
+                  <option :value="undefined">请选择</option>
+                  <option
+                      v-for="type in [{key:'战场一',value:1},{key:'战场二',value:2},{key:'战场三',value:3}] "
+                      :key="type.key"
+                      :value="type.value"
+                  >
+                    {{ type.key }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 可选：底部操作 -->
+          <template #footer>
+            <div style="text-align: right;">
+              <el-button @click="batchUpdate">📝批量修改</el-button>
+            </div>
+          </template>
+        </el-drawer>
       </div>
     </div>
     <!-- 在 template 最后添加 -->
