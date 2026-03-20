@@ -1,10 +1,12 @@
 package com.cloud_guest.filter;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.abs.AuthFilter;
 import com.cloud_guest.aop.bean.AbsBean;
 import com.cloud_guest.enums.ApiCode;
 import com.cloud_guest.exception.exceptions.GlobalException;
+import com.cloud_guest.properties.auth.AuthProperties;
 import com.cloud_guest.utils.AuthContextUtil;
 import com.cloud_guest.utils.jwt.JwtUtil;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -14,7 +16,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
+import java.util.Date;
 
 public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter, AbsBean {
 
@@ -27,12 +31,35 @@ public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter, A
         boolean validateToken = jwtUtil.validateToken(token);
         if (validateToken) {
             String username = jwtUtil.getUsernameFromToken(token);
-            if (StrUtil.isEmpty(username)){
+            if (StrUtil.isEmpty(username)) {
                 return false;
             }
             AuthContextUtil.setUsername(username);
         }
         return validateToken;
+    }
+
+    @Override
+    public void preSetToken(String token, HttpServletRequest request, HttpServletResponse response) {
+        AuthFilter.super.preSetToken(token, request, response);
+        try {
+            AuthProperties authProperties = SpringUtil.getBean(AuthProperties.class);
+            AuthProperties.Ttl ttl = authProperties.getTtl();
+            long l = System.currentTimeMillis() + ttl.getRefreshIntervalExpirationMs();// 减去刷新间隔
+            Date date = new Date(l);
+            boolean notTokenExpired = jwtUtil.isNotTokenExpired(token, date);
+            if (!notTokenExpired) {
+                log().debug("token即将过期，重新生成token");
+                long expirationMs = ttl.getExpirationMs();
+                String username = jwtUtil.getUsernameFromToken(token);
+                String generateToken = jwtUtil.generateToken(username, expirationMs);
+                String tokenName = authProperties.getTokenName();
+                response.addHeader(tokenName, generateToken);
+            }
+        }catch (Exception e){
+            log().error("preSetToken error", e.getMessage());
+        }
+
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.cloud_guest.service.impl;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +56,8 @@ public class AuthServiceImpl implements AuthService {
             ApiCode fail = ApiCode.LOGIN_FAIL;
             throw new GlobalException(fail.getCode(), fail.getMessage());
         }
-
-        String token = jwtUtil.generateToken(username);
+        AuthProperties.Ttl ttl = authProperties.getTtl();
+        String token = jwtUtil.generateToken(username, ttl.getExpirationMs());
         return token;
     }
 
@@ -70,18 +72,18 @@ public class AuthServiceImpl implements AuthService {
         OSType currentOSType = OSType.getCurrentOSType();
         for (String yamlPath : yamlPaths) {
             OSType osType = OSType.detectByPathFormat(yamlPath);
-            if(ObjectUtils.equals(OSType.UNKNOWN, osType)){
+            if (ObjectUtils.equals(OSType.UNKNOWN, osType)) {
                 log.debug("{}是相对路径", yamlPath);
-            }else if(OSType.isUnixLike(osType)){
-                if(!OSType.isUnixLike(null)){
+            } else if (OSType.isUnixLike(osType)) {
+                if (!OSType.isUnixLike(null)) {
                     //地址 linux ,系统非linux
-                    log.debug("[{}]{}是{}绝对路径",currentOSType, yamlPath,"[非类unix系统]");
+                    log.debug("[{}]{}是{}绝对路径", currentOSType, yamlPath, "[非类unix系统]");
                     continue;
                 }
-            }else if (!OSType.isUnixLike(null)){
-                if(OSType.isUnixLike(osType)){
+            } else if (!OSType.isUnixLike(null)) {
+                if (OSType.isUnixLike(osType)) {
                     //地址 非linux ,系统linux
-                    log.debug("[{}]{}是{}绝对路径",currentOSType, yamlPath,"[非类unix系统]");
+                    log.debug("[{}]{}是{}绝对路径", currentOSType, yamlPath, "[非类unix系统]");
                     continue;
                 }
             }
@@ -113,7 +115,7 @@ public class AuthServiceImpl implements AuthService {
             jsonObject.put("updateTime", System.currentTimeMillis());
             String lockKey = KeyConstants.load_yml_write_key + ":" + yamlPath;
             LockWrapper lock = LockUtil.getLock(lockKey);
-            LockYmlUtil.writeValue(file, jsonObject,lock);
+            LockYmlUtil.writeValue(file, jsonObject, lock);
             applicationService.saveLoadApplicationYml(jsonObject);
         }
 

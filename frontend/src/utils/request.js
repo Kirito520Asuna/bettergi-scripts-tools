@@ -1,6 +1,6 @@
 import axios from 'axios'
 import {ElNotification, ElMessageBox, ElMessage, ElLoading} from 'element-plus'
-import {getLocalToken, getLocalTokenName, removeLocalToken} from "@api/web/web.js";
+import {getLocalToken, getLocalTokenName, removeLocalToken, setLocalToken} from "@api/web/web.js";
 
 let downloadLoadingInstance;
 // 是否显示重新登录
@@ -61,8 +61,14 @@ service.interceptors.response.use(async res => {
             ElNotification.error({title: msg})
             return Promise.reject('error')
         } else {
-            // ElMessage({message: "请求成功", type: 'success'})
-            return Promise.resolve(res.data)
+            const tokenName = await getLocalTokenName();
+            //响应头获取 token
+            const newToken = res.headers[tokenName] || res.headers['authorization'];
+            if (newToken) {
+                console.log('newToken:', newToken);
+                await setLocalToken(newToken)
+            }
+            return Promise.resolve(res.data);
         }
     },
     error => {
