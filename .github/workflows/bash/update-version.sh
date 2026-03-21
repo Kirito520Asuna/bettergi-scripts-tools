@@ -4,6 +4,7 @@ BGI_TOOLS_YML="bgi-tools/src/main/resources/application.yml"
 BGI_TOOLS_YML_VERSION="bgi-tools.version"
 BGI_TOOLS_PROJECT_VERSION="project-module.version"
 PARENT_POM_XML_PATH="pom.xml"
+FRONTEND_PACKAGE_JSON="frontend/package.json"
 update_version(){
   local TAG_NAME=$1
   #sed -i "s/<${BGI_TOOLS_PROJECT_VERSION}>[^<]*<\/${BGI_TOOLS_PROJECT_VERSION}>/<${BGI_TOOLS_PROJECT_VERSION}>${TAG_NAME}<\/${BGI_TOOLS_PROJECT_VERSION}>/" pom.xml
@@ -15,6 +16,8 @@ update_version(){
   # 获取旧版本号
   local OLD_POM_VERSION=$(grep -oP "<${BGI_TOOLS_PROJECT_VERSION}>\K[^<]+" "${PARENT_POM_XML_PATH}")
   local OLD_YML_VERSION=$(yq ".${BGI_TOOLS_YML_VERSION}" "${BGI_TOOLS_YML}")
+  local OLD_FRONTEND_VERSION=$(grep -oP '"version":\s*"\K[^"]+' "${FRONTEND_PACKAGE_JSON}")
+
   # 处理新版本号
   local TAG_WITHOUT_V="${TAG_NAME}"
   local NEW_YML_VERSION="${TAG_WITHOUT_V#v}"
@@ -24,9 +27,14 @@ update_version(){
   echo "   POM 新版本：${TAG_NAME}"
   echo "   YML 旧版本：${OLD_YML_VERSION:-未设置}"
   echo "   YML 新版本：${NEW_YML_VERSION}"
-  echo ""
+  echo "   Frontend 旧版本：${OLD_FRONTEND_VERSION:-未设置}"
+  echo "   Frontend 新版本：${NEW_YML_VERSION}"
+  echo "END"
+
   local pom_updated=false
   local yml_updated=false
+  local frontend_updated=false
+
   # 比对并更新 pom.xml
   if [ "${OLD_POM_VERSION}" = "${TAG_NAME}" ]; then
     echo "⏭️  POM 版本已是最新，跳过更新"
@@ -52,6 +60,16 @@ update_version(){
     yml_updated=true
   fi
 
+  # 比对并更新 frontend/package.json
+  if [ "${OLD_FRONTEND_VERSION}" = "${NEW_YML_VERSION}" ]; then
+    echo "⏭️  Frontend 版本已是最新，跳过更新"
+  else
+    echo "🔄 更新 frontend/package.json..."
+    sed -i "s/\"version\":\s*\"[^\"]*\"/\"version\": \"${NEW_YML_VERSION}\"/" "${FRONTEND_PACKAGE_JSON}"
+    echo "✅ Frontend 更新完成"
+    frontend_updated=true
+  fi
+
   # 判断是否为正式版（v 开头后全数字 或 全数字）
   local is_release=false
   if [[ "$TAG_NAME" =~ ^v[0-9]+(\.[0-9]+)*$ ]] || [[ "$TAG_NAME" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
@@ -62,7 +80,7 @@ update_version(){
   fi
 
   # 如果是正式版且有更新，则提交到 Git 仓库
-  if [ "$is_release" = true ] && ([ "$pom_updated" = true ] || [ "$yml_updated" = true ]); then
+  if [ "$is_release" = true ] && ([ "$pom_updated" = true ] || [ "$yml_updated" = true ]|| [ "$frontend_updated" = true ]); then
     echo ""
     echo "🎯 正式版版本变更，提交到仓库..."
 
@@ -71,7 +89,7 @@ update_version(){
     git config --global user.email "actions@github.com"
 
     # 添加变更文件
-    git add "${PARENT_POM_XML_PATH}" "${BGI_TOOLS_YML}"
+    git add "${PARENT_POM_XML_PATH}" "${BGI_TOOLS_YML}" "${FRONTEND_PACKAGE_JSON}"
 
     # 提交
     git commit -m "chore: release version ${TAG_NAME} [skip ci]"
