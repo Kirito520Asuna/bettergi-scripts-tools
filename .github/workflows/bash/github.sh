@@ -159,10 +159,19 @@ build_exe() {
     echo "Main-Class: $main_class"
 
     # 版本处理
-    raw_tag="${TAG_NAME#v}"
-    clean_ver=$(echo "$raw_tag" | sed 's/[^0-9.]//g' | sed 's/\.\.*/./g')
-    IFS='.' read -r major minor patch build <<< "$clean_ver"
-    file_ver="${major:-0}.${minor:-0}.${patch:-0}.${build:-0}"
+    local raw_tag="${TAG_NAME#v}"
+#    local clean_ver=$(echo "$raw_tag" | sed 's/[^0-9.]//g' | sed 's/\.\.*/./g')
+#    IFS='.' read -r major minor patch build <<< "$clean_ver"
+    # 提取纯数字部分（移除所有非数字和点号的字符）
+    local version_parts=($(echo "$raw_tag" | grep -oE '[0-9]+' | head -4))
+
+    # 填充默认值，确保 4 段
+    local major=${version_parts[0]:-0}
+    local minor=${version_parts[1]:-0}
+    local patch=${version_parts[2]:-0}
+    local build=${version_parts[3]:-0}
+
+    local file_ver="${major:-0}.${minor:-0}.${patch:-0}.${build:-0}"
 
     # icon 路径
     icon_path="$GITHUB_WORKSPACE/${ICON_PATH}"
