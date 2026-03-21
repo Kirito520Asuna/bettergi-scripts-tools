@@ -1,4 +1,9 @@
 #!/bin/bash
+# 临时目录配置（允许通过环境变量覆盖）
+TMP_EXTRACTED_JARS=${TMP_EXTRACTED_JARS:-/tmp/extracted-jars}
+TMP_RENAMED_JARS=${TMP_RENAMED_JARS:-/tmp/renamed-jars}
+TMP_EXTRACTED_EXES=${TMP_EXTRACTED_EXES:-/tmp/extracted-exes}
+JARS_ZIP=${JARS_ZIP:-jars.zip}
 maven_build() {
   local SKIP_TESTS=${1:-false}
 
@@ -29,58 +34,74 @@ list_jar_files() {
 rename_jar_files() {
   local JAR_DIR_PREFIX=$1
 
-  echo "🔄 重命名 JAR 文件（移除版本号）"
+  echo "🔄 重命名 JAR 文件（移除版本号）TMP_RENAMED_JARS:$TMP_RENAMED_JARS"
 
-  mkdir -p /tmp/renamed-jars
-
+  mkdir -p "$TMP_RENAMED_JARS"
+  # 使用数组接收 find 命令结果
+  local jar_files=()
   if [ -z "$JAR_DIR_PREFIX" ]; then
     echo "查找匹配的 JAR 文件 (*/target/*.jar):"
-    find . -type f -path "*/target/*.jar" -exec bash -c '
-      for jar_file; do
-        [ -f "$jar_file" ] || continue
-        base_name=$(basename "$jar_file" .jar)
-        #new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
-        #new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+.*$//"
-        # 匹配：-v1.2.3, -1.2.3, -v0.0.7-dev3.2 等（从最后一个连字符后的版本号开始）
-        new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9._-]+)*$//")
-        new_path="/tmp/renamed-jars/${new_name}.jar"
-        echo "处理：$jar_file -> $new_path"
-        cp "$jar_file" "$new_path"
-      done
-    ' _ {} +
+    while IFS= read -r file; do
+      jar_files+=("$file")
+    done < <(find . -type f \( -path "*/target/*.jar" \))
+#    find . -type f -path "*/target/*.jar" -exec bash -c '
+#      for jar_file; do
+#        [ -f "$jar_file" ] || continue
+#        base_name=$(basename "$jar_file" .jar)
+#        #new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
+#        #new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+.*$//"
+#        # 匹配：-v1.2.3, -1.2.3, -v0.0.7-dev3.2 等（从最后一个连字符后的版本号开始）
+#        new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9._-]+)*$//")
+#        new_path="$TMP_RENAMED_JARS/${new_name}.jar"
+#        echo "处理：$jar_file -> $new_path"
+#        cp "$jar_file" "$new_path"
+#      done
+#    ' _ {} +
   else
     echo "查找匹配的 JAR 文件 (*/${JAR_DIR_PREFIX}/*/target/*.jar, */${JAR_DIR_PREFIX}/target/*.jar):"
-    find . -type f \( -path "*/${JAR_DIR_PREFIX}/*/target/*.jar" -o -path "*/${JAR_DIR_PREFIX}/target/*.jar" \) -exec bash -c '
-      for jar_file; do
-        [ -f "$jar_file" ] || continue
-        base_name=$(basename "$jar_file" .jar)
-        #new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
-        #new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+.*$//"
-        # 匹配：-v1.2.3, -1.2.3, -v0.0.7-dev3.2 等（从最后一个连字符后的版本号开始）
-        new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9._-]+)*$//")
-        new_path="/tmp/renamed-jars/${new_name}.jar"
-        echo "处理：$jar_file -> $new_path"
-        cp "$jar_file" "$new_path"
-      done
-    ' _ {} +
+    while IFS= read -r file; do
+      jar_files+=("$file")
+    done < <(find . -type f \( -path "*/${JAR_DIR_PREFIX}/*/target/*.jar" -o -path "*/${JAR_DIR_PREFIX}/target/*.jar" \))
+#    find . -type f \( -path "*/${JAR_DIR_PREFIX}/*/target/*.jar" -o -path "*/${JAR_DIR_PREFIX}/target/*.jar" \) -exec bash -c '
+#      for jar_file; do
+#        [ -f "$jar_file" ] || continue
+#        base_name=$(basename "$jar_file" .jar)
+#        #new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
+#        #new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+.*$//"
+#        # 匹配：-v1.2.3, -1.2.3, -v0.0.7-dev3.2 等（从最后一个连字符后的版本号开始）
+#        new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9._-]+)*$//")
+#        new_path="$TMP_RENAMED_JARS/${new_name}.jar"
+#        echo "处理：$jar_file -> $new_path"
+#        cp "$jar_file" "$new_path"
+#      done
+#    ' _ {} +
   fi
+  echo "找到 ${#jar_files[@]} 个 JAR 文件"
 
+  for jar_file in "${jar_files[@]}"; do
+    [ -f "$jar_file" ] || continue
+    base_name=$(basename "$jar_file" .jar)
+    new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9._-]+)*$//")
+    new_path="${TMP_RENAMED_JARS}/${new_name}.jar"
+    echo "处理：$jar_file -> $new_path"
+    cp "$jar_file" "$new_path"
+  done
   echo "✅ 重命名完成"
-  ls -la /tmp/renamed-jars
+  ls -la "$TMP_RENAMED_JARS"
 }
 package_jars_zip() {
-  local ZIP_NAME=${1:-"jars.zip"}
+  local ZIP_NAME=${1:-"$JARS_ZIP"}
 
   echo "🗜️ 打包所有 JAR 文件成 ZIP: $ZIP_NAME"
 
-  zip -j "$ZIP_NAME" /tmp/renamed-jars/*.jar
+  zip -j "$ZIP_NAME" "$TMP_RENAMED_JARS"/*.jar
 
   echo "✅ 打包完成"
   unzip -l "$ZIP_NAME"
 }
 extract_jars_zip() {
-  local ZIP_PATH=${1:-"jars.zip"}
-  local EXTRACT_DIR=${2:-"/tmp/extracted-jars"}
+  local ZIP_PATH=${1:-"$JARS_ZIP"}
+  local EXTRACT_DIR=${2:-"$TMP_EXTRACTED_JARS"}
 
   echo "📂 解压 ZIP 文件：$ZIP_PATH"
 
@@ -91,15 +112,15 @@ extract_jars_zip() {
   ls -la "$EXTRACT_DIR"
 }
 extract_jars() {
-  local JAR_ZIP_PATH=${1:-"jars.zip"}
+  local JAR_ZIP_PATH=${1:-"$JARS_ZIP"}
 
-  echo "📂 解压 JAR 到 /tmp/extracted-jars"
+  echo "📂 解压 JAR 到 $TMP_EXTRACTED_JARS"
 
-  mkdir -p /tmp/extracted-jars
-  unzip "$JAR_ZIP_PATH" -d /tmp/extracted-jars
+  mkdir -p "$TMP_EXTRACTED_JARS"
+  unzip "$JAR_ZIP_PATH" -d "$TMP_EXTRACTED_JARS"
 
   echo "✅ 解压完成"
-  ls -la /tmp/extracted-jars
+  ls -la "$TMP_EXTRACTED_JARS"
 }
 install_mingw_wine() {
   echo "🔧 安装 Wine 和 MinGW 工具链（cross-compile Windows exe）"
@@ -139,16 +160,16 @@ build_exe() {
   echo "🔨 为每个 JAR 生成 Windows EXE"
   echo "工作目录：$(pwd)"
 
-  [ ! -d "/tmp/extracted-jars" ] && { echo "❌ /tmp/extracted-jars 不存在"; exit 1; }
+  [ ! -d "$TMP_EXTRACTED_JARS" ] && { echo "❌ $TMP_EXTRACTED_JARS 不存在"; exit 1; }
 
-  mkdir -p /tmp/extracted-exes
+  mkdir -p "$TMP_EXTRACTED_EXES"
 
-  for jar in /tmp/extracted-jars/*.jar; do
+  for jar in "$TMP_EXTRACTED_JARS"/*.jar; do
     [ -f "$jar" ] || continue
 
     jar_name=$(basename "$jar" .jar)
     jar_name=$(echo "$jar_name" | sed -E 's/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//')
-    exe_file="/tmp/extracted-exes/${jar_name}.exe"
+    exe_file="$TMP_EXTRACTED_EXES/${jar_name}.exe"
 
     echo "======================================"
     echo "处理：$jar → $exe_file"
@@ -220,30 +241,30 @@ EOF
   done
 
   echo "✅ 所有 EXE 生成完成"
-  ls -lh /tmp/extracted-exes
+  ls -lh "$TMP_EXTRACTED_EXES"
 }
 package_standalone() {
   local REPO_NAME=$1
 
   echo "📦 打包独立运行包（EXE + JRE + 配置文件）"
 
-  [ ! -d "/tmp/extracted-jars" ] && echo "⚠️ /tmp/extracted-jars 不存在"
-  [ ! -d "/tmp/extracted-exes" ] && echo "⚠️ /tmp/extracted-exes 不存在"
+  [ ! -d "$TMP_EXTRACTED_JARS" ] && echo "⚠️ $TMP_EXTRACTED_JARS 不存在"
+  [ ! -d "$TMP_EXTRACTED_EXES" ] && echo "⚠️ $TMP_EXTRACTED_EXES 不存在"
 
   mkdir -p "${REPO_NAME}"
 
   # 拷贝 exe
   echo "📋 拷贝 EXE 文件..."
-  cp /tmp/extracted-exes/*.exe "${REPO_NAME}/" 2>/dev/null || echo "⚠️ 无 EXE 文件"
+  cp "$TMP_EXTRACTED_EXES"/*.exe "${REPO_NAME}/" 2>/dev/null || echo "⚠️ 无 EXE 文件"
   # 拷贝 jar
   echo "📋 拷贝 JAR 文件..."
-  cp /tmp/extracted-jars/*.jar "${REPO_NAME}/" 2>/dev/null || echo "⚠️ 无 jar 文件"
+  cp "$TMP_EXTRACTED_JARS"/*.jar "${REPO_NAME}/" 2>/dev/null || echo "⚠️ 无 jar 文件"
 
   # 拷贝 JRE
   echo "📋 拷贝 JRE..."
-  mkdir -p /tmp/extracted-exes/jre
-  cp -r /tmp/extracted-jars/jre/* /tmp/extracted-exes/jre/ 2>/dev/null || echo "⚠️ JRE 不存在"
-  cp -r /tmp/extracted-exes/jre "${REPO_NAME}/" 2>/dev/null || echo "⚠️ JRE 拷贝失败"
+  mkdir -p "$TMP_EXTRACTED_EXES"/jre
+  cp -r "$TMP_EXTRACTED_JARS"/jre/* "$TMP_EXTRACTED_EXES"/jre/ 2>/dev/null || echo "⚠️ JRE 不存在"
+  cp -r "$TMP_EXTRACTED_EXES"/jre "${REPO_NAME}/" 2>/dev/null || echo "⚠️ JRE 拷贝失败"
 
   # 配置文件
   if [ -f "src/main/resources/application-prod.yml" ]; then
@@ -373,28 +394,29 @@ download_windows_jre() {
   fi
 
   echo "下载链接：$DOWNLOAD_URL"
+  local JDK_ZIP="jdk.zip"
+  local JDK_EXTRACT="jdk_extract"
+  wget -O "$JDK_ZIP" "$DOWNLOAD_URL" || { echo "❌ 下载失败"; exit 1; }
+  unzip -q "$JDK_ZIP" -d "$JDK_EXTRACT"
 
-  wget -O jdk.zip "$DOWNLOAD_URL" || { echo "❌ 下载失败"; exit 1; }
-  unzip -q jdk.zip -d jdk_extract
-
-  local JDK_ROOT=$(find jdk_extract -mindepth 1 -maxdepth 1 -type d | head -1)
+  local JDK_ROOT=$(find "$JDK_EXTRACT" -mindepth 1 -maxdepth 1 -type d | head -1)
   [ -z "$JDK_ROOT" ] && { echo "❌ 未找到 JDK 根目录"; exit 1; }
 
-  mkdir -p /tmp/extracted-jars/jre
+  mkdir -p "$TMP_EXTRACTED_JARS/jre"
 
   if [[ "${JAVA_VERSION}" == "8" ]]; then
     if [ -d "$JDK_ROOT/jre" ]; then
-      cp -r "$JDK_ROOT/jre/"* /tmp/extracted-jars/jre/
+      cp -r "$JDK_ROOT/jre/"* "$TMP_EXTRACTED_JARS/jre/"
     else
       echo "JDK8 无 jre 子目录，使用整个 JDK"
-      cp -r "$JDK_ROOT/"* /tmp/extracted-jars/jre/
+      cp -r "$JDK_ROOT/"* "$TMP_EXTRACTED_JARS/jre/"
     fi
   else
-    cp -r "$JDK_ROOT/"* /tmp/extracted-jars/jre/
+    cp -r "$JDK_ROOT/"* "$TMP_EXTRACTED_JARS/jre/"
   fi
 
   echo "✅ JRE 捆绑完成"
-  du -sh /tmp/extracted-jars/jre
+  du -sh "$TMP_EXTRACTED_JARS/jre"
 
-  rm -rf jdk.zip jdk_extract
+  rm -rf "$JDK_ZIP" "$JDK_EXTRACT"
 }
