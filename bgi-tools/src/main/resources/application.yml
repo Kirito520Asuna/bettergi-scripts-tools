@@ -93,7 +93,7 @@ spring:
     timeout: 30000
     # Redisson 内嵌配置（关键部分）
     redisson:
-      file: classpath:redisson-${spring.redis.mode:none}.yml
+      file: classpath:redisson/redisson-${spring.redis.mode:none}.yml
   data:
     redis:
       mode: ${spring.redis.mode:none} # none:不使用redis，single:使用单体,cluster:使用集群，sentinel:使用哨兵
