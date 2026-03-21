@@ -20,6 +20,13 @@ on:
           - 'true'
           - 'false'
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GITEE_USERNAME: ${{ secrets.GITEE_USERNAME }}
+  GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+  GITEE_OWNER: ${{ secrets.GITEE_USERNAME }}
+  GITEE_REPO: bettergi-scripts-tools
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -48,9 +55,6 @@ jobs:
       - name: 检查是否有变更需要同步
         id: check_changes
         if: steps.force_mode.outputs.force_mode == 'false'
-        env:
-          GITEE_USERNAME: ${{ secrets.GITEE_USERNAME }}
-          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
         run: |
           echo "🔍 检查 GitHub 与 Gitee 的差异..."
           
@@ -241,11 +245,6 @@ jobs:
 
       - name: 同步 GitHub Releases 到 Gitee（不包含附件）
         if: steps.check_changes.outputs.has_changes == 'true' || steps.force_mode.outputs.force_mode == 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
-          GITEE_OWNER: ${{ secrets.GITEE_USERNAME }}
-          GITEE_REPO: bettergi-scripts-tools
         run: |
           echo "📦 同步 GitHub Releases 到 Gitee（不包含附件）..."
           
@@ -310,9 +309,6 @@ jobs:
 
       - name: 验证同步结果
         if: steps.check_changes.outputs.has_changes == 'true' || steps.force_mode.outputs.force_mode == 'true'
-        env:
-          GITEE_USERNAME: ${{ secrets.GITEE_USERNAME }}
-          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
         run: |
           mode_text=""
           [[ "${{ steps.force_mode.outputs.force_mode }}" == "true" ]] && mode_text="[强制推送模式] "
