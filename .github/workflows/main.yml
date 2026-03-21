@@ -78,7 +78,7 @@ env:
   TMP_EXTRACTED_JARS: /tmp/extracted-jars
   TMP_RENAMED_JARS: /tmp/renamed-jars
   TMP_EXTRACTED_EXES: /tmp/extracted-exes
-  JARS_ZIP: ${{ github.repository }}-jars.zip
+  JARS_ZIP: bgi-tools-jars.zip
 jobs:
   # 在 Linux 上构建 JAR 并打包为 ZIP
   build-jar-linux:
@@ -282,7 +282,7 @@ jobs:
           name: ${{env.JARS_ZIP}}
           path: ./
 
-      - name: 3. 解压 JAR 到 ${{TMP_EXTRACTED_JARS}}
+      - name: 3. 解压 JAR 到 ${{env.TMP_EXTRACTED_JARS}}
         run: |
           source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
           extract_jars "$JARS_ZIP"
