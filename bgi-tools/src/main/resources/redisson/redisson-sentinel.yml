@@ -1,7 +1,7 @@
 # 如果是哨兵模式，注释掉上面，启用下面
 sentinelServersConfig:
-   masterName: ${spring.redis.sentinel.master:}
-   sentinelAddresses: ${spring.redis.sentinel.nodes:}
+   masterName: ${spring.data.redis.sentinel.master:}
+   sentinelAddresses: ${spring.data.redis.sentinel.nodes:}
 
    timeout: ${spring.data.redis.timeout:20000}                 # 命令超时 20s（默认 3s）
    connectTimeout: ${spring.data.redis.connect-timeout:15000}          # 连接超时 15s
