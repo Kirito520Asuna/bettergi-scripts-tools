@@ -253,14 +253,14 @@ jobs:
       - name: 12. 上传 JAR ZIP 供 Windows 使用
         uses: actions/upload-artifact@v4
         with:
-          name: "${{JARS_ZIP}}"
-          path: "${{JARS_ZIP}}"
+          name: ${{env.JARS_ZIP}}
+          path: ${{env.JARS_ZIP}}
 
       - name: 13. 上传单个 JAR 文件
         uses: actions/upload-artifact@v4
         with:
           name: jar-files
-          path: "${{TMP_EXTRACTED_JARS}}"/*.jar
+          path: ${{env.TMP_EXTRACTED_JARS}}/*.jar
 
   # 新 Job: 在 Linux 上生成 Windows EXE（使用 Wine + MinGW）
   build-exe:
@@ -279,7 +279,7 @@ jobs:
       - name: 2. 下载 JAR ZIP artifact
         uses: actions/download-artifact@v4
         with:
-          name: jars-zip
+          name: ${{env.JARS_ZIP}}
           path: ./
 
       - name: 3. 解压 JAR 到 ${{TMP_EXTRACTED_JARS}}
@@ -341,7 +341,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-exes-and-jre
-          path: /tmp/extracted-exes/
+          path: ${{env.TMP_EXTRACTED_EXES}}/
 
       - name: 9. 上传独立运行包
         uses: actions/upload-artifact@v4
@@ -353,7 +353,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-exes
-          path: /tmp/extracted-exes/*.exe
+          path: ${{env.TMP_EXTRACTED_EXES}}/*.exe
 
 
   build-and-push-docker:
