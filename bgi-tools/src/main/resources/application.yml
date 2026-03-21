@@ -14,7 +14,6 @@ api:
       name: kirito-asuna
       url:
       email:
-
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -52,14 +51,10 @@ knife4j:
     enable: false
     username: root
     password: root
-
-
 server:
   servlet:
     context-path: /bgi
   port: 8081
-
-
 spring:
   application:
     name: bgi-tools
@@ -73,20 +68,18 @@ spring:
       - optional:file:/app/application-prod.yml #docker加载异常处理
   profiles:
     active: prod
-
-      #mvc:
-      # 推荐开启这个，让 /** 映射优先级低于静态资源
-      #static-path-pattern: /static/ui/**   # 可选，如果你想把静态资源路径改成 /static/ 开头
-      #throw-exception-if-no-handler-found: true   # 可选，404 时抛异常方便调试
-      #web:
-      #resources:
-      #static-locations:
+    #mvc:
+    # 推荐开启这个，让 /** 映射优先级低于静态资源
+    #static-path-pattern: /static/ui/**   # 可选，如果你想把静态资源路径改成 /static/ 开头
+    #throw-exception-if-no-handler-found: true   # 可选，404 时抛异常方便调试
+    #web:
+    #resources:
+    #static-locations:
     #- classpath:/static/ui/
     # 默认已经包含 classpath:/static/，通常不需要额外配置
     # 如果你把 dist 放在其他位置，可以加
     # static-locations: classpath:/static/,classpath:/public/
   #redis
-
   redis:
     mode: none
     host: 127.0.0.1
@@ -101,7 +94,6 @@ spring:
     # Redisson 内嵌配置（关键部分）
     redisson:
       file: classpath:redisson-${spring.redis.mode:none}.yml
-
   data:
     redis:
       mode: ${spring.redis.mode:none} # none:不使用redis，single:使用单体,cluster:使用集群，sentinel:使用哨兵
@@ -114,7 +106,7 @@ spring:
       password: ${spring.redis.password:} #默认为空
       connect-timeout: ${spring.redis.connect-timeout:30000} #连接超时 30s
       timeout: ${spring.redis.timeout:30000} #响应超时时间
-      retryAttempts: ${spring.redis.retryAttempts:5}               # 重试 5 次
+      retryAttempts: ${spring.redis.retryAttempts:5} # 重试 5 次
       retryInterval: ${spring.redis.retryInterval:3000}
       # 兼容 spring.data.redis 配置
       cluster:
@@ -122,15 +114,13 @@ spring:
       sentinel:
         master: ${spring.redis.sentinel.master:} # 主节点名称
         nodes: ${spring.redis.sentinel.nodes:} # 哨兵节点
-
-
 #需要验证的接口设置token
 check:
   token: #注意：其中一项为空时将不会校验
-    name:  # token名称 默认为空
+    name: # token名称 默认为空
     value: # token值 默认为空
 bgi-tools:
-  version: 0.0.7-dev
+  version: 0.0.7
 #设置默认账号密码
 auth:
   enabled: true
@@ -141,7 +131,6 @@ auth:
   users:
     - username: bgi_tools
       password: bgi_tools
-
 logging:
   level:
     com.cloud_guest.redis.service.impl: off
@@ -149,7 +138,6 @@ logging:
     com.cloud_guest.utils.ApplicationContextHolder: off
     com.cloud_guest.wrappers.lock: off
     com.cloud_guest: debug
-
 management:
   endpoint:
     restart:
