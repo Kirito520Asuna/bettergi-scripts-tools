@@ -72,6 +72,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  GITHUB_REPOSITORY: ${{ github.repository }}
+  GITHUB_REF: ${{ github.ref }}
 
 jobs:
   # 在 Linux 上构建 JAR 并打包为 ZIP
