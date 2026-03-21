@@ -39,7 +39,10 @@ rename_jar_files() {
       for jar_file; do
         [ -f "$jar_file" ] || continue
         base_name=$(basename "$jar_file" .jar)
-        new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
+        #new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
+        #new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+.*$//"
+        # 匹配：-v1.2.3, -1.2.3, -v0.0.7-dev3.2 等（从最后一个连字符后的版本号开始）
+        new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9._-]+)*$//")
         new_path="/tmp/renamed-jars/${new_name}.jar"
         echo "处理：$jar_file -> $new_path"
         cp "$jar_file" "$new_path"
@@ -51,7 +54,10 @@ rename_jar_files() {
       for jar_file; do
         [ -f "$jar_file" ] || continue
         base_name=$(basename "$jar_file" .jar)
-        new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
+        #new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
+        #new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+.*$//"
+        # 匹配：-v1.2.3, -1.2.3, -v0.0.7-dev3.2 等（从最后一个连字符后的版本号开始）
+        new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9._-]+)*$//")
         new_path="/tmp/renamed-jars/${new_name}.jar"
         echo "处理：$jar_file -> $new_path"
         cp "$jar_file" "$new_path"
@@ -220,6 +226,9 @@ package_standalone() {
   # 拷贝 exe
   echo "📋 拷贝 EXE 文件..."
   cp /tmp/extracted-exes/*.exe "${REPO_NAME}/" 2>/dev/null || echo "⚠️ 无 EXE 文件"
+  # 拷贝 jar
+  echo "📋 拷贝 JAR 文件..."
+  cp /tmp/extracted-jars/*.jar "${REPO_NAME}/" 2>/dev/null || echo "⚠️ 无 jar 文件"
 
   # 拷贝 JRE
   echo "📋 拷贝 JRE..."
@@ -241,7 +250,81 @@ ws:
 EOF
     echo "✅ 使用默认配置文件"
   fi
+  # 生成使用说明 README.md
+  echo "📄 生成使用说明 README.md..."
+  cat > "${REPO_NAME}/README.md" << EOF
+# ${REPO_NAME} 使用说明
 
+## 📦 包内容
+
+- \`*.exe\` - Windows 可执行文件（推荐）
+- \`*.jar\` - Java 可执行文件（备用）
+- \`jre/\` - 捆绑的 Java 运行环境
+- \`application-prod.yml\` - 配置文件
+
+## 🚀 快速开始
+
+### 方式 1：运行 EXE（推荐）
+
+双击 \`*.exe\` 或命令行运行：
+\`\`\`bash
+*.exe
+\`\`\`
+
+### 方式 2：运行 JAR
+
+\`\`\`bash
+# 使用捆绑的 JRE
+jre\\bin\\java -jar *.jar
+
+# 或使用系统 Java
+java -jar *.jar
+\`\`\`
+
+## ⚙️ 配置说明
+
+编辑 \`application-prod.yml\`：
+
+\`\`\`yaml
+server:
+  port: 8081  # 修改端口
+ws:
+  url: ws://localhost:8081/ws
+  access-token-name: access-token
+\`\`\`
+
+## 🌐 访问地址
+
+启动后访问：\`http://localhost:8081/bgi\`
+
+## 🛠️ 常见问题
+
+### 1. 端口被占用
+修改 \`application-prod.yml\` 中的 \`port\` 配置
+
+### 2. 闪退/无法启动
+- 检查是否有 Java 环境（如未使用捆绑 JRE）
+- 查看日志：运行目录下的日志文件
+- 确保防火墙允许 8081 端口
+
+### 3. EXE 无法运行
+- 需要 Windows 7 或更高版本
+- 可能需要安装 Visual C++ Redistributable
+
+## 📊 版本信息
+
+- **版本**：${TAG_NAME:-unknown}
+- **Java 版本**：${JAVA_VERSION:-unknown}
+- **生成时间**：$(date '+%Y-%m-%d %H:%M:%S')
+
+## 📞 技术支持
+
+如有问题，请访问 GitHub Issues 或联系开发者。
+EOF
+
+  # 预览
+  echo "📂 打包内容预览："
+  ls -R "${REPO_NAME}/" || echo "无内容"
   # 预览
   echo "📂 打包内容预览："
   ls -R "${REPO_NAME}/" || echo "无内容"
