@@ -8,6 +8,8 @@ import com.cloud_guest.enums.ApiCode;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.properties.check.TokenProperties;
 import com.cloud_guest.utils.AuthContextUtil;
+import com.cloud_guest.utils.ServletUtil;
+import com.cloud_guest.utils.StrUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.Aspect;
@@ -33,10 +35,7 @@ public class TokenAspect implements AbsToken, AbsAuth {
         AbsToken.super.checkToken();
         String username = AuthContextUtil.getUsernameNoThrow();
         if (StrUtil.isBlank(username)) {
-            // 接收到请求，记录请求内容
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            //可能有空指针问题
-            HttpServletRequest request = attributes.getRequest();
+            HttpServletRequest request = ServletUtil.getRequest();
             String requestPath = request.getServletPath();
             for (String path : fetchProtectedPaths()) {
                 if (fetchPathMatcher().match(path, requestPath)) {
@@ -48,7 +47,8 @@ public class TokenAspect implements AbsToken, AbsAuth {
             TokenProperties tokenProperties = SpringUtil.getBean(TokenProperties.class);
             String tokenName = tokenProperties.getName();
             String tokenValue = tokenProperties.getValue();
-            if (StrUtil.isNotBlank(tokenName) && StrUtil.isNotBlank(tokenValue)) {
+            //if (StrUtil.isNotBlank(tokenName) && StrUtil.isNotBlank(tokenValue)) {
+            if (StrUtils.isNotBlank(tokenName, tokenValue)) {
                 String token = request.getHeader(tokenName);
                 log.debug("tokenName: {}, tokenValue: {}, token: {}", tokenName, tokenValue, token);
                 if (!StrUtil.equals(token, tokenValue)) {

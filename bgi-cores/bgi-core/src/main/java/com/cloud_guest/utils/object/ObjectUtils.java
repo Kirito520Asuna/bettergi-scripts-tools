@@ -19,9 +19,49 @@ import java.util.TreeMap;
  * @Date 2024/11/2 下午9:20:38
  * @Description
  */
-public class ObjectUtils extends ObjectUtil{
+public class ObjectUtils extends ObjectUtil {
     public static <T> T defaultIfEmpty(T object, T defaultValue) {
         return ObjectUtil.isEmpty(object) ? defaultValue : object;
+    }
+
+    public static boolean isNotEmpty(Object... obj) {
+        return isNotEmpty(Boolean.FALSE, obj);
+    }
+
+    public static boolean isNotEmpty(boolean isOr, Object... obj) {
+        if (obj == null || obj.length == 0) {
+            return false;
+        }
+        //boolean flag = isOr ? false : true;
+        boolean flag = !isOr;
+        for (Object o : obj) {
+            if (isOr) {
+                flag = flag || isNotEmpty(o);
+            } else {
+                flag = flag && isNotEmpty(o);
+            }
+        }
+        return flag;
+    }
+
+    public static boolean isEmpty(Object... obj) {
+        return isEmpty(Boolean.FALSE, obj);
+    }
+
+    public static boolean isEmpty(boolean isOr, Object... obj) {
+        if (obj == null || obj.length == 0) {
+            return true;
+        }
+        //boolean flag = isOr ? false : true;
+        boolean flag = !isOr;
+        for (Object o : obj) {
+            if (isOr) {
+                flag = flag || isEmpty(o);
+            } else {
+                flag = flag && isEmpty(o);
+            }
+        }
+        return flag;
     }
 
     /**

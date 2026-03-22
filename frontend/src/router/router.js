@@ -94,6 +94,34 @@ const routes = [
             icon: 'Domain'
         },
     }
+    ,
+    {
+        name: 'SyntaxKey',
+        path: '/SyntaxKey',
+        component: () => import('@views/SyntaxKeyView.vue'),
+        children: [
+            // {
+            //
+            // }
+        ],
+        meta: {
+            isRoot: true,
+            title: '语法配置',
+            desc: '语法配置',
+            asSubParentTitle: '语法配置'
+        }
+    },
+    {
+        path: '/ws-proxy',
+        name: 'WsProxy',
+        component: () => import('@views/WsProxyView.vue'),
+        meta: {
+            isRoot: true,
+            title: 'WS 代理授权',
+            desc: 'WS 代理授权',
+            asSubParentTitle: 'WS 代理授权'
+        }
+    },
     // 其他路由...
 ]
 const VITE_BASE_PATH = (import.meta.env.VITE_BASE_PATH || '/bgi/ui/');
