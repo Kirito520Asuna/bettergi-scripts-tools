@@ -3,7 +3,7 @@ import {onMounted, onUnmounted, reactive, ref} from "vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {updateUserInfo} from "@api/auth/login.js";
 import {getTokenInfo, updateToken} from "@api/auth/token.js";
-import {getAllSystemInfo, removeLocalToken, restart, toHomePage} from "@api/web/web.js";
+import {getAllSystemInfo, goBack, removeLocalToken, restart, toHomePage} from "@api/web/web.js";
 import {backup, recovery} from "@api/data/BackupRecover.js";
 
 const RestartClick = ref(false)
@@ -296,8 +296,10 @@ const getMemoryColor = (value) => {
 const goToHome = async () => {
   // router.push('/'); // 假设主页路径是 '/'
   await toHomePage()
-};
-
+}
+const goToBack = async () => {
+  await goBack();
+}
 // 组件挂载时加载Token信息
 onMounted(async () => {
   await loadTokenInfo();
@@ -595,6 +597,9 @@ onUnmounted(() => {
       >
         重启系统
       </el-button>
+    </div>
+    <div class="fixed-back">
+      <button @click="goToBack" class="btn secondary">返回上一页</button>
     </div>
     <!-- 在 template 最后添加 -->
     <div class="fixed-footer">

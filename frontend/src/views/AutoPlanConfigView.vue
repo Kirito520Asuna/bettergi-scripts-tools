@@ -21,7 +21,7 @@ import {
 
 import draggable from 'vuedraggable'
 import {debounce} from 'lodash-es';
-import {toHomePage} from "@api/web/web.js";
+import {goBack, toHomePage} from "@api/web/web.js";
 
 const cloud = ref({
   UidList: [],
@@ -244,7 +244,9 @@ const goToHome = async () => {
   // router.push('/'); // 假设主页路径是 '/'
   await toHomePage()
 };
-
+const goToBack = async () => {
+  await goBack();
+}
 const showResultDrawer = ref(false)
 const orderSortConfigs = ref(false)
 const uid = ref("")
@@ -1559,6 +1561,9 @@ const batchUpdate = () => {
       </div>
     </div>
     <!-- 在 template 最后添加 -->
+    <div class="fixed-back">
+      <button @click="goToBack" class="btn secondary">返回上一页</button>
+    </div>
     <div class="fixed-footer">
       <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
     </div>

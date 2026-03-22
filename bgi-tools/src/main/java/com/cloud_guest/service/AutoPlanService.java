@@ -14,7 +14,7 @@ public interface AutoPlanService {
     boolean delList(List<String> ids);
 
     boolean save(String id, String json);
-
+    @Deprecated
     List<String> findALLUid();
 
     List<AutoPlanVo> find(String id);

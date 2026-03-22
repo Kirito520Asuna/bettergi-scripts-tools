@@ -1,9 +1,14 @@
 package com.cloud_guest.domain.dto;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
+import com.cloud_guest.domain.WsProxyAccess;
 import com.cloud_guest.view.BasicJsonView;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -38,4 +43,21 @@ public class WsProxyDto {
     @JsonProperty("body")
     @JsonView(BasicJsonView.WsProxyViewV1.class)
     private Map<String, Object> bodyMap;
+    @JsonIgnore
+    private String uid;
+    @PostConstruct
+    public void init() {
+        if (StrUtil.isNotBlank(bodyJson)&& JSONUtil.isTypeJSON(bodyJson)) {
+            Map<String, Object> bean = JSONUtil.toBean(bodyJson, Map.class);
+            Object o = bean.get("uid");
+            if (o != null) {
+                uid = o.toString();
+            }
+        } else if (bodyMap != null) {
+            Object o = bodyMap.get("uid");
+            if (o != null) {
+                uid = o.toString();
+            }
+        }
+    }
 }

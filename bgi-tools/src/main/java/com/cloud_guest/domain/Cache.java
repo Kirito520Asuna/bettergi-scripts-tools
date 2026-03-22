@@ -1,15 +1,18 @@
 package com.cloud_guest.domain;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.cloud_guest.domain.enums.CacheType;
 import com.cloud_guest.utils.object.ObjectUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author yan
@@ -24,6 +27,7 @@ public class Cache<T extends Object> {
     private String type;
     //data
     private T data;
+
     public List<String> toListByString() {
         List<String> list = new ArrayList<>();
         if (ObjectUtils.equals(this.getType(), "json")) {
@@ -41,35 +45,80 @@ public class Cache<T extends Object> {
         }
         return list;
     }
-   public List<Map<String, Object>> toList() {
-       List<Map<String, Object>> list = new ArrayList<>();
-        if (ObjectUtils.equals(this.getType(), "json")) {
+
+    public <TC> TC toBean(Class<TC> clazz) {
+        Map<String, Object> map = toMap();
+        TC bean = null;
+        try {
+            bean = BeanUtil.toBean(map, clazz);
+        } catch (Exception e) {
+            ObjectMapper mapper = SpringUtil.getBean(ObjectMapper.class);
+            bean = mapper.convertValue(data, clazz);
+        }
+        return bean;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = Maps.newLinkedHashMap();
+        if (ObjectUtils.equals(this.getType(), CacheType.json.name())) {
             T data1 = this.getData();
-            String data="";
+            String data = "";
+            if (data1 instanceof String) {
+                data = (String) data1;
+            }
+            if (JSONUtil.isTypeJSON(data) && !JSONUtil.isTypeJSONArray(data)) {
+                Map<String, Object> bean = JSONUtil.toBean(data, Map.class);
+                map.putAll(bean);
+            }
+        }
+        return map;
+    }
+
+    public List<Map<String, Object>> toList() {
+        List<Map<String, Object>> list = new ArrayList<>();
+        if (ObjectUtils.equals(this.getType(), CacheType.json.name())) {
+            T data1 = this.getData();
+            String data = "";
             if (data1 instanceof String) {
                 data = (String) data1;
             }
             if (JSONUtil.isTypeJSONArray(data)) {
                 List<String> maps = JSONUtil.toList(data, String.class);
                 for (String json : maps) {
-                    if (JSONUtil.isTypeJSONArray(json)){
+                    if (JSONUtil.isTypeJSONArray(json)) {
                         // 解析为 JSONArray
                         List<JSONObject> maps1 = JSONUtil.toList(json, JSONObject.class);
                         list.addAll(maps1);
-                    }else {
+                    } else {
                         Map<String, Object> bean = JSONUtil.toBean(json, JSONObject.class);
                         list.add(bean);
                     }
 
                 }
-            } else
-            if (JSONUtil.isTypeJSON(data)) {
+            } else if (JSONUtil.isTypeJSON(data)) {
                 Map<String, Object> bean = JSONUtil.toBean(data, Map.class);
                 list.add(bean);
             }
         }
 
         return list;
+    }
+
+    public <TC> List<TC> toList(Class<TC> clazz) {
+        List<Map<String, Object>> list = toList();
+        List<TC> reList = list.stream().map(
+                map -> {
+                    TC bean = null;
+                    try {
+                        bean = BeanUtil.toBean(map, clazz);
+                    } catch (Exception e) {
+                        ObjectMapper mapper = SpringUtil.getBean(ObjectMapper.class);
+                        bean = mapper.convertValue(data, clazz);
+                    }
+                    return bean;
+                }
+        ).toList();
+        return reList;
     }
 
     public static void main(String[] args) {

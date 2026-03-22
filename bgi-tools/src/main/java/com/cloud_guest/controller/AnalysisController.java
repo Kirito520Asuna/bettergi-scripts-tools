@@ -5,6 +5,7 @@ import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Token;
 import com.cloud_guest.domain.dto.AnalysisJsonFileDto;
 import com.cloud_guest.domain.Cache;
+import com.cloud_guest.domain.enums.CacheType;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.FileJsonService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,8 +67,7 @@ public class AnalysisController {
         String data = cacheFind.getData();
         String type = cacheFind.getType();
         cache.setType(type);
-
-        if ("json".equals(type)) {
+        if (CacheType.json.name().equals(type)) {
             boolean typeJSONArray = JSONUtil.isTypeJSONArray(data);
             if (typeJSONArray){
                 cache.setData(JSONUtil.toList(data, ArrayList.class));

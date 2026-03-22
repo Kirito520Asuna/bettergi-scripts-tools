@@ -153,8 +153,20 @@ async function toHomePage(confirm = true) {
 
     // 用户确认后，使用router进行页面导航到主页路径'/'
     router.push('/'); // 假设主页路径是 '/'
-};
-
+}
+/**
+ * 返回上一页
+ */
+async function goBack(confirm = true) {
+    if (confirm) {
+        await ElMessageBox.confirm('确定返回上级目录吗？', '提示', {
+            confirmButtonText: '确定',    // 确认按钮文本
+            cancelButtonText: '取消',    // 取消按钮文本
+            type: 'warning'             // 提示类型为警告
+        })
+    }
+    router.go(-1);
+}
 /**
  * 设置本地存储的令牌
  * @param {string} token - 需要存储的令牌值
@@ -229,4 +241,5 @@ export {
     removeLocalVersion,
     getLocalVersion,
     getAllSystemInfo,
+    goBack,
 }

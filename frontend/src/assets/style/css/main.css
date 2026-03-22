@@ -3,6 +3,7 @@ html, body {
     padding: 0;
     height: 100%;
 }
+
 /* 页面全屏背景 */
 .home {
     /*  display: flex;
@@ -16,7 +17,7 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: url("@assets/MHY_XTLL.png") ;
+    background: url("@assets/MHY_XTLL.png");
     /* 关键：固定背景，不随滚动重复或变形 */
     background-attachment: fixed; /* ← 核心属性 */
     background-size: cover; /* 覆盖整个容器 */
@@ -33,24 +34,34 @@ html, body {
     margin-bottom: 25px;
     border: 3px solid #6a89cc;
 }
+
 /*返回主页*/
 /* 固定按钮样式 */
 .fixed-footer {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
 }
 
-.fixed-footer .btn {
-  padding: 10px 15px;
-  background: rgba(52, 152, 219, 0.8);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.fixed-back {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
 }
+
+.fixed-back .btn,
+.fixed-footer .btn {
+    padding: 10px 15px;
+    background: rgba(52, 152, 219, 0.8);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
 /*.btn.secondary {
     padding: 10px 24px;
     background: #6b7280;
@@ -59,9 +70,10 @@ html, body {
     border-radius: 8px;
     cursor: pointer;
 }*/
+.fixed-back .btn:hover,
 .fixed-footer .btn:hover {
-  background: rgba(41, 128, 185, 1);
-  transform: scale(1.05);
+    background: rgba(41, 128, 185, 1);
+    transform: scale(1.05);
 }
 
 /*重启*/
@@ -90,76 +102,86 @@ html, body {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .home {
-    min-width: auto;
-    background-attachment: scroll;
-    background-position: center top;
-  }
+    .home {
+        min-width: auto;
+        background-attachment: scroll;
+        background-position: center top;
+    }
 
-  .logo {
-    width: 80px;
-    height: 80px;
-    border-width: 2px;
-    margin-bottom: 20px;
-  }
+    .logo {
+        width: 80px;
+        height: 80px;
+        border-width: 2px;
+        margin-bottom: 20px;
+    }
 
-  .fixed-footer {
-    bottom: 15px;
-    right: 15px;
-  }
+    .fixed-footer {
+        bottom: 15px;
+        right: 15px;
+    }
 
-  .fixed-footer .btn {
-    padding: 8px 12px;
-    font-size: 14px;
-    border-radius: 6px;
-  }
+    .fixed-back {
+        bottom: 15px;
+        left: 15px;
+    }
 
-  .restart-overlay {
-    align-items: flex-end;
-    padding: 20px;
-  }
+    .fixed-back .btn,
+    .fixed-footer .btn {
+        padding: 8px 12px;
+        font-size: 14px;
+        border-radius: 6px;
+    }
 
-  .restart-modal {
-    padding: 2rem;
-    min-width: 280px;
-    max-width: 90%;
-    border-radius: 10px;
-  }
+    .restart-overlay {
+        align-items: flex-end;
+        padding: 20px;
+    }
+
+    .restart-modal {
+        padding: 2rem;
+        min-width: 280px;
+        max-width: 90%;
+        border-radius: 10px;
+    }
 }
 
 @media (max-width: 480px) {
-  .home {
-    background-size: cover;
-    background-position: center 30%;
-  }
+    .home {
+        background-size: cover;
+        background-position: center 30%;
+    }
 
-  .logo {
-    width: 60px;
-    height: 60px;
-    border-width: 2px;
-    margin-bottom: 15px;
-  }
+    .logo {
+        width: 60px;
+        height: 60px;
+        border-width: 2px;
+        margin-bottom: 15px;
+    }
 
-  .fixed-footer {
-    bottom: 10px;
-    right: 10px;
-  }
+    .fixed-footer {
+        bottom: 10px;
+        right: 10px;
+    }
+    .fixed-back {
+        bottom: 10px;
+        left: 10px;
+    }
+    .fixed-back .btn ,
+    .fixed-footer .btn {
+        padding: 6px 10px;
+        font-size: 13px;
+        border-radius: 5px;
+    }
 
-  .fixed-footer .btn {
-    padding: 6px 10px;
-    font-size: 13px;
-    border-radius: 5px;
-  }
+    .restart-overlay {
+        padding: 15px;
+    }
 
-  .restart-overlay {
-    padding: 15px;
-  }
-
-  .restart-modal {
-    padding: 1.5rem;
-    min-width: 260px;
-    max-width: 95%;
-    border-radius: 8px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-  }
+    .restart-modal {
+        padding: 1.5rem;
+        min-width: 260px;
+        max-width: 95%;
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    }
 }
