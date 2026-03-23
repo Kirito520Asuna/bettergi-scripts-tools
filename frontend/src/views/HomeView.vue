@@ -1,6 +1,4 @@
 <template>
-
-
   <div class="home">
     <div v-if="RestartClick" class="restart-overlay" @keydown.esc.prevent tabindex="0">
       <div class="restart-modal">
@@ -125,10 +123,12 @@ const getRandomLightColor = () => {
   return `rgb(${r}, ${g}, ${b})`;
 };
 const lightColors = [
+  '#f8d7da',
+  '#d1ecf1',
   'rgba(116,181,181,0.56)',
   '#e1c7ba',
   'rgba(255,141,195,0.54)',
-  '#ced4da'
+  '#ced4da',
 ];
 onMounted(async () => {
   /*================*/
@@ -282,7 +282,7 @@ const toClick = async (item) => {
     const token_name = import.meta.env.VITE_BASE_TOKEN_NAME || 'bgi_tools_token'
     localStorage.removeItem(token_name)
     router.push('/login')
-  }else if(value === 'Settings'){
+  } else if (value === 'Settings') {
     await ElMessageBox.confirm('确定要前往设置吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',

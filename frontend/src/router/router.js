@@ -44,7 +44,7 @@ const routes = [
         },
     },
     {
-        path: '/capabilities',
+        path: '/test/capabilities',
         name: 'capabilities',
         component: () => import('@views/CapabilitiesView.vue'),
         meta: {
@@ -70,7 +70,7 @@ const routes = [
     }
     ,
     {
-        path: '/AutoPlanConfig',
+        path: '/AutoPlan/Config',
         name: 'AutoPlanConfig',
         component: () => import('@views/AutoPlanConfigView.vue'),
         meta: {
@@ -83,7 +83,7 @@ const routes = [
     }
     ,
     {
-        path: '/AutoPlanDomain',
+        path: '/AutoPlan/Domain',
         name: 'AutoPlanDomain',
         component: () => import('@views/AutoPlanDomainView.vue'),
         meta: {
@@ -108,7 +108,8 @@ const routes = [
             isRoot: true,
             title: '语法配置',
             desc: '语法配置',
-            asSubParentTitle: '语法配置'
+            asSubParentTitle: '语法配置',
+            icon: 'SyntaxKey'
         }
     },
     {
@@ -117,9 +118,10 @@ const routes = [
         component: () => import('@views/WsProxyView.vue'),
         meta: {
             isRoot: true,
-            title: 'WS 代理授权',
-            desc: 'WS 代理授权',
-            asSubParentTitle: 'WS 代理授权'
+            title: 'Websocket代理授权管理',
+            desc: 'Websocket代理授权管理',
+            asSubParentTitle: 'Websocket代理授权管理',
+            icon: 'Websocket-Proxy'
         }
     },
     // 其他路由...
