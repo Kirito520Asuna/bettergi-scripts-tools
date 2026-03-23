@@ -157,7 +157,7 @@ jobs:
           if [[ "$EVENT_NAME" == "push" ]] && [[ "$TAG_NAME" == v* ]]; then
             AUTO=true
             # 读取指定文件获取环境变量
-            JAVA_VERSION=JAVA_VERSION_XML
+            JAVA_VERSION=$JAVA_VERSION_XML
             TAG_NAME=$TAG_NAME_MVN
           
             PUSH_TO_DOCKER_REGISTRY=true
