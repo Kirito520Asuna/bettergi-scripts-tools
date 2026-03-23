@@ -92,6 +92,18 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        <!-- Knife4j 官方仓库（兜底） -->
+        <repository>
+            <id>knife4j-maven</id>
+            <name>Knife4j Maven Repository</name>
+            <url>https://raw.githubusercontent.com/xiaoymin/knife4j-maven-repository/master/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>spring-snapshots</id>
             <name>Spring Snapshots</name>
