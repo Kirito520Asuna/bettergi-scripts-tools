@@ -1,5 +1,6 @@
 <template>
   <div class="home">
+    <h1 style="color: chocolate;font-size: 400%;">暂无功能,敬请期待!</h1>
     <div class="fixed-back">
       <button @click="goToBack" class="btn secondary">返回上一页</button>
     </div>

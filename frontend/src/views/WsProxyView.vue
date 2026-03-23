@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <div class="container">
-      <h1 class="title">WS 代理授权管理</h1>
+      <h1 class="title">Websocket代理授权管理</h1>
 
       <!-- 搜索栏 -->
       <div class="card search-layout">
@@ -194,12 +194,17 @@ const searchUid = ref('');
 const selectedRows = ref([]);
 const showDialog = ref(false);
 const isEditMode = ref(false);
-
+function getWsProxyHostPrefix(){
+  const protocol = window.location.protocol;
+  const host = window.location.host;
+  const basePath = import.meta.env.VITE_BASE_API_PATH || '/bgi/';
+  return `${protocol}//${host}${basePath}`;
+}
 const formData = ref({
   uid: '',
   action: '',
   ws_url: '',
-  ws_proxy_url: 'http://127.0.0.1:8081/bgi/ws-proxy/message/send',
+  ws_proxy_url: getWsProxyHostPrefix()+'ws-proxy/message/send',
   ws_token: '',
   at_list: '',
   user_id: '',
@@ -254,7 +259,7 @@ const openAddDialog = () => {
     uid: '',
     action: '',
     ws_url: '',
-    ws_proxy_url: 'http://127.0.0.1:8081/bgi/ws-proxy/message/send',
+    ws_proxy_url: getWsProxyHostPrefix()+'ws-proxy/message/send',
     ws_token: '',
     at_list: '',
     user_id: '',
