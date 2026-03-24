@@ -6,6 +6,7 @@ import cn.hutool.json.JSONConfig;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Login;
+import com.cloud_guest.aop.security.Token;
 import com.cloud_guest.domain.WsProxyAccess;
 import com.cloud_guest.domain.dto.WsProxyDto;
 import com.cloud_guest.exception.exceptions.GlobalException;
@@ -104,7 +105,7 @@ public class WsProxyController {
         uidList = uidList.stream().map(uid -> uid.substring(uid.lastIndexOf(":") + 1)).toList();
         return ok(uidList);
     }
-
+    @Token
     @SysLog
     @Operation(summary = "查询授权全部")
     @GetMapping("access/all")
@@ -112,7 +113,7 @@ public class WsProxyController {
         List<WsProxyAccess> proxyAccessList = wsProxyService.findAll();
         return ok(proxyAccessList);
     }
-
+    @Token
     @SysLog
     @Operation(summary = "查询授权")
     @GetMapping("access")
