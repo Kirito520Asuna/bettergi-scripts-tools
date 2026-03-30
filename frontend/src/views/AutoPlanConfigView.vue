@@ -40,9 +40,10 @@ function getHostPrefix() {
 }
 
 const showDialogApi = ref(false)
-const ApiList = computed( () => {
+const ApiList = ref([])
+const handleApi = async () =>  {
   const hostPrefix = getHostPrefix();
-  const response = getTokenInfo()
+  const response = await getTokenInfo()
   let tokenInfo = {
     name: undefined,
     value: undefined,
@@ -51,7 +52,7 @@ const ApiList = computed( () => {
     tokenInfo.name = response.data.name || '';
     tokenInfo.value = response.data.value || '';
   }
-  let token = (tokenInfo.name && tokenInfo.value) ? tokenInfo.name + "=" + tokenInfo.value : "未设置,如需请前往设置配置";
+  let token = (tokenInfo?.name && tokenInfo?.value) ? tokenInfo?.name + "=" + tokenInfo?.value : "未设置,如需请前往设置配置";
   const list = [
     {
       name: '拉取配置API',
@@ -70,8 +71,9 @@ const ApiList = computed( () => {
       value: token,
     },
   ]
-  return list
-})
+  ApiList.value = list
+  showDialogApi.value=true
+}
 const querySearchAsync = (queryString, cb) => {
   if (queryString?.trim() === "" || !queryString) {
     cb(cloud.value.UidList)
@@ -988,7 +990,7 @@ const batchUpdate = () => {
           <button @click="findDomains" class="btn btn-submit">☁️🔄加载云端配置</button>
           <button @click="removeConfigToBackend" class="btn danger">☁️🗑️移除云端配置</button>
           <button @click="removeConfigAll" class="btn danger">🗑️清除全部</button>
-          <button @click="showDialogApi=true" class="btn btn-submit">查看脚本配置API</button>
+          <button @click="handleApi" class="btn btn-submit">查看脚本配置API</button>
         </div>
 
         <!-- 在配置列表上方添加批量操作区域 -->
