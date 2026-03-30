@@ -21,7 +21,8 @@ import {
 
 import draggable from 'vuedraggable'
 import {debounce} from 'lodash-es';
-import {goBack, toHomePage} from "@api/web/web.js";
+import {getLocalToken, getLocalTokenName, goBack, toHomePage} from "@api/web/web.js";
+import {getTokenInfo} from "@api/auth/token.js";
 
 const cloud = ref({
   UidList: [],
@@ -30,12 +31,47 @@ const cloud = ref({
   // 設定冷卻時間（單位：毫秒），例如每 1 秒最多請求 1 次
   cooldownMs: 1000,
 })
-function getHostPrefix(){
+
+function getHostPrefix() {
   const protocol = window.location.protocol;
   const host = window.location.host;
   const basePath = import.meta.env.VITE_BASE_API_PATH || '/bgi/';
   return `${protocol}//${host}${basePath}`;
 }
+
+const showDialogApi = ref(false)
+const ApiList = computed( () => {
+  const hostPrefix = getHostPrefix();
+  const response = getTokenInfo()
+  let tokenInfo = {
+    name: undefined,
+    value: undefined,
+  }
+  if (response.code === 200) {
+    tokenInfo.name = response.data.name || '';
+    tokenInfo.value = response.data.value || '';
+  }
+  let token = (tokenInfo.name && tokenInfo.value) ? tokenInfo.name + "=" + tokenInfo.value : "未设置,如需请前往设置配置";
+  const list = [
+    {
+      name: '拉取配置API',
+      value: hostPrefix + 'auto/plan/json',
+    },
+    {
+      name: '推送全部配置API',
+      value: hostPrefix + 'auto/plan/domain/json/all',
+    },
+    {
+      name: '推送全部国家配置API',
+      value: hostPrefix + 'auto/plan/country/json/all',
+    },
+    {
+      name: '授权token',
+      value: token,
+    },
+  ]
+  return list
+})
 const querySearchAsync = (queryString, cb) => {
   if (queryString?.trim() === "" || !queryString) {
     cb(cloud.value.UidList)
@@ -82,7 +118,7 @@ const hasCloudUidList = computed(() => {
   return cloud.value.UidList.length > 0
 })
 const handleUidSelect = (item) => {
-  uid.value = item?.uid?item.uid:item
+  uid.value = item?.uid ? item.uid : item
   ElMessage.success(`已选择云端 UID：${uid.value}`)
   findDomains()
 }
@@ -952,7 +988,7 @@ const batchUpdate = () => {
           <button @click="findDomains" class="btn btn-submit">☁️🔄加载云端配置</button>
           <button @click="removeConfigToBackend" class="btn danger">☁️🗑️移除云端配置</button>
           <button @click="removeConfigAll" class="btn danger">🗑️清除全部</button>
-          <button class="btn btn-submit">查看自动体力计划API配置</button>
+          <button @click="showDialogApi=true" class="btn btn-submit">查看脚本配置API</button>
         </div>
 
         <!-- 在配置列表上方添加批量操作区域 -->
@@ -1325,13 +1361,52 @@ const batchUpdate = () => {
 
       <div class="external-pop-up-frame">
         <!-- 弹窗 -->
-        <el-dialog
+                <el-dialog
+            v-if="showDialogApi"
+            v-model="showDialogApi"
             width="480px"
             :close-on-click-modal="false"
             append-to-body
+            class="api-config-dialog"
         >
-
+          <template #header>
+            <div class="dialog-header">
+              <el-icon><Connection /></el-icon>
+              <span>脚本配置 API</span>
+            </div>
+          </template>
+          <div class="api-dialog-content">
+            <div class="api-item" v-for="(item,index) in ApiList" :key="index">
+              <div class="api-item-header">
+                <span class="api-name">{{ item.name }}</span>
+                <el-tag size="small" type="info">API {{ index + 1 }}</el-tag>
+              </div>
+              <div class="api-value-container">
+                <code class="api-value">{{ item.value }}</code>
+                <el-tooltip content="复制到剪贴板" placement="top">
+                  <el-button
+                      type="primary"
+                      size="small"
+                      icon="DocumentCopy"
+                      @click="copyToClipboard(item.value)"
+                      class="copy-btn"
+                  >
+                    复制
+                  </el-button>
+                </el-tooltip>
+              </div>
+            </div>
+            <div v-if="!ApiList || ApiList.length === 0" class="empty-state">
+              <el-empty description="暂无可用 API" :image-size="80" />
+            </div>
+          </div>
+          <template #footer>
+            <div class="dialog-footer">
+              <el-button @click="showDialogApi = false">关闭</el-button>
+            </div>
+          </template>
         </el-dialog>
+
         <el-dialog
             v-if="currentConfig"
             v-model="currentConfig.showDaysDialog"
@@ -1602,5 +1677,113 @@ const batchUpdate = () => {
   backdrop-filter: blur(6px) !important;
   border-left: 2px solid rgba(100, 160, 255, 0.3) !important;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.api-config-dialog {
+  border-radius: 12px;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.dialog-header .el-icon {
+  font-size: 24px;
+  color: var(--el-color-primary);
+}
+
+.api-dialog-content {
+  padding: 8px 0;
+}
+
+.api-item {
+  background: linear-gradient(135deg, var(--el-fill-color-light) 0%, var(--el-fill-color) 100%);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--el-border-color-light);
+  transition: all 0.3s ease;
+}
+
+.api-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--el-color-primary-light-7);
+}
+
+.api-item:last-child {
+  margin-bottom: 0;
+}
+
+.api-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.api-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.api-value-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--el-bg-color);
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid var(--el-border-color);
+}
+
+.api-value {
+  flex: 1;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--el-color-primary);
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.copy-btn {
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.empty-state {
+  padding: 40px 0;
+  text-align: center;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* 滚动条美化 */
+.api-dialog-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.api-dialog-content::-webkit-scrollbar-track {
+  background: var(--el-fill-color-lighter);
+  border-radius: 3px;
+}
+
+.api-dialog-content::-webkit-scrollbar-thumb {
+  background: var(--el-color-info-light-5);
+  border-radius: 3px;
+}
+
+.api-dialog-content::-webkit-scrollbar-thumb:hover {
+  background: var(--el-color-info);
 }
 </style>
