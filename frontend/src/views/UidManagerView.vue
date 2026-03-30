@@ -185,10 +185,10 @@ onMounted(() => {
             @selection-change="handleSelectionChange"
             style="width: 100%"
           >
-            <el-table-column type="selection" width="55"/>
-            <el-table-column prop="uid" label="UID" min-width="180"/>
-            <el-table-column prop="as" label="别称" min-width="150"/>
-            <el-table-column label="操作" width="200" fixed="right">
+            <el-table-column type="selection" />
+            <el-table-column prop="uid" label="UID" />
+            <el-table-column prop="as" label="别称" />
+            <el-table-column label="操作"  fixed="right">
               <template #default="{ row }">
                 <el-button 
                   type="primary" 
@@ -223,10 +223,10 @@ onMounted(() => {
     <el-dialog
       v-model="formData.show"
       :title="formData.edit ? '编辑 UID 映射' : '新增 UID 映射'"
-      width="500px"
+      style="max-width: 300px"
       :close-on-click-modal="false"
     >
-      <el-form :model="formData" :rules="rules" label-width="80px">
+      <el-form :model="formData" :rules="rules" >
         <el-form-item label="UID" prop="uid">
           <el-input
             v-model="formData.uid"
@@ -266,7 +266,6 @@ onMounted(() => {
   padding: 30px;
   min-width: 1200px;
   margin: 0 auto;
-  height: 100vh;
 }
 
 .manager-container {
@@ -309,7 +308,7 @@ onMounted(() => {
 }
 
 .table-container {
-  height: 60vh;
+  height: 70vh;
   background: white;
   border-radius: 15px;
   padding: 20px;
@@ -362,7 +361,7 @@ onMounted(() => {
   to { transform: rotate(360deg); }
 }
 
-.fixed-back {
+/*.fixed-back {
   position: fixed;
   bottom: 80px;
   left: 30px;
@@ -394,49 +393,132 @@ onMounted(() => {
 .btn.secondary:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}*/
+
+/*@media (max-width: 768px) {
+  .uid-manager {
+    padding: 20px;
+    min-width: 50vw;
+  }
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
+@media (max-width: 480px) {
   .uid-manager {
     padding: 15px;
-    min-width: auto;
+    min-width: 50vw;
   }
+}*/
 
-  .manager-container {
-    padding: 25px;
-    border-radius: 15px;
-    margin-bottom: 120px;
-  }
 
-  .manager-title {
-    font-size: 26px;
-  }
+@media (max-width: 768px) {
+    .uid-manager {
+        padding: 20px;
+        min-width: 50vw;
+    }
 
-  .toolbar {
-    flex-direction: column;
-    gap: 10px;
-  }
+    .manager-container {
+        padding: 30px;
+        border-radius: 15px;
+    }
 
-  .action-button {
-    width: 100%;
-  }
+    .manager-title {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
 
-  .table-container {
-    padding: 15px;
-    overflow-x: auto;
-  }
+    .toolbar {
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
 
-  .fixed-back,
-  .fixed-footer {
-    bottom: 60px;
-    left: 15px;
-    right: 15px;
-  }
+    .action-button {
+        min-width: 100px;
+        font-size: 14px;
+    }
 
-  .fixed-back button,
-  .fixed-footer button {
-    width: 100%;
-  }
+    .table-container {
+        height: 50vh;
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .table-button {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+
+    .empty-tip {
+        padding: 40px 15px;
+        border-radius: 10px;
+    }
+
+    .empty-icon {
+        font-size: 60px;
+        margin-bottom: 15px;
+    }
+
+    .empty-text {
+        font-size: 16px;
+    }
 }
+
+@media (max-width: 480px) {
+    .uid-manager {
+        padding: 15px;
+    }
+
+    .manager-container {
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .manager-title {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+
+    .toolbar {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .action-button {
+        min-width: auto;
+        width: 100%;
+        font-size: 13px;
+    }
+
+    .table-container {
+        height: 45vh;
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .table-button {
+        padding: 4px 8px;
+        font-size: 11px;
+        margin-right: 5px;
+    }
+
+    .empty-tip {
+        padding: 30px 10px;
+        border-radius: 8px;
+    }
+
+    .empty-icon {
+        font-size: 50px;
+        margin-bottom: 10px;
+    }
+
+    .empty-text {
+        font-size: 14px;
+    }
+
+    .button-icon {
+        margin-right: 4px;
+        font-size: 14px;
+    }
+}
+
 </style>

@@ -600,4 +600,190 @@ const goToBack = async () => {
   padding: 20px;
   border-top: 1px solid #e0e0e0;
 }
+
+
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+        max-width: 100%;
+    }
+
+    .title {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+
+    .card {
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+    }
+
+    .form-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .label {
+        width: auto;
+        margin-bottom: 5px;
+    }
+
+    .input {
+        width: auto;
+    }
+
+    .actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+
+    .table-container {
+        height: 50vh;
+        overflow-x: auto;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    .btn-link {
+        padding: 3px 6px;
+        font-size: 12px;
+        margin-right: 3px;
+    }
+
+    .empty-data {
+        padding: 30px;
+    }
+
+    .modal-dialog {
+        width: 95%;
+        max-width: 90vw;
+        max-height: 85vh;
+    }
+
+    .modal-header {
+        padding: 15px;
+    }
+
+    .modal-body {
+        padding: 15px;
+    }
+
+    .modal-footer {
+        padding: 15px;
+        flex-direction: column;
+    }
+
+    .modal-footer .btn {
+        width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+
+    .title {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
+
+    .card {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
+
+    .form-group.search-layout {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .label {
+        font-size: 13px;
+    }
+
+    .input {
+        font-size: 13px;
+        padding: 8px;
+    }
+
+    .actions {
+        gap: 6px;
+    }
+
+    .btn {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .table-container {
+        height: 45vh;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 6px;
+        font-size: 12px;
+    }
+
+    .btn-link {
+        padding: 2px 5px;
+        font-size: 11px;
+        margin-right: 2px;
+    }
+
+    .empty-data {
+        padding: 20px;
+        font-size: 13px;
+    }
+
+    .token-display {
+        font-size: 11px;
+        padding: 2px 4px;
+    }
+
+    .modal-overlay {
+        align-items: flex-end;
+    }
+
+    .modal-dialog {
+        width: 100%;
+        max-width: 100vw;
+        max-height: 95vh;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .modal-header h3 {
+        font-size: 1.2rem;
+    }
+
+    .close-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 22px;
+    }
+
+    .modal-body {
+        padding: 12px;
+    }
+
+    .modal-footer {
+        padding: 12px;
+        gap: 8px;
+    }
+}
+
 </style>

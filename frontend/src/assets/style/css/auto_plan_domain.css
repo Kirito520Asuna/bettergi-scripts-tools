@@ -252,5 +252,5 @@
 @media (max-width: 768px) {
     .sidebar { width: 220px; }
     .main-content { margin-left: 220px; }
-    .fixed-footer { left: 220px; }
+ /*   .fixed-footer { left: 220px; }*/
 }

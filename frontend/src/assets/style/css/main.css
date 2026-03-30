@@ -135,7 +135,7 @@ html, body {
         border-width: 2px;
         margin-bottom: 20px;
     }
-    .fixed-back,
+/*    .fixed-back,
     .fixed-footer {
         bottom: 60px;
         left: 15px;
@@ -145,6 +145,21 @@ html, body {
     .fixed-back button,
     .fixed-footer button {
         width: 100%;
+    }*/
+
+    .fixed-back {
+        bottom: 60px;
+        left: 20px;
+    }
+
+    .fixed-footer {
+        bottom: 60px;
+        right: 20px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 14px;
     }
 
     .restart-overlay {
@@ -173,7 +188,7 @@ html, body {
         margin-bottom: 15px;
     }
 
-    .fixed-footer {
+/*    .fixed-footer {
         bottom: 10px;
         right: 10px;
     }
@@ -186,6 +201,27 @@ html, body {
         padding: 6px 10px;
         font-size: 13px;
         border-radius: 5px;
+    }*/
+
+    .fixed-back {
+        bottom: 50px;
+        left: 15px;
+    }
+
+    .fixed-footer {
+        bottom: 50px;
+        right: 15px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn.secondary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
 
     .restart-overlay {
