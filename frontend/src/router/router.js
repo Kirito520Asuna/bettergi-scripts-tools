@@ -124,6 +124,18 @@ const routes = [
             icon: 'Websocket-Proxy'
         }
     },
+    {
+        path: '/uid-manager',
+        name: 'UidManager',
+        component: () => import('@views/UidManagerView.vue'),
+        meta: {
+            isRoot: true,
+            title: 'UID 映射管理',
+            desc: 'UID 映射管理',
+            asSubParentTitle: 'UID 映射管理',
+            icon: 'UidMapping'
+        }
+    },
     // 其他路由...
 ]
 const VITE_BASE_PATH = (import.meta.env.VITE_BASE_PATH || '/bgi/ui/');

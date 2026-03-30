@@ -30,6 +30,12 @@ const cloud = ref({
   // 設定冷卻時間（單位：毫秒），例如每 1 秒最多請求 1 次
   cooldownMs: 1000,
 })
+function getHostPrefix(){
+  const protocol = window.location.protocol;
+  const host = window.location.host;
+  const basePath = import.meta.env.VITE_BASE_API_PATH || '/bgi/';
+  return `${protocol}//${host}${basePath}`;
+}
 const querySearchAsync = (queryString, cb) => {
   if (queryString?.trim() === "" || !queryString) {
     cb(cloud.value.UidList)
@@ -76,8 +82,8 @@ const hasCloudUidList = computed(() => {
   return cloud.value.UidList.length > 0
 })
 const handleUidSelect = (item) => {
-  uid.value = item
-  ElMessage.success(`已选择云端 UID：${item}`)
+  uid.value = item?.uid?item.uid:item
+  ElMessage.success(`已选择云端 UID：${uid.value}`)
   findDomains()
 }
 // 配置列表 → 核心数据结构改为 array
@@ -878,25 +884,25 @@ const batchUpdate = () => {
       if (config.runType === runTypesDefault()[0]) {
         //秘境
         if (autoFight.partyName)
-        config.autoFight.partyName = autoFight.partyName
+          config.autoFight.partyName = autoFight.partyName
       } else if (config.runType === runTypesDefault()[1]) {
         //地脉
         if (autoLeyLineOutcrop.team)
-        config.autoLeyLineOutcrop.team = autoLeyLineOutcrop.team
+          config.autoLeyLineOutcrop.team = autoLeyLineOutcrop.team
         if (autoLeyLineOutcrop.friendshipTeam)
-        config.autoLeyLineOutcrop.friendshipTeam = autoLeyLineOutcrop.friendshipTeam
+          config.autoLeyLineOutcrop.friendshipTeam = autoLeyLineOutcrop.friendshipTeam
       } else if (config.runType === runTypesDefault()[2]) {
         if (autoLeyLineOutcrop.fightTeamName)
-        config.autoStygianOnslaught.fightTeamName = autoStygianOnslaught.fightTeamName
+          config.autoStygianOnslaught.fightTeamName = autoStygianOnslaught.fightTeamName
         if (autoLeyLineOutcrop.bossNum)
-        config.autoStygianOnslaught.bossNum = autoStygianOnslaught.bossNum
+          config.autoStygianOnslaught.bossNum = autoStygianOnslaught.bossNum
       }
-      if (batch.common.enable!==undefined)
-      config.enable = batch.common.enable
+      if (batch.common.enable !== undefined)
+        config.enable = batch.common.enable
     }
   })
   batchJson.value.batch.show = false
-  batchJson.value.batch.common.enable=true
+  batchJson.value.batch.common.enable = true
 }
 
 </script>
@@ -922,8 +928,8 @@ const batchUpdate = () => {
             >
               <template #default="{ item }">
                 <div class="uid-item">
-                  <span class="uid-text">{{ item }}</span>
-                  <!--                <span v-if="item.lastSync" class="uid-time">最后同步: {{ item.lastSync }}</span>-->
+                  <span class="uid-text">{{ item?.uid ? item.uid : item }}</span>
+                  <span v-if="item.as" class="uid-as"> : {{ item.as }}</span>
                 </div>
               </template>
 
@@ -946,7 +952,7 @@ const batchUpdate = () => {
           <button @click="findDomains" class="btn btn-submit">☁️🔄加载云端配置</button>
           <button @click="removeConfigToBackend" class="btn danger">☁️🗑️移除云端配置</button>
           <button @click="removeConfigAll" class="btn danger">🗑️清除全部</button>
-
+          <button class="btn btn-submit">查看自动体力计划API配置</button>
         </div>
 
         <!-- 在配置列表上方添加批量操作区域 -->
@@ -1320,6 +1326,13 @@ const batchUpdate = () => {
       <div class="external-pop-up-frame">
         <!-- 弹窗 -->
         <el-dialog
+            width="480px"
+            :close-on-click-modal="false"
+            append-to-body
+        >
+
+        </el-dialog>
+        <el-dialog
             v-if="currentConfig"
             v-model="currentConfig.showDaysDialog"
             title="选择执行日期"
@@ -1582,6 +1595,7 @@ const batchUpdate = () => {
   border-left: 2px solid rgba(100, 160, 255, 0.3) !important;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15) !important;
 }
+
 .batch-drawer {
   min-width: 60% !important;
   background: #e8f4f8 !important;

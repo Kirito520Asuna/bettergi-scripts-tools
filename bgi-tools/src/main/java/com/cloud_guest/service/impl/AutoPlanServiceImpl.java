@@ -33,18 +33,18 @@ public class AutoPlanServiceImpl implements AutoPlanService {
 
     @Override
     public boolean delList(List<String> ids) {
-        ids = ids.stream().map(id -> KeyConstants.auto_plan_key + id).collect(Collectors.toList());
+        ids = ids.stream().map(id -> buildId(id)).collect(Collectors.toList());
         return cacheService.removeList(ids);
     }
 
     @Override
     public boolean save(String id, String json) {
-        id = KeyConstants.auto_plan_key + id;
+        id = buildId(id);
         return cacheService.save(id, json);
     }
     @Override
     public List<String> findALLUid() {
-        String id = KeyConstants.auto_plan_key;
+        String id = getSuffix();
         String jsonUidList = cacheService.findById(id);
         List<String> uidList = Arrays.asList();
 
@@ -60,7 +60,7 @@ public class AutoPlanServiceImpl implements AutoPlanService {
 
     @Override
     public List<AutoPlanVo> find(String id) {
-        id = KeyConstants.auto_plan_key + id;
+        id = buildId(id);
         Cache<String> cache = cacheService.find(id);
         List<Map<String, Object>> list = cache.toList();
 
@@ -74,7 +74,8 @@ public class AutoPlanServiceImpl implements AutoPlanService {
     @Override
     public List<String> findUidAll() {
         List<String> uidList = new ArrayList<>();
-        String key = KeyConstants.auto_plan_key.substring(0, KeyConstants.auto_plan_key.lastIndexOf(":"));
+        
+        String key = getSuffix().substring(0, getSuffix().lastIndexOf(":"));
         String uid_all = cacheService.findValueByKey(key);
         if (StrUtil.isNotBlank(uid_all)) {
             if (JSONUtil.isTypeJSONArray(uid_all)) {

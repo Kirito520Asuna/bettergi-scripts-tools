@@ -17,6 +17,7 @@ public interface KeyConstants {
 
     String load_yml_write_key = "load_yml:write:ALL";
     String ws_proxy_access_key = "WS_PROXY_ACCESS:UID:";
+    String mapping_uid_key = "MAPPING:UID:";
     String auto_plan_key = "AUTO_PLAN:UID:";
     String auto_plan_key_uid_all = "AUTO_PLAN:UID:ALL";
     String auto_plan_key_domain_all = "AUTO_PLAN_DOMAIN:ALL";

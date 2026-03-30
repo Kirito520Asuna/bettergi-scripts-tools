@@ -239,14 +239,14 @@
   z-index: 10;
 }*/
 
-.btn.secondary {
+/*.btn.secondary {
     padding: 10px 24px;
     background: #6b7280;
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-}
+}*/
 
 /* 响应式 */
 @media (max-width: 768px) {

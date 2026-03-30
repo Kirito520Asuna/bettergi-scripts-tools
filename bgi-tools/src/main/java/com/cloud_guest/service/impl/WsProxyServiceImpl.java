@@ -25,13 +25,14 @@ public class WsProxyServiceImpl implements WsProxyService {
 
     @Override
     public boolean save(String id, String json) {
-        id = KeyConstants.ws_proxy_access_key + id;
+        //id = buildId(id);
+        id = buildId(id);
         return cacheService.save(id, json);
     }
 
     @Override
     public boolean delList(List<String> ids) {
-        ids = ids.stream().map(id -> KeyConstants.ws_proxy_access_key + id).toList();
+        ids = ids.stream().map(id -> buildId(id)).toList();
         return cacheService.removeList(ids);
     }
 
@@ -54,8 +55,8 @@ public class WsProxyServiceImpl implements WsProxyService {
     public WsProxyAccess find(String id) {
         if (StrUtil.isBlank(id)) {
             return null;
-        }else if (!id.startsWith(KeyConstants.ws_proxy_access_key)) {
-            id = KeyConstants.ws_proxy_access_key + id;
+        }else if (!id.startsWith(getSuffix())) {
+            id = buildId(id);
         }
         WsProxyAccess wsProxyAccess = cacheService.find(id, WsProxyAccess.class);
         return wsProxyAccess;
