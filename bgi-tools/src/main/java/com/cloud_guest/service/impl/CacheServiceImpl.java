@@ -45,7 +45,7 @@ public class CacheServiceImpl implements CacheService {
                 throw new GlobalException("存在其他操作，请稍后再试!");
             }
             try {
-                if (ModeUtil.isLocal()) {
+/*                if (ModeUtil.isLocal()) {
                     LocalCacheUtils.remove(id);
                     if (!id.contains("ALL")) {
                         String parentKey = id.substring(0, id.lastIndexOf(":"));
@@ -58,6 +58,12 @@ public class CacheServiceImpl implements CacheService {
                         String parentKey = id.substring(0, id.lastIndexOf(":"));
                         removeId(parentKey, id);
                     }
+                }*/
+
+                removeByKey(id);
+                if (!id.contains("ALL")) {
+                    String parentKey = id.substring(0, id.lastIndexOf(":"));
+                    removeId(parentKey, id);
                 }
             } finally {
                 if (tryLock) {

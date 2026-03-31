@@ -211,6 +211,12 @@ jobs:
            source $GITHUB_WORKSPACE/.github/workflows/bash/update-version.sh
            update_version "${{env.TAG_NAME}}"
 
+      - name: 生成覆盖配置文件
+        run: |
+          source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
+          update_salt 
+          update_config
+
       - name: 5. 设置 Java 环境
         uses: actions/setup-java@v4
         with:

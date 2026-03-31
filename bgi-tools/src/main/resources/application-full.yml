@@ -59,6 +59,29 @@ server:
     context-path: /bgi
   port: 8081
 
+sign:
+  api:
+    name: ${spring.application.name}
+    ip-whitelist: #ip白名单
+      - 127.0.0.1
+      - localhost
+    ip-blacklist: #ip黑名单
+    salt: #签名盐值
+    sign-enable: true #是否开启签名校验
+    sign-multiple-enable: false #是否开启多签名校验
+    sign-time-out: 10 #签名超时时间 单位分钟
+    paths-to-match:
+      - /api/**
+    encryption-paths-to-exclude:
+      - /key/exchangeKey
+      - /api/key/exchangeKey
+      - /jwt/key/exchangeKey
+    sign-as-name: X-Bgi-Tools-Sign
+    timestamp-as-name: X-Bgi-Tools-Timestamp
+    enable-double-symmetric-encryption: false
+    encryption-as-name: X-Bgi-Tools-Encryption-Client-Public-Key
+    id-as-name: X-Bgi-Tools-Encryption-Id
+
 
 spring:
   application:

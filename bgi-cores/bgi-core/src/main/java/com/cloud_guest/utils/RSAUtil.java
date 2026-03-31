@@ -211,6 +211,8 @@ public class RSAUtil {
         if (StrUtils.isBlank(algorithm)) {
             algorithm = ALGORITHM;
         }     // Base64解码公钥字符串
+        // 移除所有空白字符（包括空格、换行等）
+        key = key.replaceAll("\\s+", "");
         byte[] keyBytes = Base64.getDecoder().decode(key);
         // 创建X509编码规范
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
@@ -244,6 +246,8 @@ public class RSAUtil {
         if (StrUtils.isBlank(algorithm)) {
             algorithm = ALGORITHM;
         }
+        // 移除所有空白字符（包括空格、换行等）
+        key = key.replaceAll("\\s+", "");
         // Base64解码私钥字符串
         byte[] keyBytes = Base64.getDecoder().decode(key);
         // 创建PKCS8编码规范

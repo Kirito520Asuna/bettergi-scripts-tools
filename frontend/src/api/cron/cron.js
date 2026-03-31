@@ -1,4 +1,5 @@
 import service from "@utils/request.js";
+import {ApiService} from "@utils/ApiRequest.js";
 
 /**
  * 获取下一个符合cron表达式的时间戳
@@ -9,7 +10,15 @@ import service from "@utils/request.js";
  */
 async function getNextTimestamp(cronExpression, startTimestamp, endTimestamp){
     // 发送POST请求到服务端，获取下一个符合cron表达式的时间戳
-    const response = await service.post("/cron/next-timestamp", {
+    // const response = await service.post("/cron/next-timestamp", {
+    //     // 传入cron表达式
+    //     cronExpression: cronExpression,
+    //     // 传入开始时间戳
+    //     startTimestamp: startTimestamp,
+    //     // 传入结束时间戳
+    //     endTimestamp: endTimestamp,
+    // })
+    const response = await ApiService.post("/api/cron/next-timestamp", {
         // 传入cron表达式
         cronExpression: cronExpression,
         // 传入开始时间戳
@@ -17,7 +26,6 @@ async function getNextTimestamp(cronExpression, startTimestamp, endTimestamp){
         // 传入结束时间戳
         endTimestamp: endTimestamp,
     })
-
     // 返回响应数据
     return response.data;
 }

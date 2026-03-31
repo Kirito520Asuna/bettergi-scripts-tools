@@ -1,14 +1,16 @@
 import forge from 'node-forge';
 import axios from 'axios';
+
 // 1. 生成 RSA 密钥对
-export function generateKeyPair(bits = 2048) {
-    const keypair = forge.pki.rsa.generateKeyPair({ bits: bits });
+export function generateKeyPair(bits = 1024) {
+    const keypair = forge.pki.rsa.generateKeyPair({bits: bits});
 
     const publicKey = forge.pki.publicKeyToPem(keypair.publicKey);
     const privateKey = forge.pki.privateKeyToPem(keypair.privateKey);
 
-    return { publicKey, privateKey };
+    return {publicKey, privateKey};
 }
+
 // Base64（去掉 PEM 头尾，和 Java 对齐）
 export function pemToBase64(pem) {
     return pem
@@ -30,6 +32,7 @@ export function decryptByPrivateKey(encryptedBase64, privateKey) {
        return decrypted;*/
     return decryptLong(encryptedBase64, privateKey);
 }
+
 export function decryptLong(encryptedBase64, privateKey) {
     const encryptedBytes = forge.util.decode64(encryptedBase64);
 
@@ -55,7 +58,7 @@ export function decryptLong(encryptedBase64, privateKey) {
  * @param {string} publicKeyBase64 - Base64 格式的公钥
  * @returns {string} Base64 编码的加密后字符串
  */
-function encryptByPublicKey(data, publicKey) {
+export function encryptByPublicKey(data, publicKey) {
     return encryptLong(data, publicKey);
 }
 
@@ -64,7 +67,7 @@ function encryptByPublicKey(data, publicKey) {
  * @param {string} base64 - Base64 格式的公钥
  * @returns {object} Forge 公钥对象
  */
-function base64ToPublicKey(base64) {
+export function base64ToPublicKey(base64) {
     return forge.pki.publicKeyFromPem(
         `-----BEGIN PUBLIC KEY-----\n${base64}\n-----END PUBLIC KEY-----`
     );
@@ -76,7 +79,7 @@ function base64ToPublicKey(base64) {
  * @param {string} publicKey - Forge 公钥对象
  * @returns {string} Base64 编码的加密后字符串
  */
-function encryptLong(data, publicKey) {
+export function encryptLong(data, publicKey) {
     const keyLength = publicKey.n.bitLength();
     const blockSize = Math.floor(keyLength / 8) - 11;
     let encryptedBytes = '';

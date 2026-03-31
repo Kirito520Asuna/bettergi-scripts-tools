@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.swagger.config.SwaggerConfiguration;
+import com.cloud_guest.swagger.properties.HeaderProperties;
+import com.cloud_guest.swagger.properties.domain.ApiHeader;
 import com.github.xiaoymin.knife4j.core.util.StrUtil;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -79,12 +81,16 @@ public interface AbsSwagger {
     default List<GroupSwagger> buildGroupSwaggerList() {
         String pathApi = new StringBuilder().append("/api/**").toString();
         List<String> pathsApi = CollUtil.newArrayList(pathApi);
+        HeaderProperties headerProperties = SpringUtil.getBean(HeaderProperties.class);
+        List<ApiHeader> api = headerProperties.getApi();
+        ApiHeader signHeader = api.stream().filter(o -> o.getName().equals("sign")).findFirst().get();
+        ApiHeader timestampHeader = api.stream().filter(o -> o.getName().equals("timestamp")).findFirst().get();
         SwaggerParameter sign = new SwaggerParameter()
-                .setName("sign").setDescription("签名")
+                .setName(signHeader.getValue()).setDescription("签名")
                 .setStringSchemaDefault("签名sign")
                 .setRequired(true);
         SwaggerParameter timestamp = new SwaggerParameter()
-                .setName("timestamp").setDescription("时间戳")
+                .setName(timestampHeader.getValue()).setDescription("时间戳")
                 .setStringSchemaDefault(String.valueOf(System.currentTimeMillis() + 3000))
                 .setRequired(true);
         List<SwaggerParameter> swaggerParameters = CollUtil.newArrayList(sign, timestamp);

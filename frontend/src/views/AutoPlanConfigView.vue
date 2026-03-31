@@ -37,7 +37,11 @@ function getHostPrefix() {
   const protocol = window.location.protocol;
   const host = window.location.host;
   const basePath = import.meta.env.VITE_BASE_API_PATH || '/bgi/';
-  return `${protocol}//${host}${basePath}`;
+  let re = `${protocol}//${host}${basePath}`;
+  if (!re.endsWith('/')){
+    re=re+'/'
+  }
+  return re;
 }
 
 const showDialogApi = ref(false)

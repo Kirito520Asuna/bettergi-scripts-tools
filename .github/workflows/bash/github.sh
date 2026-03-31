@@ -4,6 +4,10 @@ TMP_EXTRACTED_JARS=${TMP_EXTRACTED_JARS:-/tmp/extracted-jars}
 TMP_RENAMED_JARS=${TMP_RENAMED_JARS:-/tmp/renamed-jars}
 TMP_EXTRACTED_EXES=${TMP_EXTRACTED_EXES:-/tmp/extracted-exes}
 JARS_ZIP=${JARS_ZIP:-jars.zip}
+
+BGI_TOOLS_YML="bgi-tools/src/main/resources/application.yml"
+FRONTEND_ENV="frontend/.env.prod"
+
 maven_build() {
   local SKIP_TESTS=${1:-false}
 
@@ -419,4 +423,66 @@ download_windows_jre() {
   du -sh "$TMP_EXTRACTED_JARS/jre"
 
   rm -rf "$JDK_ZIP" "$JDK_EXTRACT"
+}
+update_salt(){
+  echo " 随机生成盐值"
+  wget -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+  chmod +x /usr/local/bin/yq
+  #  todo 随机生成盐值
+  local RANDOM_SALT=$(openssl rand -hex 16)
+  echo "正在生成随机盐值"
+  #echo "生成的随机盐值：$RANDOM_SALT"
+
+  yq -i ".sign.api.salt = \"$RANDOM_SALT\"" $BGI_TOOLS_YML
+  sed -i "s/^VITE_BASE_SALT=.*/VITE_BASE_SALT=$RANDOM_SALT/" $FRONTEND_ENV
+  echo "✅ 盐值已更新到配置文件"
+}
+update_config(){
+#    echo "更新sign,timestamp别名"
+    echo "正在更新配置文件"
+    wget -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+    chmod +x /usr/local/bin/yq
+
+    local SIGN_AS_NAME=$(yq '.sign.api.sign-as-name' $BGI_TOOLS_YML)
+    local TIMESTAMP_AS_NAME=$(yq '.sign.api.timestamp-as-name' $BGI_TOOLS_YML)
+    local CLIENT_PUBLIC_KEY_AS_NAME=$(yq '.sign.api.encryption-as-name' $BGI_TOOLS_YML)
+    local CLIENT_ID_AS_NAME=$(yq '.sign.api.id-as-name' $BGI_TOOLS_YML)
+    local ENABLE_DOUBLE_SYMMETRIC_ENCRYPTION=$(yq '.sign.api.enable-double-symmetric-encryption' $BGI_TOOLS_YML)
+
+    if [ -z "$SIGN_AS_NAME" ] || [ -z "$TIMESTAMP_AS_NAME" ]; then
+         echo "⚠️ 警告：sign.api 配置为空，跳过更新"
+    else
+         echo "正在更新 sign.api 配置"
+         yq -i "(.springdoc.open.header.api[] | select(.name == \"sign\").value) = \"$SIGN_AS_NAME\"" $BGI_TOOLS_YML
+         yq -i "(.springdoc.open.header.api[] | select(.name == \"timestamp\").value) = \"$TIMESTAMP_AS_NAME\"" $BGI_TOOLS_YML
+
+         echo "✅ 已根据 sign.api 配置更新 springdoc.open.header.api"
+         sed -i "s/^VITE_BASE_SIGN_AS_NAME=.*/VITE_BASE_SIGN_AS_NAME=$SIGN_AS_NAME/" $FRONTEND_ENV
+         sed -i "s/^VITE_BASE_TIMESTAMP_AS_NAME=.*/VITE_BASE_TIMESTAMP_AS_NAME=$TIMESTAMP_AS_NAME/" $FRONTEND_ENV
+         echo "✅ 已根据 sign.api 配置更新前端环境变量"
+    fi
+
+    if [ -z "$CLIENT_PUBLIC_KEY_AS_NAME" ]; then
+        echo "⚠️ 警告：CLIENT_PUBLIC_KEY_AS_NAME 配置为空，跳过更新"
+    else
+        echo "正在更新 CLIENT_PUBLIC_KEY_AS_NAME 配置"
+        sed -i "s/^VITE_BASE_CLIENT_PUBLIC_KEY=.*/VITE_BASE_CLIENT_PUBLIC_KEY=$CLIENT_PUBLIC_KEY_AS_NAME/" $FRONTEND_ENV
+        echo "✅ 已根据 CLIENT_PUBLIC_KEY_AS_NAME 配置更新前端环境变量"
+    fi
+
+    if [ -z "$CLIENT_ID_AS_NAMEE" ]; then
+        echo "⚠️ 警告：CLIENT_ID_AS_NAME 配置为空，跳过更新"
+    else
+        echo "正在更新 CLIENT_ID_AS_NAME 配置"
+        sed -i "s/^VITE_BASE_CLIENT_ID_AS_NAME=.*/VITE_BASE_CLIENT_ID_AS_NAME=$CLIENT_ID_AS_NAMEE/" $FRONTEND_ENV
+        echo "✅ 已根据 CLIENT_ID_AS_NAME 配置更新前端环境变量"
+    fi
+
+    if [ -z "$ENABLE_DOUBLE_SYMMETRIC_ENCRYPTION" ]; then
+        echo "⚠️ 警告：ENABLE_DOUBLE_SYMMETRIC_ENCRYPTION 配置为空，跳过更新"
+    else
+        echo "正在更新 ENABLE_DOUBLE_SYMMETRIC_ENCRYPTION 配置"
+        sed -i "s/^VITE_BASE_ENABLE_DOUBLE_SYMMETRIC_ENCRYPTION=.*/VITE_BASE_ENABLE_DOUBLE_SYMMETRIC_ENCRYPTION=$ENABLE_DOUBLE_SYMMETRIC_ENCRYPTION/" $FRONTEND_ENV
+        echo "✅ 已根据 ENABLE_DOUBLE_SYMMETRIC_ENCRYPTION 配置更新前端环境变量"
+    fi
 }
