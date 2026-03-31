@@ -56,6 +56,7 @@
             <version>${commons-jexl3.version}</version>
         </dependency>
         <!-- RapidOCR 依赖 -->
+
         <!--  rapidocr这个必须要引入     -->
         <!--  可前往maven中央仓库https://central.sonatype.com/artifact/io.github.mymonstercat/rapidocr/versions，查看版本      -->
         <dependency>
@@ -72,11 +73,11 @@
             <version>${rapidocr.version}</version>
         </dependency>
 
-        <dependency>
+<!--        <dependency>
             <groupId>io.github.mymonstercat</groupId>
             <artifactId>rapidocr-ncnn-platform</artifactId>
             <version>${rapidocr.version}</version>
-        </dependency>
+        </dependency>-->
         <!--aop-->
         <dependency>
             <groupId>org.aspectj</groupId>
