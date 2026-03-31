@@ -23,6 +23,7 @@ import draggable from 'vuedraggable'
 import {debounce} from 'lodash-es';
 import {getLocalToken, getLocalTokenName, goBack, toHomePage} from "@api/web/web.js";
 import {getTokenInfo} from "@api/auth/token.js";
+import router from "@router/router.js";
 
 const cloud = ref({
   UidList: [],
@@ -67,8 +68,24 @@ const handleApi = async () =>  {
       value: hostPrefix + 'auto/plan/country/json/all',
     },
     {
-      name: '授权token',
+      name: '授权Token',
       value: token,
+      to:{
+        text: '前往设置',
+        desc: '点击前往设置授权Token',
+        value: 'settings',
+        click: async (value) => {
+          await ElMessageBox.confirm(
+              '确定前往设置吗？',
+              '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning',
+              }
+          )
+          router.push({name: value})
+        }
+      }
     },
   ]
   ApiList.value = list
@@ -1385,6 +1402,18 @@ const batchUpdate = () => {
               </div>
               <div class="api-value-container">
                 <code class="api-value">{{ item.value }}</code>
+                <el-tooltip v-if="item.to" :content="item.to.desc" placement="top">
+                  <el-button
+                      v-if="item.to"
+                      type="primary"
+                      size="small"
+                      icon="DocumentCopy"
+                      @click="item.to.click(item.to.value)"
+                      class="copy-btn"
+                  >
+                    {{item.to.text}}
+                  </el-button>
+                </el-tooltip>
                 <el-tooltip content="复制到剪贴板" placement="top">
                   <el-button
                       type="primary"
