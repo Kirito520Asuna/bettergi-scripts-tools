@@ -8,6 +8,7 @@ import okhttp3.Response;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 
 /**
  * @Author yan
@@ -52,6 +53,17 @@ public class JavaClient {
 
             System.out.println("\n===== 解密成功 =====");
             System.out.println("服务端公钥 SP：\n" + serverPublicKeySP);
+            PublicKey publicKey = RSAUtil.stringToPublicKey(clientPublicKeyCP);
+            System.out.println("===== 待加密数据 =====");
+            String number = "1230";
+            System.out.println(number);
+            System.out.println("===== 加密 =====");
+            String encrypt = RSAUtil.encryptByPublicKey(number, publicKey);
+            System.out.println(encrypt);
+            PrivateKey privateKey = RSAUtil.stringToPrivateKey(clientPrivateKeyCR);
+            System.out.println("===== 解密 =====");
+            String decrypt = RSAUtil.decryptByPrivateKey(encrypt, privateKey);
+            System.out.println(decrypt);
         }
     }
 }
