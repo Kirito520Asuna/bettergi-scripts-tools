@@ -69,13 +69,46 @@ public class ApiProperties {
     /**
      * 对称加密参数名称
      */
-    String encryptionAsName = "X-Bgi-Tools-Encryption-Client-Public-Key";
+    String encryptionAsName = "X-Encryption-Client-Key";
     /**
      * 对称加密id参数名称
      */
-    String idAsName = "X-Bgi-Tools-Encryption-Id";
+    String idAsName = "X-Encryption-Id";
     /**
      * 指定无需对称加密的路径
      */
     List<String> encryptionPathsToExclude = new ArrayList<>();
+
+    public String getPath() {
+        Environment bean = SpringUtil.getBean(Environment.class);
+        String contextPath = bean.getProperty("server.servlet.context-path");
+        String path = contextPath;
+        path = ObjectUtils.isEmpty(path) ? "" : path;
+        return path;
+    }
+
+    /**
+     * 获取url中的路径
+     *
+     * @param url
+     * @return
+     */
+    public String getUrl(String url) {
+        String path = getPath();
+        if (ObjectUtils.isEmpty(path)) {
+            Environment bean = SpringUtil.getBean(Environment.class);
+            String serverPort = bean.getProperty("server.port");
+            path = serverPort;
+        } else {
+            path = path.endsWith("/") ? path : path + "/";
+        }
+        int startIndex = url.indexOf(path);
+        startIndex = startIndex == -1 ? 0 : startIndex;
+        String substring = url.substring(startIndex, url.length());
+        String s = substring;
+        if (!s.startsWith("/")) {
+            s = new StringBuffer("/").append(s).toString();
+        }
+        return s;
+    }
 }

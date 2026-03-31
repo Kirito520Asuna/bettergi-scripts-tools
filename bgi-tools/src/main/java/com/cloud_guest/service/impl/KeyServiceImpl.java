@@ -43,7 +43,7 @@ public class KeyServiceImpl implements AbstractKeyService, BaseService {
 
     @Override
     public boolean remove(List<String> keyIds) {
-        keyIds= keyIds.stream().map(id -> buildId(id)).toList();
+        keyIds.stream().forEach(id -> buildId(id));
         return cacheService.removeList(keyIds);
     }
 

@@ -1,6 +1,7 @@
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.utils.RSAUtil;
+import com.cloud_guest.vo.KeyInfoVo;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -31,7 +32,7 @@ public class JavaClient {
         // 2. 构建请求：CP 放入请求头 client-public-key
         Request request = new Request.Builder()
                 .url("http://127.0.0.1:8081/bgi/key/exchangeKey")
-                .addHeader("client-public-key", clientPublicKeyCP) // 请求头传递公钥
+                .addHeader("X-Encryption-Client-Key", clientPublicKeyCP) // 请求头传递公钥
                 .post(RequestBody.create(new byte[0]))
                 .build();
 
@@ -41,8 +42,10 @@ public class JavaClient {
                 throw new Exception("请求失败：" + response.code());
             }
             String re = response.body().string();
-            Result<String> bean = JSONUtil.toBean(re, Result.class);
-            String encryptedSP = bean.getData();
+            Result bean = JSONUtil.toBean(re, Result.class);
+            Object data = bean.getData();
+            KeyInfoVo vo = JSONUtil.toBean(JSONUtil.toJsonStr(data), KeyInfoVo.class);
+            String encryptedSP =  vo.getPublicKeyEncryption();
 
             System.out.println("\n===== 收到加密SP =====");
             System.out.println(encryptedSP);

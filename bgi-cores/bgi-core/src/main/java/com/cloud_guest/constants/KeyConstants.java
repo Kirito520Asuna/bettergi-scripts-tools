@@ -27,7 +27,9 @@ public interface KeyConstants {
     String restart_key = "restart";
     String online_application_key = "online_application";
     String outline_application_key = "outline_application";
-    List<String> ex_backup_list=new ArrayList<>(Arrays.asList(restart_key, online_application_key, outline_application_key));
+    String key = "TEMP:KEY:";
+
+    List<String> ex_backup_list = new ArrayList<>(Arrays.asList(restart_key, online_application_key, outline_application_key));
 
     String redis_file_json_key = "redis:file:json:";
     String task_key = "task:";
