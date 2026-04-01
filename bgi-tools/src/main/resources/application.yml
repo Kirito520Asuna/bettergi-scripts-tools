@@ -73,6 +73,7 @@ sign:
     sign-time-out: 10 #签名超时时间 单位分钟
     paths-to-match:
       - /api/**
+      - /auth/login
     encryption-paths-to-exclude:
       - /key/exchangeKey
       - /api/key/exchangeKey

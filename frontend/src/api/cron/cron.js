@@ -35,7 +35,7 @@ async function getNextTimestamp(cronExpression, startTimestamp, endTimestamp){
  * @returns {Promise} 返回一个Promise对象，解析后的数据为所有cron表达式的下一个执行时间戳
  */
 async function getNextTimestampAll(cronList=[]){ // 定义异步函数，获取所有cron表达式的下一个执行时间
-    const response = await service.post('/cron/next-timestamp/all', { // 发送POST请求获取下一个时间戳
+    const response = await ApiService.post('/api/cron/next-timestamp/all', { // 发送POST请求获取下一个时间戳
         cronList: cronList, // 传入cron表达式列表
     });
     // 返回响应数据

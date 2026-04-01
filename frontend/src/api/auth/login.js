@@ -1,4 +1,5 @@
 import service from "@utils/request.js";
+import {ApiService} from "@utils/ApiRequest.js";
 
 /**
  * 登录函数
@@ -7,7 +8,7 @@ import service from "@utils/request.js";
  * @returns {Promise<Object>} 返回登录结果数据
  */
 async function login(username, password) {
-    const res = await service.post('/auth/login', {username: username, password: password})  // 注意 context-path 是 /bgi
+    const res = await ApiService.post('/auth/login', {username: username, password: password})  // 注意 context-path 是 /bgi
     // console.log("res:", res)
     return res.data
 }

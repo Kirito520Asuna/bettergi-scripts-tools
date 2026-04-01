@@ -35,7 +35,7 @@ async function postUidPlan(uid, autoPlanList=[]) {
         autoPlanList: autoPlanList //体力计划
     };
     // 发送POST请求到指定端点
-    const response = await service.post("/auto/plan/info", payload);
+    const response = await service.post("/jwt/auto/plan/info", payload);
     if (response.code === 200){
         ElMessage.success("保存成功");
     }
@@ -60,7 +60,7 @@ async function getUidJson(uid){
  * @returns {Promise} 返回包含所有用户ID的数据
  */
 async function getAllUid(){
-    const response = await service.get('/auto/plan/uid/all/mapping')  // 发送GET请求获取所有用户ID
+    const response = await service.get('/jwt/auto/plan/uid/all/mapping')  // 发送GET请求获取所有用户ID
     // if (response.code === 200){  // 检查响应状态码是否为200
     //     ElMessage.success("加载成功");  // 如果成功，显示成功消息
     // }
@@ -85,7 +85,7 @@ async function removeUidList(uidStr){
  * @returns {Promise<Object>} 获取所有JSON数据
  */
 async function getBaseJsonAll(){
-    const response = await service.get('/auto/plan/domain/json/all');
+    const response = await service.get('/jwt/auto/plan/domain/json/all');
     if (response.code === 200){
         ElMessage.success("全部加载成功");
     }
@@ -97,7 +97,7 @@ async function getBaseJsonAll(){
  * @returns {Promise<any>}
  */
 async function getBaseCountryJsonAll(){
-    const response = await service.get('/auto/plan/country/json/all');
+    const response = await service.get('/jwt/auto/plan/country/json/all');
     if (response.code === 200){
         ElMessage.success("全部加载成功");
     }
