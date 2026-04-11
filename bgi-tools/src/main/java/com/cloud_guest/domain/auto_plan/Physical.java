@@ -1,4 +1,4 @@
-package com.cloud_guest.domain;
+package com.cloud_guest.domain.auto_plan;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

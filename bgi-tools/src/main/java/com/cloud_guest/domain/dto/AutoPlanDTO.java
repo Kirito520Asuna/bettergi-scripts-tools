@@ -2,22 +2,18 @@ package com.cloud_guest.domain.dto;
 
 import cn.hutool.core.util.StrUtil;
 import com.cloud_guest.aop.validator.NotEmptyList;
-import com.cloud_guest.domain.AutoFight;
-import com.cloud_guest.domain.AutoLeyLineOutcrop;
-import com.cloud_guest.domain.AutoPlan;
-import com.cloud_guest.domain.AutoStygianOnslaught;
+import com.cloud_guest.domain.auto_plan.AutoFight;
+import com.cloud_guest.domain.auto_plan.AutoLeyLineOutcrop;
+import com.cloud_guest.domain.auto_plan.AutoPlan;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.utils.object.ObjectUtils;
-import com.cloud_guest.view.BasicJsonView;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
