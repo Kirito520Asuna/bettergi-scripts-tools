@@ -170,7 +170,7 @@ public interface AbsApiSign extends AbsBean {
     default String verifyTimestamp(HttpServletRequest request, String timestampAsName, Long signTimeOut) {
         //String timestampHeader = request.getHeader(timestampAsName);
         String timestampHeader = request.getHeader(timestampAsName);
-        if (StrUtil.isBlank(timestampHeader) ||
+/*        if (StrUtil.isBlank(timestampHeader) ||
                 Math.abs(Duration.between(DateUtils.longToLocalDateTime(Long.parseLong(timestampHeader)), LocalDateTime.now()).toMinutes()) >= signTimeOut) {
             if (StrUtil.isNotBlank(timestampHeader)) {
                 log().error("{}=={},{},{}", timestampAsName, timestampHeader,
@@ -180,7 +180,22 @@ public interface AbsApiSign extends AbsBean {
                 log().error("timestampAsName is null");
             }
             throw new GlobalCustomException(ApiCode.VALIDATE_FAILED, "请求时间戳不合法");
+        }*/
+
+        if (StrUtil.isBlank(timestampHeader)) {
+            log().error("timestampAsName is null");
+            throw new GlobalCustomException(ApiCode.VALIDATE_FAILED, "请求时间戳不合法");
         }
+
+        long timestampMillis = Long.parseLong(timestampHeader);
+        long currentMillis = System.currentTimeMillis();
+        long diffMinutes = Math.abs((currentMillis - timestampMillis) / (1000 * 60));
+
+        if (diffMinutes >= signTimeOut) {
+            log().error("{}=={},{},{}", timestampAsName, timestampHeader, currentMillis, diffMinutes);
+            throw new GlobalCustomException(ApiCode.VALIDATE_FAILED, "请求时间戳不合法");
+        }
+
         return timestampHeader;
     }
 
