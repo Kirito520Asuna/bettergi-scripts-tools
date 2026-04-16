@@ -10,6 +10,7 @@ import org.springframework.util.ObjectUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -59,9 +60,14 @@ public class ApiProperties {
      */
     Boolean signMultipleEnable = false;
     /**
-     * 签名超时时间 单位分钟
+     * 签名超时时间 默认单位分钟
      */
     Long signTimeOut = 10l;
+    /**
+     * 签名超时时间单位
+     * 默认分钟
+     */
+    TimeUnit signTimeUnit = TimeUnit.MINUTES;
     /**
      * 是否开启对称加密
      */

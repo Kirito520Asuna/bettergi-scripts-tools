@@ -41,6 +41,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -80,6 +81,7 @@ public interface AbsApiSign extends AbsBean {
         Boolean signEnable = api.getSignEnable();
         Boolean signMultipleEnable = api.getSignMultipleEnable();
         Long signTimeOut = api.getSignTimeOut();
+        TimeUnit signTimeUnit = api.getSignTimeUnit();
 
         //时间戳验证
         String url = "";
@@ -108,7 +110,7 @@ public interface AbsApiSign extends AbsBean {
             //log().debug("路径符合验签逻辑");
             if (ObjectUtil.isNotEmpty(signEnable) && signEnable) {
                 //log().debug("api验签-已开启");
-                verifyTimestamp(request, timestampAsName, signTimeOut);
+                verifyTimestamp(request, timestampAsName, signTimeOut,signTimeUnit);
                 //验签
                 List<String> exCollection = CollUtil.newArrayList(timestampAsName, signAsName);
                 List<Boolean> verifySignList = CollUtil.newArrayList();
@@ -168,7 +170,10 @@ public interface AbsApiSign extends AbsBean {
      * @return
      */
     default String verifyTimestamp(HttpServletRequest request, String timestampAsName, Long signTimeOut) {
-        //String timestampHeader = request.getHeader(timestampAsName);
+        return verifyTimestamp(request, timestampAsName, signTimeOut, TimeUnit.MINUTES);
+    }
+
+    default String verifyTimestamp(HttpServletRequest request, String timestampAsName, Long signTimeOut,TimeUnit signTimeUnit) {
         String timestampHeader = request.getHeader(timestampAsName);
         if (StrUtil.isBlank(timestampHeader)) {
             log().error("timestampAsName is null");
@@ -176,29 +181,58 @@ public interface AbsApiSign extends AbsBean {
         }
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime localDateTime = DateUtils.longToLocalDateTime(Long.parseLong(timestampHeader));
-        long diffMinutes = Math.abs(Duration.between(localDateTime, now).toMinutes());
-        if(diffMinutes >= signTimeOut){
-            log().error("{}=={},{},{}", timestampAsName, timestampHeader, DateUtils.LocalDateTimeTolong(now), diffMinutes);
+        Duration between = Duration.between(localDateTime, now);
+        TimeUnit timeUnit = ObjectUtils.defaultIfEmpty(signTimeUnit, TimeUnit.MINUTES);
+
+        long value=0;
+        switch (timeUnit) {
+            case NANOSECONDS -> value = between.toNanos();
+            case MICROSECONDS -> value = Math.toIntExact(between.toMillis() * 1000);
+            case MILLISECONDS -> value = between.toMillis();
+            case SECONDS -> value = between.getSeconds();
+            case MINUTES -> value = between.toMinutes();
+            case HOURS -> value = between.toHours();
+            case DAYS -> value = between.toDays();
+            default -> value = between.toMinutes();
+        }
+
+        long diffTime = Math.abs(value);
+        if (diffTime >= signTimeOut) {
+            log().error("{}=={},{},{}", timestampAsName, timestampHeader, DateUtils.LocalDateTimeTolong(now), diffTime);
             throw new GlobalCustomException(ApiCode.VALIDATE_FAILED, "请求时间戳不合法");
         }
 
-/*        if (StrUtil.isBlank(timestampHeader)) {
+/*
+        if (StrUtil.isBlank(timestampHeader)) {
             log().error("timestampAsName is null");
             throw new GlobalCustomException(ApiCode.VALIDATE_FAILED, "请求时间戳不合法");
         }
 
         long timestampMillis = Long.parseLong(timestampHeader);
         long currentMillis = System.currentTimeMillis();
-        long diffMinutes = Math.abs((currentMillis - timestampMillis) / (1000 * 60));
 
-        if (diffMinutes >= signTimeOut) {
-            log().error("{}=={},{},{}", timestampAsName, timestampHeader, currentMillis, diffMinutes);
+        long value=0;
+        switch (timeUnit) {
+            case NANOSECONDS -> value = 1;
+            case MICROSECONDS -> value = 1000;
+            case MILLISECONDS -> value = 1000 * 1000;
+            case SECONDS -> value = 1000;
+            case MINUTES -> value = 1000 * 60;
+            case HOURS -> value = 1000 * 60 * 60;
+            case DAYS -> value = 1000 * 60 * 60 * 24;
+            default -> value = 1000 * 60;
+        }
+        long diffTime = Math.abs((currentMillis - timestampMillis) / (value));
+
+        if (diffTime >= signTimeOut) {
+            log().error("{}=={},{},{}", timestampAsName, timestampHeader, currentMillis, diffTime);
             throw new GlobalCustomException(ApiCode.VALIDATE_FAILED, "请求时间戳不合法");
-        }*/
+        }
+*/
 
         return timestampHeader;
-    }
 
+    }
     @SneakyThrows
     default boolean verifySign(HttpServletRequest request, String signAsName, String salt, String serviceName, String url, Collection<String> exCollection) {
         String method = request.getMethod();

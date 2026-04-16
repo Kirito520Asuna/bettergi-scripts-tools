@@ -70,7 +70,8 @@ sign:
     salt: #签名盐值
     sign-enable: true #是否开启签名校验
     sign-multiple-enable: false #是否开启多签名校验
-    sign-time-out: 10 #签名超时时间 单位分钟
+    sign-time-out: 10 #签名超时时间 默认单位分钟
+    sign-time-unit: MINUTES #签名超时时间单位
     paths-to-match:
       - /api/**
       - /auth/login
