@@ -437,6 +437,20 @@ update_salt(){
   sed -i "s/^VITE_BASE_SALT=.*/VITE_BASE_SALT=$RANDOM_SALT/" $FRONTEND_ENV
   echo "✅ 盐值已更新到配置文件"
 }
+
+update_check_token(){
+  echo " 随机生成check-token"
+  wget -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+  chmod +x /usr/local/bin/yq
+  #  todo 随机生成check-token
+  local check_token_name="token_$(openssl rand -hex 8)"
+  local check_token=$(openssl rand -hex 16)
+  echo "正在生成随机check-token"
+
+  yq -i ".check.token.name = \"$check_token_name\"" $BGI_TOOLS_YML
+  yq -i ".check.token.value = \"$check_token\"" $BGI_TOOLS_YML
+  echo "✅ check-token已更新到配置文件"
+}
 update_config(){
 #    echo "更新sign,timestamp别名"
     echo "正在更新配置文件"

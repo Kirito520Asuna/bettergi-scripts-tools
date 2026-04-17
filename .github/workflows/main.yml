@@ -215,6 +215,7 @@ jobs:
         run: |
           source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
           update_salt 
+          update_check_token
           update_config
 
       - name: 5. 设置 Java 环境
