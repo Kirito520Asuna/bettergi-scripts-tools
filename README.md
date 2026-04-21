@@ -71,7 +71,7 @@ auth:
 
 #### 1.windows exe 直接运行
 
-前往 [release](https://github.com/Kirito520Asuna/bettergi-script-tools/releases) 下载 带windows的zip包解压运行.exe文件即可
+前往 [release](https://github.com/Kirito520Asuna/bettergi-scripts-tools/releases) 下载 带windows的zip包解压运行.exe文件即可
 
 #### 2.java
 
