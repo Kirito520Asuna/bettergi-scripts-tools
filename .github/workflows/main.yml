@@ -109,7 +109,19 @@ jobs:
       - name: 2. 检出代码
         uses: actions/checkout@v4
 
-      - name: 3. 设置输入参数和环境变量
+      - name: 3. 安装 mvnd (Maven Daemon)
+        run: |
+          echo "🚀 安装 mvnd (Maven Daemon)"
+          MVND_VERSION="1.0.5"
+          wget -q "https://github.com/apache/maven-mvnd/releases/download/${MVND_VERSION}/maven-mvnd-${MVND_VERSION}-linux-amd64.zip" -O /tmp/mvnd.zip 
+          unzip -q /tmp/mvnd.zip -d /tmp/
+          cd /tmp/ && ls
+          sudo mv /tmp/maven-mvnd-${MVND_VERSION}-linux-amd64 /opt/mvnd
+          sudo ln -sf /opt/mvnd/bin/mvnd /usr/local/bin/mvnd
+          mvnd --version
+          echo "✅ mvnd 安装完成"  
+
+      - name: 4. 设置输入参数和环境变量
         id: set_vars
         run: |
           # 初始化默认值
@@ -147,8 +159,10 @@ jobs:
           #JAVA_VERSION_MVN=$(mvn help:evaluate -Dexpression=java.version -q -DforceStdout || echo "")
           #echo "✓ Maven 读取的 java.version: $JAVA_VERSION_MVN"
           
-          echo "正在执行：mvn help:evaluate -Dexpression=project.version"
-          TAG_NAME_MVN=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          #echo "正在执行：mvn help:evaluate -Dexpression=project.version"
+          #TAG_NAME_MVN=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "正在执行：mvnd help:evaluate -Dexpression=project.version"
+          TAG_NAME_MVN=$(mvnd help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "✓ 项目版本读取结果：$TAG_NAME_MVN"
           
           echo "::endgroup::"  
@@ -197,7 +211,7 @@ jobs:
           echo "  PUSH_TO_GITHUB_RELEASE : $PUSH_TO_GITHUB_RELEASE"
           echo "═══════════════════════════════════════════"
 
-      - name: 4. 验证版本号格式
+      - name: 5. 验证版本号格式
         run: |
           echo "当前版本号: $TAG_NAME"
           if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
@@ -218,13 +232,13 @@ jobs:
           update_check_token
           update_config
 
-      - name: 5. 设置 Java 环境
+      - name: 6. 设置 Java 环境
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
-      - name: 6. 缓存 Maven 依赖
+      - name: 7. 缓存 Maven 依赖
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
@@ -232,38 +246,38 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: 7. 使用 Maven 构建项目
+      - name: 8. 使用 mvnd 构建项目
         run: |
           source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
           maven_build "${{ env.SKIP_TESTS }}"
 
-      - name: 8.列出匹配的 JAR 文件
+      - name: 9.列出匹配的 JAR 文件
         run: |
           source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
           list_jar_files "${{ env.JAR_DIR_PREFIX }}"
 
-      - name: 9.重命名 JAR 文件（移除版本号）
+      - name: 10.重命名 JAR 文件（移除版本号）
         run: |
           source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
           rename_jar_files "${{ env.JAR_DIR_PREFIX }}"
 
-      - name: 10.打包所有 JAR 文件成 ZIP
+      - name: 11.打包所有 JAR 文件成 ZIP
         run: |          
           source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
           package_jars_zip "$JARS_ZIP"
 
-      - name: 11.解压 ZIP 文件
+      - name: 12.解压 ZIP 文件
         run: |          
           source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
           extract_jars_zip "$JARS_ZIP" "$TMP_EXTRACTED_JARS"
 
-      - name: 12. 上传 JAR ZIP 供 Windows 使用
+      - name: 13. 上传 JAR ZIP 供 Windows 使用
         uses: actions/upload-artifact@v4
         with:
           name: ${{env.JARS_ZIP}}
           path: ${{env.JARS_ZIP}}
 
-      - name: 13. 上传单个 JAR 文件
+      - name: 14. 上传单个 JAR 文件
         uses: actions/upload-artifact@v4
         with:
           name: jar-files
@@ -475,7 +489,7 @@ jobs:
     needs: [ build-jar-linux, build-exe ]
     if: ${{ needs.build-jar-linux.outputs.push_to_github_release == 'true' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 

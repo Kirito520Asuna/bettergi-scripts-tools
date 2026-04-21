@@ -15,9 +15,11 @@ maven_build() {
 
   if [ "$SKIP_TESTS" = "true" ]; then
     echo "⏭️ 跳过测试"
-    mvn clean package -B -DskipTests -Dquickly
+    mvnd clean package -B -DskipTests -Dquickly
+#    mvn clean package -B -DskipTests -Dquickly
   else
-    mvn clean package -B -Dquickly
+    mvnd clean package -B -Dquickly
+#    mvn clean package -B -Dquickly
   fi
 
   echo "✅ Maven 构建完成"
