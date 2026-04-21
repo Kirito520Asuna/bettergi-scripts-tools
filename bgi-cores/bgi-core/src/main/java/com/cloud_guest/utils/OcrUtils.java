@@ -32,8 +32,8 @@ public class OcrUtils {
 
     @SneakyThrows
     public static void main(String[] args) {
-        //test();
-        //if (true) return;
+        test();
+        if (true) return;
 
         if (args.length < 1) {
             System.err.println("{\"error\": \"Usage: java -jar ocr-utils.jar <image-path-or-url>\"}");
@@ -83,7 +83,7 @@ public class OcrUtils {
      * @return
      */
     public static OcrResultVo ocr(InputStream input, String suffix, String ocrFileTempPath, Model model) {
-        InferenceEngine engine = InferenceEngine.getInstance(ObjectUtil.isNotEmpty(model) ? model : Model.ONNX_PPOCR_V3);
+        InferenceEngine engine = InferenceEngine.getInstance(ObjectUtil.isNotEmpty(model) ? model : Model.ONNX_PPOCR_V4);
         String format = LocalDateTime.now().format(DateTimeFormatter.ofPattern(DatePattern.NORM_DATE_PATTERN));
         String pathname = ocrFileTempPath + "/" + format + "/" + UUID.randomUUID() + suffix;
         log.info("ocr file init pathname:{}", pathname);
@@ -106,7 +106,7 @@ public class OcrUtils {
         InferenceEngine engine = InferenceEngine.getInstance(Model.ONNX_PPOCR_V4);
         String imagePath = "C:\\Users\\Administrator\\Desktop\\Snipaste_2024-08-12_18-12-35.png";
         imagePath = "https://img.zcool.cn/community/0177c35548e8fb0000019ae93040ce.jpg@2o.jpg";
-        imagePath = "D:\\Administrator\\Pictures\\+20.jpg";
+        imagePath = "D:\\Administrator\\Pictures\\outDomain.jpg";
         InputStream input = null;
         String prx = imagePath.substring(imagePath.lastIndexOf("."), imagePath.length());
         try {
