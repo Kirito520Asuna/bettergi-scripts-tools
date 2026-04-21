@@ -118,7 +118,7 @@ if [ -f "$DOCKER_FILE_NAME" ]; then
   cat "$DOCKER_FILE_NAME"
 else
   cat > "$DOCKER_FILE_NAME" << EOF
-FROM eclipse-temurin:${java_version}-jre-slim
+FROM eclipse-temurin:${java_version}-jdk-jammy
 VOLUME /tmp
 WORKDIR /app
 
