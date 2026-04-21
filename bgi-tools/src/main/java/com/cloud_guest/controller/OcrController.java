@@ -30,7 +30,7 @@ public class OcrController {
     @SysLog
     @Operation(summary = "ocr图片字节组(只支持jpg)")
     public Result<String> ocrBytes(@Validated(BasicJsonView.OcrBytesView.class) @RequestBody OcrDto dto) {
-        OcrResultVo ocrResultVo = OcrUtils.ocr(new ByteArrayInputStream(dto.getBytes()), ".jpg", OcrUtils.OcrFileTempPath, null);
+        OcrResultVo ocrResultVo = OcrUtils.ocr(new ByteArrayInputStream(dto.getBytes()), ".jpg", OcrUtils.OcrFileTempPath);
         return ok(ocrResultVo.getStrRes());
     }
     @SneakyThrows
@@ -38,7 +38,7 @@ public class OcrController {
     @SysLog
     @Operation(summary = "ocr图片文件(只支持jpg)")
     public Result<String> ocrFile(@RequestPart MultipartFile file) {
-        OcrResultVo ocrResultVo = OcrUtils.ocr(file.getInputStream(), ".jpg", OcrUtils.OcrFileTempPath, null);
+        OcrResultVo ocrResultVo = OcrUtils.ocr(file.getInputStream(), ".jpg", OcrUtils.OcrFileTempPath);
         return ok(ocrResultVo.getStrRes());
     }
 }

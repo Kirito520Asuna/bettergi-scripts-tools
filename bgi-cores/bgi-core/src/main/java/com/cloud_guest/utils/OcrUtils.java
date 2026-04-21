@@ -29,6 +29,21 @@ import java.util.UUID;
 public class OcrUtils {
     public static String OcrFileTempPath = "temp";
     public static Model model = Model.ONNX_PPOCR_V4;
+    // ===================== 核心改动：全局单例引擎 =====================
+    private static InferenceEngine inferenceEngine;
+
+    /**
+     * 静态代码块：类加载时只初始化一次模型
+     * 不依赖Spring！纯Java原生单例！
+     */
+    static {
+        try {
+            inferenceEngine = InferenceEngine.getInstance(model);
+            log.info("✅ OCR模型初始化完成（纯静态单例）：{}", model);
+        } catch (Exception e) {
+            log.error("❌ OCR模型初始化失败", e);
+        }
+    }
 
     @SneakyThrows
     public static void main(String[] args) {
@@ -66,7 +81,7 @@ public class OcrUtils {
             }
         }
 
-        OcrResultVo ocrResult = ocr(input, prx, OcrFileTempPath, model);
+        OcrResultVo ocrResult = ocr(input, prx, OcrFileTempPath);
         if (ObjectUtil.isNotEmpty(ocrResult)) {
             System.out.println(JSONUtil.toJsonStr(ocrResult.getResList()));
         }
@@ -79,11 +94,23 @@ public class OcrUtils {
      * @param input
      * @param suffix          文件后缀
      * @param ocrFileTempPath 文件临时路径
-     * @param model
      * @return
      */
-    public static OcrResultVo ocr(InputStream input, String suffix, String ocrFileTempPath, Model model) {
-        InferenceEngine engine = InferenceEngine.getInstance(ObjectUtil.isNotEmpty(model) ? model : Model.ONNX_PPOCR_V4);
+    public static OcrResultVo ocr(InputStream input, String suffix, String ocrFileTempPath) {
+        InferenceEngine engine = InferenceEngine.getInstance(model);
+        return ocr(input, suffix, ocrFileTempPath, engine);
+    }
+
+    /**
+     * 通用ocr
+     */
+    public static OcrResultVo ocr(InputStream input, String suffix, String ocrFileTempPath, InferenceEngine engine) {
+        if (ObjectUtil.isEmpty(engine)) {
+            engine = inferenceEngine;
+        }
+        if (ObjectUtil.isEmpty(engine)) {
+            engine = InferenceEngine.getInstance(model);
+        }
         String format = LocalDateTime.now().format(DateTimeFormatter.ofPattern(DatePattern.NORM_DATE_PATTERN));
         String pathname = ocrFileTempPath + "/" + format + "/" + UUID.randomUUID() + suffix;
         log.info("ocr file init pathname:{}", pathname);

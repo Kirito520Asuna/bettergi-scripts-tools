@@ -118,9 +118,21 @@ if [ -f "$DOCKER_FILE_NAME" ]; then
   cat "$DOCKER_FILE_NAME"
 else
   cat > "$DOCKER_FILE_NAME" << EOF
-FROM eclipse-temurin:${java_version}-jre-alpine
+FROM eclipse-temurin:${java_version}-jre-slim
 VOLUME /tmp
 WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libgomp1 \
+    libstdc++6 \
+    fontconfig \
+    fonts-wqy-zenhei && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN chmod 777 /tmp
+
 COPY *.jar app.jar
 ENTRYPOINT ["java","-jar","app.jar"]
 EOF
