@@ -33,6 +33,7 @@ public class GitHubTreeFetcher {
             .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
             .writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
             .build();
+    public static Map<String,HashSet<String>> map_paths = new HashMap<>();
 
     /**
      * 创建带有代理配置的 OkHttpClient
@@ -79,9 +80,9 @@ public class GitHubTreeFetcher {
                 new HashMap<>(Map.of("Accept", "application/vnd.github.v3+json")),
                 null
         ));
-
+        // ✅ 修复这里：Gitee 正确配置
         PLATFORM_CONFIG_MAP.put("gitee.com", new PlatformConfig(
-                "https://gitee.com/api/v5/repos/%s/%s/git/trees/%s?recursive=true",
+                "https://gitee.com/api/v5/repos/%s/%s/git/trees/%s?recursive=1",
                 "https://gitee.com/%s/%s/raw/%s/%s",
                 10, 4000,
                 new HashMap<>(Map.of("Accept", "application/json")),
@@ -125,7 +126,8 @@ public class GitHubTreeFetcher {
 
     @SneakyThrows
     private static void test2() {
-        String url = "https://github.com/babalae/bettergi-scripts-list";
+        //String url = "https://github.com/babalae/bettergi-scripts-list";
+        String url = "https://gitee.com/kirito-asuna/bettergi-scripts-list";
 
 
         String privateToken = "gitlab.com@PRIVATE-TOKEN=xxx";
@@ -136,11 +138,26 @@ public class GitHubTreeFetcher {
         log.info("==============");
         log.info("==============");
         log.info("==============");
-        List<TreeNode> repoNode = filterByPath(treeNodes, List.of("icon.ico", "desktop.ini"), "repo"/*"repo/js", "repo/combat", "repo/pathing", "repo/tcg"*/);
+        String dir = "repo/pathing/";
+        List<TreeNode> repoNode = filterByPath(treeNodes, List.of("icon.ico", "desktop.ini"), dir/*"repo/js", "repo/combat", "repo/pathing", "repo/tcg"*/);
         List<BetterGIScriptsListTreeNode> betterGIScriptsListTreeNodes = Mapping.convertToBetterGITreeNodes(repoNode);
         printTreeNode(repoNode, "");
+        HashSet<String> value = new HashSet<>();
+        //todo:tree->list
+        //put url :list path
+        collectFilePaths(repoNode, value);
+        map_paths.put(url, value);
+        log.info("map_paths:{}", map_paths);
     }
-
+    private static void collectFilePaths(List<TreeNode> nodes, HashSet<String> paths) {
+        for (TreeNode node : nodes) {
+            if (!node.isDirectory) {
+                paths.add(node.getFullPath());
+            } else if (!node.children.isEmpty()) {
+                collectFilePaths(node.children, paths);
+            }
+        }
+    }
     public static void main(String[] args) throws IOException {
         //test1();
         test2();
@@ -381,7 +398,6 @@ public class GitHubTreeFetcher {
             try (Response response = httpClient.newCall(request).execute()) {
                 if (response.isSuccessful()) {
                     String responseBody = response.body().string();
-
                     if ("gitlab.com".equals(platform)) {
                         return parseGitLabTree(responseBody);
                     }
@@ -915,13 +931,26 @@ public class GitHubTreeFetcher {
         }
 
         TreeNode(String name, boolean isDirectory, TreeNode parent) {
-            TreeNode currentParent = new TreeNode(parent.name, parent.isDirectory);
+            //TreeNode currentParent = new TreeNode(parent.name, parent.isDirectory);
+            if (parent != null) {
+                TreeNode currentParent = new TreeNode(parent.name, parent.isDirectory);
+                copyParentChain(currentParent, parent.getParent());
+                this.parent = currentParent;
+            }
             this.name = name;
             this.isDirectory = isDirectory;
-            this.parent = currentParent;
+            //this.parent = currentParent;
             //this.parent.children = new ArrayList<>();
         }
 
+        private void copyParentChain(TreeNode target, TreeNode source) {
+            if (source == null) {
+                return;
+            }
+            TreeNode newParent = new TreeNode(source.name, source.isDirectory);
+            target.parent = newParent;
+            copyParentChain(newParent, source.getParent());
+        }
         public String getFullPath() {
             if (parent == null) {
                 return name;
