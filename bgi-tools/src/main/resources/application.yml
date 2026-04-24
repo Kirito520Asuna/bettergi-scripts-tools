@@ -24,14 +24,12 @@ springdoc:
       api: true
       jwt: true
       other: true
-
       header:
         api:
           - name: sign
             value: X-Bgi-Tools-Sign
           - name: timestamp
             value: X-Bgi-Tools-Timestamp
-
   group-configs:
     - group: "api"
       paths-to-match: "/api/**"
@@ -59,7 +57,6 @@ knife4j:
     enable: false
     username: root
     password: root
-
 sign:
   api:
     name: ${spring.application.name}
@@ -84,7 +81,6 @@ sign:
     enable-double-symmetric-encryption: false
     encryption-as-name: X-Bgi-Tools-Encryption-Client-Public-Key
     id-as-name: X-Bgi-Tools-Encryption-Id
-
 server:
   servlet:
     context-path: /bgi
@@ -154,7 +150,7 @@ check:
     name: # token名称 默认为空
     value: # token值 默认为空
 bgi-tools:
-  version: 0.0.7
+  version: 0.0.8
 #设置默认账号密码
 auth:
   enabled: true
