@@ -136,6 +136,18 @@ const routes = [
             icon: 'UidMapping'
         }
     },
+    {
+        path: '/JavaScript/Api',
+        name: 'JavaScriptApi',
+        component: () => import('@views/JavaScriptApiView.vue'),
+        meta: {
+            isRoot: true,
+            title: 'JavaScript API 文档',
+            desc: '查看和管理脚本接口文档',
+            asSubParentTitle: 'API 文档',
+            icon: 'JavaScript'
+        }
+    },
     // 其他路由...
 ]
 const VITE_BASE_PATH = (import.meta.env.VITE_BASE_PATH || '/bgi/ui/');
