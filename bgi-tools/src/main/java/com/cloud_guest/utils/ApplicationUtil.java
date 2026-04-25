@@ -56,6 +56,8 @@ public class ApplicationUtil implements AbsBean {
         datacenterId += CollUtil.isEmpty(applicationInfos) ? 0l : applicationInfos.stream().map(ApplicationInfo::getDatacenterId).filter(ObjectUtils::isNotEmpty).mapToLong(Long::longValue).max().getAsLong();
         applicationInfo.setDatacenterId(datacenterId);
         ApplicationContextHolder.reportedOnline(applicationInfo.toReportedOnline());
+
+        ApplicationContextHolder.checkAndGetOnline(null);
     }
 
     /**
