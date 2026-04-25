@@ -17,15 +17,17 @@ const client_id_as_name = import.meta.env.VITE_BASE_CLIENT_ID_AS_NAME || 'X-Bgi-
 const enable_double_symmetric_encryption = import.meta.env.VITE_BASE_ENABLE_DOUBLE_SYMMETRIC_ENCRYPTION === 'true'
 const exCollection = [sign_name, timestamp_name]
 
-function getHostPrefix() {
+export function getHostPrefix() {
+    let basePath = import.meta.env.VITE_BASE_API_PATH || '/bgi/';
+
+    if (/^https?:\/\//i.test(basePath)) {
+        return basePath.endsWith('/') ? basePath : basePath + '/';
+    }
+
     const protocol = window.location.protocol;
     const host = window.location.host;
-    const basePath = import.meta.env.VITE_BASE_API_PATH || '/bgi/';
-    let re = `${protocol}//${host}${basePath}`;
-    if (!re.endsWith('/')) {
-        re = re + '/'
-    }
-    return re;
+    const re = `${protocol}//${host}${basePath}`;
+    return re.endsWith('/') ? re : re + '/';
 }
 
 export function general(salt, method, url, params, body, exCollection) {

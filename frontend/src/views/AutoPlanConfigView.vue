@@ -24,6 +24,7 @@ import {debounce} from 'lodash-es';
 import {getLocalToken, getLocalTokenName, goBack, toHomePage} from "@api/web/web.js";
 import {getTokenInfo} from "@api/auth/token.js";
 import router from "@router/router.js";
+import {getHostPrefix} from "@utils/ApiRequest.js";
 
 const cloud = ref({
   UidList: [],
@@ -33,20 +34,10 @@ const cloud = ref({
   cooldownMs: 1000,
 })
 
-function getHostPrefix() {
-  const protocol = window.location.protocol;
-  const host = window.location.host;
-  const basePath = import.meta.env.VITE_BASE_API_PATH || '/bgi/';
-  let re = `${protocol}//${host}${basePath}`;
-  if (!re.endsWith('/')){
-    re=re+'/'
-  }
-  return re;
-}
 
 const showDialogApi = ref(false)
 const ApiList = ref([])
-const handleApi = async () =>  {
+const handleApi = async () => {
   const hostPrefix = getHostPrefix();
   const response = await getTokenInfo()
   let tokenInfo = {
@@ -74,7 +65,7 @@ const handleApi = async () =>  {
     {
       name: '授权Token',
       value: token,
-      to:{
+      to: {
         text: '前往设置',
         desc: '点击前往设置授权Token',
         value: 'settings',
@@ -93,7 +84,7 @@ const handleApi = async () =>  {
     },
   ]
   ApiList.value = list
-  showDialogApi.value=true
+  showDialogApi.value = true
 }
 const querySearchAsync = (queryString, cb) => {
   if (queryString?.trim() === "" || !queryString) {
@@ -1384,7 +1375,7 @@ const batchUpdate = () => {
 
       <div class="external-pop-up-frame">
         <!-- 弹窗 -->
-                <el-dialog
+        <el-dialog
             v-if="showDialogApi"
             v-model="showDialogApi"
             width="480px"
@@ -1394,7 +1385,9 @@ const batchUpdate = () => {
         >
           <template #header>
             <div class="dialog-header">
-              <el-icon><Connection /></el-icon>
+              <el-icon>
+                <Connection/>
+              </el-icon>
               <span>脚本配置 API</span>
             </div>
           </template>
@@ -1415,7 +1408,7 @@ const batchUpdate = () => {
                       @click="item.to.click(item.to.value)"
                       class="copy-btn"
                   >
-                    {{item.to.text}}
+                    {{ item.to.text }}
                   </el-button>
                 </el-tooltip>
                 <el-tooltip content="复制到剪贴板" placement="top">
@@ -1432,7 +1425,7 @@ const batchUpdate = () => {
               </div>
             </div>
             <div v-if="!ApiList || ApiList.length === 0" class="empty-state">
-              <el-empty description="暂无可用 API" :image-size="80" />
+              <el-empty description="暂无可用 API" :image-size="80"/>
             </div>
           </div>
           <template #footer>

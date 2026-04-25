@@ -184,6 +184,7 @@ import {
   saveAccess,
   deleteAccess
 } from '@api/ws/wsProxy.js';
+import {getHostPrefix} from "@utils/ApiRequest.js";
 const actionMap=new Map([
     ['send_private_msg','私聊'],
     ['send_group_msg','群聊']
@@ -195,11 +196,9 @@ const selectedRows = ref([]);
 const showDialog = ref(false);
 const isEditMode = ref(false);
 function getWsProxyHostPrefix(){
-  const protocol = window.location.protocol;
-  const host = window.location.host;
-  const basePath = import.meta.env.VITE_BASE_API_PATH || '/bgi/';
-  return `${protocol}//${host}${basePath}`;
+  return getHostPrefix();
 }
+
 const formData = ref({
   uid: '',
   action: '',
