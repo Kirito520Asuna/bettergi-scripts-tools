@@ -331,7 +331,7 @@ ws:
 
 ## 🌐 访问地址
 
-启动后访问：\`http://localhost:8081/bgi\`
+启动后访问：\`http://localhost:8081/bgi/ui\`
 
 ## 🛠️ 常见问题
 
