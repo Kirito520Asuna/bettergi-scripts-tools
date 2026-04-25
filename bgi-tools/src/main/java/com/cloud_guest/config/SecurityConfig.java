@@ -1,9 +1,11 @@
 package com.cloud_guest.config;
 
 import cn.hutool.extra.spring.SpringUtil;
+import com.cloud_guest.abs.ApiSignFilter;
 import com.cloud_guest.abs.AuthFilter;
 import com.cloud_guest.aop.bean.AbsBean;
 import com.cloud_guest.filter.AuthJwtFilter;
+import com.cloud_guest.filter.SignApiFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
@@ -60,7 +62,11 @@ public class SecurityConfig implements AbsBean {
     public AuthFilter authFilter() {
         return new AuthJwtFilter();
     }
-
+    @Bean
+    @ConditionalOnExpression("${sign.api.sign-enable:false}")
+    public ApiSignFilter apiSignFilter(){
+        return new SignApiFilter();
+    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             http

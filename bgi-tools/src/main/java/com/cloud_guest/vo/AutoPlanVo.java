@@ -1,10 +1,9 @@
 package com.cloud_guest.vo;
 
-import com.cloud_guest.domain.AutoPlan;
+import com.cloud_guest.domain.auto_plan.AutoPlan;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;

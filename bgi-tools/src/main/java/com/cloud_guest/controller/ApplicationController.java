@@ -1,5 +1,6 @@
 package com.cloud_guest.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Login;
 import com.cloud_guest.domain.dto.ApplicationDto;
@@ -49,6 +50,12 @@ public class ApplicationController {
     @GetMapping("applicationIds")
     public Result applicationIds() {
         List<String> applicationIds = ApplicationUtil.getAllApplicationIds();
+        if (CollUtil.isEmpty(applicationIds)) {
+            String currentId = ApplicationUtil.getApplicationId();
+            if (StrUtil.isNotBlank(currentId)) {
+                applicationIds = Collections.singletonList(currentId);
+            }
+        }
         return Result.ok(applicationIds);
     }
 

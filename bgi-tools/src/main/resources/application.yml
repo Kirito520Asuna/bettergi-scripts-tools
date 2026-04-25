@@ -24,6 +24,12 @@ springdoc:
       api: true
       jwt: true
       other: true
+      header:
+        api:
+          - name: sign
+            value: X-Bgi-Tools-Sign
+          - name: timestamp
+            value: X-Bgi-Tools-Timestamp
   group-configs:
     - group: "api"
       paths-to-match: "/api/**"
@@ -51,6 +57,30 @@ knife4j:
     enable: false
     username: root
     password: root
+sign:
+  api:
+    name: ${spring.application.name}
+    ip-whitelist: #ip白名单
+      - 127.0.0.1
+      - localhost
+    ip-blacklist: #ip黑名单
+    salt: #签名盐值
+    sign-enable: true #是否开启签名校验
+    sign-multiple-enable: false #是否开启多签名校验
+    sign-time-out: 10 #签名超时时间 默认单位分钟
+    sign-time-unit: MINUTES #签名超时时间单位
+    paths-to-match:
+      - /api/**
+      - /auth/login
+    encryption-paths-to-exclude:
+      - /key/exchangeKey
+      - /api/key/exchangeKey
+      - /jwt/key/exchangeKey
+    sign-as-name: X-Bgi-Tools-Sign
+    timestamp-as-name: X-Bgi-Tools-Timestamp
+    enable-double-symmetric-encryption: false
+    encryption-as-name: X-Bgi-Tools-Encryption-Client-Public-Key
+    id-as-name: X-Bgi-Tools-Encryption-Id
 server:
   servlet:
     context-path: /bgi
@@ -120,7 +150,7 @@ check:
     name: # token名称 默认为空
     value: # token值 默认为空
 bgi-tools:
-  version: 0.0.7
+  version: 0.0.8
 #设置默认账号密码
 auth:
   enabled: true

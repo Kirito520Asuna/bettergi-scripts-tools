@@ -19,9 +19,15 @@ public class DateUtils extends DateUtil {
             "yyyy.MM.dd", "yyyy.MM.dd HH:mm:ss", "yyyy.MM.dd HH:mm", "yyyy.MM"};
 
     public static LocalDateTime longToLocalDateTime(long date) {
-        return toLocalDateTime(date(date));
+        return longToLocalDateTime(date, ZoneId.systemDefault());
     }
-
+    public static LocalDateTime longToLocalDateTime(long date, ZoneId zoneId) {
+        if (ObjectUtil.isEmpty(zoneId)) {
+            zoneId = ZoneId.systemDefault();
+        }
+        Instant instant = new Date(date).toInstant();
+        return LocalDateTime.ofInstant(instant, zoneId);
+    }
     public static long LocalDateTimeTolong(LocalDateTime date) {
         return LocalDateTimeTolong(date, ZoneId.systemDefault());
     }
@@ -60,20 +66,33 @@ public class DateUtils extends DateUtil {
         return new SimpleDateFormat(format).format(date);
     }
 
-    /**
-     * 增加 LocalDateTime ==> Date
-     */
-    public static Date toDate(LocalDateTime temporalAccessor) {
-        ZonedDateTime zdt = temporalAccessor.atZone(ZoneId.systemDefault());
-        return Date.from(zdt.toInstant());
-    }
 
     /**
      * 增加 LocalDate ==> Date
      */
     public static Date toDate(LocalDate temporalAccessor) {
+        return toDate(temporalAccessor, ZoneId.systemDefault());
+    }
+
+    public static Date toDate(LocalDateTime temporalAccessor) {
+        return toDate(temporalAccessor, ZoneId.systemDefault());
+    }
+
+    public static Date toDate(LocalDateTime temporalAccessor, ZoneId zoneId) {
+        if (ObjectUtil.isEmpty(zoneId)) {
+            zoneId = ZoneId.systemDefault();
+        }
+        ZonedDateTime zdt = temporalAccessor.atZone(zoneId);
+        return Date.from(zdt.toInstant());
+    }
+
+
+    public static Date toDate(LocalDate temporalAccessor, ZoneId zoneId) {
+        if (ObjectUtil.isEmpty(zoneId)) {
+            zoneId = ZoneId.systemDefault();
+        }
         LocalDateTime localDateTime = LocalDateTime.of(temporalAccessor, LocalTime.of(0, 0, 0));
-        ZonedDateTime zdt = localDateTime.atZone(ZoneId.systemDefault());
+        ZonedDateTime zdt = localDateTime.atZone(zoneId);
         return Date.from(zdt.toInstant());
     }
 }

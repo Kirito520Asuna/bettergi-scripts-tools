@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -28,10 +29,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class CacheServiceImpl implements CacheService {
-    //@Value("${spring.redis.mode:none}")
-    //private String redisMode;
-    //public static final String  KeyConstants.redis_file_json_key = "redis:file:json:";
-
     @Override
     public boolean removeList(List<String> ids) {
         String key = ":db";
@@ -43,14 +40,12 @@ public class CacheServiceImpl implements CacheService {
         }
         for (String id : ids) {
             LockWrapper lock = LockUtil.getLock(id + key);
-            //List<String> parentKeys = ids.stream().collect(Collectors.toList());
             boolean tryLock = lock.tryLock();
             if (!tryLock) {
                 throw new GlobalException("存在其他操作，请稍后再试!");
             }
             try {
-                if (ModeUtil.isLocal()) {
-                    //LocalCacheUtils.removeList(ids);
+/*                if (ModeUtil.isLocal()) {
                     LocalCacheUtils.remove(id);
                     if (!id.contains("ALL")) {
                         String parentKey = id.substring(0, id.lastIndexOf(":"));
@@ -58,12 +53,17 @@ public class CacheServiceImpl implements CacheService {
                     }
                 } else if (ModeUtil.isRedis()) {
                     RedisService bean = SpringUtil.getBean(RedisService.class);
-                    //bean.delList(ids);
                     bean.del(id);
                     if (!id.contains("ALL")) {
                         String parentKey = id.substring(0, id.lastIndexOf(":"));
                         removeId(parentKey, id);
                     }
+                }*/
+
+                removeByKey(id);
+                if (!id.contains("ALL")) {
+                    String parentKey = id.substring(0, id.lastIndexOf(":"));
+                    removeId(parentKey, id);
                 }
             } finally {
                 if (tryLock) {
@@ -71,19 +71,12 @@ public class CacheServiceImpl implements CacheService {
                 }
             }
         }
-
-        //parentKeys.stream().forEach(id -> {
-        //    if (!id.contains("ALL")) {
-        //        String parentKey = id.substring(0, id.lastIndexOf(":"));
-        //        removeId(parentKey, id);
-        //    }
-        //});
-
         return true;
     }
 
+
     @Override
-    public boolean save(String id, String json) {
+    public boolean save(String id, String json, Long expireTime, TimeUnit timeUnit) {
         String type = CacheType.string.name();
         if (JSONUtil.isTypeJSON(json)) {
             type = CacheType.json.name();
@@ -106,11 +99,15 @@ public class CacheServiceImpl implements CacheService {
             } else if (ModeUtil.isRedis()) {
                 RedisService bean = SpringUtil.getBean(RedisService.class);
                 String key = id.startsWith(KeyConstants.redis_file_json_key) ? id : KeyConstants.redis_file_json_key + id;
-                bean.save(key, JSONUtil.toJsonStr(cache));
+                if (expireTime != null && timeUnit != null) {
+                    bean.save(key, JSONUtil.toJsonStr(cache), expireTime, timeUnit);
+                } else {
+                    bean.save(key, JSONUtil.toJsonStr(cache));
+                }
                 parentKey = key.substring(0, key.lastIndexOf(":"));
             }
             if (!id.contains("ALL")) {
-                saveId(parentKey, id);
+                saveId(parentKey, id, expireTime, timeUnit);
             }
         } finally {
             if (tryLock) {
@@ -123,13 +120,7 @@ public class CacheServiceImpl implements CacheService {
     @Override
     public boolean removeId(String key, String id) {
         Set<String> hashSet = new LinkedHashSet<>();
-      /*  String ids = StrUtil.EMPTY;
-        if (ModeUtil.isLocal()) {
-            ids = (String) LocalCacheUtils.get(key);
-        } else if (ModeUtil.isRedis()) {
-            RedisService bean = SpringUtil.getBean(RedisService.class);
-            ids = (String) bean.get(key);
-        }*/
+
         String ids = findValueByKey(key);
 
         if (StrUtil.isNotBlank(ids)) {
@@ -190,15 +181,9 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public boolean saveId(String key, String id) {
+    public boolean saveId(String key, String id, Long expireTime, TimeUnit timeUnit) {
         Set<String> hashSet = new LinkedHashSet<>();
-      /*  String ids = StrUtil.EMPTY;
-        if (ModeUtil.isLocal()) {
-            ids = (String) LocalCacheUtils.get(key);
-        } else if (ModeUtil.isRedis()) {
-            RedisService bean = SpringUtil.getBean(RedisService.class);
-            ids = (String) bean.get(key);
-        }*/
+
         String ids = findValueByKey(key);
         if (StrUtil.isNotBlank(ids)) {
             if (JSONUtil.isTypeJSONArray(ids)) {
@@ -223,7 +208,11 @@ public class CacheServiceImpl implements CacheService {
             } else if (ModeUtil.isRedis()) {
                 String keyRedis = key.startsWith(KeyConstants.redis_file_json_key) ? key : KeyConstants.redis_file_json_key + key;
                 RedisService bean = SpringUtil.getBean(RedisService.class);
-                bean.save(keyRedis, JSONUtil.toJsonStr(hashSet.stream().collect(Collectors.toList())));
+                if (expireTime != null && timeUnit != null){
+                    bean.save(keyRedis, JSONUtil.toJsonStr(hashSet.stream().collect(Collectors.toList())), expireTime, timeUnit);
+                }else {
+                    bean.save(keyRedis, JSONUtil.toJsonStr(hashSet.stream().collect(Collectors.toList())));
+                }
             }
         } finally {
             if (tryLock) {
@@ -232,6 +221,7 @@ public class CacheServiceImpl implements CacheService {
         }
         return true;
     }
+
 
     @Override
     public Cache<String> find(String id) {

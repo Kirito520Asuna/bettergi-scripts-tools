@@ -11,12 +11,17 @@ import cn.hutool.core.util.IdUtil;
 public class IdUtils extends IdUtil {
     public static long datacenterId = ApplicationUtil.getDatacenterId();
     public static long workerId = getWorkerId(datacenterId, Long.MAX_VALUE);
+
     public static Snowflake createSnowflake() {
-        return new Snowflake(workerId, datacenterId);
+        long datacenterIdSnow = datacenterId < 0 ? 0 : (datacenterId % 32);
+        long workerIdSnow = workerId < 0 ? 0 : (workerId % 32);
+        return new Snowflake(workerIdSnow, datacenterIdSnow);
     }
+
     public static long getNextId() {
         return createSnowflake().nextId();
     }
+
     public static String getNextIdStr() {
         return createSnowflake().nextIdStr();
     }

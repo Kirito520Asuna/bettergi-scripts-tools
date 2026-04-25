@@ -17,6 +17,8 @@ public interface KeyConstants {
 
     String load_yml_write_key = "load_yml:write:ALL";
     String ws_proxy_access_key = "WS_PROXY_ACCESS:UID:";
+    String bettergi_scripts_list = "BETTERGI_SCRIPTS_LIST:";
+    String mapping_uid_key = "MAPPING:UID:";
     String auto_plan_key = "AUTO_PLAN:UID:";
     String auto_plan_key_uid_all = "AUTO_PLAN:UID:ALL";
     String auto_plan_key_domain_all = "AUTO_PLAN_DOMAIN:ALL";
@@ -26,7 +28,9 @@ public interface KeyConstants {
     String restart_key = "restart";
     String online_application_key = "online_application";
     String outline_application_key = "outline_application";
-    List<String> ex_backup_list=new ArrayList<>(Arrays.asList(restart_key, online_application_key, outline_application_key));
+    String key = "TEMP:KEY:";
+
+    List<String> ex_backup_list = new ArrayList<>(Arrays.asList(restart_key, online_application_key, outline_application_key));
 
     String redis_file_json_key = "redis:file:json:";
     String task_key = "task:";

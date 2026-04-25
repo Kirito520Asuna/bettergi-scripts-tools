@@ -1,21 +1,19 @@
 package com.cloud_guest.abs;
 
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.spring.SpringUtil;
-import com.cloud_guest.properties.auth.AuthProperties;
-import com.cloud_guest.utils.jwt.JwtUtil;
-import org.springframework.http.HttpHeaders;
-import org.springframework.util.AntPathMatcher;
 
+import com.cloud_guest.abs.order.FilterOrderConstants;
 import jakarta.servlet.Filter;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.core.Ordered;
+
 
 /**
  * @Author yan
  * @Date 2026/2/10 12:54:47
  * @Description
  */
-public interface AuthFilter extends Filter, AbsAuth {
+public interface AuthFilter extends Ordered, Filter, AbsAuth {
+    @Override
+    default int getOrder() {
+        return FilterOrderConstants.AuthOrder;
+    }
 }

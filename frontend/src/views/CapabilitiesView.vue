@@ -131,7 +131,7 @@ import {ref} from 'vue'
 import service from "@utils/request";
 import {ElMessage} from "element-plus";
 import router from "@router/router";
-import {getNextTimestampAll} from "@api/cron/cron.js";
+import {getNextTimestamp, getNextTimestampAll} from "@api/cron/cron.js";
 import {ocrBytes} from "@api/ocr/ocr.js";
 import {CopyToClipboard} from "@utils/local.js";
 import {goBack, toHomePage} from "@api/web/web.js";

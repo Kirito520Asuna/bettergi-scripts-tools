@@ -56,7 +56,7 @@ export default defineConfig(({mode}) => {
             // }
         },
         define: {
-            'process.env': process.env,  // 这一步确保 process.env 在客户端代码中可访问
+            'process.env': env,  // 这一步确保 process.env 在客户端代码中可访问
         },
     }
 });

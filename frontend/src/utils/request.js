@@ -12,7 +12,7 @@ const service = axios.create({
     // axios中请求配置有baseURL选项，表示请求URL公共部分
     baseURL: import.meta.env.VITE_BASE_API_PATH || '/bgi/',
     // 超时
-    timeout: 10000
+    timeout: 1000*60*5// 5分钟
 })
 
 // request拦截器

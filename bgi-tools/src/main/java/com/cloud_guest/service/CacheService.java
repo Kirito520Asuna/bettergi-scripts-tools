@@ -3,6 +3,7 @@ package com.cloud_guest.service;
 import com.cloud_guest.domain.Cache;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author yan
@@ -27,7 +28,21 @@ public interface CacheService {
      * @param json 要保存的JSON格式字符串
      * @return 保存操作是否成功，成功返回true，失败返回false
      */
-    boolean save(String id, String json);
+    default boolean save(String id, String json){
+        return save(id,json,null,null);
+    }
+    /**
+     * 保存指定ID对应的JSON数据
+     *
+     * @param id   要保存数据的唯一标识符
+     * @param json 要保存的JSON格式字符串
+     * @param expireTime 过期时间
+     * @param timeUnit 时间单位
+     * @return 删除操作是否成功执行
+     * true - 删除成功
+     * false - 删除失败
+     */
+    boolean save(String id, String json,Long expireTime, TimeUnit timeUnit);
 
     /**
      * 根据键和ID移除对应的元素
@@ -37,6 +52,12 @@ public interface CacheService {
      * @return 如果成功移除则返回true，如果未找到对应元素或移除失败则返回false
      */
     boolean removeId(String key, String id);
+
+    /**
+     * 根据键移除对应的元素
+     * @param key
+     * @return
+     */
     boolean removeByKey(String key);
 
     /**
@@ -46,7 +67,11 @@ public interface CacheService {
      * @param id  需要保存的ID字符串
      * @return 保存操作是否成功
      */
-    boolean saveId(String key, String id);
+    default boolean saveId(String key, String id) {
+       return saveId(key,id,null,null);
+    }
+
+    boolean saveId(String key, String id,Long expireTime, TimeUnit timeUnit);
 
     /**
      * 根据指定的ID查找缓存中的数据

@@ -9,6 +9,7 @@ import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.properties.auth.AuthProperties;
 import com.cloud_guest.utils.AuthContextUtil;
 import com.cloud_guest.utils.jwt.JwtUtil;
+import org.springframework.core.Ordered;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.annotation.Resource;
@@ -20,7 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
 
-public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter, AbsBean {
+public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter, AbsBean{
 
     @Resource
     private JwtUtil jwtUtil;

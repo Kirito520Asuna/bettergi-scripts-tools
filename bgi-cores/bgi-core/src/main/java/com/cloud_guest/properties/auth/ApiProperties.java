@@ -1,0 +1,120 @@
+package com.cloud_guest.properties.auth;
+
+import cn.hutool.extra.spring.SpringUtil;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+/**
+ * @Author yan
+ * @Date 2026/3/31 18:30:52
+ * @Description
+ */
+@Component
+@ConfigurationProperties(prefix = "sign.api")
+@Data
+public class ApiProperties {
+    /**
+     * 微服务名称
+     */
+    String name;
+    /**
+     * 签名盐值
+     */
+    String salt;
+    /**
+     * 签名参数名称
+     */
+    String signAsName = "sign";
+    /**
+     * 时间戳参数名称
+     */
+    String timestampAsName = "timestamp";
+    /**
+     * 匹配的路径
+     */
+    List<String> pathsToMatch = Arrays.asList("/api/**").stream().collect(Collectors.toList());
+
+    /**
+     * IP白名单
+     */
+    List<String> ipWhitelist = new ArrayList<>();
+    /**
+     * IP黑名单
+     */
+    List<String> ipBlackList = new ArrayList<>();
+    /**
+     * 是否开启签名校验
+     */
+    Boolean signEnable = false;
+    /**
+     * 是否开启多签名校验
+     */
+    Boolean signMultipleEnable = false;
+    /**
+     * 签名超时时间 默认单位分钟
+     */
+    Long signTimeOut = 10l;
+    /**
+     * 签名超时时间单位
+     * 默认分钟
+     */
+    TimeUnit signTimeUnit = TimeUnit.MINUTES;
+    /**
+     * 是否开启对称加密
+     */
+    Boolean enableDoubleSymmetricEncryption = false;
+    /**
+     * 对称加密参数名称
+     */
+    String encryptionAsName = "X-Encryption-Client-Key";
+    /**
+     * 对称加密id参数名称
+     */
+    String idAsName = "X-Encryption-Id";
+    /**
+     * 指定无需对称加密的路径
+     */
+    List<String> encryptionPathsToExclude = new ArrayList<>();
+
+    public String getPath() {
+        Environment bean = SpringUtil.getBean(Environment.class);
+        String contextPath = bean.getProperty("server.servlet.context-path");
+        String path = contextPath;
+        path = ObjectUtils.isEmpty(path) ? "" : path;
+        return path;
+    }
+
+    /**
+     * 获取url中的路径
+     *
+     * @param url
+     * @return
+     */
+    public String getUrl(String url) {
+        String path = getPath();
+        if (ObjectUtils.isEmpty(path)) {
+            Environment bean = SpringUtil.getBean(Environment.class);
+            String serverPort = bean.getProperty("server.port");
+            path = serverPort;
+        } else {
+            path = path.endsWith("/") ? path : path + "/";
+        }
+        int startIndex = url.indexOf(path);
+        startIndex = startIndex == -1 ? 0 : startIndex;
+        String substring = url.substring(startIndex, url.length());
+        String s = substring;
+        if (!s.startsWith("/")) {
+            s = new StringBuffer("/").append(s).toString();
+        }
+        return s;
+    }
+}

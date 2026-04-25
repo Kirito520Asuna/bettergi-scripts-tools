@@ -23,8 +23,17 @@ springdoc:
     default-group-configs:
       enable: true
       api: true
+
       jwt: true
       other: true
+
+      header:
+        api:
+          - name: sign
+            value: X-bgi-tools-Sign
+          - name: timestamp
+            value: X-bgi-tools-Timestamp
+
   group-configs:
     - group: "api"
       paths-to-match: "/api/**"
