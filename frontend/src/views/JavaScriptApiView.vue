@@ -1,5 +1,4 @@
 <script setup>
-// 跳转主页
 import {goBack, toHomePage} from "@api/web/web.js";
 import router from "@router/router.js";
 import {computed, onMounted, ref} from "vue";
@@ -13,12 +12,14 @@ const goToHome = async () => {
   await toHomePage()
 }
 
-// 返回上一页
 const goToBack = async () => {
   await goBack()
 }
+
 const hostPrefix = getHostPrefix();
 const JsApiList = ref([])
+const expandMode = ref('dialog'/*click,dialog*/)
+
 onMounted(async () => {
   const response = await getTokenInfo()
   let tokenInfo = {
@@ -30,7 +31,7 @@ onMounted(async () => {
     tokenInfo.value = response.data.value || '';
   }
   let token = (tokenInfo?.name && tokenInfo?.value) ? tokenInfo?.name + "=" + tokenInfo?.value : "未设置,如需请前往设置配置";
-  JsApiList.value.push({
+  var auto_plan_json = {
     name: "自动体力计划API",
     list: [
       {
@@ -66,18 +67,22 @@ onMounted(async () => {
         }
       },
     ]
-  })
+  };
+  JsApiList.value.push(auto_plan_json)
 
-  JsApiList.value.push({
+  let auto_tool_json = {
     name: "全自动或半自动工具箱API",
     list: [
       {
         name: "CD算法API",
-        value: hostPrefix + "/cron/next-timestamp/all",
+        value: hostPrefix + "cron/next-timestamp/all",
       }
     ]
-  })
+  };
+  JsApiList.value.push(auto_tool_json)
+
 })
+
 const searchKeyword = ref('')
 const filteredGroups = computed(() => {
   if (!searchKeyword.value.trim()) {
@@ -90,17 +95,29 @@ const filteredGroups = computed(() => {
 })
 
 const expandedGroups = ref(new Set())
+const dialogVisible = ref(false)
+const currentGroup = ref(null)
 
-const toggleGroup = (idx) => {
-  if (expandedGroups.value.has(idx)) {
-    expandedGroups.value.delete(idx)
+const toggleGroup = (idx, group) => {
+  if (expandMode.value === 'click') {
+    if (expandedGroups.value.has(idx)) {
+      expandedGroups.value.delete(idx)
+    } else {
+      expandedGroups.value.add(idx)
+    }
   } else {
-    expandedGroups.value.add(idx)
+    currentGroup.value = group
+    dialogVisible.value = true
   }
 }
 
 const isExpanded = (idx) => {
   return expandedGroups.value.has(idx)
+}
+
+const handleExpandModeChange = (mode) => {
+  expandMode.value = mode
+  expandedGroups.value.clear()
 }
 
 </script>
@@ -111,26 +128,37 @@ const isExpanded = (idx) => {
       <div class="header-section">
         <h2 class="title">{{ currentRoute.meta.title }}</h2>
         <p class="subtitle">快速访问和管理脚本接口</p>
-        <div class="search-box">
-          <el-input
-              v-model="searchKeyword"
-              placeholder="搜索 API 分组名称..."
-              prefix-icon="Search"
-              clearable
-              class="search-input"
-          />
+
+        <div class="controls-box">
+          <div class="search-box">
+            <el-input
+                v-model="searchKeyword"
+                placeholder="搜索 API 分组名称..."
+                prefix-icon="Search"
+                clearable
+                class="search-input"
+            />
+          </div>
+
+          <div class="mode-switch">
+            <el-radio-group v-model="expandMode" @change="handleExpandModeChange" size="small">
+              <el-radio-button label="click">点击展开</el-radio-button>
+              <el-radio-button label="dialog">弹窗查看</el-radio-button>
+            </el-radio-group>
+          </div>
         </div>
       </div>
 
       <div class="api-groups">
         <div v-for="(group, idx) in filteredGroups" :key="idx" class="api-group-card">
-          <div class="group-header" @click="toggleGroup(idx)">
+          <div class="group-header" @click="toggleGroup(idx, group)">
             <div class="group-icon">📡</div>
             <h3 class="group-title">{{ group.name }}</h3>
-            <span class="expand-icon" :class="{ 'rotated': isExpanded(idx) }">▼</span>
+            <span v-if="expandMode === 'click'" class="expand-icon" :class="{ 'rotated': isExpanded(idx) }">▼</span>
+            <el-icon v-else class="view-icon"><View /></el-icon>
           </div>
 
-          <transition name="expand">
+          <transition v-if="expandMode === 'click'" name="expand">
             <div v-if="isExpanded(idx)" class="api-list">
               <div v-for="(item, index) in group.list" :key="index" class="api-item-card">
                 <div class="api-item-header">
@@ -173,13 +201,69 @@ const isExpanded = (idx) => {
             </div>
           </transition>
 
-          <div v-if="isExpanded(idx) && (!group.list || group.list.length === 0)" class="empty-state">
+          <div v-if="expandMode === 'click' && isExpanded(idx) && (!group.list || group.list.length === 0)" class="empty-state">
             <el-empty description="暂无可用 API" :image-size="100"/>
           </div>
         </div>
+
+        <div v-if="filteredGroups.length === 0" class="no-result">
+          <el-empty description="未找到匹配的 API 分组" :image-size="120"/>
+        </div>
       </div>
     </div>
-    <!-- 底部按钮 -->
+
+    <el-dialog
+        v-model="dialogVisible"
+        :title="currentGroup?.name"
+        width="70%"
+        class="api-dialog"
+    >
+      <div v-if="currentGroup" class="dialog-content">
+        <div v-for="(item, index) in currentGroup.list" :key="index" class="api-item-card">
+          <div class="api-item-header">
+            <div class="api-info">
+              <span class="api-name">{{ item.name }}</span>
+              <el-tag size="small" type="primary" effect="plain">API</el-tag>
+            </div>
+          </div>
+
+          <div class="api-value-box">
+            <code class="api-value">{{ item.value }}</code>
+          </div>
+
+          <div class="api-actions">
+            <el-tooltip v-if="item.to" :content="item.to.desc" placement="top">
+              <el-button
+                  type="success"
+                  size="small"
+                  icon="Position"
+                  @click="item.to.click(item.to.value)"
+                  class="action-btn"
+              >
+                {{ item.to.text }}
+              </el-button>
+            </el-tooltip>
+
+            <el-tooltip content="复制到剪贴板" placement="top">
+              <el-button
+                  type="primary"
+                  size="small"
+                  icon="DocumentCopy"
+                  @click="CopyToClipboard(item.value)"
+                  class="action-btn"
+              >
+                复制
+              </el-button>
+            </el-tooltip>
+          </div>
+        </div>
+
+        <div v-if="!currentGroup.list || currentGroup.list.length === 0" class="empty-state">
+          <el-empty description="暂无可用 API" :image-size="100"/>
+        </div>
+      </div>
+    </el-dialog>
+
     <div class="fixed-back">
       <button @click="goToBack" class="btn secondary">返回上一页</button>
     </div>
@@ -190,7 +274,6 @@ const isExpanded = (idx) => {
 </template>
 
 <style scoped>
-
 .container {
   width: 80vw;
   height: 80vh;
@@ -229,7 +312,7 @@ const isExpanded = (idx) => {
 
 .header-section {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 
 .title {
@@ -243,12 +326,21 @@ const isExpanded = (idx) => {
 .subtitle {
   color: rgba(255, 255, 255, 0.9);
   font-size: 1.1rem;
-  margin: 0;
+  margin: 0 0 20px 0;
+}
+
+.controls-box {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .search-box {
+  flex: 1;
   max-width: 500px;
-  margin: 0 auto;
+  min-width: 280px;
 }
 
 .search-input :deep(.el-input__wrapper) {
@@ -262,11 +354,15 @@ const isExpanded = (idx) => {
   font-size: 1rem;
 }
 
+.mode-switch {
+  flex-shrink: 0;
+}
+
 .api-groups {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 20px;
-  max-height: calc(100% - 120px);
+  max-height: calc(100% - 180px);
   overflow-y: auto;
   padding-right: 10px;
   scrollbar-width: none;
@@ -281,7 +377,7 @@ const isExpanded = (idx) => {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 16px;
-  padding: 20px;
+  padding: 24px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -327,6 +423,11 @@ const isExpanded = (idx) => {
 
 .expand-icon.rotated {
   transform: rotate(180deg);
+}
+
+.view-icon {
+  font-size: 1.3rem;
+  color: #667eea;
 }
 
 .api-list {
@@ -411,6 +512,26 @@ const isExpanded = (idx) => {
   padding: 40px 0;
 }
 
+.no-result {
+  padding: 60px 0;
+  text-align: center;
+}
+
+.dialog-content {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.dialog-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.3);
+  border-radius: 3px;
+}
+
 .expand-enter-active,
 .expand-leave-active {
   transition: all 0.3s ease;
@@ -430,4 +551,5 @@ const isExpanded = (idx) => {
   opacity: 1;
   max-height: 2000px;
 }
+
 </style>
