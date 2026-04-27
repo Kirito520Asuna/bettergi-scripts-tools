@@ -1,22 +1,30 @@
 package com.cloud_guest.service.impl;
 
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.spring.SpringUtil;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cloud_guest.mapper.AutoPlanMapper;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.Cache;
+import com.cloud_guest.mp.abs.service.impl.MpServiceImpl;
+import com.cloud_guest.pojo.AutoPlanConfig;
+import com.cloud_guest.pojo.DbKV;
 import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.service.CacheService;
-import com.cloud_guest.vo.AutoPlanVo;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.cloud_guest.service.DbKVService;
+import com.cloud_guest.utils.object.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 /**
  * @Author yan
@@ -24,107 +32,124 @@ import java.util.stream.Collectors;
  * @Description
  */
 @Service
-public class AutoPlanServiceImpl implements AutoPlanService {
-    //private static final String key_uid_all = "AUTO_PLAN_UID:ALL";
-    //private static final String KeyConstants.auto_plan_key_domain_all = "AUTO_PLAN_DOMAIN:ALL";
-    //private static final String KeyConstants.auto_plan_key_country_all = "AUTO_PLAN_COUNTRY:ALL";
+public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanConfig> implements AutoPlanService {
     @Resource
-    private CacheService cacheService;
+    private AutoPlanMapper dao;
 
     @Override
-    public boolean delList(List<String> ids) {
-        ids = ids.stream().map(id -> buildId(id)).collect(Collectors.toList());
-        return cacheService.removeList(ids);
+    @Transactional(rollbackFor = Exception.class)
+    public boolean removeByUidList(List<String> uidList) {
+        LambdaQueryWrapper<AutoPlanConfig> query = Wrappers.lambdaQuery();
+        query.in(AutoPlanConfig::getUid, uidList);
+        return remove(query);
     }
 
     @Override
-    public boolean save(String id, String json) {
-        id = buildId(id);
-        return cacheService.save(id, json);
-    }
-    @Override
-    public List<String> findALLUid() {
-        String id = getSuffix();
-        String jsonUidList = cacheService.findById(id);
-        List<String> uidList = Arrays.asList();
+    public List<AutoPlanConfig> find(String uid, Boolean enable) {
+        LambdaQueryWrapper<AutoPlanConfig> query = Wrappers.lambdaQuery();
+        query.eq(AutoPlanConfig::getUid, uid)
+                .eq(ObjectUtils.isNotEmpty(enable), AutoPlanConfig::getEnable, enable);
 
-        if (StrUtil.isNotBlank(jsonUidList)) {
-            if (JSONUtil.isTypeJSONArray(jsonUidList)) {
-                JSONUtil.toList(jsonUidList, String.class).stream().forEach(uidList::add);
-            }else {
-                uidList.add(jsonUidList);
-            }
-        }
-        return uidList;
-    }
-
-    @Override
-    public List<AutoPlanVo> find(String id) {
-        id = buildId(id);
-        Cache<String> cache = cacheService.find(id);
-        List<Map<String, Object>> list = cache.toList();
-
-        ObjectMapper bean = SpringUtil.getBean(ObjectMapper.class);
-        List<AutoPlanVo> collect = list.stream().map(map -> {
-            return bean.convertValue(map, AutoPlanVo.class);
-        }).collect(Collectors.toList());
-        return collect;
+        return list(query);
     }
 
     @Override
     public List<String> findUidAll() {
-        List<String> uidList = new ArrayList<>();
-        
-        String key = getSuffix().substring(0, getSuffix().lastIndexOf(":"));
-        String uid_all = cacheService.findValueByKey(key);
-        if (StrUtil.isNotBlank(uid_all)) {
-            if (JSONUtil.isTypeJSONArray(uid_all)) {
-                JSONUtil.toList(uid_all, String.class).stream().forEach(uidList::add);
-            } else {
-                uidList.add(uid_all);
-            }
-        }
+        List<String> uidList = list().stream().map(AutoPlanConfig::getUid).distinct().toList();
         return uidList;
     }
 
-    @Override
-    public boolean saveUid(String uid) {
-        if (StrUtil.isBlank(uid)) {
-            return true;
-        }
-        List<String> uidList = new ArrayList<>();
-        String uid_all = cacheService.findById(KeyConstants.auto_plan_key_uid_all);
-        if (StrUtil.isNotBlank(uid_all)) {
-            if (JSONUtil.isTypeJSONArray(uid_all)) {
-                JSONUtil.toList(uid_all, String.class).stream().forEach(uidList::add);
-            } else {
-                uidList.add(uid_all);
-            }
-        }
-        uidList.add(uid);
-        cacheService.save(KeyConstants.auto_plan_key_uid_all, JSONUtil.toJsonStr(uidList));
-        return true;
-    }
-
+//cache replace
+    @Resource
+    private CacheService cacheService;
+    @Resource
+    private DbKVService dbKVService;
     @Override
     public List<Map<String, Object>> findDomainAll() {
-        Cache<String> cache = cacheService.find(KeyConstants.auto_plan_key_domain_all);
-        return cache.toList();
+        LambdaQueryWrapper<DbKV> query = Wrappers.lambdaQuery(DbKV.class);
+        query.eq(DbKV::getType, KeyConstants.auto_plan_key_domain_all);
+
+        DbKV dbKV = dbKVService.getOne(query);
+        List<JSONObject> objectList = Optional.ofNullable(dbKV).map(k -> {
+            String value = k.getValue();
+            if (ObjectUtils.isEmpty(value)){
+                return new ArrayList<JSONObject>();
+            }
+            List<JSONObject> list = JSONUtil.toList(value, JSONObject.class);
+            return list;
+        }).orElse(new ArrayList<>());
+
+        List<Map<String, Object>> list = new ArrayList<>();
+        if (CollUtil.isNotEmpty(objectList)){
+            list.addAll(objectList);
+        }
+
+        return list;
+        //Cache<String> cache = cacheService.find(KeyConstants.auto_plan_key_domain_all);
+        //return cache.toList();
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean saveDomainAll(String json) {
-        return cacheService.save(KeyConstants.auto_plan_key_domain_all, json);
+        DbKV dbKV = new DbKV();
+        String id = KeyConstants.auto_plan_key_domain_all;
+        dbKV.setType(id);
+        dbKV.setKey(id);
+        dbKV.setValue(json);
+
+        dbKVService.remove(
+                Wrappers.lambdaQuery(DbKV.class)
+                        .eq(DbKV::getType, id)
+                        .eq(DbKV::getKey, id)
+        );
+
+        return dbKVService.save(dbKV);
+        //return cacheService.save(KeyConstants.auto_plan_key_domain_all, json);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean saveCountryAll(String json) {
-        return cacheService.save(KeyConstants.auto_plan_key_country_all, json);
+        DbKV dbKV = new DbKV();
+        String id = KeyConstants.auto_plan_key_country_all;
+        dbKV.setType(id);
+        dbKV.setKey(id);
+        dbKV.setValue(json);
+
+        dbKVService.remove(
+                Wrappers.lambdaQuery(DbKV.class)
+                        .eq(DbKV::getType, id)
+                        .eq(DbKV::getKey, id)
+        );
+
+        return dbKVService.save(dbKV);
+        //return cacheService.save(KeyConstants.auto_plan_key_country_all, json);
     }
 
     @Override
     public List<String> findCountryAll() {
-        Cache<String> cache = cacheService.find(KeyConstants.auto_plan_key_country_all);
-        return cache.toListByString();
+        LambdaQueryWrapper<DbKV> query = Wrappers.lambdaQuery(DbKV.class);
+        query.eq(DbKV::getType, KeyConstants.auto_plan_key_country_all);
+
+        DbKV dbKV = dbKVService.getOne(query);
+        List<String> objectList = Optional.ofNullable(dbKV).map(k -> {
+            String value = k.getValue();
+            if (ObjectUtils.isEmpty(value)){
+                return new ArrayList<String>();
+            }
+            List<String> list = JSONUtil.toList(value, String.class);
+            return list;
+        }).orElse(new ArrayList<>());
+
+        List<String> list = new ArrayList<>();
+        if (CollUtil.isNotEmpty(objectList)){
+            list.addAll(objectList);
+        }
+
+        return list;
+        //
+        //Cache<String> cache = cacheService.find(KeyConstants.auto_plan_key_country_all);
+        //return cache.toListByString();
     }
 }

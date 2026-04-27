@@ -32,6 +32,7 @@ import static com.cloud_guest.result.Result.ok;
  * @Date 2026/2/6 16:18:45
  * @Description
  */
+@Deprecated
 @Tag(name = "解析服务")
 @RestController
 @RequestMapping(value = {"/analysis/", "/api/analysis/", "/jwt/analysis/"})

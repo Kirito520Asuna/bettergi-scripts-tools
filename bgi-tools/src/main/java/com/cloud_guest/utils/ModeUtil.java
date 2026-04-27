@@ -3,6 +3,7 @@ package com.cloud_guest.utils;
 import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.aop.bean.AbsBean;
 import com.cloud_guest.redis.config.RedisConfiguration;
+import com.cloud_guest.utils.object.ObjectUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Component;
 public class ModeUtil implements AbsBean {
 
     private RedisConfiguration.RedisMode mode = RedisConfiguration.RedisMode.none;
-
+    private static Boolean IS_SQLITE_DB = null;
     @Override
     public void init() {
         AbsBean.super.init();
@@ -39,6 +40,15 @@ public class ModeUtil implements AbsBean {
         return bean;
     }
 
+    public static void setSqlite(Boolean sqlite) {
+        if (IS_SQLITE_DB == null) {
+            IS_SQLITE_DB = sqlite;
+        }
+    }
+
+    public static Boolean isSqlite() {
+        return ObjectUtils.defaultIfEmpty(IS_SQLITE_DB, false);
+    }
     public static boolean isRedis() {
         ModeUtil modeUtil = getModeUtil();
         RedisConfiguration.RedisMode mode = modeUtil.getMode();

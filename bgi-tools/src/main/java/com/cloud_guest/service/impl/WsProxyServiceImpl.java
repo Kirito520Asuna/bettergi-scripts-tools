@@ -2,8 +2,14 @@ package com.cloud_guest.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.WsProxyAccess;
+import com.cloud_guest.mapper.WsProxyMapper;
+import com.cloud_guest.mp.abs.service.impl.MpServiceImpl;
+import com.cloud_guest.pojo.WsProxyAccessConfig;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.service.WsProxyService;
 import com.cloud_guest.utils.object.ObjectUtils;
@@ -19,52 +25,25 @@ import java.util.List;
  * @Description
  */
 @Service
-public class WsProxyServiceImpl implements WsProxyService {
-    @Resource
-    private CacheService cacheService;
-
-    @Override
-    public boolean save(String id, String json) {
-        //id = buildId(id);
-        id = buildId(id);
-        return cacheService.save(id, json);
-    }
-
-    @Override
-    public boolean delList(List<String> ids) {
-        ids = ids.stream().map(id -> buildId(id)).toList();
-        return cacheService.removeList(ids);
-    }
+public class WsProxyServiceImpl extends ServiceImpl<WsProxyMapper, WsProxyAccessConfig> implements WsProxyService {
 
     @Override
     public List<String> findUidAll() {
-        List<String> uidList = new ArrayList<>();
-        String key = KeyConstants.ws_proxy_access_key.substring(0, KeyConstants.ws_proxy_access_key.lastIndexOf(":"));
-        String uid_all = cacheService.findValueByKey(key);
-        if (StrUtil.isNotBlank(uid_all)) {
-            if (JSONUtil.isTypeJSONArray(uid_all)) {
-                JSONUtil.toList(uid_all, String.class).stream().forEach(uidList::add);
-            } else {
-                uidList.add(uid_all);
-            }
-        }
-
+        LambdaQueryWrapper<WsProxyAccessConfig> query = Wrappers.lambdaQuery(WsProxyAccessConfig.class);
+        query.select(WsProxyAccessConfig::getUid);
+        List<String> uidList = list(query).stream().map(WsProxyAccessConfig::getUid).toList();
         return uidList;
     }
+
     @Override
     public WsProxyAccess find(String id) {
-        if (StrUtil.isBlank(id)) {
-            return null;
-        }else if (!id.startsWith(getSuffix())) {
-            id = buildId(id);
-        }
-        WsProxyAccess wsProxyAccess = cacheService.find(id, WsProxyAccess.class);
+        WsProxyAccessConfig config = getById(id);
+        WsProxyAccess wsProxyAccess = ObjectUtils.isEmpty(config) ? null : config.toWsProxyAccess();
         return wsProxyAccess;
     }
+
     @Override
-    public List<WsProxyAccess> findAll(){
-        List<String> uidAll = findUidAll();
-        List<WsProxyAccess> list = uidAll.stream().map(this::find).filter(ObjectUtils::isNotEmpty).toList();
-        return list;
+    public List<WsProxyAccess> findAll() {
+        return list().stream().map(WsProxyAccessConfig::toWsProxyAccess).toList();
     }
 }

@@ -438,7 +438,7 @@ public interface AbsApiSign extends AbsBean {
     @SneakyThrows
     default String generalSign(String id, String salt, String method, String url, Map<String, String[]> params, Map<String, Object> body, Collection<String> exCollection) {
         String generalSign = generalSign(salt, method, url, params, body, exCollection);
-        //todo: 是否启用双对称加密
+
         Boolean enableDoubleSymmetricEncryption = SpringUtil.getBean(ApiProperties.class).getEnableDoubleSymmetricEncryption();
         if (enableDoubleSymmetricEncryption) {
             if (StrUtil.isNotBlank(id)) {

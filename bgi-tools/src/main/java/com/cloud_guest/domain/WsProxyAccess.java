@@ -1,6 +1,8 @@
 package com.cloud_guest.domain;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.cloud_guest.domain.enums.ActionType;
+import com.cloud_guest.pojo.WsProxyAccessConfig;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,4 +44,17 @@ public class WsProxyAccess {
     private String groupId;
     @Schema(description = "uid")
     private String uid;
+
+    public WsProxyAccessConfig toConfig() {
+        WsProxyAccessConfig config = new WsProxyAccessConfig();
+        config.setAction(action);
+        config.setUrl(url);
+        config.setProxyUrl(proxyUrl);
+        config.setToken(token);
+        config.setAtList(atList);
+        config.setUserId(userId);
+        config.setGroupId(groupId);
+        config.setUid(uid);
+        return config;
+    }
 }

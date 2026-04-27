@@ -1,6 +1,9 @@
 package com.cloud_guest.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloud_guest.constants.KeyConstants;
+import com.cloud_guest.mp.abs.service.MpIService;
+import com.cloud_guest.pojo.AutoPlanConfig;
 import com.cloud_guest.vo.AutoPlanVo;
 
 import java.util.List;
@@ -11,25 +14,25 @@ import java.util.Map;
  * @Date 2026/2/8 15:31:44
  * @Description
  */
-public interface AutoPlanService extends BaseService {
-    @Override
+public interface AutoPlanService extends IService<AutoPlanConfig> {
     default String getSuffix() {
         return KeyConstants.auto_plan_key;
     }
+    boolean removeByUidList(List<String> uidList);
+    //boolean delList(List<String> ids);
 
-    boolean delList(List<String> ids);
+    //boolean save(String id, String json);
+    //@Deprecated
+    //List<String> findALLUid();
 
-    boolean save(String id, String json);
-    @Deprecated
-    List<String> findALLUid();
-
-    List<AutoPlanVo> find(String id);
+    //List<AutoPlanVo> find(String id);
+    List<AutoPlanConfig> find(String uid,Boolean enable);
 
     boolean saveDomainAll(String json);
 
     List<String> findUidAll();
 
-    boolean saveUid(String uid);
+    //boolean saveUid(String uid);
 
     List<Map<String, Object>> findDomainAll();
 

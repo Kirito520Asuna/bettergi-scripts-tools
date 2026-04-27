@@ -143,7 +143,6 @@ public class GitHubTreeFetcher {
         List<BetterGIScriptsListTreeNode> betterGIScriptsListTreeNodes = Mapping.convertToBetterGITreeNodes(repoNode);
         printTreeNode(repoNode, "");
         HashSet<String> value = new HashSet<>();
-        //todo:tree->list
         //put url :list path
         collectFilePaths(repoNode, value);
         map_paths.put(url, value);

@@ -1,5 +1,8 @@
 package com.cloud_guest.domain.auto_plan;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.json.JSONUtil;
+import com.cloud_guest.pojo.AutoPlanConfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -8,7 +11,10 @@ import lombok.NoArgsConstructor;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.experimental.Accessors;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Author yan
@@ -17,7 +23,7 @@ import java.util.List;
  */
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Data @Accessors(chain = true)
 public class AutoPlan {
     @NotNull
     @Schema(description = "执行顺序")
@@ -53,4 +59,16 @@ public class AutoPlan {
     //    List<AutoPlan> list = JSONUtil.toList(s, AutoPlan.class);
     //    System.err.println( list);
     //}
+    public AutoPlanConfig toConfig() {
+        AutoPlanConfig planConfig = new AutoPlanConfig();
+        planConfig.setAutoFight(JSONUtil.toJsonStr(this.autoFight));
+        planConfig.setAutoLeyLineOutcrop(JSONUtil.toJsonStr(this.autoLeyLineOutcrop));
+        planConfig.setAutoStygianOnslaught(JSONUtil.toJsonStr(this.autoStygianOnslaught));
+        planConfig.setDays(CollUtil.isEmpty(this.days)?null:days.stream().map(String::valueOf).collect(Collectors.joining(",")));
+        planConfig.setDayName(this.dayName);
+        planConfig.setEnable(this.enable);
+        planConfig.setOrderSort(this.order);
+        planConfig.setRunType(this.runType);
+        return planConfig;
+    }
 }

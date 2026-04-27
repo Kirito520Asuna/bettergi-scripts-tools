@@ -15,6 +15,7 @@ import java.util.List;
  * @Date 2026/2/6 18:10:53
  * @Description
  */
+@Deprecated
 @Service
 public class FileJsonServiceImpl implements FileJsonService {
     @Resource

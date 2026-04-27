@@ -7,9 +7,12 @@ import com.cloud_guest.aop.security.Token;
 import com.cloud_guest.domain.UidInfo;
 import com.cloud_guest.domain.dto.AutoPlanDTO;
 import com.cloud_guest.domain.dto.AutoPlanJsonDto;
+import com.cloud_guest.pojo.AutoPlanConfig;
+import com.cloud_guest.pojo.UidInfoConfig;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.service.UidService;
+import com.cloud_guest.utils.ModeUtil;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.view.BasicJsonView;
 import com.cloud_guest.vo.AutoPlanVo;
@@ -24,10 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotBlank;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.cloud_guest.result.Result.ok;
@@ -103,7 +103,10 @@ public class AutoPlanController {
     @Operation(summary = "[需要登录/授权token]存储UID体力计划")
     public Result<String> saveInfo(@Validated @RequestBody AutoPlanDTO dto) {
         dto.checkValid();
-        autoPlanService.save(dto.getUid(), JSONUtil.toJsonStr(dto.getAutoPlanList()));
+        List<AutoPlanConfig> configList = dto.toConfigList();
+        //autoPlanService.save(dto.getUid(), JSONUtil.toJsonStr(dto.getAutoPlanList()));
+
+        autoPlanService.saveBatch(configList);
         return ok(dto.getUid());
     }
 
@@ -111,15 +114,9 @@ public class AutoPlanController {
     @Operation(summary = "查询UID映射JSON")
     @GetMapping("json")
     public Result<List<AutoPlanVo>> info(@RequestParam String uid, @RequestParam(required = false) Boolean enable) {
-        List<AutoPlanVo> autoPlanVos = autoPlanService.find(uid);
-        if (ObjectUtils.isNotEmpty(enable)) {
-            //过滤启用
-            Boolean finalEnable = enable;
-            autoPlanVos = autoPlanVos.stream()
-                    .filter(item -> ObjectUtils.equals(item.getEnable(), finalEnable))
-                    .collect(Collectors.toList());
-        }
-        return ok(autoPlanVos);
+        List<AutoPlanVo> list = autoPlanService.find(uid, enable)
+                .stream().map(item -> item.toVo()).toList();
+        return ok(list);
     }
 
     @SysLog
@@ -138,13 +135,15 @@ public class AutoPlanController {
         List<String> uidList = autoPlanService.findUidAll();
         uidList = uidList.stream().map(uid -> uid.substring(uid.lastIndexOf(":") + 1)).collect(Collectors.toList());
         List<UidInfo> list = uidList.stream().map(uid -> {
-            UidInfo uidInfo = uidService.find(uid);
+            UidInfo uidInfo = Optional.ofNullable(uidService.find(uid))
+                    .map(UidInfoConfig::toUidInfo)
+                    .orElse(null);
             if (ObjectUtils.isEmpty(uidInfo)) {
                 uidInfo = new UidInfo(uid, null);
             }
             return uidInfo;
         }).collect(Collectors.toList());
-        List<UidInfo> uidAll = uidService.findUidAll();
+        List<UidInfo> uidAll = uidService.findUidAll().stream().map(UidInfoConfig::toUidInfo).toList();
         list.addAll(uidAll);
         //去重
         list = new HashSet<UidInfo>(list).stream().toList();
@@ -157,6 +156,6 @@ public class AutoPlanController {
     @DeleteMapping("json")
     public Result<Boolean> infoDel(@Validated @NotBlank @RequestParam String uidStr) {
         List<String> ids = Arrays.stream(uidStr.split(",")).collect(Collectors.toList());
-        return ok(autoPlanService.delList(ids));
+        return ok(autoPlanService.removeByUidList(ids));
     }
 }

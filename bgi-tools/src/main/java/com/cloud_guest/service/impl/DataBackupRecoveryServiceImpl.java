@@ -2,10 +2,14 @@ package com.cloud_guest.service.impl;
 
 import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.constants.KeyConstants;
+import com.cloud_guest.domain.UidInfo;
+import com.cloud_guest.domain.WsProxyAccess;
+import com.cloud_guest.pojo.AutoPlanConfig;
 import com.cloud_guest.redis.service.RedisService;
 import com.cloud_guest.service.DataBackupRecoveryService;
 import com.cloud_guest.utils.LocalCacheUtils;
 import com.cloud_guest.utils.ModeUtil;
+import com.cloud_guest.utils.object.ObjectUtils;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -69,6 +73,33 @@ public class DataBackupRecoveryServiceImpl implements DataBackupRecoveryService 
                 bean.save(k, v);
             });
         }
+        return true;
+
+    }
+
+    Map<String, Class> hashClassMap = Maps.newLinkedHashMap();
+
+    {
+        hashClassMap.put(KeyConstants.mapping_uid_key, UidInfo.class);
+        hashClassMap.put(KeyConstants.ws_proxy_access_key, WsProxyAccess.class);
+        hashClassMap.put(KeyConstants.auto_plan_key, AutoPlanConfig.class);
+        hashClassMap.put("ALL", String.class);
+    }
+
+    public boolean recoveryV1(Map<String, Object> map) {
+        Map<String, Object> hashMap = Maps.newLinkedHashMap();
+        hashMap.putAll(map);
+        List<String> list = hashMap.keySet().stream().filter(key -> key.contains(":UID:")).toList();
+        list.stream().forEach(k -> {
+            int lasted = k.lastIndexOf(":");
+            String key = k.substring(0, lasted);
+            Class o = hashClassMap.get(key);
+            Object object = hashMap.get(k);
+            if (ObjectUtils.isNotNull(o) && ObjectUtils.isNotNull(object)) {
+
+            }
+
+        });
         return true;
     }
 }

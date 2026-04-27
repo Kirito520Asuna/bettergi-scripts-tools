@@ -56,13 +56,13 @@ public class KeyController {
         String encryptedSP = RSAUtil.encryptByPublicKey(serverPublicKeySP, cp);
 
         KeyInfo keyInfo = new KeyInfo()
-                .setId(IdUtils.getNextIdStr())
+                //.setId(IdUtils.getNextIdStr())
                 .setPublicKeyBase64(serverPublicKeySP)
                 .setPrivateKeyBase64(privateKeyBase64)
                 .setCreateTime(System.currentTimeMillis());
         // 保存密钥信息
-        SpringUtil.getBean(AbstractKeyService.class).saveKeyInfo(keyInfo);
-
+        Long id = SpringUtil.getBean(AbstractKeyService.class).saveKeyInfo(keyInfo);
+        keyInfo.setId(String.valueOf(id));
         KeyInfoVo build = KeyInfoVo.build(keyInfo, encryptedSP);
         return Result.ok(build);
 

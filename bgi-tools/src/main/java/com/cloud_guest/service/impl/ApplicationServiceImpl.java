@@ -5,12 +5,14 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.Cache;
 import com.cloud_guest.exception.exceptions.GlobalException;
+import com.cloud_guest.pojo.DbKV;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.ApplicationService;
-import com.cloud_guest.service.CacheService;
+import com.cloud_guest.service.DbKVService;
 import com.cloud_guest.utils.ApplicationUtil;
 import com.cloud_guest.utils.LockUtil;
 import com.cloud_guest.utils.LockYmlUtil;
@@ -24,9 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Author yan
@@ -37,43 +40,46 @@ import java.util.Map;
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
     @Resource
-    private CacheService cacheService;
+    private DbKVService dbKVService;
 
     @Resource
     private LoadProperties loadProperties;
+
+    private static final String CHECK_NAME = "check";
+    private static final String TOKEN_NAME = "token";
+    private static final String NAME_KEY = "name";
+    private static final String VALUE_KEY = "value";
 
     @SneakyThrows
     @Override
     public boolean saveToken(String name, String value) {
         List<String> yamlPaths = loadProperties.getYamlPaths();
         String loadYmlSaveUpdateTimeKey = KeyConstants.load_yml_save_update_time_key;
+
         for (String yamlPath : yamlPaths) {
             try {
-                JSONObject jsonObject = YmlUtils.readValueToJSONObject(yamlPath);
-                //if (jsonObject == null) {
-                //    continue;
-                //}
-                File file = FileUtil.newFile(yamlPath);
-
-                if (file == null || !file.exists()) {
+                JSONObject jsonObject = readAndValidateYaml(yamlPath);
+                if (jsonObject == null) {
                     continue;
                 }
+
                 jsonObject = setCheckToken(name, value, jsonObject);
                 String lockKey = KeyConstants.load_yml_write_key + ":" + yamlPath;
                 LockWrapper lock = LockUtil.getLock(lockKey);
+
                 saveLoadApplicationYml(jsonObject);
                 jsonObject.remove(loadYmlSaveUpdateTimeKey);
-                LockYmlUtil.writeValue(file, jsonObject, lock);
-                //YmlUtils.writeValue(file, jsonObject);
+                LockYmlUtil.writeValue(FileUtil.newFile(yamlPath), jsonObject, lock);
 
             } catch (MismatchedInputException e) {
                 log.warn("{}文件格式不正确/文件为空", yamlPath);
             } catch (Exception e) {
-                if (e.getMessage().contains("文件不存在或为空")) {
+                if (e.getMessage() != null && e.getMessage().contains("文件不存在或为空")) {
+                    log.debug("文件不存在或为空: {}", yamlPath);
                     continue;
-                } else {
-                    return false;
                 }
+                log.error("保存token失败, yamlPath: {}", yamlPath, e);
+                return false;
             }
         }
         return true;
@@ -81,33 +87,123 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public boolean loadApplicationYml(Long loadTime) {
-        JSONObject jsonObject = null;
-        Cache<String> cache = cacheService.find(KeyConstants.load_yml_save_key);
-        if (cache != null) {
-            String data = cache.getData();
-            if (StrUtil.isNotBlank(data)) {
-                jsonObject = JSONUtil.toBean(data, JSONObject.class);
-            }
-        } else {
+        JSONObject jsonObject = loadLatestDbKV();
+        if (jsonObject == null) {
             return false;
         }
-        if (ObjectUtils.isEmpty(jsonObject)) {
-            return false;
-        }
+
         String loadYmlSaveUpdateTimeKey = KeyConstants.load_yml_save_update_time_key;
-        Long updateTime = (Long) jsonObject.get(loadYmlSaveUpdateTimeKey);
-        if (ObjectUtils.isNotEmpty(updateTime)) {
-            long time = System.currentTimeMillis() - updateTime;
-            //加载n ms内的缓存数据
-            if (ObjectUtils.isNotEmpty(loadTime) && time > loadTime) {
+        Long updateTime = jsonObject.getLong(loadYmlSaveUpdateTimeKey);
+
+        if (updateTime != null && loadTime != null) {
+            long elapsed = System.currentTimeMillis() - updateTime;
+            if (elapsed > loadTime) {
                 return false;
             }
         }
+
         jsonObject.remove(loadYmlSaveUpdateTimeKey);
         List<String> yamlPaths = loadProperties.getYamlPaths();
+
         if (CollUtil.isNotEmpty(yamlPaths)) {
             log.debug("加载{}ms *.yml", loadTime == null ? 0 : loadTime);
         }
+
+        return writeToAllYamlPaths(jsonObject, yamlPaths);
+    }
+    @Transactional(rollbackFor = {Exception.class})
+    @Override
+    public boolean saveLoadApplicationYml(JSONObject jsonObject) {
+        if (jsonObject == null) {
+            return false;
+        }
+
+        String loadYmlSaveUpdateTimeKey = KeyConstants.load_yml_save_update_time_key;
+        jsonObject.put(loadYmlSaveUpdateTimeKey, System.currentTimeMillis());
+
+        LockWrapper lock = LockUtil.getLock(KeyConstants.load_yml_save_key);
+        boolean tryLock = lock.tryLock();
+        if (!tryLock) {
+            log.warn("获取锁超时，key: {}", KeyConstants.load_yml_save_key);
+            throw new GlobalException("存在其他操作，请稍后再试!");
+        }
+
+        try {
+            // 先移除同类型的数据
+            dbKVService.remove(
+                    Wrappers.lambdaQuery(DbKV.class)
+                            .eq(DbKV::getType, KeyConstants.load_yml_save_key)
+            );
+            log.debug("已清除类型为 {} 的历史数据", KeyConstants.load_yml_save_key);
+
+            DbKV kv = new DbKV();
+            kv.setType(KeyConstants.load_yml_save_key);
+            kv.setKey(KeyConstants.load_yml_save_key);
+            kv.setValue(JSONUtil.toJsonStr(jsonObject));
+            dbKVService.save(kv);
+        } finally {
+            safeUnlock(lock, tryLock, KeyConstants.load_yml_save_key);
+        }
+        return true;
+    }
+
+    @Override
+    public JSONObject setCheckToken(String name, String value, JSONObject jsonObject) {
+        JSONObject check = jsonObject.getJSONObject(CHECK_NAME);
+        if (check == null) {
+            check = new JSONObject();
+            jsonObject.put(CHECK_NAME, check);
+        }
+
+        JSONObject token = check.getJSONObject(TOKEN_NAME);
+        if (token == null) {
+            token = new JSONObject();
+            check.put(TOKEN_NAME, token);
+        }
+
+        token.put(NAME_KEY, StrUtil.blankToDefault(name, ""));
+        token.put(VALUE_KEY, StrUtil.blankToDefault(value, ""));
+
+        jsonObject.put(KeyConstants.load_yml_save_update_time_key, System.currentTimeMillis());
+        return jsonObject;
+    }
+
+    /**
+     * 读取并验证YAML文件
+     */
+    @SneakyThrows
+    private JSONObject readAndValidateYaml(String yamlPath) {
+        File file = FileUtil.newFile(yamlPath);
+        if (file == null || !file.exists()) {
+            log.debug("文件不存在: {}", yamlPath);
+            return null;
+        }
+        return YmlUtils.readValueToJSONObject(yamlPath);
+    }
+
+    /**
+     * 从数据库加载最新的配置
+     */
+    private JSONObject loadLatestDbKV() {
+        List<DbKV> kvs = dbKVService.list(
+                Wrappers.lambdaQuery(DbKV.class)
+                        .select()
+                        .eq(DbKV::getType, KeyConstants.load_yml_save_key)
+                        .orderByDesc(DbKV::getUpdateTime)
+        );
+
+        DbKV dbKV = kvs.stream().findFirst().orElse(null);
+        if (dbKV == null || StrUtil.isBlank(dbKV.getValue())) {
+            return null;
+        }
+
+        return JSONUtil.toBean(dbKV.getValue(), JSONObject.class);
+    }
+
+    /**
+     * 写入所有YAML路径
+     */
+    private boolean writeToAllYamlPaths(JSONObject jsonObject, List<String> yamlPaths) {
         for (String yamlPath : yamlPaths) {
             try {
                 File file = FileUtil.newFile(yamlPath);
@@ -118,86 +214,28 @@ public class ApplicationServiceImpl implements ApplicationService {
                     log.debug("应用{}加载{}完成", ApplicationUtil.getApplicationId(), yamlPath);
                 }
             } catch (Exception e) {
-                if (e.getMessage().contains("文件不存在或为空")) {
+                if (e.getMessage() != null && e.getMessage().contains("文件不存在或为空")) {
+                    log.debug("文件不存在或为空: {}", yamlPath);
                     continue;
-                } else {
-                    return false;
                 }
-            }
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean saveLoadApplicationYml(JSONObject jsonObject) {
-        if (jsonObject == null) {
-            return false;
-        }
-        String loadYmlSaveUpdateTimeKey = KeyConstants.load_yml_save_update_time_key;
-        jsonObject.put(loadYmlSaveUpdateTimeKey, System.currentTimeMillis());
-        LockWrapper lock = LockUtil.getLock(KeyConstants.load_yml_save_key);
-        boolean tryLock = lock.tryLock();
-        if (!tryLock) {
-            log.warn("获取锁超时，key: {}", KeyConstants.load_yml_save_key);
-            // 改进2: 可以选择抛出异常或返回特定结果
-            throw new GlobalException("存在其他操作，请稍后再试!");
-        }
-        try {
-            cacheService.save(KeyConstants.load_yml_save_key, JSONUtil.toJsonStr(jsonObject));
-        } finally {
-            if (tryLock) {
-                try {
-                    lock.unlock();
-                    log.debug("锁释放成功: {}", KeyConstants.load_yml_save_key);
-                } catch (Exception e) {
-                    log.error("锁释放失败: {}", KeyConstants.load_yml_save_key, e);
-                }
+                log.error("写入YAML失败, yamlPath: {}", yamlPath, e);
+                return false;
             }
         }
         return true;
     }
 
-    @Override
-    public JSONObject setCheckToken(String name, String value, JSONObject jsonObject) {
-
-        String checkName = "check";
-        String tokenName = "token";
-        String nameKey = "name";
-        String valueKey = "value";
-        Map<String, Object> map = MapUtils.createHierarchicalMap(checkName + "." + tokenName);
-        JSONObject checkToken = new JSONObject();
-        checkToken.putAll(map);
-        // 获取或创建 check 对象
-        JSONObject check = (JSONObject) checkToken.getByPath(checkName);
-        if (check == null) {
-            check = new JSONObject();
-            checkToken.put(checkName, check);
+    /**
+     * 安全释放锁
+     */
+    private void safeUnlock(LockWrapper lock, boolean tryLock, String lockKey) {
+        if (tryLock) {
+            try {
+                lock.unlock();
+                log.debug("锁释放成功: {}", lockKey);
+            } catch (Exception e) {
+                log.error("锁释放失败: {}", lockKey, e);
+            }
         }
-
-        // 获取或创建 token 对象（checkName → tokenName）
-        JSONObject token = (JSONObject) check.get(tokenName);
-        if (token == null) {
-            token = new JSONObject();
-            check.put(tokenName, token);
-        }
-
-        // 获取或创建 tokenValue（最里层那个放 name 和 value 的对象）
-        JSONObject tokenValue = (JSONObject) token.get(tokenName);
-        if (tokenValue == null) {
-            tokenValue = new JSONObject();
-            //token.put(tokenName, tokenValue);
-        }
-
-        // 直接设置值（会覆盖旧值，这通常是想要的行为）
-        tokenValue.put(nameKey, StrUtil.isNotBlank(name) ? name : "");
-        tokenValue.put(valueKey, StrUtil.isNotBlank(value) ? value : "");
-        token.putAll(tokenValue);
-        String loadYmlSaveUpdateTimeKey = KeyConstants.load_yml_save_update_time_key;
-        jsonObject.putAll(checkToken);
-        jsonObject.put(loadYmlSaveUpdateTimeKey, System.currentTimeMillis());
-
-        //saveLoadApplicationYml(jsonObject);
-        return jsonObject;
     }
 }

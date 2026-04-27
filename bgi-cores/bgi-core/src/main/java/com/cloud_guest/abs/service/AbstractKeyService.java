@@ -16,7 +16,7 @@ public interface AbstractKeyService {
      * @param keyInfo
      * @return
      */
-    default boolean saveKeyInfo(KeyInfo keyInfo) {
+    default Long saveKeyInfo(KeyInfo keyInfo) {
         throw new UnsupportedOperationException();
     }
 

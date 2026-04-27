@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 
@@ -15,7 +16,7 @@ import java.io.Serializable;
  */
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Data  @Accessors(chain = true)
 public class AutoPlanVo extends AutoPlan implements Serializable {
     private static final long serialVersionUID = 8997301368952007161L;
     @JsonIgnore

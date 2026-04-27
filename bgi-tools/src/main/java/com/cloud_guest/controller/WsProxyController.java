@@ -11,6 +11,7 @@ import com.cloud_guest.domain.WsProxyAccess;
 import com.cloud_guest.domain.dto.WsProxyDto;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.manager.WsClientManager;
+import com.cloud_guest.pojo.WsProxyAccessConfig;
 import com.cloud_guest.properties.auth.AuthProperties;
 import com.cloud_guest.properties.check.TokenProperties;
 import com.cloud_guest.result.Result;
@@ -102,7 +103,6 @@ public class WsProxyController {
     @GetMapping("access/uid/all")
     public Result<List<String>> accessUidALL() {
         List<String> uidList = wsProxyService.findUidAll();
-        uidList = uidList.stream().map(uid -> uid.substring(uid.lastIndexOf(":") + 1)).toList();
         return ok(uidList);
     }
     @Token
@@ -127,7 +127,8 @@ public class WsProxyController {
     @Operation(summary = "保存授权")
     @PostMapping("access")
     public Result access(@RequestBody WsProxyAccess wsProxyAccess) {
-        wsProxyService.save(wsProxyAccess.getUid(), JSONUtil.toJsonStr(wsProxyAccess));
+        WsProxyAccessConfig config = wsProxyAccess.toConfig();
+        wsProxyService.save(config);
         return ok();
     }
 
@@ -140,7 +141,7 @@ public class WsProxyController {
         if (StrUtil.isNotBlank(uids)) {
             Arrays.stream(uids.split(",")).forEach(uidList::add);
         }
-        wsProxyService.delList(uidList);
+        wsProxyService.removeBatchByIds(uidList);
         return ok();
     }
 }

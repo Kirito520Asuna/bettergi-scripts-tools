@@ -72,7 +72,7 @@ public class ApplicationContextHolder {
                 }
                 try {
                     ApplicationInfo applicationInfo = ApplicationUtil.getApplicationInfo();
-                    //设置重启key
+                    //设置重启key todo:需要重构 local/Redis
                     SpringUtil.getBean(CacheService.class).saveId(restartKey, JSONUtil.toJsonStr(applicationInfo.toReportedOnline()));
                 } finally {
                     if (tryLock) {
@@ -125,6 +125,7 @@ public class ApplicationContextHolder {
         if (ObjectUtils.isEmpty(add)) {
             add = false;
         }
+        //todo:需要重构 local/Redis
         // 获取CacheService实例
         CacheService bean = SpringUtil.getBean(CacheService.class);
 

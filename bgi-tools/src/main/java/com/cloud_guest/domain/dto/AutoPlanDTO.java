@@ -6,6 +6,7 @@ import com.cloud_guest.domain.auto_plan.AutoFight;
 import com.cloud_guest.domain.auto_plan.AutoLeyLineOutcrop;
 import com.cloud_guest.domain.auto_plan.AutoPlan;
 import com.cloud_guest.exception.exceptions.GlobalException;
+import com.cloud_guest.pojo.AutoPlanConfig;
 import com.cloud_guest.utils.object.ObjectUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -67,4 +68,12 @@ public class AutoPlanDTO implements Serializable {
     }
 
 
+    public List<AutoPlanConfig> toConfigList() {
+        List<AutoPlanConfig> list = autoPlanList.stream().map(autoPlan -> {
+            AutoPlanConfig config = autoPlan.toConfig();
+            config.setUid(uid);
+            return config;
+        }).collect(Collectors.toList());
+        return list;
+    }
 }
