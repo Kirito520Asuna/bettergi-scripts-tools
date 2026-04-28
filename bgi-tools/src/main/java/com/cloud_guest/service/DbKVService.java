@@ -1,6 +1,7 @@
 package com.cloud_guest.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.pojo.DbKV;
 
 /**
@@ -9,5 +10,8 @@ import com.cloud_guest.pojo.DbKV;
  * @Description
  */
 
-public interface DbKVService extends IService<DbKV> {
+public interface DbKVService extends IService<DbKV>, BaseService {
+    default String getSuffix() {
+        return KeyConstants.db_kv_key;
+    }
 }

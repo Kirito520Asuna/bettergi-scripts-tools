@@ -1,7 +1,5 @@
 package com.cloud_guest.controller;
 
-import cn.hutool.extra.spring.SpringUtil;
-import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Token;
 import com.cloud_guest.domain.UidInfo;
@@ -12,13 +10,11 @@ import com.cloud_guest.pojo.UidInfoConfig;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.service.UidService;
-import com.cloud_guest.utils.ModeUtil;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.view.BasicJsonView;
 import com.cloud_guest.vo.AutoPlanVo;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -105,8 +101,8 @@ public class AutoPlanController {
         dto.checkValid();
         List<AutoPlanConfig> configList = dto.toConfigList();
         //autoPlanService.save(dto.getUid(), JSONUtil.toJsonStr(dto.getAutoPlanList()));
-
-        autoPlanService.saveBatch(configList);
+        autoPlanService.saveBatchList(configList);
+        //autoPlanService.saveBatch(configList);
         return ok(dto.getUid());
     }
 
@@ -132,21 +128,9 @@ public class AutoPlanController {
     @Operation(summary = "查询全部UID")
     @GetMapping("uid/all/mapping")
     public Result<List<UidInfo>> uidMappingALL() {
-        List<String> uidList = autoPlanService.findUidAll();
-        uidList = uidList.stream().map(uid -> uid.substring(uid.lastIndexOf(":") + 1)).collect(Collectors.toList());
-        List<UidInfo> list = uidList.stream().map(uid -> {
-            UidInfo uidInfo = Optional.ofNullable(uidService.find(uid))
-                    .map(UidInfoConfig::toUidInfo)
-                    .orElse(null);
-            if (ObjectUtils.isEmpty(uidInfo)) {
-                uidInfo = new UidInfo(uid, null);
-            }
-            return uidInfo;
-        }).collect(Collectors.toList());
         List<UidInfo> uidAll = uidService.findUidAll().stream().map(UidInfoConfig::toUidInfo).toList();
-        list.addAll(uidAll);
         //去重
-        list = new HashSet<UidInfo>(list).stream().toList();
+        List<UidInfo> list = new HashSet<UidInfo>(uidAll).stream().toList();
         return ok(list);
     }
 

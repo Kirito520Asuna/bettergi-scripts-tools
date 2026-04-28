@@ -16,6 +16,7 @@ import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.service.DbKVService;
 import com.cloud_guest.utils.object.ObjectUtils;
+import io.jsonwebtoken.lang.Arrays;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
@@ -35,6 +36,18 @@ import java.util.Optional;
 public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanConfig> implements AutoPlanService {
     @Resource
     private AutoPlanMapper dao;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean saveBatchList(List<AutoPlanConfig> configList) {
+        if (CollUtil.isNotEmpty(configList)){
+            AutoPlanConfig planConfig = configList.stream().findFirst().get();
+            String uid = planConfig.getUid();
+            removeByUidList(CollUtil.toList(uid));
+            return saveBatch(configList);
+        }
+        return false;
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)

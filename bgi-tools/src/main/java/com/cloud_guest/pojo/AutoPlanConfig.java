@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 
@@ -72,7 +73,7 @@ public class AutoPlanConfig extends BaseEntity {
         autoPlanVo.setRunType(runType)
                 .setSelectedType(selectedType)
                 .setEnable(enable)
-                .setDays(StrUtil.isBlank(days) ? null : Arrays.stream(days.split(",")).map(Integer::valueOf).toList())
+                .setDays(StrUtil.isBlank(days) ? new ArrayList<>() : Arrays.stream(days.split(",")).map(Integer::valueOf).toList())
                 .setDayName(dayName)
                 .setOrder(orderSort)
                 .setAutoFight(StrUtil.isBlank(autoFight) ? null : JSONUtil.toBean(autoFight, AutoFight.class))

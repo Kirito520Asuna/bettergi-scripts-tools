@@ -52,7 +52,7 @@ public class UidController {
     @Operation(summary = "新增uid映射")
     @PostMapping("info")
     public Result uid(@Validated @RequestBody UidInfo uidInfo) {
-        uidService.save(uidInfo.toConfig());
+        uidService.saveOrUpdate(uidInfo.toConfig());
         return Result.ok();
     }
     @SysLog

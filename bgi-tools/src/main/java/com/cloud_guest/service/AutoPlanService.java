@@ -2,9 +2,7 @@ package com.cloud_guest.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloud_guest.constants.KeyConstants;
-import com.cloud_guest.mp.abs.service.MpIService;
 import com.cloud_guest.pojo.AutoPlanConfig;
-import com.cloud_guest.vo.AutoPlanVo;
 
 import java.util.List;
 import java.util.Map;
@@ -14,7 +12,7 @@ import java.util.Map;
  * @Date 2026/2/8 15:31:44
  * @Description
  */
-public interface AutoPlanService extends IService<AutoPlanConfig> {
+public interface AutoPlanService extends IService<AutoPlanConfig>, BaseService {
     default String getSuffix() {
         return KeyConstants.auto_plan_key;
     }
@@ -39,4 +37,6 @@ public interface AutoPlanService extends IService<AutoPlanConfig> {
     boolean saveCountryAll(String json);
 
     List<String> findCountryAll();
+
+    boolean saveBatchList(List<AutoPlanConfig> configList);
 }

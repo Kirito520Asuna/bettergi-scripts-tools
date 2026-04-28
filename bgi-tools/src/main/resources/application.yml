@@ -196,7 +196,9 @@ logging:
     com.cloud_guest.task.job: off
     com.cloud_guest.utils.ApplicationContextHolder: off
     com.cloud_guest.wrappers.lock: off
+    com.cloud_guest.mapper: off
     com.cloud_guest: debug
+    org.springframework.web.servlet.DispatcherServlet: off
 management:
   endpoint:
     restart:
@@ -204,3 +206,5 @@ management:
 
 mybatis-plus:
   mapper-locations: classpath:mapper/**/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl

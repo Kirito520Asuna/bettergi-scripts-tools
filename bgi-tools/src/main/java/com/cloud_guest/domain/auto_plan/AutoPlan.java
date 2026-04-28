@@ -13,6 +13,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.experimental.Accessors;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,11 +65,16 @@ public class AutoPlan {
         planConfig.setAutoFight(JSONUtil.toJsonStr(this.autoFight));
         planConfig.setAutoLeyLineOutcrop(JSONUtil.toJsonStr(this.autoLeyLineOutcrop));
         planConfig.setAutoStygianOnslaught(JSONUtil.toJsonStr(this.autoStygianOnslaught));
-        planConfig.setDays(CollUtil.isEmpty(this.days)?null:days.stream().map(String::valueOf).collect(Collectors.joining(",")));
+        List<Integer> list = new ArrayList<>();
+        if (CollUtil.isEmpty(this.days)) {
+            list.addAll(this.days);
+        }
+        planConfig.setDays(list.stream().map(String::valueOf).collect(Collectors.joining(",")));
         planConfig.setDayName(this.dayName);
         planConfig.setEnable(this.enable);
         planConfig.setOrderSort(this.order);
         planConfig.setRunType(this.runType);
+        planConfig.setSelectedType(this.selectedType);
         return planConfig;
     }
 }

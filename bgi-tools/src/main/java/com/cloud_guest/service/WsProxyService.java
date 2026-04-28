@@ -14,7 +14,7 @@ import java.util.List;
  * @Date 2026/3/22 16:19:31
  * @Description
  */
-public interface WsProxyService  extends IService<WsProxyAccessConfig> {
+public interface WsProxyService  extends IService<WsProxyAccessConfig>, BaseService {
     default String getSuffix() {
         return KeyConstants.ws_proxy_access_key;
     }

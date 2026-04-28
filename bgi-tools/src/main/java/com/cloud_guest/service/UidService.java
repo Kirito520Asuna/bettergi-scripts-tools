@@ -12,7 +12,7 @@ import java.util.List;
  * @Date 2026/3/30 17:39:36
  * @Description
  */
-public interface UidService extends IService<UidInfoConfig> {
+public interface UidService extends IService<UidInfoConfig>, BaseService {
     default String getSuffix() {
         return KeyConstants.mapping_uid_key;
     }

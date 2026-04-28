@@ -29,6 +29,7 @@ public interface KeyConstants {
     String online_application_key = "online_application";
     String outline_application_key = "outline_application";
     String key = "TEMP:KEY:";
+    String db_kv_key = "db:kv:";
 
     List<String> ex_backup_list = new ArrayList<>(Arrays.asList(restart_key, online_application_key, outline_application_key));
 

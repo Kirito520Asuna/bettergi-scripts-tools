@@ -128,7 +128,7 @@ public class WsProxyController {
     @PostMapping("access")
     public Result access(@RequestBody WsProxyAccess wsProxyAccess) {
         WsProxyAccessConfig config = wsProxyAccess.toConfig();
-        wsProxyService.save(config);
+        wsProxyService.saveOrUpdate(config);
         return ok();
     }
 
