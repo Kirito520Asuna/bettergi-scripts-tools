@@ -104,29 +104,31 @@ spring:
 
   quartz:
     auto-startup: false           # 禁止自动启动调度器
+
   datasource:
-#    driver-class-name: org.sqlite.JDBC
-#    url: jdbc:sqlite:./cache/bgi-tools.db
     dynamic:
-      primary: master
+      primary: ${db.primary:SQLite}
       datasource:
-        master:
+        SQLite:
           driver-class-name: org.sqlite.JDBC
-          url: jdbc:sqlite:./cache/bgi-tools.db
-
+          url: ${db.SQLite.url:jdbc:sqlite:./cache/bgi-tools.db}
+          username: ${db.SQLite.username:}
+          password: ${db.SQLite.password:}
+        MySQL:
         # MySQL配置示例（注释掉上面的SQLite配置，启用下面的MySQL配置）
-        # url: jdbc:mysql://localhost:3306/bgi_tools?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
-        # driver-class-name: com.mysql.cj.jdbc.Driver
-        # username: root
-        # password: your_password
+         url: ${db.MySQL.url:jdbc:mysql://localhost:3306/bgi_tools?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false}
+         driver-class-name: com.mysql.cj.jdbc.Driver
+         username: ${db.MySQL.username:root}
+         password: ${db.MySQL.password:root}
+        PgSQL:
+          # PostgreSQL配置示例
+           url: ${db.PgSQL.url:jdbc:postgresql://localhost:5432/bgi_tools}
+           driver-class-name: org.postgresql.Driver
+           username: ${db.PgSQL.username:postgres}
+           password: ${db.PgSQL.password:root}
 
-        # PostgreSQL配置示例
-        # url: jdbc:postgresql://localhost:5432/bgi_tools
-        # driver-class-name: org.postgresql.Driver
-        # username: postgres
-        # password: your_password
 
-  #mvc:
+#mvc:
     # 推荐开启这个，让 /** 映射优先级低于静态资源
     #static-path-pattern: /static/ui/**   # 可选，如果你想把静态资源路径改成 /static/ 开头
     #throw-exception-if-no-handler-found: true   # 可选，404 时抛异常方便调试
@@ -172,6 +174,20 @@ spring:
       sentinel:
         master: ${spring.redis.sentinel.master:} # 主节点名称
         nodes: ${spring.redis.sentinel.nodes:} # 哨兵节点
+db:
+  primary: SQLite
+  SQLite:
+    url: jdbc:sqlite:./cache/bgi-tools.db
+    username:
+    password:
+  MySQL:
+    url: jdbc:mysql://localhost:3306/bgi_tools?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: your_password
+  PgSQL:
+    url: jdbc:postgresql://localhost:5432/bgi_tools
+    username: postgres
+    password: your_password
 #需要验证的接口设置token
 check:
   token: #注意：其中一项为空时将不会校验
