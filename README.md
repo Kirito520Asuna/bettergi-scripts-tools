@@ -1,97 +1,54 @@
 # bettergi-script-tools
 
-## 简介
+## 项目简介
 
-bettergi-script-tools 是一个基于 bettergi-script 的工具集，提供了一系列便捷的bgi js脚本不支持的扩展功能，通过第三方http请求实现
-目前功能:
+bettergi-script-tools 是一套面向 BetterGI 脚本的辅助工具集，通过第三方 HTTP 调用弥补原脚本在部分能力上的不足。  
+目前已实现以下功能：
 
-- 支持 WebSocket 请求的代理
-- 支持 Cron 表达式解析
+- **WebSocket 消息代理**：借助本工具发送 WebSocket 消息，避免脚本内原生 WebSocket 的限制。
+- **Cron 表达式解析**：支持计算未来 N 次执行时间戳，方便完成定时任务规划。
+- **OCR 文字识别**：集成第三方 OCR 服务，为脚本提供图像识别能力。
+- **自动秘境计划配置存储与查询**：支持按 UID 存取秘境/国家配置信息，实现多终端配置共享。
 
-详情请运行后查看UI(内置文档) http://localhost:8081/bgi/ui
-详情请运行后查看文档 http://localhost:8081/bgi/doc.html
+> 运行服务后，可前往内置 UI 与文档页面查看完整说明：
 
-## 使用
+- 管理界面：<http://localhost:8081/bgi/ui>
+- 接口文档（Swagger）：<http://localhost:8081/bgi/doc.html>
 
-### 1. 下载代码
+---
 
-```shell
-git clone https://github.com/Kirito520Asuna/bettergi-script-tools.git
-```
+## 快速开始
 
-### 2. 新建配置文件 application-prod.yml
+### 方式一：直接运行可执行文件（Windows）
 
-与.jar同一文件夹
+前往 [Release 页面](https://github.com/Kirito520Asuna/bettergi-scripts-tools/releases) 下载带有 `windows` 标识的 ZIP 包，解压后双击 `.exe` 文件即可启动。
 
-```shell
-server:
-  port: 8081
-  #servlet:
-    #context-path: /bgi #0.0.4版本禁止修改 会影响ui运行
-ws:
-  url: ws://localhost:8081/ws #可忽略
-  access-token-name: access-token   
-#多实例运行支持(存储需要从本地改为远程 如 spring.redis.mode=single)   
-spring:
-  #redis 集群支持
-  redis:
-    mode: none # none:不使用redis，single:使用单体,cluster:使用集群，sentinel:使用哨兵
-    #单体
-    host: 127.0.0.1
-    port: 6379
-    database: 0
-    #哨兵
-    sentinel:
-      master: mymaster   # 哨兵 master-set 名称
-      nodes:
-        - 192.168.6.128:26379
-        - 192.168.6.128:26380
-    #集群
-    cluster:
-      nodes:
-        - 192.168.6.128:7000
-        - 192.168.6.128:7001
-    #安全
-    username:  #默认为空
-    password:  #默认为空
-#需要验证的接口设置token
-check:
-  token: #注意：其中一项为空时将不会校验
-    name:  # token名称 默认为空 自行修改
-    value: # token值 默认为空 自行修改
-#设置默认账号密码 自行修改
-auth:
-  users:
-    - username: bgi_tools
-      password: bgi_tools
-  
-```
+### 方式二：使用 Java 运行 JAR 包
 
-### 3. 运行
-
-#### 1.windows exe 直接运行
-
-前往 [release](https://github.com/Kirito520Asuna/bettergi-scripts-tools/releases) 下载 带windows的zip包解压运行.exe文件即可
-
-#### 2.java
-
-```shell
+```bash
 java -jar xxxx.jar
 ```
 
-#### 3.部署docker
-***`先新建 /path/to/application-prod.yml 文件，将 application-prod.yml 文件内容复制到 /path/to/application-prod.yml 文件中`***
-```shell
+启动前请在同级目录准备好 `application-prod.yml` 配置文件（见下方章节）。
+
+### 方式三：Docker 部署
+
+> 请先在宿主机上创建配置文件，例如 `/path/to/application-prod.yml`，内容参照配置章节。
+
+```bash
 docker pull ghcr.io/kirito520asuna/bettergi-scripts-tools:latest
-docker run -d -p 8081:8081 -v /path/to/application-prod.yml:/app/application-prod.yml --name bettergi-script-tools ghcr.io/kirito520asuna/bettergi-script-tools:latest
+docker run -d -p 8081:8081 \
+  -v /path/to/application-prod.yml:/app/application-prod.yml \
+  -v /path/to/cache/:/path/to/cache/ \
+  --name bettergi-script-tools \
+  ghcr.io/kirito520asuna/bettergi-scripts-tools:latest
 ```
 
-```shell
-# 在 docker-compose.yml 文件所在目录执行
-docker-compose up -d
-```
+### 方式四：Docker Compose 部署
 
-```yml
+创建 `docker-compose.yml`：
+
+```yaml
 version: '3.8'
 
 services:
@@ -103,288 +60,301 @@ services:
     environment:
       - SERVER_PORT=8081
       - SERVER_SERVLET_CONTEXT_PATH=/bgi
-      - WS_URL=ws://backend-service:8080/ws  # 连接后端服务
+      - WS_URL=ws://backend-service:8080/ws
       - ACCESS_TOKEN_NAME=access-token
       - SPRING_PROFILES_ACTIVE=prod
+      # Sqlite
+      #- SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL=jdbc:sqlite:./cache/bgi-tools.db
+      #- SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_DRIVER_CLASS_NAME=org.sqlite.JDBC
+      # MySQL
+      #- SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      #- SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      # PgSQL
+      #- SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      #- SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_PASSWORD=${DB_PASS}
     volumes:
       - /path/to/application-prod.yml:/app/application-prod.yml
+      - /path/to/cache/:/app/cache/
     networks:
       - bgi-network
     restart: unless-stopped
+
 networks:
   bgi-network:
     driver: bridge
-
-```
-## UI界面(0.0.4以上版本)
-```text
-默认地址：http://localhost:8081/bgi/ui
-动态地址：http://127.0.0.1:${server.port:8080}${server.servlet.context-path:/}/ui
-```
-## swagger 文档地址
-
-```text
-默认地址：http://localhost:8081/bgi/doc.html
-动态地址：http://127.0.0.1:${server.port:8080}${server.servlet.context-path:/}/doc.html
 ```
 
-## Http请求示例
+启动命令：
 
-### 1.WsProxy
+```bash
+docker-compose up -d
+```
 
-```http request
-###
-###没有配置token时，可忽略
+---
+
+## 配置文件详解
+
+启动服务前，必须在 JAR 同级目录（或挂载路径）创建 `application-prod.yml` 文件。完整示例：
+
+```yaml
+server:
+  port: 8081                     # 服务端口
+  # servlet:
+  #   context-path: /bgi         # 0.0.4 版本禁止修改，否则 UI 无法正常工作
+
+# WebSocket 代理相关配置
+ws:
+  url: ws://localhost:8081/ws       # 可忽略
+  access-token-name: access-token
+
+# 缓存与多实例支持（可选用 Redis 替代本地缓存）
+spring:
+  redis:
+    mode: none                     # none: 不使用 Redis; single: 单体; cluster: 集群; sentinel: 哨兵
+    # 单体模式
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+    # 哨兵模式
+    sentinel:
+      master: mymaster
+      nodes:
+        - 192.168.6.128:26379
+        - 192.168.6.128:26380
+    # 集群模式
+    cluster:
+      nodes:
+        - 192.168.6.128:7000
+        - 192.168.6.128:7001
+    # 安全认证
+    username:      # 默认为空
+    password:      # 默认为空
+
+  # 数据库配置
+  datasource:
+    dynamic:
+      primary: sqlite              # 主数据源选择 sqlite
+      datasource:
+        sqlite:
+          driver-class-name: org.sqlite.JDBC
+          url: jdbc:sqlite:./cache/bgi-tools.db
+
+        # MySQL 配置示例（使用前需注释掉上方 sqlite 配置）
+        # mysql:
+        #   url: jdbc:mysql://localhost:3306/bgi_tools?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+        #   driver-class-name: com.mysql.cj.jdbc.Driver
+        #   username: root
+        #   password: your_password
+
+        # PostgreSQL 配置示例
+        # PostgreSQL:
+        #   url: jdbc:postgresql://localhost:5432/bgi_tools
+        #   driver-class-name: org.postgresql.Driver
+        #   username: postgres
+        #   password: your_password
+
+# 接口访问 Token 校验（二者任意一项为空则跳过校验）
+check:
+  token:
+    name:        # Token 名称，自行修改
+    value:       # Token 值，自行修改
+
+# 默认管理账号密码（建议修改）
+auth:
+  users:
+    - username: bgi_tools
+      password: bgi_tools
+```
+
+**重要提示**：
+- `context-path` 在 **0.0.4 版本** 中**不允许修改**为其他值，否则内嵌 UI 将无法正常加载。
+- 多实例部署时，建议将 `spring.redis.mode` 切换为远程缓存（如 `single` 或 `cluster`），避免本地 SQLite 数据不一致。
+
+---
+
+## API 接口说明
+
+所有接口均提供三种访问路径前缀：
+
+- `/bgi/`：无需鉴权（若未配置 `check.token`）
+- `/bgi/api/`：需要校验签名(默认不开放)
+- `/bgi/jwt/`：需要携带 JWT 令牌或 `check.token` 参数（若已配置）
+
+本文档以 `/bgi/` 前缀为例，实际调用时可根据需要替换。
+
+### 1. WebSocket 代理
+
+**发送消息**
+
+- **请求方式**：`POST`
+- **请求路径**：`/bgi/ws-proxy/message/send`
+- **请求体**：
+
+```json
+{
+  "url": "ws://127.0.0.1:8080/ws",
+  "token": "your_websocket_token",
+  "bodyJson": "要发送的 JSON 字符串"
+}
+```
+
+示例：
+
+```http
 POST http://localhost:8081/bgi/ws-proxy/message/send
 Content-Type: application/json
 
 {
   "url": "ws://127.0.0.1:8080/ws",
-  "token": "token",
-  "bodyJson": ""
-}
-
-
-###
-POST http://localhost:8081/bgi/api/ws-proxy/message/send
-Content-Type: application/json
-
-{
-  "url": "",
-  "token": "",
-  "bodyJson": ""
-}
-
-###
-POST http://localhost:8081/bgi/jwt/ws-proxy/message/send
-Content-Type: application/json
-
-{
-  "url": "",
-  "token": "",
-  "bodyJson": ""
+  "token": "access-token-value",
+  "bodyJson": "{}"
 }
 ```
-### 2.Cron
-```http request
-###
-POST http://localhost:8081/bgi/cron/next-timestamp
-Content-Type: application/json
 
+### 2. Cron 表达式解析
+
+**查询下一个符合条件的时间戳**
+
+- **请求方式**：`POST`
+- **请求路径**：`/bgi/cron/next-timestamp`
+- **请求体**：
+
+```json
 {
-  "cronExpression": "",
-  "startTimestamp": 1,
-  "endTimestamp": 1
+  "cronExpression": "0 0 8 * * ?",
+  "startTimestamp": 1690000000,
+  "endTimestamp": 1690900000
 }
+```
 
-###
-POST http://localhost:8081/bgi/api/cron/next-timestamp
-Content-Type: application/json
+**批量查询（返回每个 key 的下一次时间戳）**
 
-{
-  "cronExpression": "",
-  "startTimestamp": 1,
-  "endTimestamp": 1
-}
+- **请求方式**：`POST`
+- **请求路径**：`/bgi/cron/next-timestamp/all`
+- **请求体**：
 
-###
-POST http://localhost:8081/bgi/jwt/cron/next-timestamp
-Content-Type: application/json
-
-{
-  "cronExpression": "",
-  "startTimestamp": 1,
-  "endTimestamp": 1
-}
-
-###
-POST http://localhost:8081/bgi/cron/next-timestamp/all
-Content-Type: application/json
-
+```json
 {
   "cronList": [
-      {
-      "key": "",
-      "cronExpression": "",
-      "startTimestamp": 1,
-      "endTimestamp": 1
-    }
-  ]
-}
-###
-POST http://localhost:8081/bgi/api/cron/next-timestamp/all
-Content-Type: application/json
-
-{
-  "cronList": [
-      {
-      "key": "",
-      "cronExpression": "",
-      "startTimestamp": 1,
-      "endTimestamp": 1
-    }
-  ]
-}
-
-###
-POST http://localhost:8081/bgi/jwt/cron/next-timestamp/all
-Content-Type: application/json
-
-{
-  "cronList": [
-      {
-      "key": "",
-      "cronExpression": "",
-      "startTimestamp": 1,
-      "endTimestamp": 1
+    {
+      "key": "daily_task",
+      "cronExpression": "0 0 10 * * ?",
+      "startTimestamp": 1690000000,
+      "endTimestamp": 1690900000
     }
   ]
 }
 ```
-### 3.Ocr
-```http request
-###
-POST http://localhost:8081/bgi/ocr/bytes
-Content-Type: application/json
 
+### 3. OCR 文字识别
+
+**上传字节数组进行识别**
+
+- **请求方式**：`POST`
+- **请求路径**：`/bgi/ocr/bytes`
+- **请求体**：
+
+```json
 {
-"bytes": []
-}
-
-###
-POST http://localhost:8081/bgi/api/ocr/bytes
-Content-Type: application/json
-
-{
-"bytes": []
-}
-
-###
-POST http://localhost:8081/bgi/jwt/ocr/bytes
-Content-Type: application/json
-
-{
-"bytes": []
+  "bytes": [255, 216, 255, 224, ...]
 }
 ```
-### 4.自动秘境计划配置
-UID查询(bgi_tools拉取配置api)
-```http request
-###
-GET http://localhost:8081/bgi/auto/plan/json?
-    uid={{$random.alphanumeric(8)}}
 
-###
-GET http://localhost:8081/bgi/api/auto/plan/json?
-    uid={{$random.alphanumeric(8)}}
+### 4. 自动秘境计划配置
 
-###
-GET http://localhost:8081/bgi/jwt/auto/plan/json?
-    uid={{$random.alphanumeric(8)}}
+**查询指定 UID 的配置**
 
-```
-查询全部秘境信息
-```http request
-###
-GET http://localhost:8081/bgi/auto/plan/domain/json/all
+- **请求方式**：`GET`
+- **请求路径**：`/bgi/auto/plan/json?uid=12345678`
 
-###
-GET http://localhost:8081/bgi/api/auto/plan/domain/json/all
+**查询全部秘境信息**
 
-###
-GET http://localhost:8081/bgi/jwt/auto/plan/domain/json/all
-```
-存储全部秘境信息(bgi_tools推送全部配置api)
-```http request
-###
-POST http://localhost:8081/bgi/auto/plan/domain/json/all
-Content-Type: application/json
+- **请求方式**：`GET`
+- **请求路径**：`/bgi/auto/plan/domain/json/all`
 
+**存储全部秘境信息（推送）**
+
+- **请求方式**：`POST`
+- **请求路径**：`/bgi/auto/plan/domain/json/all`
+- **请求体**：
+
+```json
 {
-  "uid": "",
-  "json": ""
-}
-
-
-###
-POST http://localhost:8081/bgi/api/auto/plan/domain/json/all
-Content-Type: application/json
-
-{
-  "uid": "",
-  "json": ""
-}
-
-###
-POST http://localhost:8081/bgi/jwt/auto/plan/domain/json/all
-Content-Type: application/json
-
-{
-  "uid": "",
-  "json": ""
+  "uid": "12345678",
+  "json": "秘境配置 JSON 字符串"
 }
 ```
-存储全部国家信息(bgi_tools推送全部国家配置api)
-```http request
-###
-POST http://localhost:8081/bgi/auto/plan/country/json/all
-Content-Type: application/json
 
+**存储全部国家信息（推送）**
+
+- **请求方式**：`POST`
+- **请求路径**：`/bgi/auto/plan/country/json/all`
+- **请求体**：
+
+```json
 {
-  "json": ""
-}
-
-
-###
-POST http://localhost:8081/bgi/api/auto/plan/country/json/all
-Content-Type: application/json
-
-{
-  "json": ""
-}
-
-###
-POST http://localhost:8081/bgi/jwt/auto/plan/country/json/all
-Content-Type: application/json
-
-{
-  "json": ""
+  "json": "国家配置 JSON 字符串"
 }
 ```
-# 演示
-### bgi 第三方OCR识别实例
-```js
+
+---
+
+## 脚本集成示例（OCR 识别）
+
+以下代码演示如何在 BetterGI 脚本中调用本工具的 OCR 识别接口：
+
+```javascript
 (async function () {
     const json = {
         x: 1322,
         y: 411,
         w: 96,
         h: 53,
-    }
+    };
     let fullRegion = captureGameRegion();
 
-// 方法1：DeriveCrop（推荐，自动处理坐标转换和内存）
+    // 方法：DeriveCrop（推荐，自动处理坐标转换和内存）
     let subRegion = fullRegion.DeriveCrop(json.x, json.y, json.w, json.h);
-    let mat = subRegion.SrcMat
+    let mat = subRegion.SrcMat;
     const bytes = Array.from(mat.ToBytes());
-    // POST http://localhost:8081/bgi/ocr/bytes
-    //     Content-Type: application/json
-    //
-    // {
-    //     "bytes": []
-    // }
-    log.info(`bytes:{key}`, JSON.stringify(...bytes))
-    let body = {
-        bytes: []
-    }
-    body.bytes = bytes
-    log.info(`body:{key}`, JSON.stringify(body))
-    const httpResponse = await http.request("POST", "http://localhost:8081/bgi/ocr/bytes", JSON.stringify(body), JSON.stringify({
-        "Content-Type": "application/json"
-    }));
-    log.info(`响应：{1}`, JSON.stringify(httpResponse))
-    // 用完释放
+
+    // 构造请求 Body
+    let body = { bytes: bytes };
+    log.info(`发送 OCR 请求，字节长度：${bytes.length}`);
+
+    const httpResponse = await http.request(
+        "POST",
+        "http://localhost:8081/bgi/ocr/bytes",
+        JSON.stringify(body),
+        JSON.stringify({ "Content-Type": "application/json" })
+    );
+
+    log.info(`OCR 识别结果：${JSON.stringify(httpResponse)}`);
+
+    // 用完后释放资源
     subRegion.Dispose();
     fullRegion.Dispose();
-})()
+})();
 ```
+
+> 若使用 `check.token` 鉴权，请将 URL 中的 `/bgi/` 替换为 `/bgi/jwt/`，并在请求头中加入 `token 名称` 和 `token 值`。
+
+---
+
+## 访问地址
+
+| 资源         | 默认地址                                       | 动态地址（根据配置拼接）                                     |
+| ------------ | ---------------------------------------------- | ------------------------------------------------------------ |
+| 管理界面     | <http://localhost:8081/bgi/ui>                 | `http://127.0.0.1:${server.port:8080}${server.servlet.context-path:/}/ui` |
+| Swagger 文档 | <http://localhost:8081/bgi/doc.html>           | `http://127.0.0.1:${server.port:8080}${server.servlet.context-path:/}/doc.html` |
+
+---
+
+## 注意事项
+
+1. **禁止修改 context-path**：0.0.4 版本中若将 `server.servlet.context-path` 改为非 `/bgi` 的值，会导致内置 UI 和接口无法正常工作。
+2. **缓存模式选择**：单机运行可使用默认的 SQLite 缓存；若多实例并行，请务必切换至 Redis，否则缓存数据可能不一致。
+3. **Token 鉴权**：`check.token.name` 和 `check.token.value` 同时不为空时，所有 `/bgi/api/` 路径的接口都将进行 Token 校验，调用时需在请求参数中携带对应名称和值。
+4. **数据库配置**：示例中提供了 MySQL 和 PostgreSQL 的配置模板，更换数据源时请只保留一个数据源并确保驱动正确。
