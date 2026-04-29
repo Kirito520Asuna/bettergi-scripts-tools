@@ -3,6 +3,7 @@ package com.cloud_guest.controller;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.domain.dto.OcrDto;
 import com.cloud_guest.result.Result;
+import com.cloud_guest.utils.ImageToBase64;
 import com.cloud_guest.utils.OcrUtils;
 import com.cloud_guest.view.BasicJsonView;
 import com.cloud_guest.vo.OcrResultVo;
@@ -40,5 +41,14 @@ public class OcrController {
     public Result<String> ocrFile(@RequestPart MultipartFile file) {
         OcrResultVo ocrResultVo = OcrUtils.ocr(file.getInputStream(), ".jpg", OcrUtils.OcrFileTempPath);
         return ok(ocrResultVo.getStrRes());
+    }
+
+    @SneakyThrows
+    @PostMapping("toBase64")
+    @SysLog
+    @Operation(summary = "图片转Base64")
+    public Result<String> toBase64(@RequestPart MultipartFile file) {
+        String toBase64 = ImageToBase64.encodeInputStreamToBase64(file.getInputStream());
+        return ok(toBase64);
     }
 }
