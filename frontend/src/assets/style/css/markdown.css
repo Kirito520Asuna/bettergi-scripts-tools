@@ -18,7 +18,15 @@
     background: #fadbd8;
     /*background: linear-gradient(135deg, rgba(84, 197, 243, 0.67), rgba(86, 197, 204, 0.66)) !important; !* 添加渐变背景 *!*/
 }
-
+.rendered-content :deep(img) {
+    max-width: 100%;      /* 宽度不超过父容器 */
+    max-height: 80vh;     /* 高度不超过视口的 80%，可根据需要调整 */
+    height: auto;         /* 保证高度按原始比例缩放 */
+    display: block;
+    margin: 1em auto;     /* 上下留空并居中 */
+    border-radius: 4px;   /* 轻微圆角，可选 */
+    object-fit: contain;  /* 若限制 max-height 后仍然超出，则按比例缩放呈现 */
+}
 .upload-area {
     border: 2px dashed #bbb;
     border-radius: 12px;
@@ -297,7 +305,10 @@
         font-size: 0.85em;
         margin: 1em 0;
     }
-
+    .rendered-content :deep(img) {
+        max-height: 50vh;   /* 手机屏幕更短，可降低比例 */
+        margin: 0.5em auto;
+    }
     .rendered-content :deep(table td),
     .rendered-content :deep(table th) {
         padding: 0.6em 0.8em;
@@ -438,4 +449,5 @@
         font-size: 12px;
     }
 }
+
 

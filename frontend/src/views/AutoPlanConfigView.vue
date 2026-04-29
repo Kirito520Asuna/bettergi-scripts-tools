@@ -1084,7 +1084,7 @@ const batchUpdate = () => {
               <div class="form-group common">
                 <label>执行类型：</label>
                 <select v-model="config.runType">
-                  <option value="">请选择执行类型</option>
+                  <option :value="undefined">请选择执行类型</option>
                   <option
                       v-for="type in runTypes"
                       :key="type"
@@ -1114,7 +1114,7 @@ const batchUpdate = () => {
                 <label>秘境类型：</label>
                 <select v-model="config.selectedType"
                         @change="handleSundaySelection(config)">
-                  <option value="">请选择秘境类型</option>
+                  <option :value="undefined">请选择秘境类型</option>
                   <option
                       v-for="type in domainTypes"
                       :key="type.value"
@@ -1128,7 +1128,7 @@ const batchUpdate = () => {
               <div class="form-group domain" v-if="!config.autoFight.sundaySelectedDomain">
                 <label>秘境：</label>
                 <select v-model="config.autoFight.domainName">
-                  <option value="">请选择秘境</option>
+                  <option :value="undefined">请选择秘境</option>
                   <option
                       v-for="d in filteredDomainsType(config.selectedType)"
                       :key="d.name"
@@ -1141,7 +1141,7 @@ const batchUpdate = () => {
               <div class="form-group domain" v-else>
                 <label>秘境：</label>
                 <select v-model="config.autoFight.domainName">
-                  <option value="">请选择秘境</option>
+                  <option :value="null">请选择秘境</option>
                   <option
                       v-for="d in filteredDomainsType(config.selectedType)"
                       :key="d.name"
@@ -1227,7 +1227,7 @@ const batchUpdate = () => {
               <div class="form-group leyLineOutcrop">
                 <label>地脉类型：</label>
                 <select v-model="config.autoLeyLineOutcrop.leyLineOutcropType">
-                  <option value="">请选择地脉类型</option>
+                  <option :value="undefined">请选择地脉类型</option>
                   <option
                       v-for="item in leyLineOutcropTypes"
                       :key="item.value"
@@ -1241,7 +1241,7 @@ const batchUpdate = () => {
               <div class="form-group leyLineOutcrop">
                 <label>国家/地区：</label>
                 <select v-model="config.autoLeyLineOutcrop.country">
-                  <option value="">请选择国家/地区</option>
+                  <option :value="undefined">请选择国家/地区</option>
                   <option
                       v-for="item in countryList"
                       :key="item"
