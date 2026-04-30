@@ -118,9 +118,9 @@ const routes = [
         component: () => import('@views/WsProxyView.vue'),
         meta: {
             isRoot: true,
-            title: 'Websocket代理授权管理',
-            desc: 'Websocket代理授权管理',
-            asSubParentTitle: 'Websocket代理授权管理',
+            title: 'WebSocket代理授权管理',
+            desc: 'WebSocket代理授权管理',
+            asSubParentTitle: 'WebSocket代理授权管理',
             icon: 'Websocket-Proxy'
         }
     },
@@ -160,9 +160,9 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
     // console.log('Navigating to:', to.path);
     //开发模式下，允许所有路由
-    if (import.meta.env.VITE_SERVER_PORT) {
-        return next()
-    }
+    // if (import.meta.env.VITE_SERVER_PORT) {
+    //     return next()
+    // }
     let item = await getLocalToken()
     if (to.path === '/login') {
         if (item) {

@@ -1459,3 +1459,14 @@ h2 {
     border-color: #409eff;
   }
 }
+
+/* 隐藏所有滚动条，但保持可滚动功能 */
+* {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+*::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}

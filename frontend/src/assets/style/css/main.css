@@ -1,9 +1,17 @@
 html, body {
     margin: 0;
     padding: 0;
-    height: 100%;
+    overflow: auto !important;
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
 }
-
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
 /* 页面全屏背景 */
 .home {
     /*  display: flex;
@@ -23,8 +31,22 @@ html, body {
     background-size: cover; /* 覆盖整个容器 */
     background-position: center;
     /*  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;*/
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
+.home::-webkit-scrollbar {
+    display: none;
+}
+
+.container {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.container::-webkit-scrollbar {
+    display: none;
+}
 /* Logo 圆角 */
 .logo {
     width: 100px;
@@ -61,12 +83,22 @@ html, body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.btn.secondary {
+.fixed-footer .btn.secondary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
 }
 
-.btn.secondary:hover {
+.fixed-footer .btn.secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.fixed-back .btn.secondary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.fixed-back .btn.secondary:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
@@ -236,3 +268,4 @@ html, body {
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
     }
 }
+

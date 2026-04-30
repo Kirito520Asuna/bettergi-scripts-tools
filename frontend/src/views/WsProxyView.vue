@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <div class="container">
-      <h1 class="title">Websocket代理授权管理</h1>
+      <h1 class="title">{{ currentRoute.meta.title }}</h1>
 
       <!-- 搜索栏 -->
       <div class="card search-layout">
@@ -158,7 +158,7 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button @click="closeDialog" class="btn secondary">取消</button>
+            <button @click="closeDialog" class="btn danger">取消</button>
             <button @click="handleSubmit" class="btn primary">确定</button>
           </div>
         </div>
@@ -189,7 +189,7 @@ const actionMap=new Map([
     ['send_private_msg','私聊'],
     ['send_group_msg','群聊']
 ])
-const currentRoute = router.currentRoute;
+const currentRoute = ref(router.currentRoute)
 const tableData = ref([]);
 const searchUid = ref('');
 const selectedRows = ref([]);
@@ -335,19 +335,27 @@ const goToBack = async () => {
 
 <style scoped>
 .container {
-  max-width: 1400px;
+  width: 80vw;
   height: 100vh;
+
   margin: 0 auto;
   padding: 20px;
-/*  background: linear-gradient(135deg, #6a89cc 0%, #3498db 100%);*/
 }
 
 .title {
-  color: white;
-  font-size: 2rem;
-  text-align: center;
-  margin-bottom: 30px;
+  color: #11d8ea;
+  font-size: 3rem;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 32px;
+  -webkit-background-clip: text;
+  background-clip: text;
+  box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 40px;
 }
 
 .card {
@@ -409,7 +417,7 @@ const goToBack = async () => {
   margin-top: 15px;
 }
 
-.btn {
+.container .btn {
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
@@ -419,45 +427,30 @@ const goToBack = async () => {
   font-weight: 600;
 }
 
-.btn:disabled {
+.container .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.container .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.btn-primary {
-  background: #667eea;
-  color: white;
+.container .btn.primary:hover {
+  background: #10a4d1;
 }
 
-.btn-primary:hover {
-  background: #5568d3;
+.container .btn.secondary:hover {
+  background: #d59013;
 }
 
-.btn-secondary {
-  background: #6c757d;
-  color: white;
+.container .btn.success:hover {
+  background: #11d815;
 }
 
-.btn-secondary:hover {
-  background: #5a6268;
-}
-
-.btn-success {
-  background: #28a745;
-  color: white;
-}
-
-.btn-success:hover {
-  background: #218838;
-}
-
-.btn-danger {
-  background: #dc3545;
-  color: white;
-}
-
-.btn-danger:hover {
-  background: #c82333;
+.container .btn.danger:hover {
+  background: #d50838;
 }
 
 .table-container {
@@ -605,11 +598,16 @@ const goToBack = async () => {
     .container {
         padding: 15px;
         max-width: 100%;
+        width: 100vw;
+        height: auto;
+        min-height: 100vh;
     }
 
     .title {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         margin-bottom: 20px;
+        padding: 20px;
+        border-radius: 12px;
     }
 
     .card {
@@ -621,26 +619,47 @@ const goToBack = async () => {
     .form-group {
         flex-direction: column;
         gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .form-group.search-layout {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
     }
 
     .label {
         width: auto;
         margin-bottom: 5px;
+        font-size: 13px;
+    }
+
+    .form-group.search-layout .label {
+        width: auto;
+        margin-bottom: 0;
     }
 
     .input {
-        width: auto;
+        width: 100%;
+        font-size: 13px;
+        padding: 9px;
     }
 
     .actions {
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
+        margin-top: 12px;
     }
 
-    .btn {
+    .container .btn {
         width: 100%;
         padding: 12px 16px;
         font-size: 14px;
+    }
+
+    .container .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
 
     .table-container {
@@ -655,23 +674,41 @@ const goToBack = async () => {
     }
 
     .btn-link {
-        padding: 3px 6px;
+        padding: 4px 7px;
         font-size: 12px;
-        margin-right: 3px;
+        margin-right: 4px;
+        border-radius: 3px;
     }
 
     .empty-data {
         padding: 30px;
+        font-size: 14px;
+    }
+
+    .token-display {
+        font-size: 12px;
+        padding: 2px 5px;
     }
 
     .modal-dialog {
         width: 95%;
         max-width: 90vw;
         max-height: 85vh;
+        border-radius: 10px;
     }
 
     .modal-header {
         padding: 15px;
+    }
+
+    .modal-header h3 {
+        font-size: 1.3rem;
+    }
+
+    .close-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 22px;
     }
 
     .modal-body {
@@ -681,21 +718,25 @@ const goToBack = async () => {
     .modal-footer {
         padding: 15px;
         flex-direction: column;
+        gap: 10px;
     }
 
     .modal-footer .btn {
-        width: auto;
+        width: 100%;
     }
 }
 
 @media (max-width: 480px) {
     .container {
         padding: 10px;
+        width: 100vw;
     }
 
     .title {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
         margin-bottom: 15px;
+        padding: 15px;
+        border-radius: 10px;
     }
 
     .card {
@@ -711,21 +752,29 @@ const goToBack = async () => {
     }
 
     .label {
-        font-size: 13px;
+        font-size: 12px;
+        margin-bottom: 4px;
     }
 
     .input {
-        font-size: 13px;
+        font-size: 12px;
         padding: 8px;
+        border-radius: 5px;
     }
 
     .actions {
-        gap: 6px;
+        gap: 8px;
+        margin-top: 10px;
     }
 
-    .btn {
+    .container .btn {
         padding: 10px 14px;
         font-size: 13px;
+    }
+
+    .container .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.25);
     }
 
     .table-container {
@@ -735,23 +784,24 @@ const goToBack = async () => {
     .data-table th,
     .data-table td {
         padding: 6px;
-        font-size: 12px;
+        font-size: 11px;
     }
 
     .btn-link {
-        padding: 2px 5px;
+        padding: 3px 5px;
         font-size: 11px;
-        margin-right: 2px;
+        margin-right: 3px;
     }
 
     .empty-data {
         padding: 20px;
-        font-size: 13px;
+        font-size: 12px;
     }
 
     .token-display {
-        font-size: 11px;
+        font-size: 10px;
         padding: 2px 4px;
+        border-radius: 2px;
     }
 
     .modal-overlay {
@@ -765,14 +815,18 @@ const goToBack = async () => {
         border-radius: 12px 12px 0 0;
     }
 
+    .modal-header {
+        padding: 12px;
+    }
+
     .modal-header h3 {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
 
     .close-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 22px;
+        width: 26px;
+        height: 26px;
+        font-size: 20px;
     }
 
     .modal-body {
@@ -783,6 +837,10 @@ const goToBack = async () => {
         padding: 12px;
         gap: 8px;
     }
-}
 
+    .modal-footer .btn {
+        padding: 10px;
+        font-size: 13px;
+    }
+}
 </style>

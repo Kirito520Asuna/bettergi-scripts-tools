@@ -3,7 +3,8 @@ import {onMounted, reactive, ref} from "vue"
 import {ElMessage, ElMessageBox} from "element-plus"
 import {getAllUid, saveUid, removeUidList} from "@api/uid/uid.js"
 import {goBack, toHomePage} from "@api/web/web.js"
-
+import router from "@router/router.js";
+const currentRoute = ref(router.currentRoute)
 // 表单数据
 const formData = reactive({
   show: false,
@@ -158,17 +159,17 @@ onMounted(() => {
   <div class="home">
     <div class="uid-manager">
       <div class="manager-container">
-        <h2 class="manager-title">UID 映射管理</h2>
+        <h2 class="manager-title">{{ currentRoute.meta.title }}</h2>
 
         <div class="toolbar">
           <el-button type="primary" @click="handleAdd" class="action-button">
             ➕ 新增映射
           </el-button>
-          <el-button 
-            type="danger" 
-            @click="handleBatchDelete" 
-            :disabled="multipleSelection.size === 0"
-            class="action-button"
+          <el-button
+              type="danger"
+              @click="handleBatchDelete"
+              :disabled="multipleSelection.size === 0"
+              class="action-button"
           >
             🗑️ 批量删除
           </el-button>
@@ -178,44 +179,47 @@ onMounted(() => {
           </el-button>
         </div>
 
-        <div class="table-container" v-if="tableData.length > 0">
-          <el-table
-            v-loading="loading"
-            :data="tableData"
-            @selection-change="handleSelectionChange"
-            style="width: 100%"
-          >
-            <el-table-column type="selection" />
-            <el-table-column prop="uid" label="UID" />
-            <el-table-column prop="as" label="别称" />
-            <el-table-column label="操作"  fixed="right">
-              <template #default="{ row }">
-                <el-button 
-                  type="primary" 
-                  size="small" 
-                  @click="handleEdit(row)"
-                  class="table-button"
-                >
-                  ✏️ 编辑
-                </el-button>
-                <el-button 
-                  type="danger" 
-                  size="small" 
-                  @click="handleDelete(row)"
-                  class="table-button"
-                >
-                  🗑️ 删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
+        <div class="manager-context">
+          <div class="table-container" v-if="tableData.length > 0">
+            <el-table
+                v-loading="loading"
+                :data="tableData"
+                @selection-change="handleSelectionChange"
+                style="width: 100%"
+            >
+              <el-table-column type="selection" />
+              <el-table-column prop="uid" label="UID" />
+              <el-table-column prop="as" label="别称" />
+              <el-table-column label="操作"  fixed="right">
+                <template #default="{ row }">
+                  <el-button
+                      type="primary"
+                      size="small"
+                      @click="handleEdit(row)"
+                      class="table-button"
+                  >
+                    ✏️ 编辑
+                  </el-button>
+                  <el-button
+                      type="danger"
+                      size="small"
+                      @click="handleDelete(row)"
+                      class="table-button"
+                  >
+                    🗑️ 删除
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+
+          <div class="empty-tip" v-else-if="!loading && tableData.length === 0">
+            <div class="empty-icon">📭</div>
+            <p class="empty-text">暂无 UID 映射数据</p>
+            <el-button type="primary" @click="handleAdd">立即添加</el-button>
+          </div>
         </div>
 
-        <div class="empty-tip" v-else-if="!loading && tableData.length === 0">
-          <div class="empty-icon">📭</div>
-          <p class="empty-text">暂无 UID 映射数据</p>
-          <el-button type="primary" @click="handleAdd">立即添加</el-button>
-        </div>
       </div>
     </div>
 
@@ -264,35 +268,51 @@ onMounted(() => {
 <style scoped>
 .uid-manager {
   padding: 30px;
-  min-width: 1200px;
+  width: 80vw;
+  height: 100vh;
   margin: 0 auto;
 }
 
 .manager-container {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 80%);
-  border-radius: 20px;
-  padding: 40px;
-  box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
-  backdrop-filter: blur(10px);
+  padding: 20px;
+}
+
+.manager-context{
+  text-align: center;
+  margin-top: 20px;/*设置与上一个元素的间隔*/
+  height: 58vh;
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .manager-title {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
   font-size: 32px;
-  font-weight: 600;
   color: transparent;
   background: linear-gradient(90deg, #ff6b6b, #ef006a);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+
+  box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 40px;
 }
 
 .toolbar {
   display: flex;
   gap: 15px;
-  margin-bottom: 25px;
   justify-content: flex-start;
+  align-items: center;     /* 垂直居中 */
+
+  padding: 20px;
+  border-radius: 15px;
+
+  background: white;
 }
 
 .action-button {
@@ -308,11 +328,6 @@ onMounted(() => {
 }
 
 .table-container {
-  height: 70vh;
-  background: white;
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .table-button {
@@ -324,9 +339,7 @@ onMounted(() => {
 
 .empty-tip {
   text-align: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 15px;
+  background: #da7c7c;
 }
 
 .empty-icon {
@@ -361,91 +374,63 @@ onMounted(() => {
   to { transform: rotate(360deg); }
 }
 
-/*.fixed-back {
-  position: fixed;
-  bottom: 80px;
-  left: 30px;
-  z-index: 1000;
-}
-
-.fixed-footer {
-  position: fixed;
-  bottom: 80px;
-  right: 30px;
-  z-index: 1000;
-}
-
-.btn {
-  padding: 12px 24px;
-  border-radius: 25px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.btn.secondary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.btn.secondary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-}*/
-
-/*@media (max-width: 768px) {
-  .uid-manager {
-    padding: 20px;
-    min-width: 50vw;
-  }
-}
-
-@media (max-width: 480px) {
-  .uid-manager {
-    padding: 15px;
-    min-width: 50vw;
-  }
-}*/
-
 
 @media (max-width: 768px) {
     .uid-manager {
         padding: 20px;
-        min-width: 50vw;
+        width: 100vw;
+        height: auto;
+        min-height: 100vh;
     }
 
     .manager-container {
-        padding: 30px;
-        border-radius: 15px;
+        padding: 15px;
+    }
+
+    .manager-context {
+        height: auto;
+        min-height: 50vh;
+        margin-top: 15px;
+        padding: 15px;
+        border-radius: 12px;
     }
 
     .manager-title {
-        font-size: 24px;
-        margin-bottom: 20px;
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        padding: 20px;
+        border-radius: 12px;
     }
 
     .toolbar {
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 12px;
         justify-content: center;
-    }
-
-    .action-button {
-        min-width: 100px;
-        font-size: 14px;
-    }
-
-    .table-container {
-        height: 50vh;
         padding: 15px;
+        margin-bottom: 15px;
         border-radius: 10px;
     }
 
+    .action-button {
+        min-width: 110px;
+        font-size: 14px;
+        padding: 10px 16px;
+    }
+
+    .action-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .table-container {
+        padding: 15px;
+    }
+
     .table-button {
-        padding: 5px 10px;
+        padding: 6px 10px;
         font-size: 12px;
+        margin-right: 6px;
+        border-radius: 5px;
     }
 
     .empty-tip {
@@ -460,45 +445,68 @@ onMounted(() => {
 
     .empty-text {
         font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    .button-icon {
+        margin-right: 5px;
+        font-size: 14px;
     }
 }
 
 @media (max-width: 480px) {
     .uid-manager {
-        padding: 15px;
+        padding: 10px;
+        width: 100vw;
     }
 
     .manager-container {
-        padding: 20px;
-        border-radius: 10px;
+        padding: 10px;
+    }
+
+    .manager-context {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        min-height: 45vh;
     }
 
     .manager-title {
-        font-size: 20px;
-        margin-bottom: 15px;
+        font-size: 1.4rem;
+        margin-bottom: 10px;
+        padding: 15px;
+        border-radius: 10px;
     }
 
     .toolbar {
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
+        padding: 12px;
+        margin-bottom: 12px;
+        border-radius: 8px;
     }
 
     .action-button {
         min-width: auto;
         width: 100%;
         font-size: 13px;
+        padding: 10px 14px;
+    }
+
+    .action-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
     }
 
     .table-container {
-        height: 45vh;
         padding: 10px;
-        border-radius: 8px;
     }
 
     .table-button {
-        padding: 4px 8px;
+        padding: 5px 8px;
         font-size: 11px;
-        margin-right: 5px;
+        margin-right: 4px;
+        border-radius: 4px;
     }
 
     .empty-tip {
@@ -513,12 +521,16 @@ onMounted(() => {
 
     .empty-text {
         font-size: 14px;
+        margin-bottom: 15px;
     }
 
     .button-icon {
         margin-right: 4px;
-        font-size: 14px;
+        font-size: 13px;
+    }
+
+    .button-text {
+        letter-spacing: 0.5px;
     }
 }
-
 </style>

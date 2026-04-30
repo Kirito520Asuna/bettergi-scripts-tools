@@ -85,7 +85,7 @@
     margin-right: 10px;
 }
 
-.btn.danger {
+.container .btn.danger {
     width: 80px; /* 固定宽度 */
     padding: 8px 12px;
 }
@@ -102,7 +102,7 @@
 }
 
 /* 按钮样式 */
-.btn {
+.container .btn {
     padding: 12px 20px;
     border: none;
     border-radius: 8px;
@@ -112,27 +112,27 @@
     margin-right: 10px;
 }
 
-.btn.primary {
+.container .btn.primary {
     background: #3498db;
     color: white;
 }
 
-.btn.primary:hover {
+.container .btn.primary:hover {
     background: #2980b9;
     transform: scale(1.05);
 }
 
-.btn.secondary {
+.container .btn.secondary {
     background: #95a5a6;
     color: white;
 }
 
-.btn.secondary:hover {
+.container .btn.secondary:hover {
     background: #7f8c8d;
     transform: scale(1.05);
 }
 
-.btn.danger:hover {
+.container .btn.danger:hover {
     background: #c0392b;
     transform: scale(1.05);
 }
@@ -292,28 +292,6 @@
     font-size: 0.9rem;
     color: #7f8c8d;
     margin-top: 10px;
-}
-.fixed-footer {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000; /* 确保按钮在其他元素之上 */
-}
-
-.fixed-footer .btn {
-    padding: 10px 15px;
-    font-size: 1rem;
-    background: rgba(52, 152, 219, 0.8); /* 半透明背景 */
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.fixed-footer .btn:hover {
-    background: rgba(41, 128, 185, 1); /* 悬停时加深背景 */
-    transform: scale(1.05);
 }
 
 
