@@ -219,7 +219,7 @@ const handleFileChange = async (event) => {
     });
     dataBackupRecover.isRecovering = true;
     await recovery(file);
-    ElMessage.success('数据恢复成功');
+    ElMessage.success('数据恢复成功,如存在配置恢复需要重启系统后生效');
   } catch (error) {
     if (error !== 'cancel') {
       console.error('数据恢复失败:', error);
