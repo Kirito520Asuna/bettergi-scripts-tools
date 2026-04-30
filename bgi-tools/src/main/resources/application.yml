@@ -100,7 +100,7 @@ spring:
       - optional:file:./application-prod.yml
       - optional:file:/app/application-prod.yml #docker加载异常处理
   profiles:
-    active: prod
+    active: dev
 
   quartz:
     auto-startup: false           # 禁止自动启动调度器

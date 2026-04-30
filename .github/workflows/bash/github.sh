@@ -219,6 +219,7 @@ build_exe() {
     <minVersion>${JAVA_VERSION}.0</minVersion>
     <maxVersion>${JAVA_VERSION}.999</maxVersion>
     <jdkPreference>preferBundled</jdkPreference>
+    <opt>-Dfile.encoding=UTF-8</opt>
   </jre>
   <versionInfo>
     <fileVersion>$file_ver</fileVersion>
@@ -464,7 +465,8 @@ update_config(){
     local CLIENT_PUBLIC_KEY_AS_NAME=$(yq '.sign.api.encryption-as-name' $BGI_TOOLS_YML)
     local CLIENT_ID_AS_NAME=$(yq '.sign.api.id-as-name' $BGI_TOOLS_YML)
     local ENABLE_DOUBLE_SYMMETRIC_ENCRYPTION=$(yq '.sign.api.enable-double-symmetric-encryption' $BGI_TOOLS_YML)
-
+    local action=prod
+    yq -i ".spring.profiles.active = \"$action\"" $BGI_TOOLS_YML
     if [ -z "$SIGN_AS_NAME" ] || [ -z "$TIMESTAMP_AS_NAME" ]; then
          echo "⚠️ 警告：sign.api 配置为空，跳过更新"
     else
