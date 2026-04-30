@@ -108,13 +108,13 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
         dbKV.setKeyName(id);
         dbKV.setValue(json);
 
-        dbKVService.remove(
-                Wrappers.lambdaQuery(DbKV.class)
-                        .eq(DbKV::getType, id)
-                        .eq(DbKV::getKeyName, id)
-        );
+        //dbKVService.remove(
+        //        Wrappers.lambdaQuery(DbKV.class)
+        //                .eq(DbKV::getType, id)
+        //                .eq(DbKV::getKeyName, id)
+        //);
 
-        return dbKVService.save(dbKV);
+        return dbKVService.saveOrUpdate(dbKV, Wrappers.lambdaQuery(DbKV.class).eq(DbKV::getType, id).eq(DbKV::getKeyName, id));
         //return cacheService.save(KeyConstants.auto_plan_key_domain_all, json);
     }
 
@@ -126,14 +126,14 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
         dbKV.setType(id);
         dbKV.setKeyName(id);
         dbKV.setValue(json);
+        //
+        //dbKVService.remove(
+        //        Wrappers.lambdaQuery(DbKV.class)
+        //                .eq(DbKV::getType, id)
+        //                .eq(DbKV::getKeyName, id)
+        //);
 
-        dbKVService.remove(
-                Wrappers.lambdaQuery(DbKV.class)
-                        .eq(DbKV::getType, id)
-                        .eq(DbKV::getKeyName, id)
-        );
-
-        return dbKVService.save(dbKV);
+        return dbKVService.saveOrUpdate(dbKV, Wrappers.lambdaQuery(DbKV.class).eq(DbKV::getType, id).eq(DbKV::getKeyName, id));
         //return cacheService.save(KeyConstants.auto_plan_key_country_all, json);
     }
 

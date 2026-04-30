@@ -111,7 +111,7 @@ public class AutoPlanController {
     @GetMapping("json")
     public Result<List<AutoPlanVo>> info(@RequestParam String uid, @RequestParam(required = false) Boolean enable) {
         List<AutoPlanVo> list = autoPlanService.find(uid, enable)
-                .stream().map(item -> item.toVo()).toList();
+                .stream().map(AutoPlanConfig::toVo).toList();
         return ok(list);
     }
 
@@ -120,7 +120,7 @@ public class AutoPlanController {
     @GetMapping("uid/all")
     public Result<List<String>> uidALL() {
         List<String> uidList = autoPlanService.findUidAll();
-        uidList = uidList.stream().map(uid -> uid.substring(uid.lastIndexOf(":") + 1)).collect(Collectors.toList());
+        //uidList = uidList.stream().map(uid -> uid.substring(uid.lastIndexOf(":") + 1)).collect(Collectors.toList());
         return ok(uidList);
     }
 
