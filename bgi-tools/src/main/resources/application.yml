@@ -57,7 +57,6 @@ knife4j:
     enable: false
     username: root
     password: root
-
 sign:
   api:
     name: ${spring.application.name}
@@ -82,13 +81,10 @@ sign:
     enable-double-symmetric-encryption: false
     encryption-as-name: X-Bgi-Tools-Encryption-Client-Public-Key
     id-as-name: X-Bgi-Tools-Encryption-Id
-
 server:
   port: 8081
-
   servlet:
     context-path: /bgi
-
 spring:
   application:
     name: bgi-tools
@@ -102,11 +98,9 @@ spring:
       - optional:file:/app/application-prod.yml #docker加载异常处理
   profiles:
     active: dev
-
   quartz:
-    auto-startup: false           # 禁止自动启动调度器Delay
+    auto-startup: false # 禁止自动启动调度器Delay
     startup-delay: 3s
-
   datasource:
     dynamic:
       primary: ${db.primary:SQLite}
@@ -117,20 +111,18 @@ spring:
           username: ${db.SQLite.username:}
           password: ${db.SQLite.password:}
         MySQL:
-        # MySQL配置示例（注释掉上面的SQLite配置，启用下面的MySQL配置）
-         url: ${db.MySQL.url:jdbc:mysql://localhost:3306/bgi_tools?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false}
-         driver-class-name: com.mysql.cj.jdbc.Driver
-         username: ${db.MySQL.username:root}
-         password: ${db.MySQL.password:root}
+          # MySQL配置示例（注释掉上面的SQLite配置，启用下面的MySQL配置）
+          url: ${db.MySQL.url:jdbc:mysql://localhost:3306/bgi_tools?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false}
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          username: ${db.MySQL.username:root}
+          password: ${db.MySQL.password:root}
         PgSQL:
           # PostgreSQL配置示例
-           url: ${db.PgSQL.url:jdbc:postgresql://localhost:5432/bgi_tools}
-           driver-class-name: org.postgresql.Driver
-           username: ${db.PgSQL.username:postgres}
-           password: ${db.PgSQL.password:root}
-
-
-#mvc:
+          url: ${db.PgSQL.url:jdbc:postgresql://localhost:5432/bgi_tools}
+          driver-class-name: org.postgresql.Driver
+          username: ${db.PgSQL.username:postgres}
+          password: ${db.PgSQL.password:root}
+          #mvc:
     # 推荐开启这个，让 /** 映射优先级低于静态资源
     #static-path-pattern: /static/ui/**   # 可选，如果你想把静态资源路径改成 /static/ 开头
     #throw-exception-if-no-handler-found: true   # 可选，404 时抛异常方便调试
@@ -196,7 +188,7 @@ check:
     name: # token名称 默认为空
     value: # token值 默认为空
 bgi-tools:
-  version: 0.0.8
+  version: 0.1.0
 #设置默认账号密码
 auth:
   enabled: true
@@ -209,7 +201,7 @@ auth:
       password: bgi_tools
 logging:
   level:
-#    org.mybatis.spring.mapper: debug
+    #    org.mybatis.spring.mapper: debug
     com.cloud_guest.redis.service.impl: off
     com.cloud_guest.task.job: off
     com.cloud_guest.utils.ApplicationContextHolder: off
@@ -221,7 +213,6 @@ management:
   endpoint:
     restart:
       enabled: true
-
 mybatis-plus:
   mapper-locations: classpath:mapper/**/*.xml
   configuration:
