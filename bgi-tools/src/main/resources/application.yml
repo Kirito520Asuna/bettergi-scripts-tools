@@ -84,9 +84,10 @@ sign:
     id-as-name: X-Bgi-Tools-Encryption-Id
 
 server:
+  port: 8081
+
   servlet:
     context-path: /bgi
-  port: 8081
 
 spring:
   application:
@@ -181,7 +182,7 @@ db:
     username:
     password:
   MySQL:
-    url: jdbc:mysql://localhost:3306/bgi_tools?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    url: jdbc:mysql://localhost:3306/bgi_tools?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: your_password
   PgSQL:

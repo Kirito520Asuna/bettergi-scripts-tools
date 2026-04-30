@@ -108,7 +108,7 @@ COMMENT ON COLUMN uid_info_config.remark      IS '备注';
 CREATE TABLE IF NOT EXISTS db_kv (
                                      id          BIGSERIAL    PRIMARY KEY,
                                      type        VARCHAR(64),
-    key         VARCHAR(128) NOT NULL,
+    key_name         VARCHAR(128) NOT NULL,
     value       TEXT,
     -- 通用审计字段
     create_by   VARCHAR(64),
@@ -116,14 +116,14 @@ CREATE TABLE IF NOT EXISTS db_kv (
     update_by   VARCHAR(64),
     update_time TIMESTAMP,
     remark      TEXT,
-    CONSTRAINT uk_type_key UNIQUE (type, key)                -- 唯一约束替代 MySQL 的 UNIQUE INDEX
+    CONSTRAINT uk_type_key UNIQUE (type, key_name)                -- 唯一约束替代 MySQL 的 UNIQUE INDEX
     );
 
 COMMENT ON TABLE db_kv IS '通用键值对存储表';
 
 COMMENT ON COLUMN db_kv.id          IS '主键ID';
 COMMENT ON COLUMN db_kv.type        IS '键值类型';
-COMMENT ON COLUMN db_kv.key         IS '键名';
+COMMENT ON COLUMN db_kv.key_name         IS '键名';
 COMMENT ON COLUMN db_kv.value       IS '键值';
 COMMENT ON COLUMN db_kv.create_by   IS '创建者';
 COMMENT ON COLUMN db_kv.create_time IS '创建时间';

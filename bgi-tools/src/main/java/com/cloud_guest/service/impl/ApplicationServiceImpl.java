@@ -7,7 +7,6 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.cloud_guest.constants.KeyConstants;
-import com.cloud_guest.domain.Cache;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.pojo.DbKV;
 import com.cloud_guest.properties.load.LoadProperties;
@@ -16,8 +15,6 @@ import com.cloud_guest.service.DbKVService;
 import com.cloud_guest.utils.ApplicationUtil;
 import com.cloud_guest.utils.LockUtil;
 import com.cloud_guest.utils.LockYmlUtil;
-import com.cloud_guest.utils.bean.MapUtils;
-import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.utils.yml.YmlUtils;
 import com.cloud_guest.wrappers.lock.LockWrapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
@@ -138,7 +135,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             DbKV kv = new DbKV();
             kv.setType(KeyConstants.load_yml_save_key);
-            kv.setKey(KeyConstants.load_yml_save_key);
+            kv.setKeyName(KeyConstants.load_yml_save_key);
             kv.setValue(JSONUtil.toJsonStr(jsonObject));
             dbKVService.save(kv);
         } finally {

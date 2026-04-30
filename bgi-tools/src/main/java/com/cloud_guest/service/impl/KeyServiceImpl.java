@@ -1,14 +1,12 @@
 package com.cloud_guest.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.abs.service.AbstractKeyService;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.key.KeyInfo;
 import com.cloud_guest.pojo.DbKV;
 import com.cloud_guest.service.BaseService;
-import com.cloud_guest.service.CacheService;
 import com.cloud_guest.service.DbKVService;
 import com.cloud_guest.utils.IdUtils;
 import com.cloud_guest.utils.object.ObjectUtils;
@@ -16,7 +14,6 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +37,7 @@ public class KeyServiceImpl implements AbstractKeyService, BaseService {
     @Transactional(rollbackFor = Exception.class)
     public Long saveKeyInfo(KeyInfo keyInfo) {
         DbKV dbKV = new DbKV();
-        dbKV.setKey(IdUtils.getNextIdStr());
+        dbKV.setKeyName(IdUtils.getNextIdStr());
         dbKV.setType(getSuffix());
         dbKV.setValue(JSONUtil.toJsonStr(keyInfo));
         dbKVService.save(dbKV);

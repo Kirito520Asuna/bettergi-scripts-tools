@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS uid_info_config (
 CREATE TABLE IF NOT EXISTS db_kv (
                                      id          INTEGER PRIMARY KEY AUTOINCREMENT,              -- 主键ID，自增
                                      type        TEXT,                                           -- 键值类型
-                                     key         TEXT NOT NULL,                                  -- 键名
+                                     key_name         TEXT NOT NULL,                                  -- 键名
                                      value       TEXT,                                           -- 键值
                                      create_by   TEXT,
                                      create_time TEXT DEFAULT (datetime('now','localtime')),
@@ -59,5 +59,5 @@ CREATE TABLE IF NOT EXISTS db_kv (
                                      remark      TEXT
                                     );
 
--- 为 db_kv 创建唯一索引（type, key）
-CREATE UNIQUE INDEX IF NOT EXISTS uk_type_key ON db_kv (type, key);
+-- 为 db_kv 创建唯一索引（type, key_name）
+CREATE UNIQUE INDEX IF NOT EXISTS uk_type_key ON db_kv (type, key_name);

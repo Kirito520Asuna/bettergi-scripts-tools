@@ -12,5 +12,4 @@ import org.apache.ibatis.annotations.Param;
  */
 @Mapper
 public interface DbKVMapper extends BaseMapper<DbKV> {
-    DbKV selectByTypeAndKey(@Param("type") String type, @Param("key") String key);
 }

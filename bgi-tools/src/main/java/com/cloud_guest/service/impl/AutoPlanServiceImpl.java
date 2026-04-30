@@ -8,15 +8,12 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cloud_guest.mapper.AutoPlanMapper;
 import com.cloud_guest.constants.KeyConstants;
-import com.cloud_guest.domain.Cache;
-import com.cloud_guest.mp.abs.service.impl.MpServiceImpl;
 import com.cloud_guest.pojo.AutoPlanConfig;
 import com.cloud_guest.pojo.DbKV;
 import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.service.DbKVService;
 import com.cloud_guest.utils.object.ObjectUtils;
-import io.jsonwebtoken.lang.Arrays;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
@@ -108,13 +105,13 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
         DbKV dbKV = new DbKV();
         String id = KeyConstants.auto_plan_key_domain_all;
         dbKV.setType(id);
-        dbKV.setKey(id);
+        dbKV.setKeyName(id);
         dbKV.setValue(json);
 
         dbKVService.remove(
                 Wrappers.lambdaQuery(DbKV.class)
                         .eq(DbKV::getType, id)
-                        .eq(DbKV::getKey, id)
+                        .eq(DbKV::getKeyName, id)
         );
 
         return dbKVService.save(dbKV);
@@ -127,13 +124,13 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
         DbKV dbKV = new DbKV();
         String id = KeyConstants.auto_plan_key_country_all;
         dbKV.setType(id);
-        dbKV.setKey(id);
+        dbKV.setKeyName(id);
         dbKV.setValue(json);
 
         dbKVService.remove(
                 Wrappers.lambdaQuery(DbKV.class)
                         .eq(DbKV::getType, id)
-                        .eq(DbKV::getKey, id)
+                        .eq(DbKV::getKeyName, id)
         );
 
         return dbKVService.save(dbKV);

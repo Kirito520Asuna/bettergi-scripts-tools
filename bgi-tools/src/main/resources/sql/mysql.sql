@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `uid_info_config`
 CREATE TABLE IF NOT EXISTS `db_kv` (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `type`        VARCHAR(64)  DEFAULT NULL COMMENT '键值类型',
-    `key`         VARCHAR(128) NOT NULL COMMENT '键名',
+    `key_name`         VARCHAR(128) NOT NULL COMMENT '键名',
     `value`       TEXT         DEFAULT NULL COMMENT '键值',
     -- 通用审计字段
     `create_by`   VARCHAR(64)  DEFAULT NULL COMMENT '创建者',

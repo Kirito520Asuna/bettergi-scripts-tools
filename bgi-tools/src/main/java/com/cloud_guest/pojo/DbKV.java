@@ -25,11 +25,11 @@ public class DbKV extends BaseEntity {
     @TableField(value = COL_TYPE)
     private String type;
     @TableField(value = COL_KEY)
-    private String key;
+    private String keyName;
     @TableField(value = COL_VALUE)
     private String value;
     public static final String TABLE_NAME = "db_kv";
-    public static final String COL_KEY = "key";
+    public static final String COL_KEY = "key_name";
     public static final String COL_VALUE = "value";
     public static final String COL_ID = "id";
     public static final String COL_TYPE = "type";
