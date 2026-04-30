@@ -85,3 +85,4 @@ gradle-app.setting
 */cache/
 /temp
 */temp
+frontend/dist
