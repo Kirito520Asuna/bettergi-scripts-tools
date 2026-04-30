@@ -104,7 +104,8 @@ spring:
     active: dev
 
   quartz:
-    auto-startup: false           # 禁止自动启动调度器
+    auto-startup: false           # 禁止自动启动调度器Delay
+    startup-delay: 3s
 
   datasource:
     dynamic:

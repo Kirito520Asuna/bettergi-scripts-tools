@@ -1,11 +1,13 @@
 package com.cloud_guest.runner;
 
+import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.utils.ModeUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.quartz.QuartzProperties;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -15,8 +17,10 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 数据库初始化器：在 @PostConstruct 阶段执行建表脚本，并在脚本完成后手动启动 Quartz 调度器。
@@ -79,10 +83,17 @@ public class DatabaseInitRunner {
 
         // 2. 手动启动 Quartz 调度器
         try {
+            Duration startupDelay = SpringUtil.getBean(QuartzProperties.class).getStartupDelay();
+            // 线程休眠实现延迟
+            long delaySeconds = startupDelay.toSeconds();
+            log.info("Quartz 调度器延迟[{}s]", delaySeconds);
+            TimeUnit.SECONDS.sleep(delaySeconds);
             scheduler.start();
             log.info("Quartz 调度器已手动启动");
         } catch (SchedulerException e) {
             log.error("启动 Quartz 调度器失败", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
