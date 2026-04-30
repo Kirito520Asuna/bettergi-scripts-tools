@@ -62,5 +62,5 @@ CREATE TABLE IF NOT EXISTS `db_kv` (
     `update_time` TIMESTAMP     DEFAULT NULL COMMENT '更新时间',
     `remark`      TEXT         DEFAULT NULL COMMENT '备注',
     PRIMARY KEY (`id`),
-    UNIQUE INDEX `uk_type_key` (`type`, `key`)
+    UNIQUE INDEX `uk_type_key` (`type`, `key_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通用键值对存储表';

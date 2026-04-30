@@ -16,6 +16,7 @@ import com.cloud_guest.pojo.UidInfoConfig;
 import com.cloud_guest.pojo.WsProxyAccessConfig;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.*;
+import com.cloud_guest.utils.StrUtils;
 import com.cloud_guest.utils.yml.YmlUtils;
 import com.google.common.collect.Maps;
 import jakarta.annotation.PostConstruct;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * @Author yan
@@ -116,7 +118,15 @@ public class DataBackupRecoveryServiceImpl implements DataBackupRecoveryService 
 
 
         Consumer<String> dbConsumer = json -> {
-            List<?> list = JSONUtil.toList(json, dbKVService.getEntityClass());
+            List<DbKV> list = JSONUtil.toList(json, dbKVService.getEntityClass())
+                    .stream().map(item -> {
+                        String keyName = item.getKeyName();
+                        if (StrUtils.isBlank(keyName)){
+                            item.setKeyName(item.getType());
+                        }
+                        return item;
+                    })
+                    .collect(Collectors.toList());
             dbKVService.remove(Wrappers.lambdaQuery(dbKVService.getEntityClass())
                     .ne(DbKV::getId, null));
             dbKVService.saveOrUpdateBatch((List) list);
