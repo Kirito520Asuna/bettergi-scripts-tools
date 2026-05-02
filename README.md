@@ -134,29 +134,22 @@ spring:
     # 安全认证
     username:      # 默认为空
     password:      # 默认为空
-
-  # 数据库配置
-  datasource:
-    dynamic:
-      primary: sqlite              # 主数据源选择 sqlite
-      datasource:
-        sqlite:
-          driver-class-name: org.sqlite.JDBC
-          url: jdbc:sqlite:./cache/bgi-tools.db
-
-        # MySQL 配置示例（使用前需注释掉上方 sqlite 配置）
-        # mysql:
-        #   url: jdbc:mysql://localhost:3306/bgi_tools?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
-        #   driver-class-name: com.mysql.cj.jdbc.Driver
-        #   username: root
-        #   password: your_password
-
-        # PostgreSQL 配置示例
-        # PostgreSQL:
-        #   url: jdbc:postgresql://localhost:5432/bgi_tools
-        #   driver-class-name: org.postgresql.Driver
-        #   username: postgres
-        #   password: your_password
+    
+# 数据库
+db:
+  primary: SQLite
+  SQLite:
+    url: jdbc:sqlite:./cache/bgi-tools.db
+    username:
+    password:
+  MySQL:
+    url: jdbc:mysql://localhost:3306/bgi_tools?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: your_password
+  PgSQL:
+    url: jdbc:postgresql://localhost:5432/bgi_tools
+    username: postgres
+    password: your_password
 
 # 接口访问 Token 校验（二者任意一项为空则跳过校验）
 check:
