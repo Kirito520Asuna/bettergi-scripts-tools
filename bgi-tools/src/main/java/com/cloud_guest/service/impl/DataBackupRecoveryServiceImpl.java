@@ -1,21 +1,19 @@
 package com.cloud_guest.service.impl;
 
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import cn.hutool.setting.yaml.YamlUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.cloud_guest.constants.KeyConstants;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cloud_guest.domain.UidInfo;
 import com.cloud_guest.domain.WsProxyAccess;
 import com.cloud_guest.domain.auto_plan.AutoPlan;
-import com.cloud_guest.pojo.AutoPlanConfig;
-import com.cloud_guest.pojo.DbKV;
-import com.cloud_guest.pojo.UidInfoConfig;
-import com.cloud_guest.pojo.WsProxyAccessConfig;
+import com.cloud_guest.mapper.BackupMapper;
+import com.cloud_guest.pojo.*;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.*;
+import com.cloud_guest.utils.IdUtils;
 import com.cloud_guest.utils.StrUtils;
 import com.cloud_guest.utils.yml.YmlUtils;
 import com.google.common.collect.Maps;
@@ -26,6 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -39,18 +40,45 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(rollbackFor = Exception.class)
 @Service
-public class DataBackupRecoveryServiceImpl implements DataBackupRecoveryService {
+public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, BackupInfo> implements DataBackupRecoveryService {
     @Resource
     private ApplicationService applicationService;
     String data="data";
     String config="config";
+    String backup = "backup";
     @Resource
     private LoadProperties loadProperties;
 
     @Override
-    public Map<String, Object> backup() {
+    public BackupInfo backup() {
         JSONObject jsonObject = backupV1();
-        return jsonObject;
+
+        String date = DateTimeFormatter.ofPattern(DatePattern
+                .PURE_DATE_PATTERN).format(LocalDateTime.now());
+        String name = backup + "_" + date + "_" + IdUtils.fastUUID() + ".json";
+        File backupDir = new File(backup);
+        if (!backupDir.exists()) {
+            backupDir.mkdirs();
+        }
+        File backupFile = new File(backupDir, name);
+        FileUtil.writeUtf8String(JSONUtil.toJsonPrettyStr(jsonObject), backupFile);
+        try {
+            BackupInfo backupInfo = new BackupInfo();
+            backupInfo.setBackupName(name);
+            backupInfo.setBackupPath(backupDir.getAbsolutePath() + File.separator + name);
+            backupInfo.setBackupTime(LocalDateTime.now());
+            backupInfo.setBackupSize(backupFile.length());
+            backupInfo.setBackupJson(JSONUtil.toJsonStr(jsonObject));
+
+            saveOrUpdate(backupInfo);
+
+            return backupInfo;
+        } catch (Exception e) {
+            FileUtil.del(backupFile);
+            log.error("备份失败", e);
+            throw e;
+        }
+        //return jsonObject;
     }
 
     @Override

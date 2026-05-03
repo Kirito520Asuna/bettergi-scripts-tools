@@ -67,6 +67,18 @@ public class QuartzConfig {
 
         try {
             List<SysJob> jobList =  sysJobService.list();
+            //SysJob sysJob = new SysJob();//测试通过
+            //sysJob.setJobName("定时备份");
+            //sysJob.setJobId(1L);
+            //sysJob.setJobGroup("定时备份");
+            //sysJob.setStatus("0");
+            //sysJob.setInvokeTarget("dataBackupRecoveryServiceImpl.backupTest()");
+            //sysJob.setCronExpression("0/3 * * * * ?");
+            //sysJob.setMisfirePolicy("1");
+            //sysJob.setConcurrent("0");
+            //sysJob.setRemark("定时备份");
+            //jobList.add(sysJob);
+
             log.info("{}-{}开始动态注册 Quartz 定时任务... 共 {} 个", TASK_LOG_KEY,"[数据级]", jobList.size());
             List<Map<String, Object>> jobMapList = jobList.stream()
                     .map(job -> {
