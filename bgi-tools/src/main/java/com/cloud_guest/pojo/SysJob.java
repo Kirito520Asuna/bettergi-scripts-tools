@@ -1,6 +1,10 @@
-package com.cloud_guest.domain;
+package com.cloud_guest.pojo;
 
-import cn.hutool.core.util.IdUtil;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.cloud_guest.mp.pojo.BaseEntity;
 import com.cloud_guest.utils.IdUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,20 +25,23 @@ import java.io.Serializable;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SysJob  implements Serializable {
+@TableName(SysJob.TABLE_NAME)
+public class SysJob extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
      * 任务ID
      */
     @JsonProperty(value = SysJob.COL_JOB_ID)
+    @TableId(value = SysJob.COL_JOB_ID, type = IdType.ASSIGN_ID)
     @Schema(description = "任务ID")
-    private Long jobId= IdUtils.getNextId();
+    private Long jobId;
 
     /**
      * 任务名称
      */
     @JsonProperty(value = SysJob.COL_JOB_NAME)
+    @TableField(value = SysJob.COL_JOB_NAME)
     @Schema(description = "任务名称")
     private String jobName;
 
@@ -42,6 +49,7 @@ public class SysJob  implements Serializable {
      * 任务组名
      */
     @JsonProperty(value = SysJob.COL_JOB_GROUP)
+    @TableField(value = SysJob.COL_JOB_GROUP)
     @Schema(description = "任务组名")
     private String jobGroup;
 
@@ -49,6 +57,7 @@ public class SysJob  implements Serializable {
      * 调用目标字符串
      */
     @JsonProperty(value = SysJob.COL_INVOKE_TARGET)
+    @TableField(value = SysJob.COL_INVOKE_TARGET)
     @Schema(description = "调用目标字符串")
     private String invokeTarget;
 
@@ -56,6 +65,7 @@ public class SysJob  implements Serializable {
      * cron执行表达式
      */
     @JsonProperty(value = SysJob.COL_CRON_EXPRESSION)
+    @TableField(value = SysJob.COL_CRON_EXPRESSION)
     @Schema(description = "cron执行表达式")
     private String cronExpression;
 
@@ -63,6 +73,7 @@ public class SysJob  implements Serializable {
      * 计划执行错误策略（1立即执行 2执行一次 3放弃执行）
      */
     @JsonProperty(value = SysJob.COL_MISFIRE_POLICY)
+    @TableField(value = SysJob.COL_MISFIRE_POLICY)
     @Schema(description = "计划执行错误策略（1立即执行 2执行一次 3放弃执行）")
     private String misfirePolicy;
 
@@ -70,6 +81,7 @@ public class SysJob  implements Serializable {
      * 是否并发执行（0允许 1禁止）
      */
     @JsonProperty(value = SysJob.COL_CONCURRENT)
+    @TableField(value = SysJob.COL_CONCURRENT)
     @Schema(description = "是否并发执行（0允许 1禁止）")
     private String concurrent;
 
@@ -77,10 +89,12 @@ public class SysJob  implements Serializable {
      * 状态（0正常 1暂停）
      */
     @JsonProperty(value = SysJob.COL_STATUS)
+    @TableField(value = SysJob.COL_STATUS)
     @Schema(description = "状态（0正常 1暂停）")
     private String status;
 
 
+    public static final String TABLE_NAME = "sys_job";
     public static final String COL_JOB_ID = "job_id";
 
     public static final String COL_JOB_NAME = "job_name";

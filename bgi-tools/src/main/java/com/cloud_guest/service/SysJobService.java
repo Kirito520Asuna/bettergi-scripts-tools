@@ -1,13 +1,13 @@
 package com.cloud_guest.service;
 
 
-import com.cloud_guest.domain.SysJob;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.cloud_guest.pojo.SysJob;
 import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 
 import java.util.List;
 
-public interface SysJobService {
+public interface SysJobService extends IService<SysJob> {
     /**
      * 获取Scheduler
      * @return
@@ -15,8 +15,6 @@ public interface SysJobService {
     default Scheduler getScheduler() {
         return cn.hutool.extra.spring.SpringUtil.getBean(Scheduler.class);
     }
-
-    boolean removeById(Long jobId);
 
     /**
      * 获取quartz调度器的计划任务
@@ -87,12 +85,6 @@ public interface SysJobService {
      * @param job 调度信息
      */
     boolean updateJob(SysJob job) ;
-
-    SysJob getById(Long id);
-
-    boolean save(SysJob job);
-
-    boolean updateById(SysJob job);
 
     /**
      * 校验cron表达式是否有效

@@ -64,3 +64,23 @@ CREATE TABLE IF NOT EXISTS `db_kv` (
     PRIMARY KEY (`id`),
     UNIQUE INDEX `uk_type_key` (`type`, `key_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通用键值对存储表';
+
+CREATE TABLE IF NOT EXISTS `sys_job` (
+                           `job_id` BIGINT NOT NULL COMMENT '任务ID',
+                           `job_name` VARCHAR(255) DEFAULT NULL COMMENT '任务名称',
+                           `job_group` VARCHAR(64) DEFAULT NULL COMMENT '任务组名',
+                           `invoke_target` VARCHAR(500) NOT NULL COMMENT '调用目标字符串',
+                           `cron_expression` VARCHAR(255) DEFAULT NULL COMMENT 'cron执行表达式',
+                           `misfire_policy` CHAR(1) DEFAULT '3' COMMENT '计划执行错误策略（1立即执行 2执行一次 3放弃执行）',
+                           `concurrent` CHAR(1) DEFAULT '1' COMMENT '是否并发执行（0允许 1禁止）',
+                           `status` CHAR(1) DEFAULT '0' COMMENT '状态（0正常 1暂停）',
+    -- 通用审计字段
+                           `create_by`   VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
+                           `create_time` TIMESTAMP     DEFAULT NULL COMMENT '创建时间',
+                           `update_by`   VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
+                           `update_time` TIMESTAMP     DEFAULT NULL COMMENT '更新时间',
+                           `remark`      TEXT         DEFAULT NULL COMMENT '备注',
+                           PRIMARY KEY (`job_id`),
+                           KEY `idx_job_group_status` (`job_group`, `status`),
+                           KEY `idx_job_name` (`job_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='定时任务调度表';

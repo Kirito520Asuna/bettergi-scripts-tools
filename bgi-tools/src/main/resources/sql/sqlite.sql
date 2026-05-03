@@ -61,3 +61,25 @@ CREATE TABLE IF NOT EXISTS db_kv (
 
 -- 为 db_kv 创建唯一索引（type, key_name）
 CREATE UNIQUE INDEX IF NOT EXISTS uk_type_key ON db_kv (type, key_name);
+
+-- ... existing code ...
+
+-- 定时任务调度表
+CREATE TABLE IF NOT EXISTS sys_job (
+                                       job_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                                       job_name        TEXT,
+                                       job_group       TEXT,
+                                       invoke_target   TEXT NOT NULL,
+                                       cron_expression TEXT,
+                                       misfire_policy  TEXT DEFAULT '3',
+                                       concurrent      TEXT DEFAULT '1',
+                                       status          TEXT DEFAULT '0',
+                                       create_by       TEXT,
+                                       create_time     TEXT DEFAULT (datetime('now','localtime')),
+                                       update_by       TEXT,
+                                       update_time     TEXT DEFAULT (datetime('now','localtime')),
+                                       remark          TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_job_group_status ON sys_job (job_group, status);
+CREATE INDEX IF NOT EXISTS idx_job_name ON sys_job (job_name);

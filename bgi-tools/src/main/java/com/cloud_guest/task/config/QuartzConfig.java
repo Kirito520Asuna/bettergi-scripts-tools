@@ -2,6 +2,8 @@ package com.cloud_guest.task.config;
 
 
 import cn.hutool.extra.spring.SpringUtil;
+import com.cloud_guest.pojo.SysJob;
+import com.cloud_guest.service.SysJobService;
 import com.cloud_guest.task.domain.TaskDef;
 import com.cloud_guest.task.domain.TaskInfo;
 import com.cloud_guest.task.enums.CronTemplate;
@@ -9,12 +11,17 @@ import com.cloud_guest.task.enums.QuartzGroup;
 import com.cloud_guest.task.enums.QuartzName;
 import com.cloud_guest.task.job.*;
 import com.cloud_guest.task.util.QuartzUtil;
+import com.cloud_guest.utils.bean.CustomBeanUtils;
+import com.cloud_guest.utils.task.ScheduleUtils;
+import com.google.common.collect.Maps;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.context.annotation.Configuration;
 
 import jakarta.annotation.PostConstruct;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Yao
@@ -23,6 +30,8 @@ import java.util.*;
 @Configuration
 @Slf4j
 public class QuartzConfig {
+    @Resource
+    private SysJobService sysJobService;
     public static final String TASK_LOG_KEY = "[定时任务]";
 
     // 如果你已经有 QuartzName 枚举，可以继续用它
@@ -44,7 +53,8 @@ public class QuartzConfig {
     public void init() throws SchedulerException {
         initTasks();
         Scheduler scheduler = SpringUtil.getBean(Scheduler.class);
-        log.info("{}开始动态注册 Quartz 定时任务... 共 {} 个", TASK_LOG_KEY, TASKS.size());
+        scheduler.clear();
+        log.info("{}-{}开始动态注册 Quartz 定时任务... 共 {} 个", TASK_LOG_KEY,"[系统级]", TASKS.size());
 
         for (TaskInfo taskInfo : TASKS) {
             try {
@@ -54,6 +64,24 @@ public class QuartzConfig {
                 log.error("{}任务注册失败：{}，原因：{}", TASK_LOG_KEY, taskInfo.getName(), e.getMessage(), e);
             }
         }
+
+        try {
+            List<SysJob> jobList =  sysJobService.list();
+            log.info("{}-{}开始动态注册 Quartz 定时任务... 共 {} 个", TASK_LOG_KEY,"[数据级]", jobList.size());
+            List<Map<String, Object>> jobMapList = jobList.stream()
+                    .map(job -> {
+                        Map<String, Object> jobMap = Maps.newLinkedHashMap();
+                        CustomBeanUtils.copyPropertiesIgnoreNull(job, jobMap);
+                        return jobMap;
+                    }).collect(Collectors.toList());
+
+            for (Map<String, Object> jobMap : jobMapList) {
+                ScheduleUtils.createScheduleJob(scheduler, jobMap);
+            }
+        } catch (Exception e) {
+            log.error("quartz任务初始化失败error: {}", e.getMessage());
+        }
+
 
         // 可选：启动时检查 scheduler 是否已经启动
         if (!scheduler.isStarted()) {

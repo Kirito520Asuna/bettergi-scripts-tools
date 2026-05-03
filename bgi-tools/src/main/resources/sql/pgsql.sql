@@ -130,3 +130,42 @@ COMMENT ON COLUMN db_kv.create_time IS '创建时间';
 COMMENT ON COLUMN db_kv.update_by   IS '更新者';
 COMMENT ON COLUMN db_kv.update_time IS '更新时间';
 COMMENT ON COLUMN db_kv.remark      IS '备注';
+
+
+-- =========================================================
+-- 表 5: sys_job
+-- =========================================================
+CREATE TABLE IF NOT EXISTS sys_job (
+    job_id          BIGINT       PRIMARY KEY,
+    job_name        VARCHAR(255),
+    job_group       VARCHAR(64),
+    invoke_target   VARCHAR(500) NOT NULL,
+    cron_expression VARCHAR(255),
+    misfire_policy  CHAR(1)      DEFAULT '3',
+    concurrent      CHAR(1)      DEFAULT '1',
+    status          CHAR(1)      DEFAULT '0',
+    create_by       VARCHAR(64),
+    create_time     TIMESTAMP,
+    update_by       VARCHAR(64),
+    update_time     TIMESTAMP,
+    remark          TEXT
+    );
+
+COMMENT ON TABLE sys_job IS '定时任务调度表';
+
+COMMENT ON COLUMN sys_job.job_id           IS '任务ID';
+COMMENT ON COLUMN sys_job.job_name         IS '任务名称';
+COMMENT ON COLUMN sys_job.job_group        IS '任务组名';
+COMMENT ON COLUMN sys_job.invoke_target    IS '调用目标字符串';
+COMMENT ON COLUMN sys_job.cron_expression  IS 'cron执行表达式';
+COMMENT ON COLUMN sys_job.misfire_policy   IS '计划执行错误策略（1立即执行 2执行一次 3放弃执行）';
+COMMENT ON COLUMN sys_job.concurrent       IS '是否并发执行（0允许 1禁止）';
+COMMENT ON COLUMN sys_job.status           IS '状态（0正常 1暂停）';
+COMMENT ON COLUMN sys_job.create_by        IS '创建者';
+COMMENT ON COLUMN sys_job.create_time      IS '创建时间';
+COMMENT ON COLUMN sys_job.update_by        IS '更新者';
+COMMENT ON COLUMN sys_job.update_time      IS '更新时间';
+COMMENT ON COLUMN sys_job.remark           IS '备注';
+
+CREATE INDEX IF NOT EXISTS idx_job_group_status ON sys_job (job_group, status);
+CREATE INDEX IF NOT EXISTS idx_job_name ON sys_job (job_name);

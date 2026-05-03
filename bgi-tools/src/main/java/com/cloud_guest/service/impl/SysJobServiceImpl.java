@@ -1,10 +1,15 @@
 package com.cloud_guest.service.impl;
 
 import cn.hutool.extra.spring.SpringUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cloud_guest.constants.schedule.ScheduleConstants;
-import com.cloud_guest.domain.SysJob;
+import com.cloud_guest.mapper.SysJobMapper;
+import com.cloud_guest.pojo.SysJob;
 import com.cloud_guest.service.SysJobService;
 import com.cloud_guest.utils.bean.CustomBeanUtils;
+import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.utils.task.CronUtils;
 import com.cloud_guest.utils.task.ScheduleUtils;
 import com.google.common.collect.Maps;
@@ -17,6 +22,8 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +31,8 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class SysJobServiceImpl implements SysJobService {
+@Transactional(rollbackFor = Exception.class)
+public class SysJobServiceImpl extends ServiceImpl<SysJobMapper, SysJob> implements SysJobService {
     @Resource
     private Scheduler scheduler;
 
@@ -39,11 +47,11 @@ public class SysJobServiceImpl implements SysJobService {
     @PostConstruct
     @SneakyThrows
     public void init() {
-        Scheduler scheduler = getScheduler();
+/*        Scheduler scheduler = getScheduler();
         scheduler.clear();
         try {
-            List<SysJob> jobList = Arrays.asList();
-            //= list();
+            //List<SysJob> jobList = Arrays.asList();
+            List<SysJob> jobList = list();
 
             List<Map<String, Object>> jobMapList = jobList.stream()
                     .map(job -> {
@@ -58,25 +66,10 @@ public class SysJobServiceImpl implements SysJobService {
             }
         } catch (Exception e) {
             log.error("quartz任务初始化失败error: {}", e.getMessage());
-        }
+        }*/
 
     }
-    @Override
-    public SysJob getById(Long id) {
-        return new SysJob();
-    }
-    @Override
-    public boolean save(SysJob job) {
-        return true;
-    }
-    @Override
-    public boolean updateById(SysJob job) {
-        return true;
-    }
-    @Override
-    public boolean removeById(Long jobId) {
-        return true;
-    }
+
     /**
      * 获取quartz调度器的计划任务
      *
@@ -85,7 +78,15 @@ public class SysJobServiceImpl implements SysJobService {
      */
     @Override
     public List<SysJob> selectJobList(SysJob job) {
-        return Arrays.asList();
+        LambdaQueryWrapper<SysJob> query = Wrappers.lambdaQuery(SysJob.class);
+        query
+                .like(ObjectUtils.isNotEmpty(job.getJobName()),SysJob::getJobName, job.getJobName())
+                .eq(ObjectUtils.isNotEmpty(job.getStatus()),SysJob::getStatus, job.getStatus())
+                .eq(ObjectUtils.isNotEmpty(job.getJobGroup()),SysJob::getJobGroup, job.getJobGroup())
+                .like(ObjectUtils.isNotEmpty(job.getInvokeTarget()),SysJob::getInvokeTarget, job.getInvokeTarget())
+        ;
+
+        return list(query);
     }
 
     /**
@@ -278,4 +279,5 @@ public class SysJobServiceImpl implements SysJobService {
     public boolean checkCronExpressionIsValid(String cronExpression) {
         return CronUtils.isValid(cronExpression);
     }
+
 }
