@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.cloud_guest.domain.BackUp;
 import com.cloud_guest.mp.pojo.BaseEntity;
+import com.cloud_guest.utils.object.ObjectUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -53,4 +55,9 @@ public class BackupInfo extends BaseEntity {
     public static final String COL_BACKUP_PATH = "backup_path";
     public static final String COL_BACKUP_TIME = "backup_time";
     public static final String COL_BACKUP_SIZE = "backup_size";
+
+    public BackUp toBackUp() {
+        String id = ObjectUtils.isEmpty(this.id) ? null : String.valueOf(this.id);
+        return new BackUp(id, backupName, backupPath, backupJson, backupTime, backupSize);
+    }
 }

@@ -19,6 +19,7 @@
         <alibaba-druid.version>1.2.23</alibaba-druid.version>
         <com.alibaba.fastjson.version>2.0.32</com.alibaba.fastjson.version>
         <swagger-annotations.version>2.2.22</swagger-annotations.version>
+        <jsqlparser.version>4.9</jsqlparser.version>
     </properties>
 
     <dependencyManagement>
@@ -48,6 +49,12 @@
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
                 <version>${mybatis-plus-spring-boot-starter.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.github.jsqlparser</groupId>
+                        <artifactId>jsqlparser</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!--多数据源-->
             <dependency>
@@ -87,6 +94,14 @@
                 </exclusions>
             </dependency>
 
+            <!-- JSqlParser 兼容版本 -->
+            <dependency>
+                <groupId>com.github.jsqlparser</groupId>
+                <artifactId>jsqlparser</artifactId>
+                <version>${jsqlparser.version}</version>
+            </dependency>
+
+
             <dependency>
                 <groupId>io.swagger.core.v3</groupId>
                 <artifactId>swagger-annotations-jakarta</artifactId>
@@ -106,6 +121,11 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
         </dependency>
 
         <dependency>

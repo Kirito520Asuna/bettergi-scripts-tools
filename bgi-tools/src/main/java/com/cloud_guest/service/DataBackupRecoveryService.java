@@ -93,4 +93,12 @@ public interface DataBackupRecoveryService extends IService<BackupInfo> {
         }
         return out;
     }
+
+    List<BackupInfo> localList();
+
+    boolean recovery(boolean isLocal, Long id, String name);
+
+    boolean deleteBatchBackup(List<Long> ids);
+
+    boolean deleteBatchBackupLocal(List<String> paths);
 }

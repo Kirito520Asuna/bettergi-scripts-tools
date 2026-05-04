@@ -1,11 +1,24 @@
 <script setup>
-import {onMounted, onUnmounted, reactive, ref} from "vue";
+import {onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {updateUserInfo} from "@api/auth/login.js";
 import {getTokenInfo, updateToken} from "@api/auth/token.js";
 import {getAllSystemInfo, goBack, removeLocalToken, restart, toHomePage} from "@api/web/web.js";
-import {backup, recovery} from "@api/data/BackupRecover.js";
-
+import {
+  backup,
+  backupDownload, deleteBatchBackup, deleteBatchBackupLocal,
+  downloadBackupById,
+  getLocalBackupList,
+  getRemoteBackupPage,
+  recovery
+} from "@api/data/BackupRecover.js";
+const dialogVisible = reactive(
+    {
+      user: false,
+      token: false,
+      backup: false,
+    }
+)
 const RestartClick = ref(false)
 const info = reactive({
   update: {
@@ -79,6 +92,7 @@ const handleUpdateUserInfo = async () => {
       info.user.username = '';
       info.user.password = '';
       info.user.confirmPassword = '';
+      dialogVisible.user = false;
     }
   } catch (error) {
     if (error !== 'cancel') {
@@ -121,6 +135,7 @@ const handleUpdateToken = async () => {
     const response = await updateToken(info.token.tokenName, info.token.tokenValue);
     if (response.code === 200) {
       ElMessage.success('Token信息修改成功，重启服务后生效');
+      dialogVisible.token = false;
     }
   } catch (error) {
     if (error !== 'cancel') {
@@ -143,36 +158,263 @@ const dataBackupRecover = reactive({
   // backupFileInput: null,
   isBackingUp: false,
   isRecovering: false,
+  backupTab: 'local',
+  selectedBackups: [],
+  selectedLocalBackups: [],
+  page: {
+    pageNumber: 1,
+    pageSize: 10,
+    total: 0
+  },
+  loadingList: {
+    remote: false,
+    local: false,
+    remoteBackups: [],
+    localBackups: []
+  }
 })
+
+// 加载远程备份列表
+const loadRemoteBackups = async () => {
+  dataBackupRecover.loadingList.remote = true
+  try {
+    const res = await getRemoteBackupPage(dataBackupRecover.page.pageNumber, dataBackupRecover.page.pageSize)
+    if (res) {
+      dataBackupRecover.loadingList.remoteBackups = res?.list || []
+      dataBackupRecover.page.total = res?.total || 0
+    } else {
+      ElMessage.error('获取远程备份列表失败')
+    }
+  } catch (e) {
+    ElMessage.error('获取远程备份列表失败')
+    console.error(e)
+  } finally {
+    dataBackupRecover.loadingList.remote = false
+  }
+}
+
+// 加载本地备份列表
+const loadLocalBackups = async () => {
+  dataBackupRecover.loadingList.local = true
+  try {
+    const list = await getLocalBackupList()
+    dataBackupRecover.loadingList.localBackups = list || []
+  } catch (e) {
+    ElMessage.error('获取本地备份列表失败')
+    console.error(e)
+  } finally {
+    dataBackupRecover.loadingList.local = false
+  }
+}
+
+// 监听标签切换，自动加载对应数据
+// watch(dataBackupRecover.backupTab, (val) => {
+//   tabClick( val)
+// })
+const loadBackups = () =>{
+  loadRemoteBackups()
+  loadLocalBackups()
+}
+// 弹窗打开时加载当前标签数据（也可在 @opened 事件中调用）
+const onBackupDialogOpen = () => {
+  tabClick(dataBackupRecover.backupTab)
+}
+// 监听标签切换，自动加载对应数据
+const handleTabClick = (tab) => {
+  tabClick(tab.props.name)
+}
+const tabClick = (name) => {
+  if (name === 'remote') loadRemoteBackups()
+  else loadLocalBackups()
+}
+// 下载指定备份文件
+const handleDownloadBackup = async (backup) => {
+  try {
+    const blob = await downloadBackupById(backup.id)
+    if (blob && blob.size > 0) {
+      const fileName = backup?.backupName || `backup_${backup.id}.json`
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(link.href)
+      ElMessage.success('下载成功')
+    }
+  } catch (e) {
+    ElMessage.error('下载失败')
+  }
+}
+
+// 从远程或本地备份恢复
+const handleRecoveryFromBackup = async (backup, isLocal) => {
+  try {
+    await ElMessageBox.confirm(
+        `确定要恢复备份 "${backup?.backupName || backup.name}" 吗？当前数据将被覆盖！`,
+        '警告',
+        {type: 'warning'}
+    )
+    dataBackupRecover.isRecovering = true
+    await recovery(null, isLocal, backup.name, backup.id)
+    ElMessage.success('恢复成功，如涉及配置需重启后生效')
+    if (isLocal) await loadLocalBackups()
+    else await loadRemoteBackups()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('恢复失败：' + (error.message || '未知错误'))
+    }
+  } finally {
+    dataBackupRecover.isRecovering = false
+  }
+}
+
+
+const handleDeleteBackup = async (backup, isLocal) => {
+
+  await ElMessageBox.confirm(
+      `确定要删除${isLocal?'本地':'远程'}备份 "${backup?.backupName}" 吗？此操作不可恢复！`,
+      '警告',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+  )
+
+  try {
+
+    if (isLocal) {
+      await deleteBatchBackupLocal([backup.backupPath])
+      ElMessage.success('删除成功')
+      return
+    }
+    await deleteBatchBackup([backup.id])
+    ElMessage.success('删除成功')
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败：' + (error.message || '未知错误'))
+    }
+  }finally {
+   onBackupDialogOpen()
+  }
+}
+const handleSelectionChange = (selection) => {
+  dataBackupRecover.selectedBackups = selection
+}
+const handleBatchDelete = async () => {
+
+  if (dataBackupRecover.selectedBackups.length === 0) {
+    ElMessage.warning('请先选择要删除的备份')
+    return
+  }
+
+  const isLocal = dataBackupRecover.backupTab === 'local'
+  const backups = isLocal
+      ? dataBackupRecover.loadingList.localBackups
+      : dataBackupRecover.loadingList.remoteBackups
+
+  if (backups.length === 0) {
+    ElMessage.warning('暂无备份可删除')
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+        `确定要删除选中的 ${dataBackupRecover.selectedBackups.length} 个${isLocal ? '本地' : '远程'}备份吗？此操作不可恢复！`,
+        '警告',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+    )
+    const ids = dataBackupRecover.selectedBackups.map(b => b.id)
+    // const ids = backups.map(b => b.id).filter(id => id)
+    if (ids.length === 0) {
+      ElMessage.warning('没有可删除的远程备份')
+      return
+    }
+
+    await deleteBatchBackup(ids)
+    ElMessage.success(`成功删除 ${ids.length} 个备份`)
+    // await loadRemoteBackups()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('批量删除失败：' + (error.message || '未知错误'))
+    }
+  }finally {
+    onBackupDialogOpen()
+  }
+}
+
+const handleLocalSelectionChange = (selection) => {
+  dataBackupRecover.selectedLocalBackups = selection
+}
+
+const handleBatchDeleteLocal = async () => {
+  if (dataBackupRecover.selectedLocalBackups.length === 0) {
+    ElMessage.warning('请先选择要删除的备份')
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+        `确定要删除选中的 ${dataBackupRecover.selectedLocalBackups.length} 个本地备份吗？此操作不可恢复！`,
+        '警告',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+    )
+
+    const paths = dataBackupRecover.selectedLocalBackups.map(b => b.backupPath)
+    await deleteBatchBackupLocal(paths)
+    ElMessage.success(`成功删除 ${paths.length} 个本地备份`)
+    await loadLocalBackups()
+    dataBackupRecover.selectedLocalBackups = []
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('批量删除失败：' + (error.message || '未知错误'))
+    }
+  }
+}
+
+
 const backupFileInput = ref(null)
 // 数据备份
 const handleBackup = async () => {
   try {
-    await ElMessageBox.confirm('确定要备份数据吗？系统将生成 JSON 格式备份文件并下载', '提示', {
+    // await ElMessageBox.confirm('确定要备份数据吗？系统将生成 JSON 格式备份文件并下载', '提示', {
+    //   confirmButtonText: '确定',
+    //   cancelButtonText: '取消',
+    //   type: 'info'
+    // });
+    await ElMessageBox.confirm('确定要备份数据吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'info'
     });
-
     dataBackupRecover.isBackingUp = true;
-
-    const blob = await backup();
-
-    if (blob && blob.size > 0) {
-      const fileName = `bgi-tools_backup_${new Date().getTime()}.json`;
-
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-
-      ElMessage.success('数据备份成功，文件已下载');
-    } else {
-      throw new Error('备份失败：返回数据为空');
-    }
+    await backup()
+    // const blob = await backupDownload();
+    //
+    // if (blob && blob.size > 0) {
+    //   const fileName = `bgi-tools_backup_${new Date().getTime()}.json`;
+    //
+    //   const link = document.createElement('a');
+    //   link.href = URL.createObjectURL(blob);
+    //   link.download = fileName;
+    //   document.body.appendChild(link);
+    //   link.click();
+    //   document.body.removeChild(link);
+    //   URL.revokeObjectURL(link.href);
+    //
+    //   ElMessage.success('数据备份成功，文件已下载');
+    // } else {
+    //   throw new Error('备份失败：返回数据为空');
+    // }
   } catch (error) {
     if (error !== 'cancel') {
       console.error('数据备份失败:', error);
@@ -180,6 +422,7 @@ const handleBackup = async () => {
     }
   } finally {
     dataBackupRecover.isBackingUp = false;
+    onBackupDialogOpen();
   }
 }
 
@@ -430,155 +673,39 @@ onUnmounted(() => {
           </div>
 
 
-          <!-- 用户信息修改 -->
-          <div class="setting-card">
+          <!-- 用户账号设置（摘要卡片，点击弹窗） -->
+          <div class="setting-card" @click="dialogVisible.user = true">
             <div class="card-header">
               <h3 class="card-title">用户账号设置</h3>
               <div class="card-icon">👤</div>
             </div>
-            <div class="card-content">
-              <el-form :model="info.user" :rules="userInfoRules" label-width="120px">
-                <el-form-item label="新用户名" prop="username">
-                  <el-input
-                      v-model="info.user.username"
-                      placeholder="请输入新用户名"
-                      clearable
-                  />
-                </el-form-item>
-                <el-form-item label="新密码" prop="password">
-                  <el-input
-                      v-model="info.user.password"
-                      type="password"
-                      placeholder="请输入新密码"
-                      show-password
-                      clearable
-                  />
-                </el-form-item>
-                <el-form-item label="确认密码" prop="confirmPassword">
-                  <el-input
-                      v-model="info.user.confirmPassword"
-                      type="password"
-                      placeholder="请再次输入密码"
-                      show-password
-                      clearable
-                  />
-                </el-form-item>
-                <!--                <el-form-item class="submit">
-                                  <el-button type="primary" @click="handleUpdateUserInfo">
-                                    修改用户信息
-                                  </el-button>
-                                  <el-button @click="resetUserInfoForm">重置</el-button>
-                                </el-form-item>-->
-              </el-form>
-
-              <div class="submit">
-                <el-button type="primary" @click="handleUpdateUserInfo">
-                  修改用户信息
-                </el-button>
-                <el-button @click="resetUserInfoForm">重置</el-button>
-              </div>
+            <div class="card-summary">
+              <span>当前用户：{{ info.user.username || '未设置' }}</span>
+              <span class="edit-hint">点击修改</span>
             </div>
           </div>
 
-          <!-- Token信息修改 -->
-          <div class="setting-card">
+          <!-- Token设置（摘要卡片，点击弹窗） -->
+          <div class="setting-card" @click="dialogVisible.token = true">
             <div class="card-header">
               <h3 class="card-title">授权Token设置</h3>
               <div class="card-icon">🔑</div>
             </div>
-            <div class="card-content">
-              <el-form :model="info.token" :rules="tokenRules" label-width="120px">
-                <el-form-item label="Token名称" prop="tokenName">
-                  <el-input
-                      v-model="info.token.tokenName"
-                      placeholder="请输入Token名称"
-                      clearable
-                  />
-                </el-form-item>
-                <el-form-item label="Token值" prop="tokenValue">
-                  <el-input
-                      v-model="info.token.tokenValue"
-                      type="password"
-                      placeholder="请输入Token值"
-                      show-password
-                      clearable
-                  />
-                </el-form-item>
-                <!--                <el-form-item>
-                                  <el-button type="primary" @click="handleUpdateToken">
-                                    修改Token信息
-                                  </el-button>
-                                  <el-button @click="loadTokenInfo">刷新</el-button>
-                                </el-form-item>-->
-              </el-form>
-
-              <div class="submit">
-                <el-button type="primary" @click="handleUpdateToken">
-                  修改Token信息
-                </el-button>
-                <el-button @click="loadTokenInfo">刷新</el-button>
-              </div>
+            <div class="card-summary">
+              <span>令牌名称：{{ info.token.tokenName || '未设置' }}</span>
+              <span class="edit-hint">点击修改</span>
             </div>
-
           </div>
 
-          <!-- 数据备份与恢复 -->
-          <div class="setting-card system-info-card">
+          <!-- 数据备份与恢复（摘要卡片，点击弹窗） -->
+          <div class="setting-card" @click="dialogVisible.backup = true">
             <div class="card-header">
               <h3 class="card-title">数据备份与恢复</h3>
               <div class="card-icon">💾</div>
             </div>
-            <div class="card-content">
-              <div class="backup-input-container">
-                <div class="backup-tips">
-                  <p style="color: red;"><strong>提示：</strong></p>
-                  <ul>
-                    <li>备份数据将生成 JSON 文件并自动下载</li>
-                    <li>恢复数据前请确保已保存重要数据</li>
-                    <li>恢复操作不可逆，请谨慎操作</li>
-                  </ul>
-                </div>
-
-                <input
-                    ref="backupFileInput"
-                    type="file"
-                    accept=".json"
-                    style="display: none;"
-                    @change="handleFileChange"
-                />
-                <div
-                    class="file-drop-zone"
-                    @click="triggerFileSelect"
-                    @dragover.prevent
-                    @drop.prevent="handleDrop"
-                >
-                  <div class="drop-zone-content">
-                    <div class="drop-icon">📁</div>
-                    <p class="drop-text">点击选择文件或拖拽到此处</p>
-                    <p class="drop-hint">仅支持 .json 格式的备份文件</p>
-                    <!--            提示写在这      -->
-                  </div>
-                </div>
-              </div>
-              <div class="backup-recover-actions">
-                <el-button
-                    type="success"
-                    @click="handleBackup"
-                    :loading="dataBackupRecover.isBackingUp"
-                    class="action-button"
-                >
-                  {{ dataBackupRecover.isBackingUp ? '备份中...' : '⬇️备份数据' }}
-                </el-button>
-
-                <el-button
-                    type="warning"
-                    @click="triggerFileSelect"
-                    :loading="dataBackupRecover.isRecovering"
-                    class="action-button"
-                >
-                  {{ dataBackupRecover.isRecovering ? '恢复中...' : '⬆️恢复数据' }}
-                </el-button>
-              </div>
+            <div class="card-summary">
+              <span>管理数据备份与恢复</span>
+              <span class="edit-hint">点击操作</span>
             </div>
           </div>
 
@@ -586,6 +713,194 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
+    <!-- ==================== 弹窗区 ==================== -->
+
+    <!-- 用户信息修改弹窗 -->
+    <el-dialog
+        v-model="dialogVisible.user"
+        title="修改用户信息"
+        width="480px"
+        :close-on-click-modal="false"
+        @closed="resetUserInfoForm"
+    >
+      <el-form :model="info.user" :rules="userInfoRules" label-width="100px">
+        <el-form-item label="新用户名" prop="username">
+          <el-input v-model="info.user.username" placeholder="请输入新用户名" clearable />
+        </el-form-item>
+        <el-form-item label="新密码" prop="password">
+          <el-input v-model="info.user.password" type="password" placeholder="请输入新密码" show-password clearable />
+        </el-form-item>
+        <el-form-item label="确认密码" prop="confirmPassword">
+          <el-input v-model="info.user.confirmPassword" type="password" placeholder="请再次输入密码" show-password clearable />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible.user = false">取消</el-button>
+        <el-button type="primary" @click="handleUpdateUserInfo">确认修改</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- Token修改弹窗 -->
+    <el-dialog
+        v-model="dialogVisible.token"
+        title="修改Token"
+        width="480px"
+        :close-on-click-modal="false"
+        @closed="loadTokenInfo"
+    >
+      <el-form :model="info.token" :rules="tokenRules" label-width="100px">
+        <el-form-item label="Token名称" prop="tokenName">
+          <el-input v-model="info.token.tokenName" placeholder="请输入Token名称" clearable />
+        </el-form-item>
+        <el-form-item label="Token值" prop="tokenValue">
+          <el-input v-model="info.token.tokenValue" type="password" placeholder="请输入Token值" show-password clearable />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible.token = false">取消</el-button>
+        <el-button type="primary" @click="handleUpdateToken">确认修改</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 备份恢复弹窗 -->
+    <el-dialog
+        v-model="dialogVisible.backup"
+        title="数据备份与恢复"
+        width="80%"
+        :close-on-click-modal="false"
+        @opened="onBackupDialogOpen"
+    >
+      <div class="backup-content">
+        <el-alert
+            title="提示：备份可下载为 JSON 文件；恢复会覆盖当前数据，请谨慎操作"
+            type="warning"
+            :closable="false"
+            show-icon
+            style="margin-bottom: 16px"
+        />
+
+        <el-tabs class="backup-list" v-model="dataBackupRecover.backupTab" type="border-card" @tab-click="handleTabClick">
+          <!-- 远程备份 -->
+          <el-tab-pane label="远程备份" name="remote" class="remote-backup-pane">
+            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #606266;">共 {{ dataBackupRecover.page.total }} 条记录</span>
+              <div>
+                <el-button size="small" type="danger" @click="handleBatchDelete" :disabled="dataBackupRecover.loadingList.remoteBackups.length === 0">
+                  批量删除
+                </el-button>
+                <el-button size="small" @click="loadRemoteBackups" :loading="dataBackupRecover.loadingList.remote">
+                  刷新列表
+                </el-button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <el-table
+                  :data="dataBackupRecover.loadingList.remoteBackups"
+                  v-loading="dataBackupRecover.loadingList.remote"
+                  stripe border
+                  @selection-change="handleSelectionChange"
+              >
+                <el-table-column type="selection" width="55"/>
+                <el-table-column prop="id" label="ID" width="180"/>
+                <el-table-column prop="backupName" label="备份名称" show-overflow-tooltip/>
+                <el-table-column prop="backupSize" label="备份大小(字节)" width="180"/>
+                <el-table-column prop="backupTime" label="备份时间" width="180">
+                  <template #default="{ row }">
+                    {{ row.backupTime ? row.backupTime.replace('T', ' ').substring(0, 19) : '-' }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="220" align="center">
+                  <template #default="{ row }">
+                    <el-button link type="primary" @click="handleDownloadBackup(row)" size="small">下载</el-button>
+                    <el-button link type="warning" @click="handleRecoveryFromBackup(row, false)" size="small"
+                               :loading="dataBackupRecover.isRecovering">恢复
+                    </el-button>
+                    <el-button link type="danger" @click="handleDeleteBackup(row, false)" size="small">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+            <div class="backup-page">
+              <el-pagination
+                  v-model:current-page="dataBackupRecover.page.pageNumber"
+                  v-model:page-size="dataBackupRecover.page.pageSize"
+                  :total="dataBackupRecover.page.total"
+                  :page-sizes="[5, 10, 20]"
+                  layout="total, sizes, prev, pager, next"
+                  @current-change="loadRemoteBackups"
+                  @size-change="loadRemoteBackups"
+                  small
+              />
+            </div>
+          </el-tab-pane>
+
+          <!-- 本地备份 -->
+          <el-tab-pane label="本地备份" name="local" class="local-backup-pane">
+            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #606266;">
+                本地备份文件
+                <span v-if="dataBackupRecover.selectedLocalBackups.length > 0" style="color: #f56c6c; margin-left: 10px;">
+                  已选中 {{ dataBackupRecover.selectedLocalBackups.length }} 项
+                </span>
+              </span>
+              <div>
+                <el-button size="small" type="danger" @click="handleBatchDeleteLocal" :disabled="dataBackupRecover.selectedLocalBackups.length === 0">
+                  批量删除
+                </el-button>
+                <el-button size="small" @click="loadLocalBackups" :loading="dataBackupRecover.loadingList.local">
+                  刷新列表
+                </el-button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <el-table
+                  :data="dataBackupRecover.loadingList.localBackups"
+                  v-loading="dataBackupRecover.loadingList.local"
+                  stripe border
+                  @selection-change="handleLocalSelectionChange"
+              >
+                <el-table-column type="selection" width="55"/>
+                <el-table-column prop="backupName" label="备份名称" show-overflow-tooltip/>
+                <el-table-column prop="backupSize" label="备份大小(字节)" width="180"/>
+                <el-table-column prop="backupTime" label="备份时间" width="180">
+                  <template #default="{ row }">
+                    {{ row.backupTime ? row.backupTime.replace('T', ' ').substring(0, 19) : '-' }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="100" align="center">
+                  <template #default="{ row }">
+                    <el-button link type="warning" @click="handleRecoveryFromBackup(row, true)" size="small"
+                               :loading="dataBackupRecover.isRecovering">恢复
+                    </el-button>
+                    <el-button link type="danger" @click="handleDeleteBackup(row, true)" size="small">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </el-tab-pane>
+
+        </el-tabs>
+      </div>
+
+      <!-- 底部手动备份 & 本地上传 -->
+      <div class="backup-bottom-actions">
+        <el-button type="primary" @click="handleBackup" :loading="dataBackupRecover.isBackingUp" plain>
+          <!--            {{ dataBackupRecover.isBackingUp ? '备份中...' : '⬇️ 手动备份并下载' }}-->
+          {{ dataBackupRecover.isBackingUp ? '备份中...' : '⬇️ 手动备份' }}
+        </el-button>
+
+        <input
+            ref="backupFileInput"
+            type="file"
+            accept=".json"
+            style="display: none;"
+            @change="handleFileChange"
+        />
+        <el-button type="warning" @click="triggerFileSelect" :loading="dataBackupRecover.isRecovering" plain>
+          {{ dataBackupRecover.isRecovering ? '恢复中...' : '📂 从本地上传恢复' }}
+        </el-button>
+      </div>
+    </el-dialog>
 
     <!-- 替换第234行的TODO注释 -->
     <div class="fixed-bottom-bar">
@@ -610,4 +925,71 @@ onUnmounted(() => {
 
 <style scoped>
 @import "@css/settings.css";
+
+.card-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-top: 1px solid #ebeef5;
+}
+.edit-hint {
+  color: #409eff;
+  font-size: 14px;
+}
+
+.backup-bottom-actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #ebeef5;
+  flex-shrink: 0;
+}
+
+
+.backup-content {
+  height: 60vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.backup-list {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.backup-list :deep(.el-tab-pane) {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.remote-backup-pane,
+.local-backup-pane {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+  margin-bottom: 10px;
+}
+
+.backup-page {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 10px;
+  padding-bottom: 50px;
+  border-top: 1px solid #ebeef5;
+}
+
 </style>

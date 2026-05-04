@@ -84,3 +84,21 @@ CREATE TABLE IF NOT EXISTS `sys_job` (
                            KEY `idx_job_group_status` (`job_group`, `status`),
                            KEY `idx_job_name` (`job_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='定时任务调度表';
+
+-- ... existing code ...
+
+CREATE TABLE IF NOT EXISTS `backup_info` (
+                                             `id`            BIGINT       NOT NULL COMMENT '主键',
+                                             `backup_name`   VARCHAR(255) DEFAULT NULL COMMENT '备份名称',
+                                             `backup_path`   VARCHAR(500) DEFAULT NULL COMMENT '备份路径',
+                                             `backup_json`   LONGTEXT     DEFAULT NULL COMMENT '备份信息',
+                                             `backup_time`   TIMESTAMP    DEFAULT NULL COMMENT '备份时间',
+                                             `backup_size`   BIGINT       DEFAULT NULL COMMENT '备份大小',
+    -- 通用审计字段
+                                             `create_by`     VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
+                                             `create_time`   TIMESTAMP    DEFAULT NULL COMMENT '创建时间',
+                                             `update_by`     VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
+                                             `update_time`   TIMESTAMP    DEFAULT NULL COMMENT '更新时间',
+                                             `remark`        TEXT         DEFAULT NULL COMMENT '备注',
+                                             PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='备份信息表';

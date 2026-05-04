@@ -83,3 +83,20 @@ CREATE TABLE IF NOT EXISTS sys_job (
 
 CREATE INDEX IF NOT EXISTS idx_job_group_status ON sys_job (job_group, status);
 CREATE INDEX IF NOT EXISTS idx_job_name ON sys_job (job_name);
+
+-- ... existing code ...
+
+-- 备份信息表
+CREATE TABLE IF NOT EXISTS backup_info (
+                                           id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                                           backup_name   TEXT,
+                                           backup_path   TEXT,
+                                           backup_json   TEXT,
+                                           backup_time   TEXT DEFAULT (datetime('now','localtime')),
+                                           backup_size   INTEGER,
+                                           create_by     TEXT,
+                                           create_time   TEXT DEFAULT (datetime('now','localtime')),
+                                           update_by     TEXT,
+                                           update_time   TEXT DEFAULT (datetime('now','localtime')),
+                                           remark        TEXT
+);

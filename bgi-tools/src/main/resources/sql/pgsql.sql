@@ -169,3 +169,36 @@ COMMENT ON COLUMN sys_job.remark           IS '备注';
 
 CREATE INDEX IF NOT EXISTS idx_job_group_status ON sys_job (job_group, status);
 CREATE INDEX IF NOT EXISTS idx_job_name ON sys_job (job_name);
+
+-- ... existing code ...
+
+-- =========================================================
+-- 表 6: backup_info
+-- =========================================================
+CREATE TABLE IF NOT EXISTS backup_info (
+                                           id            BIGINT       PRIMARY KEY,
+                                           backup_name   VARCHAR(255),
+                                           backup_path   VARCHAR(500),
+                                           backup_json   TEXT,
+                                           backup_time   TIMESTAMP,
+                                           backup_size   BIGINT,
+                                           create_by     VARCHAR(64),
+                                           create_time   TIMESTAMP,
+                                           update_by     VARCHAR(64),
+                                           update_time   TIMESTAMP,
+                                           remark        TEXT
+);
+
+COMMENT ON TABLE backup_info IS '备份信息表';
+
+COMMENT ON COLUMN backup_info.id           IS '主键';
+COMMENT ON COLUMN backup_info.backup_name  IS '备份名称';
+COMMENT ON COLUMN backup_info.backup_path  IS '备份路径';
+COMMENT ON COLUMN backup_info.backup_json  IS '备份信息';
+COMMENT ON COLUMN backup_info.backup_time  IS '备份时间';
+COMMENT ON COLUMN backup_info.backup_size  IS '备份大小';
+COMMENT ON COLUMN backup_info.create_by    IS '创建者';
+COMMENT ON COLUMN backup_info.create_time  IS '创建时间';
+COMMENT ON COLUMN backup_info.update_by    IS '更新者';
+COMMENT ON COLUMN backup_info.update_time  IS '更新时间';
+COMMENT ON COLUMN backup_info.remark       IS '备注';
