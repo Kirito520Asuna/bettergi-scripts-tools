@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {ElMessage, ElMessageBox} from "element-plus";
-import {updateUserInfo} from "@api/auth/login.js";
+import {getCurrentUserName, updateUserInfo} from "@api/auth/login.js";
 import {getTokenInfo, updateToken} from "@api/auth/token.js";
 import {getAllSystemInfo, goBack, removeLocalToken, restart, toHomePage} from "@api/web/web.js";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@api/data/BackupRecover.js";
 const dialogVisible = reactive(
     {
+      upload:false,
       user: false,
       token: false,
       backup: false,
@@ -103,8 +104,8 @@ const handleUpdateUserInfo = async () => {
 }
 
 // 重置用户信息表单
-const resetUserInfoForm = () => {
-  info.user.username = '';
+const resetUserInfoForm = async () => {
+  info.user.username = await getCurrentUserName();
   info.user.password = '';
   info.user.confirmPassword = '';
 }
@@ -158,6 +159,7 @@ const dataBackupRecover = reactive({
   // backupFileInput: null,
   isBackingUp: false,
   isRecovering: false,
+  isDragging: false,
   backupTab: 'local',
   selectedBackups: [],
   selectedLocalBackups: [],
@@ -428,13 +430,18 @@ const handleBackup = async () => {
 
 
 // 触发文件选择
+// const triggerFileSelect = () => {
+//   if (backupFileInput.value) {
+//     backupFileInput.value.click();
+//   }
+// }
 const triggerFileSelect = () => {
-  if (backupFileInput.value) {
-    backupFileInput.value.click();
-  }
+  dialogVisible.upload = true
 }
 // 处理拖拽文件
 const handleDrop = (event) => {
+  event.preventDefault()
+
   //提示写这 弹窗提示
   const files = event.dataTransfer.files;
   if (files && files.length > 0) {
@@ -444,6 +451,47 @@ const handleDrop = (event) => {
     } else {
       ElMessage.error('请选择 .json 格式的备份文件');
     }
+  }
+  dataBackupRecover.isDragging = false
+  dialogVisible.upload =false
+}
+
+const handleDragOver = (event) => {
+  event.preventDefault()
+  dataBackupRecover.isDragging = true
+}
+
+const handleDragLeave = () => {
+  dataBackupRecover.isDragging = false
+}
+
+const handleFileInputChange = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    handleRecoveryFile(file);
+  }
+}
+
+const handleRecoveryFile = async (file) => {
+  try {
+    await ElMessageBox.confirm(`确定要从备份文件 "${file.name}" 恢复数据吗？此操作将覆盖当前数据，请谨慎操作！`, '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    });
+
+    dialogVisible.upload = false
+    dataBackupRecover.isRecovering = true;
+    await recovery(file);
+    ElMessage.success('数据恢复成功，如存在配置恢复需要重启系统后生效');
+    onBackupDialogOpen();
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('数据恢复失败:', error);
+      ElMessage.error('数据恢复失败：' + (error.message || '未知错误'));
+    }
+  } finally {
+    dataBackupRecover.isRecovering = false;
   }
 }
 
@@ -547,6 +595,7 @@ const goToBack = async () => {
 onMounted(async () => {
   await loadTokenInfo();
   await loadSystemInfo();
+  info.user.username = await getCurrentUserName()
 })
 onUnmounted(() => {
   if (refreshTimer) {
@@ -882,6 +931,38 @@ onUnmounted(() => {
         </el-tabs>
       </div>
 
+      <!-- 文件上传弹窗 -->
+      <el-dialog
+          v-model="dialogVisible.upload"
+          title="上传备份文件恢复"
+          width="500px"
+          :close-on-click-modal="false"
+      >
+        <input
+            ref="backupFileInput"
+            type="file"
+            accept=".json"            style="display: none;"
+            @change="handleFileInputChange"
+        />
+
+        <div
+            class="upload-drop-zone"
+            :class="{ 'is-dragging': dataBackupRecover.isDragging }"
+            @click="backupFileInput?.click()"
+            @dragover.prevent="handleDragOver"
+            @dragleave="handleDragLeave"
+            @drop.prevent="handleDrop"
+        >
+          <div class="drop-icon"></div>
+          <p class="drop-text">点击选择文件或拖拽到此处</p>
+          <p class="drop-hint">仅支持 .json 格式的备份文件</p>
+        </div>
+
+        <template #footer>
+          <el-button @click="dialogVisible.upload = false">取消</el-button>
+        </template>
+      </el-dialog>
+
       <!-- 底部手动备份 & 本地上传 -->
       <div class="backup-bottom-actions">
         <el-button type="primary" @click="handleBackup" :loading="dataBackupRecover.isBackingUp" plain>
@@ -889,7 +970,7 @@ onUnmounted(() => {
           {{ dataBackupRecover.isBackingUp ? '备份中...' : '⬇️ 手动备份' }}
         </el-button>
 
-        <input
+<!--        <input
             ref="backupFileInput"
             type="file"
             accept=".json"
@@ -898,6 +979,10 @@ onUnmounted(() => {
         />
         <el-button type="warning" @click="triggerFileSelect" :loading="dataBackupRecover.isRecovering" plain>
           {{ dataBackupRecover.isRecovering ? '恢复中...' : '📂 从本地上传恢复' }}
+        </el-button>-->
+
+        <el-button type="warning" @click="triggerFileSelect" :loading="dataBackupRecover.isRecovering" plain>
+          {{ dataBackupRecover.isRecovering ? '恢复中...' : ' 从本地上传恢复' }}
         </el-button>
       </div>
     </el-dialog>
@@ -990,6 +1075,51 @@ onUnmounted(() => {
   padding-top: 10px;
   padding-bottom: 50px;
   border-top: 1px solid #ebeef5;
+}
+
+.upload-drop-zone {
+  border: 2px dashed #409eff;
+  border-radius: 12px;
+  padding: 50px 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-drop-zone:hover {
+  border-color: #66b1ff;
+  background: #ecf5ff;
+}
+
+.upload-drop-zone.is-dragging {
+  border-color: #409eff;
+  background: #e6f7ff;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
+}
+
+.drop-icon {
+  font-size: 56px;
+  margin-bottom: 20px;
+  color: #e6a23c;
+}
+
+.drop-text {
+  font-size: 18px;
+  color: #303133;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.drop-hint {
+  font-size: 14px;
+  color: #909399;
+  margin: 0;
 }
 
 </style>

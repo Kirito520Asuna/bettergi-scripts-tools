@@ -24,7 +24,17 @@ async function  updateUserInfo(username, password) {
     // 返回响应结果
     return res
 }
+
+/**
+ * 获取当前用户名
+ * @returns {Promise<any>}
+ */
+async function getCurrentUserName() {
+    const res = await service.get('/auth/info/username');
+    return res?.data
+}
 export {
     login,
-    updateUserInfo
+    updateUserInfo,
+    getCurrentUserName
 }

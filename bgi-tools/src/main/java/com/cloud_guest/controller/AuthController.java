@@ -8,14 +8,12 @@ import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.properties.auth.AuthProperties;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AuthService;
+import com.cloud_guest.utils.AuthContextUtil;
 import com.cloud_guest.utils.jwt.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
 
@@ -48,6 +46,14 @@ public class AuthController {
         String password = dto.getPassword();
         authService.saveUser(username, password);
         return Result.ok();
+    }
+    @SysLog
+    @Token
+    @Operation(summary = "获取当前用户名")
+    @GetMapping("info/username")
+    public Result<String> info() {
+        String username = AuthContextUtil.getUsernameNoThrow();
+        return Result.ok(username);
     }
 }
 
