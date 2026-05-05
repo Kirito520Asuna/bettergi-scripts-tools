@@ -339,7 +339,7 @@ onMounted(() => {
 
 .empty-tip {
   text-align: center;
-  background: #da7c7c;
+/*  background: #da7c7c;*/
 }
 
 .empty-icon {
