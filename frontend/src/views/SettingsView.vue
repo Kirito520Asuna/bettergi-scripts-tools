@@ -953,7 +953,7 @@ onUnmounted(() => {
             @dragleave="handleDragLeave"
             @drop.prevent="handleDrop"
         >
-          <div class="drop-icon"></div>
+          <div class="drop-icon">📂</div>
           <p class="drop-text">点击选择文件或拖拽到此处</p>
           <p class="drop-hint">仅支持 .json 格式的备份文件</p>
         </div>
