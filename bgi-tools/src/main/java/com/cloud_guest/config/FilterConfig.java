@@ -1,6 +1,7 @@
 package com.cloud_guest.config;
 
 import com.cloud_guest.filter.CorsRequestFilter;
+import com.cloud_guest.filter.TraceFilter;
 import com.cloud_guest.properties.cors.CorsProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -19,5 +20,9 @@ public class FilterConfig {
     @ConditionalOnMissingBean(CorsRequestFilter.class)
     public CorsRequestFilter corsRequestFilter() {
         return new CorsRequestFilter();
+    }
+    @Bean
+    public TraceFilter traceFilter() {
+        return new TraceFilter();
     }
 }

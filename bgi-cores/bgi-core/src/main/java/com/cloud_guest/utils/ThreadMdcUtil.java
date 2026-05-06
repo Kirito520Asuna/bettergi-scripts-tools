@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
  * @Description
  */
 public final class ThreadMdcUtil {
-    public static final String TRACE_ID = "TRACE_ID";
+    public static final String TRACE_ID = "traceId";
 
     /**
      * 生成traceId
@@ -20,7 +20,7 @@ public final class ThreadMdcUtil {
      * @return
      */
     public static String generateTraceId() {
-        return System.currentTimeMillis() + "^" + IdUtil.getSnowflakeNextIdStr();
+        return IdUtil.fastSimpleUUID();
     }
 
     /**

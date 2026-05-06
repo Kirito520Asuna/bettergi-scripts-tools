@@ -10,7 +10,7 @@
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
                 <charset>UTF-8</charset>
-                <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5p ${PID:- } --- [%15.15t] %-40.40logger{39} : %m%n%exception</pattern>
+                <pattern>%white(%d{yyyy-MM-dd HH:mm:ss.SSSXXX}) %clr([%X{traceId:-traceId}]) %clr(%5p){DEBUG=green, INFO=blue, WARN=boldYellow, ERROR=red} %magenta(${PID:- }) --- [%15.15t] %cyan(%-40.40logger{39}) : %m%n%exception</pattern>
             </encoder>
         </appender>
 
