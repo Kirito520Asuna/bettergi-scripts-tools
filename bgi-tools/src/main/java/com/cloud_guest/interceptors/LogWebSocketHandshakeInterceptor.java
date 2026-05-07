@@ -77,6 +77,10 @@ public class LogWebSocketHandshakeInterceptor implements HandshakeInterceptor {
             return false;
         }
 
+        String lastTimestamp = extractParameter(query, "lastTimestamp");
+        if (StrUtil.isNotBlank(lastTimestamp)) {
+            attributes.put("lastTimestamp", lastTimestamp);
+        }
         log.debug("[WS-HANDSHAKE] 握手成功 | App: {}", applicationId);
         return true;
     }
@@ -87,10 +91,12 @@ public class LogWebSocketHandshakeInterceptor implements HandshakeInterceptor {
     }
 
     private String extractParameter(String query, String paramName) {
-        String[] params = query.split("&");
-        for (String param : params) {
-            if (param.startsWith(paramName + "=")) {
-                return param.substring(paramName.length() + 1);
+        if (query.contains(paramName)){
+            String[] params = query.split("&");
+            for (String param : params) {
+                if (param.startsWith(paramName + "=")) {
+                    return param.substring(paramName.length() + 1);
+                }
             }
         }
         return null;

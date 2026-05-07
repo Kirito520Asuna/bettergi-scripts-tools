@@ -221,6 +221,7 @@ logging:
     com.cloud_guest.handler.LogWebSocketHandler: off
     com.cloud_guest.redis.service.impl: off
     com.cloud_guest.task.job: off
+    com.cloud_guest.task.dstributed.DistributedJob: off
     com.cloud_guest.utils.ApplicationContextHolder: off
     com.cloud_guest.wrappers.lock: off
     com.cloud_guest.mapper: off

@@ -71,6 +71,7 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
 
         String filename = (String) session.getAttributes().get("filename");
         String linesParam = (String) session.getAttributes().get("lines");
+        String lastTimestamp = (String) session.getAttributes().get("lastTimestamp");
 
         log.info("[WS-LOG] 客户端连接成功 | App: {} | File: {} | Lines: {} | 当前连接数: {}",
                 applicationId, filename, linesParam, SESSION_POOL.get(sessionKey).size());
@@ -90,11 +91,11 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
         )));
 
         if (StrUtil.isNotBlank(filename)) {
-            sendFileContent(session, sessionKey, filename, linesParam);
+            sendFileContent(session, sessionKey, filename, linesParam,lastTimestamp);
         }
     }
 
-    private void sendFileContent(WebSocketSession session, String sessionKey, String filename, String linesParam) {
+    private void sendFileContent(WebSocketSession session, String sessionKey, String filename, String linesParam,String lastTimestamp) {
         try {
             File logFile = new File(LOG_PATH, filename);
 
@@ -112,20 +113,33 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
             int totalLines = allLines.size();
 
             List<String> linesToSend;
-            if (maxLines == -1 || maxLines >= totalLines) {
-                linesToSend = allLines;
+            if (StrUtil.isNotBlank(lastTimestamp)) {
+                linesToSend = extractLinesAfterTimestamp(allLines, lastTimestamp);
+
+                if (linesToSend.isEmpty()) {
+                    log.info("[WS-LOG] 未找到时间戳后的内容 | Session: {} | File: {} | Timestamp: {}",
+                            sessionKey, filename, lastTimestamp);
+                    return;
+                }
             } else {
-                linesToSend = allLines.subList(totalLines - maxLines, totalLines);
+                if (maxLines == -1 || maxLines >= totalLines) {
+                    linesToSend = allLines;
+                } else {
+                    linesToSend = allLines.subList(totalLines - maxLines, totalLines);
+                }
             }
 
             String content = String.join("\n", linesToSend) + "\n";
 
+            boolean isAppend = StrUtil.isNotBlank(lastTimestamp);
+
             sendMessage(session, JSONUtil.toJsonStr(Map.of(
-                    "type", "file_content",
+                    "type", isAppend ? "file_content_add" : "file_content",
                     "filename", filename,
                     "totalLines", totalLines,
                     "sentLines", linesToSend.size(),
-                    "data", content
+                    //"data", content,
+                    "data", linesToSend
             )));
 
             log.info("[WS-LOG] 文件内容发送成功 | Session: {} | File: {} | Total: {} | Sent: {}",
@@ -139,6 +153,47 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
             )));
         }
     }
+
+    /**
+     * 提取指定时间戳之后的日志内容
+     * 从目标时间戳所在行开始（包括该行），到下一个时间戳之前（不包括下一个时间戳行）的所有内容
+     *
+     * @param allLines 所有日志行列表
+     * @param targetTimestamp 目标时间戳字符串
+     * @return 提取的日志行列表，如果未找到目标时间戳或没有下一个时间戳则返回空列表
+     */
+    private List<String> extractLinesAfterTimestamp(List<String> allLines, String targetTimestamp) {
+        int startIndex = -1;
+
+        for (int i = 0; i < allLines.size(); i++) {
+            String line = allLines.get(i);
+            if (line.contains(targetTimestamp)) {
+                startIndex = i;
+                break;
+            }
+        }
+
+        if (startIndex == -1) {
+            log.warn("[WS-LOG] 未找到目标时间戳: {}", targetTimestamp);
+            return List.of();
+        }
+
+        int nextTimestampIndex = -1;
+        for (int i = startIndex + 1; i < allLines.size(); i++) {
+            String line = allLines.get(i);
+            if (line.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}.*")) {
+                nextTimestampIndex = i;
+                break;
+            }
+        }
+
+        if (nextTimestampIndex == -1) {
+            return List.of();
+        }
+
+        return allLines.subList(nextTimestampIndex, allLines.size());
+    }
+
 
     private int parseMaxLines(String linesParam) {
         if ("all".equalsIgnoreCase(linesParam)) {
@@ -172,9 +227,12 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
                     String appId = (String) msgMap.get("applicationId");
                     String filename = (String) msgMap.get("filename");
                     String lines = (String) msgMap.get("lines");
+                    Object lastTimestampObj = msgMap.get("lastTimestamp");
+                    String lastTimestamp = lastTimestampObj != null ? lastTimestampObj.toString() : null;
+
 
                     if (StrUtil.isNotBlank(appId) && StrUtil.isNotBlank(filename)) {
-                        sendFileContent(session, appId, filename, lines);
+                        sendFileContent(session, appId, filename, lines,lastTimestamp);
                     }
                 }
             } catch (Exception e) {
