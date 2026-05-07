@@ -58,4 +58,8 @@ public class AuthContextUtil {
             return false;
         }
     }
+
+    public static void clear() {
+        SecurityContextHolder.clearContext();
+    }
 }
