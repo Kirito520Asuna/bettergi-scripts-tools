@@ -1,4 +1,3 @@
-
 <template>
   <div class="home">
 
@@ -14,12 +13,29 @@
         </template>
 
         <el-form :inline="true" class="control-form">
+          <el-form-item label="应用实例">
+            <el-select
+                v-model="selectedApplication"
+                placeholder="选择应用实例"
+                style="width: 300px"
+                @change="handleApplicationChange"
+            >
+              <el-option
+                  v-for="app in applicationList"
+                  :key="app"
+                  :label="app"
+                  :value="app"
+              />
+            </el-select>
+          </el-form-item>
+
           <el-form-item label="日志文件">
             <el-select
                 v-model="selectedFile"
                 placeholder="选择日志文件"
                 style="width: 300px"
                 @change="handleFileChange"
+                :disabled="!selectedApplication"
             >
               <el-option
                   v-for="file in fileList"
@@ -49,7 +65,7 @@
           </el-form-item>
 
           <el-form-item>
-            <el-button type="primary" @click="loadLogFile" :disabled="!selectedFile">
+            <el-button type="primary" @click="loadLogFile" :disabled="!selectedFile || !selectedApplication">
               加载日志
             </el-button>
             <el-button @click="clearLog">清空显示</el-button>
@@ -88,10 +104,13 @@ import {ElMessage} from 'element-plus'
 import LogWebSocket from '@/utils/LogWebSocket'
 import service from '@/utils/request'
 import {getLocalToken, goBack, toHomePage} from "@api/web/web.js";
+import {getApplicationIds} from "@api/sys/sys.js";
 
+const selectedApplication = ref('')
 const selectedFile = ref('')
 const displayLines = ref('200')
 const fileList = ref([])
+const applicationList = ref([])
 const logContent = ref('')
 const isConnected = ref(false)
 const currentFileInfo = ref(null)
@@ -109,6 +128,7 @@ const goToBack = async () => {
 };
 
 onMounted(async () => {
+  await loadApplicationList()
   await loadFileList()
   await setupWebSocket()
 })
@@ -119,6 +139,19 @@ onUnmounted(() => {
     clearInterval(autoLoadTimer.value)
   }
 })
+
+const loadApplicationList = async () => {
+  try {
+    const response = await getApplicationIds()
+    applicationList.value = response.data || []
+
+    if (applicationList.value.length > 0 && !selectedApplication.value) {
+      selectedApplication.value = applicationList.value[0]
+    }
+  } catch (error) {
+    ElMessage.error('获取应用列表失败: ' + error.message)
+  }
+}
 
 const loadFileList = async () => {
   try {
@@ -133,18 +166,23 @@ const loadFileList = async () => {
   }
 }
 
+const handleApplicationChange = () => {
+  if (autoLoad.value && isConnected.value && selectedFile.value) {
+    loadLogFile()
+    startAutoLoad()
+  }
+}
+
 const parseLogColor = (text) => {
   if (!text) return ''
 
   let html = text
 
-  // 替换时间戳 和 traceId - 白色和青色
   html = html.replace(
       /(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\s+\[([^\]]+)\]/g,
       '<span class="log-white">$1</span> <span class="log-trace-id">[$2]</span>'
   )
 
-  // 替换日志级别 - 根据级别设置不同颜色
   html = html.replace(
       /\b(DEBUG)\b/g,
       '<span class="log-green">$1</span>'
@@ -162,19 +200,16 @@ const parseLogColor = (text) => {
       '<span class="log-red">$1</span>'
   )
 
-  // 替换 PID - 洋红色
   html = html.replace(
       /(\d{1,6})\s+(---)/g,
       '<span class="log-magenta">$1</span> $2'
   )
 
-  // 替换线程名 - 青色 (匹配 --- [xxx] 格式)
   html = html.replace(
       /(---\s*)\[([^\]]+)\]/g,
       '<span class="log-white">$1</span><span class="log-thread">[$2]</span>'
   )
 
-  // 替换 logger 名称 - 青色
   html = html.replace(
       /([a-zA-Z0-9._-]{10,}(?=\s*:))/g,
       '<span class="log-cyan">$1</span>'
@@ -203,7 +238,7 @@ const handleIntervalChange = () => {
 
 const startAutoLoad = () => {
   stopAutoLoad()
-  if (autoLoad.value && selectedFile.value && isConnected.value) {
+  if (autoLoad.value && selectedFile.value && isConnected.value && selectedApplication.value) {
     autoLoadTimer.value = setInterval(() => {
       loadLogFile()
     }, autoLoadInterval.value * 1000)
@@ -230,7 +265,7 @@ const setupWebSocket = async () => {
   LogWebSocket.on('connected', () => {
     isConnected.value = true
     ElMessage.success('WebSocket连接成功')
-    if (autoLoad.value && selectedFile.value) {
+    if (autoLoad.value && selectedFile.value && selectedApplication.value) {
       loadLogFile()
       startAutoLoad()
     }
@@ -249,7 +284,6 @@ const setupWebSocket = async () => {
       totalLines: data.totalLines,
       sentLines: data.sentLines
     }
-    //ElMessage.success(`文件加载成功: ${data.filename}`)
     scrollToBottom()
   })
 
@@ -262,23 +296,27 @@ const setupWebSocket = async () => {
     scrollToBottom()
   })
 
-  LogWebSocket.connect(token, selectedFile.value, displayLines.value)
+  LogWebSocket.connect(token, selectedApplication.value, selectedFile.value, displayLines.value)
 }
 
 const handleFileChange = () => {
-  if (autoLoad.value && isConnected.value && selectedFile.value) {
+  if (autoLoad.value && isConnected.value && selectedFile.value && selectedApplication.value) {
     loadLogFile()
     startAutoLoad()
   }
 }
 
 const loadLogFile = () => {
+  if (!selectedApplication.value) {
+    ElMessage.warning('请先选择应用实例')
+    return
+  }
   if (!selectedFile.value) {
     ElMessage.warning('请先选择日志文件')
     return
   }
 
-  LogWebSocket.loadFile(selectedFile.value, displayLines.value)
+  LogWebSocket.loadFile(selectedApplication.value, selectedFile.value, displayLines.value)
 }
 
 const clearLog = () => {
@@ -293,8 +331,6 @@ const scrollToBottom = async () => {
   }
 }
 </script>
-
-
 
 <style scoped>
 .log-viewer {

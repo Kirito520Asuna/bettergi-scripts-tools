@@ -6,16 +6,24 @@ class LogWebSocket {
         this.listeners = {}
         this.isConnected = false
         this.shouldReconnect = true
+        this.retryCount = 0
+        this.maxRetries = 10
     }
 
-    connect(token, filename = null, lines = '200') {
+    connect(token, applicationId = null, filename = null, lines = '200') {
         this.lastToken = token
+        this.lastApplicationId = applicationId
         this.lastFilename = filename
         this.lastLines = lines
         this.shouldReconnect = true
+        this.retryCount = 0
 
         const basePath = getHostPrefix()
         let url = `${basePath.replace(/^\/|\/$/g, '')}/ws/logs?token=${token}`
+
+        if (applicationId) {
+            url += `&applicationId=${encodeURIComponent(applicationId)}`
+        }
 
         if (filename) {
             url += `&filename=${encodeURIComponent(filename)}`
@@ -33,7 +41,7 @@ class LogWebSocket {
         this.ws = new WebSocket(wsUrl)
 
         this.ws.onopen = () => {
-            //console.log('[LogWebSocket] 连接成功')
+            console.log('[LogWebSocket] 连接成功')
             this.isConnected = true
             this.emit('connected', { message: '连接成功' })
         }
@@ -41,7 +49,14 @@ class LogWebSocket {
         this.ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data)
-                //console.log('[LogWebSocket] 收到消息:', data)
+                console.log('[LogWebSocket] 收到消息:', data)
+
+                if (data.type === 'no-connected') {
+                    console.log('[LogWebSocket] 实例未命中，准备重试...')
+                    this.retryConnect()
+                    return
+                }
+
                 this.emit(data.type, data)
             } catch (e) {
                 console.error('[LogWebSocket] 解析消息失败:', e)
@@ -65,6 +80,23 @@ class LogWebSocket {
         }
     }
 
+    retryConnect() {
+        if (this.retryCount >= this.maxRetries) {
+            console.error('[LogWebSocket] 重试次数已达上限')
+            this.emit('error', { message: '重试次数已达上限' })
+            return
+        }
+
+        this.retryCount++
+        console.log(`[LogWebSocket] 第 ${this.retryCount} 次重试连接...`)
+
+        setTimeout(() => {
+            if (this.shouldReconnect) {
+                this.connect(this.lastToken, this.lastApplicationId, this.lastFilename, this.lastLines)
+            }
+        }, 2000)
+    }
+
     reconnect() {
         if (this.reconnectTimer) {
             clearTimeout(this.reconnectTimer)
@@ -72,7 +104,7 @@ class LogWebSocket {
 
         this.reconnectTimer = setTimeout(() => {
             console.log('[LogWebSocket] 尝试重连...')
-            this.connect(this.lastToken, this.lastFilename, this.lastLines)
+            this.connect(this.lastToken, this.lastApplicationId, this.lastFilename, this.lastLines)
         }, 3000)
     }
 
@@ -93,19 +125,21 @@ class LogWebSocket {
         this.listeners = {}
     }
 
-    loadFile(filename, lines = '200') {
+    loadFile(applicationId, filename, lines = '200') {
         if (this.ws && this.isConnected) {
+            this.lastApplicationId = applicationId
             this.lastFilename = filename
             this.lastLines = lines
 
             const message = {
                 action: 'load_file',
+                applicationId: applicationId,
                 filename: filename,
                 lines: lines
             }
 
             this.ws.send(JSON.stringify(message))
-            //console.log('[LogWebSocket] 请求加载文件:', filename, lines)
+            console.log('[LogWebSocket] 请求加载文件:', applicationId, filename, lines)
         } else {
             console.error('[LogWebSocket] 未连接，无法加载文件')
         }
