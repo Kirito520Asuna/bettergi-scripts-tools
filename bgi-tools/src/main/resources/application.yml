@@ -218,6 +218,7 @@ logging:
       total-size-cap: 1GB
   level:
     #    org.mybatis.spring.mapper: debug
+    com.cloud_guest.handler.LogWebSocketHandler: off
     com.cloud_guest.redis.service.impl: off
     com.cloud_guest.task.job: off
     com.cloud_guest.utils.ApplicationContextHolder: off
