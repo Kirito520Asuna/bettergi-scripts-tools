@@ -22,6 +22,8 @@ import cn.hutool.core.util.StrUtil;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import com.cloud_guest.utils.ApplicationUtil;
+
 /**
  * @Author yan
  * @Date 2026/5/7 18:27:25
@@ -48,18 +50,29 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         String username = (String) session.getAttributes().get("username");
+        String applicationId = (String) session.getAttributes().get("applicationId");
+
         if (username == null) {
             session.close(CloseStatus.NOT_ACCEPTABLE.withReason("未认证"));
             return;
         }
+        String currentApplicationId = ApplicationUtil.getApplicationId();
+        if (!StrUtil.equals(currentApplicationId, applicationId)) {
+            sendMessage(session, JSONUtil.toJsonStr(Map.of(
+                    "type", "no-connected",
+                    "message", "实例未命中"
+            )));
+            return;
+        }
 
-        SESSION_POOL.computeIfAbsent(username, k -> new CopyOnWriteArraySet<>()).add(session);
+        String sessionKey = applicationId + ":" + username;
+        SESSION_POOL.computeIfAbsent(sessionKey, k -> new CopyOnWriteArraySet<>()).add(session);
 
         String filename = (String) session.getAttributes().get("filename");
         String linesParam = (String) session.getAttributes().get("lines");
 
-        log.info("[WS-LOG] 客户端连接成功 | User: {} | File: {} | Lines: {} | 当前连接数: {}",
-                username, filename, linesParam, SESSION_POOL.get(username).size());
+        log.info("[WS-LOG] 客户端连接成功 | User: {} | App: {} | File: {} | Lines: {} | 当前连接数: {}",
+                username, applicationId, filename, linesParam, SESSION_POOL.get(sessionKey).size());
 
         sendMessage(session, JSONUtil.toJsonStr(Map.of(
                 "type", "connected",
@@ -67,11 +80,11 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
         )));
 
         if (StrUtil.isNotBlank(filename)) {
-            sendFileContent(session, username, filename, linesParam);
+            sendFileContent(session, sessionKey, filename, linesParam);
         }
     }
 
-    private void sendFileContent(WebSocketSession session, String username, String filename, String linesParam) {
+    private void sendFileContent(WebSocketSession session, String sessionKey, String filename, String linesParam) {
         try {
             File logFile = new File(LOG_PATH, filename);
 
@@ -105,11 +118,11 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
                     "data", content
             )));
 
-            log.info("[WS-LOG] 文件内容发送成功 | User: {} | File: {} | Total: {} | Sent: {}",
-                    username, filename, totalLines, linesToSend.size());
+            log.info("[WS-LOG] 文件内容发送成功 | Session: {} | File: {} | Total: {} | Sent: {}",
+                    sessionKey, filename, totalLines, linesToSend.size());
 
         } catch (Exception e) {
-            log.error("[WS-LOG] 读取文件失败 | User: {} | File: {}", username, filename, e);
+            log.error("[WS-LOG] 读取文件失败 | Session: {} | File: {}", sessionKey, filename, e);
             sendMessage(session, JSONUtil.toJsonStr(Map.of(
                     "type", "error",
                     "message", "读取文件失败: " + e.getMessage()
@@ -117,10 +130,9 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-
     private int parseMaxLines(String linesParam) {
         if ("all".equalsIgnoreCase(linesParam)) {
-            return -1; // -1 表示全部
+            return -1;
         }
         if (StrUtil.isNotBlank(linesParam)) {
             try {
@@ -133,11 +145,13 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
         return 200;
     }
 
-
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String username = (String) session.getAttributes().get("username");
-        log.debug("[WS-LOG] 收到消息 | User: {} | Message: {}", username, message.getPayload());
+        String applicationId = (String) session.getAttributes().get("applicationId");
+        String sessionKey = StrUtil.isNotBlank(applicationId) ? applicationId : username;
+
+        log.debug("[WS-LOG] 收到消息 | User: {} | App: {} | Message: {}", username, applicationId, message.getPayload());
 
         String payload = message.getPayload();
         if (StrUtil.isNotBlank(payload)) {
@@ -146,11 +160,13 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
                 String action = (String) msgMap.get("action");
 
                 if ("load_file".equals(action)) {
+                    String appId = (String) msgMap.get("applicationId");
                     String filename = (String) msgMap.get("filename");
                     String lines = (String) msgMap.get("lines");
 
-                    if (StrUtil.isNotBlank(filename)) {
-                        sendFileContent(session, username, filename, lines);
+                    if (StrUtil.isNotBlank(appId) && StrUtil.isNotBlank(filename)) {
+                        String key = StrUtil.isNotBlank(appId) ? appId : username;
+                        sendFileContent(session, key, filename, lines);
                     }
                 }
             } catch (Exception e) {
@@ -162,15 +178,18 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         String username = (String) session.getAttributes().get("username");
-        if (username != null) {
-            CopyOnWriteArraySet<WebSocketSession> sessions = SESSION_POOL.get(username);
+        String applicationId = (String) session.getAttributes().get("applicationId");
+        String sessionKey = StrUtil.isNotBlank(applicationId) ? applicationId : username;
+
+        if (sessionKey != null) {
+            CopyOnWriteArraySet<WebSocketSession> sessions = SESSION_POOL.get(sessionKey);
             if (sessions != null) {
                 sessions.remove(session);
                 if (sessions.isEmpty()) {
-                    SESSION_POOL.remove(username);
+                    SESSION_POOL.remove(sessionKey);
                 }
-                log.info("[WS-LOG] 客户端断开 | User: {} | 剩余连接数: {}",
-                        username, SESSION_POOL.getOrDefault(username, new CopyOnWriteArraySet<>()).size());
+                log.info("[WS-LOG] 客户端断开 | User: {} | App: {} | 剩余连接数: {}",
+                        username, applicationId, SESSION_POOL.getOrDefault(sessionKey, new CopyOnWriteArraySet<>()).size());
             }
         }
     }
@@ -178,12 +197,19 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         String username = (String) session.getAttributes().get("username");
-        log.error("[WS-LOG] 传输错误 | User: {}", username, exception);
+        String applicationId = (String) session.getAttributes().get("applicationId");
+        log.error("[WS-LOG] 传输错误 | User: {} | App: {}", username, applicationId, exception);
         afterConnectionClosed(session, CloseStatus.SERVER_ERROR);
     }
 
     public static void broadcastLog(String username, String logMessage) {
-        CopyOnWriteArraySet<WebSocketSession> sessions = SESSION_POOL.get(username);
+        String currentAppId = ApplicationUtil.getApplicationId();
+        CopyOnWriteArraySet<WebSocketSession> sessions = SESSION_POOL.get(currentAppId);
+
+        if (sessions == null || sessions.isEmpty()) {
+            sessions = SESSION_POOL.get(username);
+        }
+
         if (sessions == null || sessions.isEmpty()) {
             return;
         }

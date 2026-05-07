@@ -18,6 +18,7 @@ import java.util.Map;
  * @Description
  */
 
+
 @Slf4j
 @Component
 public class LogWebSocketHandshakeInterceptor implements HandshakeInterceptor {
@@ -31,7 +32,7 @@ public class LogWebSocketHandshakeInterceptor implements HandshakeInterceptor {
             return false;
         }
 
-        String token = extractToken(query);
+        String token = extractParameter(query, "token");
         if (StrUtil.isBlank(token)|| StrUtil.equals(token, "null")|| StrUtil.equals(token, "undefined")) {
             log.warn("[WS-HANDSHAKE] 缺少Token参数");
             return false;
@@ -42,6 +43,13 @@ public class LogWebSocketHandshakeInterceptor implements HandshakeInterceptor {
             if (StrUtil.isNotBlank(username)) {
                 AuthContextUtil.setUsername(username);
                 attributes.put("username", username);
+
+                String applicationId = extractParameter(query, "applicationId");
+                if (StrUtil.isNotBlank(applicationId)) {
+                    attributes.put("applicationId", applicationId);
+                    log.debug("[WS-HANDSHAKE] 指定应用实例: {}", applicationId);
+                }
+
                 log.debug("[WS-HANDSHAKE] 用户认证成功: {}", username);
                 return true;
             }
@@ -58,11 +66,11 @@ public class LogWebSocketHandshakeInterceptor implements HandshakeInterceptor {
         AuthContextUtil.clear();
     }
 
-    private String extractToken(String query) {
+    private String extractParameter(String query, String paramName) {
         String[] params = query.split("&");
         for (String param : params) {
-            if (param.startsWith("token=")) {
-                return param.substring(6);
+            if (param.startsWith(paramName + "=")) {
+                return param.substring(paramName.length() + 1);
             }
         }
         return null;
