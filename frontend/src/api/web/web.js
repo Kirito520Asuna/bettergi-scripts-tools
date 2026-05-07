@@ -136,6 +136,9 @@ async function getAllSystemInfo(applicationIds, restartTimeout = 3 * 60 * 1000) 
     return systemInfoList; // 返回系统信息列表
 }
 
+
+
+
 /**
  * 前往主页的异步函数
  * 使用ElMessageBox显示确认对话框，用户确认后跳转到主页

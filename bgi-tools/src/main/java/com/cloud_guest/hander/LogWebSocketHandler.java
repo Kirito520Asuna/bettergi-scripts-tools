@@ -49,13 +49,15 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        String username = (String) session.getAttributes().get("username");
         String applicationId = (String) session.getAttributes().get("applicationId");
+        String tokenRefreshed = (String) session.getAttributes().get("tokenRefreshed");
+        String newToken = (String) session.getAttributes().get("token");
 
-        if (username == null) {
+        if (StrUtil.isBlank(applicationId)) {
             session.close(CloseStatus.NOT_ACCEPTABLE.withReason("未认证"));
             return;
         }
+
         String currentApplicationId = ApplicationUtil.getApplicationId();
         if (!StrUtil.equals(currentApplicationId, applicationId)) {
             sendMessage(session, JSONUtil.toJsonStr(Map.of(
@@ -65,14 +67,23 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        String sessionKey = applicationId + ":" + username;
+        String sessionKey = applicationId;
         SESSION_POOL.computeIfAbsent(sessionKey, k -> new CopyOnWriteArraySet<>()).add(session);
 
         String filename = (String) session.getAttributes().get("filename");
         String linesParam = (String) session.getAttributes().get("lines");
 
-        log.info("[WS-LOG] 客户端连接成功 | User: {} | App: {} | File: {} | Lines: {} | 当前连接数: {}",
-                username, applicationId, filename, linesParam, SESSION_POOL.get(sessionKey).size());
+        log.info("[WS-LOG] 客户端连接成功 | App: {} | File: {} | Lines: {} | 当前连接数: {}",
+                applicationId, filename, linesParam, SESSION_POOL.get(sessionKey).size());
+
+        if (StrUtil.equals(tokenRefreshed, "true") && StrUtil.isNotBlank(newToken)) {
+            sendMessage(session, JSONUtil.toJsonStr(Map.of(
+                    "type", "token_refreshed",
+                    "newToken", newToken,
+                    "message", "Token已续期"
+            )));
+            log.info("[WS-LOG] 已发送新Token给客户端: {}", newToken);
+        }
 
         sendMessage(session, JSONUtil.toJsonStr(Map.of(
                 "type", "connected",
@@ -147,11 +158,10 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        String username = (String) session.getAttributes().get("username");
         String applicationId = (String) session.getAttributes().get("applicationId");
-        String sessionKey = StrUtil.isNotBlank(applicationId) ? applicationId : username;
+        String sessionKey = applicationId;
 
-        log.debug("[WS-LOG] 收到消息 | User: {} | App: {} | Message: {}", username, applicationId, message.getPayload());
+        log.debug("[WS-LOG] 收到消息 | App: {} | Message: {}", applicationId, message.getPayload());
 
         String payload = message.getPayload();
         if (StrUtil.isNotBlank(payload)) {
@@ -165,8 +175,7 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
                     String lines = (String) msgMap.get("lines");
 
                     if (StrUtil.isNotBlank(appId) && StrUtil.isNotBlank(filename)) {
-                        String key = StrUtil.isNotBlank(appId) ? appId : username;
-                        sendFileContent(session, key, filename, lines);
+                        sendFileContent(session, appId, filename, lines);
                     }
                 }
             } catch (Exception e) {
@@ -177,9 +186,8 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        String username = (String) session.getAttributes().get("username");
         String applicationId = (String) session.getAttributes().get("applicationId");
-        String sessionKey = StrUtil.isNotBlank(applicationId) ? applicationId : username;
+        String sessionKey = applicationId;
 
         if (sessionKey != null) {
             CopyOnWriteArraySet<WebSocketSession> sessions = SESSION_POOL.get(sessionKey);
@@ -188,27 +196,24 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
                 if (sessions.isEmpty()) {
                     SESSION_POOL.remove(sessionKey);
                 }
-                log.info("[WS-LOG] 客户端断开 | User: {} | App: {} | 剩余连接数: {}",
-                        username, applicationId, SESSION_POOL.getOrDefault(sessionKey, new CopyOnWriteArraySet<>()).size());
+                log.info("[WS-LOG] 客户端断开 | App: {} | 剩余连接数: {}",
+                        applicationId, SESSION_POOL.getOrDefault(sessionKey, new CopyOnWriteArraySet<>()).size());
             }
         }
     }
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        String username = (String) session.getAttributes().get("username");
         String applicationId = (String) session.getAttributes().get("applicationId");
-        log.error("[WS-LOG] 传输错误 | User: {} | App: {}", username, applicationId, exception);
+        log.error("[WS-LOG] 传输错误 | App: {}", applicationId, exception);
         afterConnectionClosed(session, CloseStatus.SERVER_ERROR);
     }
 
-    public static void broadcastLog(String username, String logMessage) {
+    public static void broadcastLog(String applicationId, String logMessage) {
         String currentAppId = ApplicationUtil.getApplicationId();
-        CopyOnWriteArraySet<WebSocketSession> sessions = SESSION_POOL.get(currentAppId);
+        String sessionKey = StrUtil.isNotBlank(applicationId) ? applicationId : currentAppId;
 
-        if (sessions == null || sessions.isEmpty()) {
-            sessions = SESSION_POOL.get(username);
-        }
+        CopyOnWriteArraySet<WebSocketSession> sessions = SESSION_POOL.get(sessionKey);
 
         if (sessions == null || sessions.isEmpty()) {
             return;

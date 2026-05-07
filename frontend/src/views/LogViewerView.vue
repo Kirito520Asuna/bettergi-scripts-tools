@@ -102,9 +102,9 @@
 import {ref, computed, onMounted, onUnmounted, nextTick} from 'vue'
 import {ElMessage} from 'element-plus'
 import LogWebSocket from '@/utils/LogWebSocket'
-import service from '@/utils/request'
-import {getLocalToken, goBack, toHomePage} from "@api/web/web.js";
+import {goBack, toHomePage,} from "@api/web/web.js";
 import {getApplicationIds} from "@api/sys/sys.js";
+import {getFileNames, getLogAuthToken} from "@api/log/log.js";
 
 const selectedApplication = ref('')
 const selectedFile = ref('')
@@ -117,7 +117,7 @@ const currentFileInfo = ref(null)
 const logContainer = ref(null)
 const logToken = ref(null)
 const autoLoad = ref(true)
-const autoLoadInterval = ref(3)
+const autoLoadInterval = ref(10)
 const autoLoadTimer = ref(null)
 
 const goToHome = async () => {
@@ -171,10 +171,7 @@ const loadFileList = async () => {
     }
 
     try {
-      const response = await service.get('/jwt/log/file-names', {
-        params: { applicationId: selectedApplication.value }
-      })
-
+      const response = await getFileNames(selectedApplication.value)
       const data = response.data
       if (data){
         if (data?.fileNames) {
@@ -295,50 +292,60 @@ const stopAutoLoad = () => {
 }
 
 const setupWebSocket = async () => {
-  let token = await getLocalToken()
-  logToken.value = token
-  if (!token || token === 'undefined' || token === 'null') {
-    ElMessage.warning('未找到登录令牌，请先登录')
-    return
+  try {
+    const authResponse = await getLogAuthToken()
+    if (!authResponse.data || !authResponse.data.token) {
+      ElMessage.error('获取日志授权Token失败')
+      return
+    }
+
+    logToken.value = authResponse.data.token
+    console.log('[LogViewer] 获取到日志Token:', logToken.value)
+
+    LogWebSocket.on('connected', () => {
+      isConnected.value = true
+      ElMessage.success('WebSocket连接成功')
+      if (autoLoad.value && selectedFile.value && selectedApplication.value) {
+        loadLogFile()
+        startAutoLoad()
+      }
+    })
+
+    LogWebSocket.on('disconnected', () => {
+      isConnected.value = false
+      ElMessage.warning('WebSocket连接断开')
+      stopAutoLoad()
+    })
+
+    LogWebSocket.on('file_content', (data) => {
+      logContent.value = data.data
+      currentFileInfo.value = {
+        filename: data.filename,
+        totalLines: data.totalLines,
+        sentLines: data.sentLines
+      }
+      scrollToBottom()
+    })
+
+    LogWebSocket.on('error', (data) => {
+      ElMessage.error('错误: ' + data.message)
+    })
+
+    LogWebSocket.on('log', (data) => {
+      logContent.value += data.data + '\n'
+      scrollToBottom()
+    })
+
+    LogWebSocket.on('token_refreshed', (data) => {
+      //console.log('[LogViewer] Token已续期:', data.newToken)
+      logToken.value = data.newToken
+      //ElMessage.success('Token已自动续期')
+    })
+
+    LogWebSocket.connect(logToken.value, selectedApplication.value, selectedFile.value, displayLines.value)
+  } catch (error) {
+    ElMessage.error('初始化WebSocket失败: ' + error.message)
   }
-
-  console.log('token: ' + token)
-
-  LogWebSocket.on('connected', () => {
-    isConnected.value = true
-    ElMessage.success('WebSocket连接成功')
-    if (autoLoad.value && selectedFile.value && selectedApplication.value) {
-      loadLogFile()
-      startAutoLoad()
-    }
-  })
-
-  LogWebSocket.on('disconnected', () => {
-    isConnected.value = false
-    ElMessage.warning('WebSocket连接断开')
-    stopAutoLoad()
-  })
-
-  LogWebSocket.on('file_content', (data) => {
-    logContent.value = data.data
-    currentFileInfo.value = {
-      filename: data.filename,
-      totalLines: data.totalLines,
-      sentLines: data.sentLines
-    }
-    scrollToBottom()
-  })
-
-  LogWebSocket.on('error', (data) => {
-    ElMessage.error('错误: ' + data.message)
-  })
-
-  LogWebSocket.on('log', (data) => {
-    logContent.value += data.data + '\n'
-    scrollToBottom()
-  })
-
-  LogWebSocket.connect(token, selectedApplication.value, selectedFile.value, displayLines.value)
 }
 
 const handleFileChange = () => {

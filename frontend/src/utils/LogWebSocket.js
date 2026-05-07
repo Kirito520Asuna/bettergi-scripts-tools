@@ -36,7 +36,7 @@ class LogWebSocket {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
         const wsUrl = url.replace(/^https?:/, protocol)
 
-        console.log('[LogWebSocket] 连接中...', wsUrl)
+        //console.log('[LogWebSocket] 连接中...', wsUrl)
 
         this.ws = new WebSocket(wsUrl)
 
@@ -49,7 +49,7 @@ class LogWebSocket {
         this.ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data)
-                console.log('[LogWebSocket] 收到消息:', data)
+                //console.log('[LogWebSocket] 收到消息:', data)
 
                 if (data.type === 'no-connected') {
                     console.log('[LogWebSocket] 实例未命中，准备重试...')
@@ -88,7 +88,7 @@ class LogWebSocket {
         }
 
         this.retryCount++
-        console.log(`[LogWebSocket] 第 ${this.retryCount} 次重试连接...`)
+        //console.log(`[LogWebSocket] 第 ${this.retryCount} 次重试连接...`)
 
         setTimeout(() => {
             if (this.shouldReconnect) {
@@ -139,7 +139,7 @@ class LogWebSocket {
             }
 
             this.ws.send(JSON.stringify(message))
-            console.log('[LogWebSocket] 请求加载文件:', applicationId, filename, lines)
+            //console.log('[LogWebSocket] 请求加载文件:', applicationId, filename, lines)
         } else {
             console.error('[LogWebSocket] 未连接，无法加载文件')
         }

@@ -3,6 +3,7 @@ package com.cloud_guest.task.job;
 import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.abs.service.AbstractKeyService;
 import com.cloud_guest.domain.key.KeyInfo;
+import com.cloud_guest.service.LogsService;
 import com.cloud_guest.task.dstributed.DistributedJob;
 import com.cloud_guest.utils.ApplicationContextHolder;
 import com.cloud_guest.utils.ModeUtil;
@@ -24,9 +25,11 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Component
 public class Seconds30Job extends DistributedJob {
+
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         AbstractKeyService keyService = SpringUtil.getBean(AbstractKeyService.class);
+        LogsService logsService = SpringUtil.getBean(LogsService.class);
         ThreadPoolTaskExecutor executor = SpringUtil.getBean(ThreadPoolTaskExecutor.class);
         CompletableFuture.runAsync(() -> {
             log.debug("清理离线");
@@ -42,6 +45,8 @@ public class Seconds30Job extends DistributedJob {
                     keyService.remove(allExpiredKeyInfoList.stream().map(KeyInfo::getId).toList());
                 }
             }
+
+            logsService.getAllExpiredLogKeyList().forEach(logsService::remove);
         }, executor);
     }
 }
