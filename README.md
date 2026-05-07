@@ -167,7 +167,33 @@ auth:
 **重要提示**：
 - `context-path` 在 **0.0.4 版本** 中**不允许修改**为其他值，否则内嵌 UI 将无法正常加载。
 - 多实例部署时，建议将 `spring.redis.mode` 切换为远程缓存（如 `single` 或 `cluster`），避免本地 SQLite 数据不一致。
+- Nginx 公网配置（含 WebSocket 支持）:
+```nginx 
+server { 
+    listen 80; 
+    listen [::]:80; 
+    server_name 域名;
+    # 静态资源代理
+    location /favicon.ico {
+        proxy_pass http://bgi-tools地址/bgi/ui/;
+    }
 
+    # WebSocket 日志推送（必须放在 / 前面）
+    location /bgi/ws/logs {
+        proxy_pass http://bgi-tools地址/bgi/ws/logs;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    }
+
+    # 主应用代理
+    location / {
+        proxy_set_header Host "域名";
+        proxy_pass http://bgi-tools地址/;
+    }
+}
+```
 ---
 
 ## API 接口说明
