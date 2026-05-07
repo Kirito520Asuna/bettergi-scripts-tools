@@ -204,6 +204,18 @@ auth:
     - username: bgi_tools
       password: bgi_tools
 logging:
+  #设置日志存储路径
+  file:
+    path: ./logs
+    name: ${logging.file.path}/bgi-tools
+  logback:
+    rollingpolicy:
+      #单个日志文件最大大小
+      max-file-size: 10MB
+      #保留的日志文件最大数量
+      max-history: 30
+      #日志文件总大小
+      total-size-cap: 1GB
   level:
     #    org.mybatis.spring.mapper: debug
     com.cloud_guest.redis.service.impl: off

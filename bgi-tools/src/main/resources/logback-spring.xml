@@ -14,8 +14,23 @@
             </encoder>
         </appender>
 
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${LOG_FILE}.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <maxFileSize>${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE:-10MB}</maxFileSize>
+                <maxHistory>${LOGBACK_ROLLINGPOLICY_MAX_HISTORY:-30}</maxHistory>
+                <totalSizeCap>${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP:-1GB}</totalSizeCap>
+            </rollingPolicy>
+            <encoder>
+                <charset>UTF-8</charset>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId:-traceId}] %5p ${PID:- } --- [%15.15t] %-40.40logger{39} : %m%n%exception</pattern>
+            </encoder>
+        </appender>
+
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
         </root>
     </springProfile>
 </configuration>
