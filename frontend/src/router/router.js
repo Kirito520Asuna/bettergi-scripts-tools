@@ -148,6 +148,18 @@ const routes = [
             icon: 'JavaScript'
         }
     },
+    {
+        path: '/logs',
+        name: 'Logs',
+        component: () => import('@views/LogViewerView.vue'),
+        meta: {
+            isRoot: true,
+            title: '日志',
+            desc: '日志',
+            asSubParentTitle: '日志'//,
+            // icon: 'JavaScript'
+        }
+    },
     // 其他路由...
 ]
 const VITE_BASE_PATH = (import.meta.env.VITE_BASE_PATH || '/bgi/ui/');
