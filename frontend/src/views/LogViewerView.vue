@@ -154,19 +154,61 @@ const loadApplicationList = async () => {
 }
 
 const loadFileList = async () => {
-  try {
-    const response = await service.get('/jwt/log/file-names')
-    fileList.value = response.data || []
+  if (!selectedApplication.value) {
+    fileList.value = []
+    return
+  }
 
-    if (fileList.value.length > 0 && !selectedFile.value) {
-      selectedFile.value = fileList.value[0]
+  const startTime = Date.now()
+  const timeout = 3 * 60 * 1000
+
+  while (true) {
+    const elapsedTime = Date.now() - startTime
+
+    if (elapsedTime > timeout) {
+      ElMessage.error(`获取日志文件超时（超过${timeout / 1000}秒）`)
+      throw new Error('获取日志文件超时')
     }
-  } catch (error) {
-    ElMessage.error('获取文件列表失败: ' + error.message)
+
+    try {
+      const response = await service.get('/jwt/log/file-names', {
+        params: { applicationId: selectedApplication.value }
+      })
+
+      const data = response.data
+      if (data){
+        if (data?.fileNames) {
+          fileList.value = data.fileNames || []
+
+          if (fileList.value.length > 0 && !selectedFile.value) {
+            selectedFile.value = fileList.value[0]
+          }
+
+          if (data.applicationId === selectedApplication.value) {
+            return
+          }
+        } else {
+          fileList.value = []
+        }
+
+        if (data?.applicationId === selectedApplication.value){
+          break
+        }
+      }
+    } catch (error) {
+      ElMessage.error('获取文件列表失败: ' + error.message)
+      fileList.value = []
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 2000))
   }
 }
 
+
 const handleApplicationChange = () => {
+  selectedFile.value = ''
+  loadFileList()
+
   if (autoLoad.value && isConnected.value && selectedFile.value) {
     loadLogFile()
     startAutoLoad()
