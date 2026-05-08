@@ -5,10 +5,13 @@ import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.cloud_guest.domain.LogKey;
+import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.pojo.DbKV;
 import com.cloud_guest.service.DbKVService;
 import com.cloud_guest.utils.ApplicationUtil;
 import com.cloud_guest.utils.IdUtils;
+import com.cloud_guest.utils.LockUtil;
+import com.cloud_guest.wrappers.lock.LockWrapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -102,13 +105,52 @@ public class LogsServiceImpl implements com.cloud_guest.service.LogsService {
         return logKey;
     }
 
+    @Override
+    public LogKey getById(String id) {
+        if (StrUtil.isBlank(id)) {
+            return null;
+        }
+
+        try {
+            long idL = Long.parseLong(id);
+            DbKV dbKV = dbKVService.getById(idL);
+            if (dbKV == null || StrUtil.isBlank(dbKV.getValue())) {
+                return null;
+            }
+
+            LogKey key = JSONUtil.toBean(dbKV.getValue(), LogKey.class);
+            key.setId(dbKV.getId().toString());
+            return key;
+        } catch (NumberFormatException e) {
+            log.error("无效的 ID 格式: {}", id, e);
+            return null;
+        }
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public LogKey update(LogKey logKey) {
         if (logKey == null || StrUtil.isBlank(logKey.getId())) {
             return null;
         }
 
+        LogKey key = getById(logKey.getId());
+        if (key == null) {
+            throw new GlobalException("LogKey 不存在");
+        }
+        LockWrapper lock = LockUtil.getLock(LogKey.class.getName() + ":" + logKey.getId());
+        boolean tryLock = lock.tryLock();
+        if (!tryLock) {
+            throw new GlobalException("存在其他操作，请稍后再试!");
+        }
+
         try {
+            //双重检测
+            LogKey key1 = getById(logKey.getId());
+            if (key1 == null) {
+                throw new GlobalException("LogKey 不存在");
+            }
+
             DbKV dbKV = new DbKV();
             dbKV.setId(Long.parseLong(logKey.getId()));
             dbKV.setType(LogKey.class.getSimpleName());
@@ -119,6 +161,10 @@ public class LogsServiceImpl implements com.cloud_guest.service.LogsService {
         } catch (NumberFormatException e) {
             log.error("无效的 ID 格式: {}", logKey.getId(), e);
             return null;
+        } finally {
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
     }
 

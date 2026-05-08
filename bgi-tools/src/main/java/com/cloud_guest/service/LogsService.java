@@ -15,6 +15,8 @@ public interface LogsService {
 
     LogKey createLogKey();
 
+    LogKey getById(String id);
+
     LogKey update(LogKey logKey);
 
     LogKey getLogKey(String token);
