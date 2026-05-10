@@ -1,3 +1,22 @@
+/* 隐藏所有滚动条，但保持可滚动功能 */
+* {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+
+*::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* 禁止 body 和 html 滚动 */
+html, body {
+    overflow: hidden !important;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
 
 /* 页面全屏背景 */
 .home {
@@ -25,47 +44,14 @@
     margin: 0 auto;
     padding: 20px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-/* 固定容器样式 */
-.fixed-container {
-    position: fixed; /* 固定定位 */
-    top: 0; /* 距离顶部为 0 */
-    left: 0; /* 距离左侧为 0 */
-    width: 100%; /* 占满整个视口宽度 */
-    z-index: 1000; /* 确保在最上层 */
-    backdrop-filter: blur(10px); /* 毛玻璃效果 */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 添加阴影 */
-    border-radius: 12px; /* 添加圆角 */
-    padding: 10px 20px; /* 内边距 */
-    max-height: 35vh;
-    overflow-y: auto;
-}
-
-/* 内容区域补偿高度 */
-.content-area {
-    margin-top: 0;
-    padding-top: 42vh;
-    width: 100%;
-    min-height: 65vh;
-}
-
-/* 标题样式（保持原有样式） */
-.title {
-    font-size: 36px;
-    font-weight: 800;
-    margin-bottom: 15px;
-    color: transparent;
-    background: linear-gradient(90deg, #d612cc, #9e367d);
-    -webkit-background-clip: text;
-    background-clip: text;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-}
-
-.title:hover {
-    transform: scale(1.05);
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    height: 94vh; /* 占满视口高度 */
+    max-height: 94vh; /* 最大高度限制 */
+    display: flex;
+    flex-direction: column; /* 垂直布局 */
+    overflow: hidden !important; /* 禁止容器滚动 */
+    touch-action: none; /* 禁止触摸滚动 */
+    /*  background: #4caf50;*/
+    position: relative; /* 确保定位上下文 */
 }
 
 
@@ -75,6 +61,44 @@ h2 {
     color: #333;
     font-size: 1.8rem;
     margin-bottom: 20px;
+}
+
+/* Title 样式 - 普通流式布局 */
+.title {
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: transparent;
+    background: linear-gradient(90deg, #d612cc, #9e367d);
+    -webkit-background-clip: text;
+    background-clip: text;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    text-align: center;
+
+    box-shadow: 0 15px 35px rgba(255, 0, 166, 0.3);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 20px 0; /* 上下内边距 */
+}
+
+.title:hover {
+    transform: scale(1.00);
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* config-header 普通流式布局 */
+.config-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start;
+    padding: 15px 10px;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* UID 输入框 */
@@ -109,24 +133,70 @@ h2 {
     background-color: #66b1ff;
 }
 
-.config-header {
-    display: flex;
-    flex-wrap: wrap; /* 允许子元素换行 */
-    gap: 20px; /* 设置子元素之间的间距 */
-    justify-content: flex-start; /* 子元素左对齐 */
-    padding: 10px;
+/* 选中数统计徽章 */
+.selected-count-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 3, 255, 0.9);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    z-index: 10;
 }
 
+/* 启用数统计徽章 */
+.enabled-count-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(64, 158, 255, 0.9);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+}
+
+/* 内容区域 - 不可滚动，作为容器 */
+.content-area {
+    width: 100%;
+    flex: 1; /* 占据剩余空间 */
+    overflow: hidden;
+    box-sizing: border-box;
+    background: transparent;
+    margin-top: 10px; /* 与上方 config-header 保持间隔 */
+
+    box-shadow: 0 15px 35px rgba(15, 255, 250, 0.3);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+}
+
+/* 配置列表 - 可滚动 */
 .config-list {
     display: flex;
-    flex-wrap: wrap; /* 允许子元素换行 */
-    gap: 20px; /* 设置子元素之间的间距 */
-    justify-content: flex-start; /* 子元素左对齐 */
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start;
+    height: calc(100% - 30px); /* 减去上下边距的总和 */
+    overflow-y: auto;
+    padding: 15px 10px;
+    box-sizing: border-box;
+    max-width: 100%;
+
+    margin: 15px; /* 四周边距 */
 }
 
 /* 配置项卡片 */
 .config-item {
-    max-width: 300px;
+    width: 300px;
     background: linear-gradient(135deg, #b6b2b6, #91dcd6);
     border: 1px solid #b9bcc6;
     border-radius: 12px;
@@ -136,12 +206,19 @@ h2 {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     /* 禁止超出框限制*/
     overflow: visible; /* 禁止内容超出容器 */
+
+    display: flex;
+    flex-direction: column;
+
 }
 
 .config-item:hover {
     transform: translateY(-5px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    /*选中时 卡片变边框环绕亮色*/
+    border: 4px solid #409eff;
 }
+
 
 /* 配置标题 */
 .config-item h3 {
@@ -156,7 +233,7 @@ h2 {
     justify-content: space-between; /* 横向均匀分布 */
     align-items: center; /* 垂直居中对齐 */
     gap: 12px; /* 元素间间距 */
-    margin-top: 16px;
+    margin-top: auto;
     padding: 8px 0;
 }
 
@@ -190,21 +267,31 @@ h2 {
 
 .form-group label {
     font-size: 0.9rem; /* 从默认大小减小 */
-    /*  display: block;
-      margin-bottom: 5px;
-      font-weight: bold;*/
     color: #606266;
 }
 
-.form-group select {
+.form-group select,
+.form-group input {
     align-items: center;
-    /* width: 80%;*/
+    width: 60%;
     padding: 8px;
     border: 1px solid #dcdfe6;
     border-radius: 6px;
     font-size: 1rem;
     transition: border-color 0.3s ease;
 }
+
+.form-group input {
+    width: 40% !important;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    border-color: #409eff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(64, 158, 255, 0.5);
+}
+
 
 .days-display {
     padding: 8px 12px;
@@ -217,6 +304,8 @@ h2 {
     align-items: center;
     justify-content: space-between;
     transition: all 0.2s;
+
+    width: 80%;
 }
 
 .days-display:hover {
@@ -237,24 +326,6 @@ h2 {
 
 .checkbox-label {
     min-width: 80px;
-}
-
-
-.form-group input {
-    align-items: center;
-    width: 40%;
-    padding: 8px;
-    border: 1px solid #dcdfe6;
-    border-radius: 6px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-}
-
-.form-group select:focus,
-.form-group input:focus {
-    border-color: #409eff;
-    outline: none;
-    box-shadow: 0 0 5px rgba(64, 158, 255, 0.5);
 }
 
 .leyLineOutcrop-section .checkbox-group {
@@ -798,10 +869,6 @@ h2 {
     transition: all 0.3s ease;
 }
 
-/*.batch-item:hover {
-  border-color: #409eff;
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
-}*/
 
 .batch-item label {
     font-weight: 500;
@@ -846,627 +913,635 @@ h2 {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .home {
-    background-attachment: scroll;
-    background-position: center top;
-  }
+    .home {
+        background-attachment: scroll;
+        background-position: center top;
+    }
 
-  .container {
-    width: 95%;
-    padding: 15px;
-  }
+    .container {
+        width: 95%;
+        padding: 15px;
+    }
 
-  .fixed-container {
-    border-radius: 8px;
-    padding: 8px 15px;
-  }
+    .title {
+        font-size: 28px;
+        margin-bottom: 15px;
+        padding: 15px 0;
+        border-radius: 18px;
+    }
 
-  .content-area {
-    margin-top: 250px;
-  }
+    .config-header {
+        gap: 15px;
+        padding: 12px 8px;
+        margin-bottom: 15px;
+    }
 
-  .title {
-    font-size: 28px;
-    margin-bottom: 12px;
-  }
+    .content-area {
+        margin-top: 8px;
+        border-radius: 18px;
+    }
 
-  h2 {
-    font-size: 1.5rem;
-    margin-bottom: 16px;
-  }
 
-  .uid-input {
-    max-width: 90px;
-    padding: 8px;
-    font-size: 0.9rem;
-  }
+    .selected-count-badge {
+        top: 8px;
+        left: 8px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        border-radius: 16px;
+    }
 
-  .add-config-btn {
-    padding: 8px 16px;
-    font-size: 0.9rem;
-  }
 
-  .config-header,
-  .config-list {
-    gap: 15px;
-    padding: 8px;
-  }
+    .enabled-count-badge {
+        top: 8px;
+        right: 8px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        border-radius: 16px;
+    }
 
-  .config-item {
-    max-width: 100%;
-    padding: 8px;
-    border-radius: 10px;
-  }
+    .config-list {
+        gap: 15px;
+        padding: 12px 8px;
+        margin: 12px;
+    }
 
-  .config-item h3 {
-    font-size: 0.9rem;
-  }
+    .config-item {
+        max-width: 100%;
+        padding: 8px;
+        border-radius: 10px;
+    }
 
-  .config-btn {
-    gap: 8px;
-    margin-top: 12px;
-    padding: 6px 0;
-  }
+    .config-item h3 {
+        font-size: 0.9rem;
+    }
 
-  .config-btn .btn {
-    min-width: 100px;
-    font-size: 0.85rem;
-  }
+    .config-btn {
+        gap: 8px;
+        margin-top: 12px;
+        padding: 6px 0;
+    }
 
-  .remove-btn {
-    padding: 4px 8px;
-    font-size: 0.85rem;
-  }
+    .config-btn .btn {
+        min-width: 100px;
+        font-size: 0.85rem;
+    }
 
-  .form-group {
-    margin-bottom: 6px;
-  }
+    .remove-btn {
+        padding: 4px 8px;
+        font-size: 0.85rem;
+    }
 
-  .form-group label {
-    font-size: 0.85rem;
-  }
+    .form-group {
+        margin-bottom: 6px;
+    }
 
-  .form-group select,
-  .form-group input {
-    width: 100%;
-    padding: 7px;
-    font-size: 0.9rem;
-    border-radius: 5px;
-  }
+    .form-group label {
+        font-size: 0.85rem;
+    }
 
-  .days-display,
-  .physical-display {
-    padding: 7px 10px;
-    min-height: 30px;
-    font-size: 0.9rem;
-  }
+    .form-group select,
+    .form-group input {
+        width: 60%;
+        padding: 7px;
+        font-size: 0.9rem;
+        border-radius: 5px;
+    }
 
-  .checkbox-group {
-    gap: 12px 20px;
-  }
+    .form-group input {
+        width: 40% !important;
+    }
 
-  .checkbox-label {
-    min-width: 70px;
-    font-size: 0.9rem;
-  }
+    .days-display,
+    .physical-display {
+        padding: 7px 10px;
+        min-height: 30px;
+        font-size: 0.9rem;
+    }
 
-  .leyLineOutcrop-section .checkbox-group {
-    grid-template-columns: repeat(1, 1fr);
-    gap: 12px;
-    padding: 10px 0;
-  }
+    .checkbox-group {
+        gap: 12px 20px;
+    }
 
-  .result-all {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    margin-top: 16px;
-  }
+    .checkbox-label {
+        min-width: 70px;
+        font-size: 0.9rem;
+    }
 
-  .result-key {
-    padding: 8px 12px;
-    font-size: 0.9rem;
-  }
+    .leyLineOutcrop-section .checkbox-group {
+        grid-template-columns: repeat(1, 1fr);
+        gap: 12px;
+        padding: 10px 0;
+    }
 
-  .result {
-    padding: 12px;
-    font-size: 0.85rem;
-  }
+    .result-all {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        margin-top: 16px;
+    }
 
-  .copy-btn {
-    padding: 8px 12px;
-    font-size: 0.9rem;
-  }
+    .result-key {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
 
-  .sort-control-card {
-    max-height: 45px;
-    padding: 3px 6px;
-    gap: 8px;
-  }
+    .result {
+        padding: 12px;
+        font-size: 0.85rem;
+    }
 
-  .sort-label {
-    font-size: 0.85rem;
-  }
+    .copy-btn {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
 
-  .btn.btn-add,
-  .btn.btn-submit,
-  .btn.danger {
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    border-radius: 7px;
-  }
+    .sort-control-card {
+        max-height: 45px;
+        padding: 3px 6px;
+        gap: 8px;
+    }
 
-  .draggable-item {
-    padding: 6px 10px;
-    gap: 8px;
-    margin-bottom: 6px;
-    border-radius: 5px;
-  }
+    .sort-label {
+        font-size: 0.85rem;
+    }
 
-  .drag-handle {
-    font-size: 1.1rem;
-    margin-right: 8px;
-  }
+    .btn.btn-add,
+    .btn.btn-submit,
+    .btn.danger {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        border-radius: 7px;
+    }
 
-  .physical-name {
-    font-size: 0.9rem;
-  }
+    .draggable-item {
+        padding: 6px 10px;
+        gap: 8px;
+        margin-bottom: 6px;
+        border-radius: 5px;
+    }
 
-  .actions {
-    margin-top: 10px;
-  }
+    .drag-handle {
+        font-size: 1.1rem;
+        margin-right: 8px;
+    }
 
-  .fixed-trigger {
-    right: 8px;
-    top: 75%;
-    width: 50px;
-    height: 160px;
-    border-radius: 10px 0 0 10px;
-    gap: 6px;
-  }
+    .physical-name {
+        font-size: 0.9rem;
+    }
 
-  .fixed-trigger i {
-    font-size: 1.5rem;
-  }
+    .actions {
+        margin-top: 10px;
+    }
 
-  .fixed-trigger span {
-    font-size: 0.8rem;
-  }
+    .fixed-trigger {
+        right: 8px;
+        top: 75%;
+        width: 50px;
+        height: 160px;
+        border-radius: 10px 0 0 10px;
+        gap: 6px;
+    }
 
-  .result-drawer,
-  .batch-drawer {
-    min-width: 90% !important;
-  }
+    .fixed-trigger i {
+        font-size: 1.5rem;
+    }
 
-  .result-card,
-  .batch-card {
-    border-radius: 8px;
-  }
+    .fixed-trigger span {
+        font-size: 0.8rem;
+    }
 
-  .card-header {
-    padding: 10px 12px;
-  }
+    .result-drawer,
+    .batch-drawer {
+        min-width: 90% !important;
+    }
 
-  .result-key {
-    font-size: 1rem;
-  }
+    .result-card,
+    .batch-card {
+        border-radius: 8px;
+    }
 
-  .code-block {
-    padding: 12px;
-    font-size: 0.85rem;
-    max-height: 40vh;
-  }
+    .card-header {
+        padding: 10px 12px;
+    }
 
-  .external-pop-up-frame .el-dialog,
-  .external-pop-up-frame .el-drawer {
-    max-width: 95%;
-    border-radius: 12px;
-  }
+    .result-key {
+        font-size: 1rem;
+    }
 
-  .external-pop-up-frame .el-dialog__header,
-  .external-pop-up-frame .el-drawer__header {
-    padding: 14px 18px;
-  }
+    .code-block {
+        padding: 12px;
+        font-size: 0.85rem;
+        max-height: 40vh;
+    }
 
-  .external-pop-up-frame .el-dialog__body,
-  .external-pop-up-frame .el-drawer__body {
-    padding: 16px 18px;
-  }
+    .external-pop-up-frame .el-dialog,
+    .external-pop-up-frame .el-drawer {
+        max-width: 95%;
+        border-radius: 12px;
+    }
 
-  .external-pop-up-frame .el-dialog__footer {
-    padding: 14px 18px;
-  }
+    .external-pop-up-frame .el-dialog__header,
+    .external-pop-up-frame .el-drawer__header {
+        padding: 14px 18px;
+    }
 
-  .batch-operation {
-    flex-direction: column;
-    gap: 12px;
-    padding: 10px 12px;
-    margin-bottom: 16px;
-  }
+    .external-pop-up-frame .el-dialog__body,
+    .external-pop-up-frame .el-drawer__body {
+        padding: 16px 18px;
+    }
 
-  .select-all-container {
-    width: 100%;
-    justify-content: space-between;
-  }
+    .external-pop-up-frame .el-dialog__footer {
+        padding: 14px 18px;
+    }
 
-  .selected-count {
-    font-size: 0.85rem;
-  }
+    .batch-operation {
+        flex-direction: column;
+        gap: 12px;
+        padding: 10px 12px;
+        margin-bottom: 16px;
+    }
 
-  .batch-buttons {
-    width: 100%;
-    flex-direction: column;
-    gap: 8px;
-    padding: 6px 12px;
-    border-radius: 10px;
-  }
+    .select-all-container {
+        width: 100%;
+        justify-content: space-between;
+    }
 
-  .batch-buttons .btn {
-    width: 100%;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    border-radius: 7px;
-  }
+    .selected-count {
+        font-size: 0.85rem;
+    }
 
-  .config-checkbox {
-    zoom: 1.1;
-  }
+    .batch-buttons {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 10px;
+    }
 
-  .batch-item {
-    padding: 12px;
-    margin-bottom: 3px;
-    border-radius: 7px;
-  }
+    .batch-buttons .btn {
+        width: 100%;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        border-radius: 7px;
+    }
 
-  .batch-item label {
-    font-size: 0.9rem;
-    margin-bottom: 6px;
-  }
+    .config-checkbox {
+        zoom: 1.1;
+    }
 
-  .batch-item .limited-input,
-  .batch-item select {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 0.9rem;
-    border-radius: 5px;
-  }
+    .batch-item {
+        padding: 12px;
+        margin-bottom: 3px;
+        border-radius: 7px;
+    }
+
+    .batch-item label {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+
+    .batch-item .limited-input,
+    .batch-item select {
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 0.9rem;
+        border-radius: 5px;
+    }
 }
 
 @media (max-width: 480px) {
-  .home {
-    background-size: cover;
-    background-position: center 30%;
-  }
+    .home {
+        background-size: cover;
+        background-position: center 30%;
+    }
 
-  .container {
-    width: 100%;
-    padding: 12px;
-  }
+    .container {
+        width: 100%;
+        padding: 12px;
+    }
 
-  .fixed-container {
-    border-radius: 6px;
-    padding: 6px 12px;
-    backdrop-filter: blur(8px);
-  }
+    .title {
+        font-size: 24px;
+        margin-bottom: 12px;
+        padding: 12px 0;
+        border-radius: 14px;
+    }
 
-  .content-area {
-    margin-top: 220px;
-  }
+    .title:hover {
+        transform: scale(1.03);
+    }
 
-  .title {
-    font-size: 24px;
-  }
+    .config-header {
+        gap: 12px;
+        padding: 10px 6px;
+        margin-bottom: 12px;
+    }
 
-  .title:hover {
-    transform: scale(1.03);
-  }
+    .content-area {
+        margin-top: 6px;
+        border-radius: 14px;
+    }
 
-  h2 {
-    font-size: 1.3rem;
-  }
+    .selected-count-badge {
+        top: 6px;
+        left: 6px;
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        border-radius: 14px;
+    }
 
-  .uid-input {
-    max-width: 80px;
-    padding: 6px;
-    font-size: 0.85rem;
-    border-radius: 5px;
-  }
+    .enabled-count-badge {
+        top: 6px;
+        right: 6px;
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        border-radius: 14px;
+    }
 
-  .add-config-btn {
-    padding: 7px 14px;
-    font-size: 0.85rem;
-    border-radius: 6px;
-  }
+    .config-list {
+        gap: 12px;
+        padding: 10px 6px;
+        margin: 10px;
+    }
 
-  .config-header,
-  .config-list {
-    gap: 12px;
-    padding: 6px;
-  }
+    .config-item {
+        padding: 7px;
+        border-radius: 8px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    }
 
-  .config-item {
-    padding: 7px;
-    border-radius: 8px;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-  }
+    .config-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+    }
 
-  .config-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
-  }
+    .config-item h3 {
+        font-size: 0.85rem;
+    }
 
-  .config-item h3 {
-    font-size: 0.85rem;
-  }
+    .config-btn {
+        gap: 6px;
+        margin-top: 10px;
+        padding: 5px 0;
+    }
 
-  .config-btn {
-    gap: 6px;
-    margin-top: 10px;
-    padding: 5px 0;
-  }
+    .config-btn .btn {
+        min-width: 85px;
+        font-size: 0.8rem;
+    }
 
-  .config-btn .btn {
-    min-width: 85px;
-    font-size: 0.8rem;
-  }
+    .remove-btn {
+        padding: 3px 6px;
+        font-size: 0.8rem;
+        border-radius: 5px;
+    }
 
-  .remove-btn {
-    padding: 3px 6px;
-    font-size: 0.8rem;
-    border-radius: 5px;
-  }
+    .form-group {
+        margin-bottom: 5px;
+    }
 
-  .form-group {
-    margin-bottom: 5px;
-  }
+    .form-group label {
+        font-size: 0.8rem;
+    }
 
-  .form-group label {
-    font-size: 0.8rem;
-  }
+    .form-group select,
+    .form-group input {
+        width: 60%;
+        padding: 6px;
+        font-size: 0.85rem;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
 
-  .form-group select,
-  .form-group input {
-    padding: 6px;
-    font-size: 0.85rem;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  }
+    .form-group input {
+        width: 40% !important;
+    }
 
-  .form-group select:focus,
-  .form-group input:focus {
-    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.15);
-  }
+    .form-group select:focus,
+    .form-group input:focus {
+        box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.15);
+    }
 
-  .days-display,
-  .physical-display {
-    padding: 6px 9px;
-    min-height: 28px;
-    font-size: 0.85rem;
-    border-radius: 5px;
-  }
+    .days-display,
+    .physical-display {
+        padding: 6px 9px;
+        min-height: 28px;
+        font-size: 0.85rem;
+        border-radius: 5px;
+    }
 
-  .days-display:hover,
-  .physical-display:hover {
-    border-color: #409eff;
-  }
+    .days-display:hover,
+    .physical-display:hover {
+        border-color: #409eff;
+    }
 
-  .checkbox-group {
-    gap: 10px 16px;
-  }
+    .checkbox-group {
+        gap: 10px 16px;
+    }
 
-  .checkbox-label {
-    min-width: 65px;
-    font-size: 0.85rem;
-  }
+    .checkbox-label {
+        min-width: 65px;
+        font-size: 0.85rem;
+    }
 
-  .leyLineOutcrop-section .checkbox-group {
-    gap: 10px;
-    padding: 8px 0;
-  }
+    .leyLineOutcrop-section .checkbox-group {
+        gap: 10px;
+        padding: 8px 0;
+    }
 
-  .result-key {
-    padding: 7px 10px;
-    font-size: 0.85rem;
-    border-radius: 6px;
-  }
+    .result-key {
+        padding: 7px 10px;
+        font-size: 0.85rem;
+        border-radius: 6px;
+    }
 
-  .result {
-    padding: 10px;
-    font-size: 0.8rem;
-    border-radius: 6px;
-  }
+    .result {
+        padding: 10px;
+        font-size: 0.8rem;
+        border-radius: 6px;
+    }
 
-  .copy-btn {
-    padding: 7px 10px;
-    font-size: 0.85rem;
-    border-radius: 5px;
-  }
+    .copy-btn {
+        padding: 7px 10px;
+        font-size: 0.85rem;
+        border-radius: 5px;
+    }
 
-  .sort-control-card {
-    max-height: 40px;
-    padding: 2px 5px;
-    gap: 6px;
-    border-radius: 6px;
-  }
+    .sort-control-card {
+        max-height: 40px;
+        padding: 2px 5px;
+        gap: 6px;
+        border-radius: 6px;
+    }
 
-  .sort-label {
-    font-size: 0.8rem;
-  }
+    .sort-label {
+        font-size: 0.8rem;
+    }
 
-  .btn.btn-add,
-  .btn.btn-submit,
-  .btn.danger {
-    padding: 7px 14px;
-    font-size: 0.85rem;
-    border-radius: 6px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  }
+    .btn.btn-add,
+    .btn.btn-submit,
+    .btn.danger {
+        padding: 7px 14px;
+        font-size: 0.85rem;
+        border-radius: 6px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
 
-  .btn.btn-add:hover,
-  .btn.btn-submit:hover,
-  .btn.danger:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
-  }
+    .btn.btn-add:hover,
+    .btn.btn-submit:hover,
+    .btn.danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+    }
 
-  .draggable-item {
-    padding: 5px 8px;
-    gap: 6px;
-    margin-bottom: 5px;
-    border-radius: 4px;
-    border-width: 0.5px;
-  }
+    .draggable-item {
+        padding: 5px 8px;
+        gap: 6px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        border-width: 0.5px;
+    }
 
-  .drag-handle {
-    font-size: 1rem;
-    margin-right: 6px;
-  }
+    .drag-handle {
+        font-size: 1rem;
+        margin-right: 6px;
+    }
 
-  .physical-name {
-    font-size: 0.85rem;
-  }
+    .physical-name {
+        font-size: 0.85rem;
+    }
 
-  .fixed-trigger {
-    right: 6px;
-    top: 70%;
-    width: 45px;
-    height: 140px;
-    border-radius: 8px 0 0 8px;
-    gap: 5px;
-  }
+    .fixed-trigger {
+        right: 6px;
+        top: 70%;
+        width: 45px;
+        height: 140px;
+        border-radius: 8px 0 0 8px;
+        gap: 5px;
+    }
 
-  .fixed-trigger:hover {
-    box-shadow: -3px 0 12px rgba(0, 0, 0, 0.12);
-  }
+    .fixed-trigger:hover {
+        box-shadow: -3px 0 12px rgba(0, 0, 0, 0.12);
+    }
 
-  .fixed-trigger i {
-    font-size: 1.3rem;
-  }
+    .fixed-trigger i {
+        font-size: 1.3rem;
+    }
 
-  .fixed-trigger span {
-    font-size: 0.75rem;
-  }
+    .fixed-trigger span {
+        font-size: 0.75rem;
+    }
 
-  .result-drawer,
-  .batch-drawer {
-    min-width: 95% !important;
-  }
+    .result-drawer,
+    .batch-drawer {
+        min-width: 95% !important;
+    }
 
-  .result-card,
-  .batch-card {
-    border-radius: 6px;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
-  }
+    .result-card,
+    .batch-card {
+        border-radius: 6px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+    }
 
-  .card-header {
-    padding: 8px 10px;
-  }
+    .card-header {
+        padding: 8px 10px;
+    }
 
-  .result-key {
-    font-size: 0.95rem;
-  }
+    .result-key {
+        font-size: 0.95rem;
+    }
 
-  .code-block {
-    padding: 10px;
-    font-size: 0.8rem;
-    max-height: 35vh;
-    border-radius: 6px;
-  }
+    .code-block {
+        padding: 10px;
+        font-size: 0.8rem;
+        max-height: 35vh;
+        border-radius: 6px;
+    }
 
-  .external-pop-up-frame .el-dialog,
-  .external-pop-up-frame .el-drawer {
-    max-width: 98%;
-    border-radius: 10px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-  }
+    .external-pop-up-frame .el-dialog,
+    .external-pop-up-frame .el-drawer {
+        max-width: 98%;
+        border-radius: 10px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
 
-  .external-pop-up-frame .el-dialog__header,
-  .external-pop-up-frame .el-drawer__header {
-    padding: 12px 16px;
-  }
+    .external-pop-up-frame .el-dialog__header,
+    .external-pop-up-frame .el-drawer__header {
+        padding: 12px 16px;
+    }
 
-  .external-pop-up-frame .el-dialog__body,
-  .external-pop-up-frame .el-drawer__body {
-    padding: 14px 16px;
-  }
+    .external-pop-up-frame .el-dialog__body,
+    .external-pop-up-frame .el-drawer__body {
+        padding: 14px 16px;
+    }
 
-  .external-pop-up-frame .el-dialog__footer {
-    padding: 12px 16px;
-  }
+    .external-pop-up-frame .el-dialog__footer {
+        padding: 12px 16px;
+    }
 
-  .batch-operation {
-    padding: 8px 10px;
-    margin-bottom: 14px;
-    border-radius: 7px;
-  }
+    .batch-operation {
+        padding: 8px 10px;
+        margin-bottom: 14px;
+        border-radius: 7px;
+    }
 
-  .select-all-container {
-    gap: 8px;
-  }
+    .select-all-container {
+        gap: 8px;
+    }
 
-  .selected-count {
-    font-size: 0.8rem;
-  }
+    .selected-count {
+        font-size: 0.8rem;
+    }
 
-  .batch-buttons {
-    padding: 5px 10px;
-    border-radius: 8px;
-    box-shadow: 0 3px 12px rgba(102, 126, 234, 0.25);
-  }
+    .batch-buttons {
+        padding: 5px 10px;
+        border-radius: 8px;
+        box-shadow: 0 3px 12px rgba(102, 126, 234, 0.25);
+    }
 
-  .batch-buttons .btn {
-    padding: 7px 14px;
-    font-size: 0.85rem;
-    border-radius: 6px;
-  }
+    .batch-buttons .btn {
+        padding: 7px 14px;
+        font-size: 0.85rem;
+        border-radius: 6px;
+    }
 
-  .batch-buttons .btn.danger:hover {
-    box-shadow: 0 3px 10px rgba(255, 82, 82, 0.35);
-  }
+    .batch-buttons .btn.danger:hover {
+        box-shadow: 0 3px 10px rgba(255, 82, 82, 0.35);
+    }
 
-  .batch-buttons .btn.btn-submit:hover {
-    box-shadow: 0 3px 10px rgba(0, 198, 255, 0.35);
-  }
+    .batch-buttons .btn.btn-submit:hover {
+        box-shadow: 0 3px 10px rgba(0, 198, 255, 0.35);
+    }
 
-  .config-checkbox {
-    zoom: 1;
-  }
+    .config-checkbox {
+        zoom: 1;
+    }
 
-  .batch-item {
-    padding: 10px;
-    margin-bottom: 2px;
-    border-radius: 6px;
-  }
+    .batch-item {
+        padding: 10px;
+        margin-bottom: 2px;
+        border-radius: 6px;
+    }
 
-  .batch-item label {
-    font-size: 0.85rem;
-    margin-bottom: 5px;
-  }
+    .batch-item label {
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+    }
 
-  .batch-item .limited-input,
-  .batch-item select {
-    padding: 7px 9px;
-    font-size: 0.85rem;
-    border-radius: 4px;
-  }
+    .batch-item .limited-input,
+    .batch-item select {
+        padding: 7px 9px;
+        font-size: 0.85rem;
+        border-radius: 4px;
+    }
 
-  .batch-item .limited-input:focus,
-  .batch-item select:focus {
-    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.15);
-  }
+    .batch-item .limited-input:focus,
+    .batch-item select:focus {
+        box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.15);
+    }
 
-  .batch-item select:hover {
-    border-color: #409eff;
-  }
+    .batch-item select:hover {
+        border-color: #409eff;
+    }
 }
 
-/* 隐藏所有滚动条，但保持可滚动功能 */
-* {
-    -ms-overflow-style: none !important;
-    scrollbar-width: none !important;
-}
-*::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
-}

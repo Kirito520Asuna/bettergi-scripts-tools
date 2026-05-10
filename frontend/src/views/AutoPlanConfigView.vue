@@ -913,15 +913,17 @@ const isConfigSelected = (configId) => {
 
 // 处理选中状态变化
 const handleConfigSelection = (configId, isSelected) => {
-  if (isSelected) {
-    batchJson.value.selectedConfigs.add(configId)
-  } else {
-    batchJson.value.selectedConfigs.delete(configId)
+  if(multiSelectEnabled){
+    if (isSelected) {
+      batchJson.value.selectedConfigs.add(configId)
+    } else {
+      batchJson.value.selectedConfigs.delete(configId)
+    }
+    // 强制更新状态
+    nextTick(() => {
+      updateSelectAllState()
+    })
   }
-  // 强制更新状态
-  nextTick(() => {
-    updateSelectAllState()
-  })
 }
 
 const batchUpdate = () => {
@@ -955,12 +957,23 @@ const batchUpdate = () => {
   batchJson.value.batch.common.enable = true
 }
 
+const selectedCount = computed(() => {
+  return batchJson.value.selectedConfigs.size
+})
+
+const enabledCount = computed(() => {
+  return configs.value.filter(c => c.enable).length
+})
+
+const totalCount = computed(() => {
+  return configs.value.length
+})
 </script>
 
 <template>
   <div class="home">
     <div class="container">
-      <div class="fixed-container">
+<!--      <div class="fixed-container">-->
         <h2 class="title">自动体力计划配置列表</h2>
         <div class="config-header">
           <!-- template 部分保持基本相同，但增加 v-if 判断 -->
@@ -1003,11 +1016,39 @@ const batchUpdate = () => {
           <button @click="removeConfigToBackend" class="btn danger">☁️🗑️移除云端配置</button>
           <button @click="removeConfigAll" class="btn danger">🗑️清除全部</button>
           <button @click="handleApi" class="btn btn-submit">查看脚本配置API</button>
+
+          <div class="sort-control-card" v-if="configs.length > 0">
+            <el-switch
+                v-if="configs.length > 0"
+                v-model="multiSelectEnabled"
+                active-text="多选"
+                inactive-text="取消"
+                style="margin-left: 12px;"
+            />
+          </div>
+
+          <div class="sort-control-card" v-if="configs.length > 0&&multiSelectEnabled">
+            <el-switch
+                v-if="configs.length > 0"
+                v-model="isAllSelectedComputed"
+                active-text="全选"
+                inactive-text="取消"
+                style="margin-left: 12px;"
+            />
+          </div>
+
+          <button class="btn danger" v-if="configs.length > 0&&multiSelectEnabled" @click="removeConfigMultiple">🗑️ 批量删除
+          </button>
+          <button class="btn btn-submit" v-if="configs.length > 0&&multiSelectEnabled" @click="batchCopyConfigs">📋 批量复制
+          </button>
+          <button class="btn btn-submit"v-if="configs.length > 0&&multiSelectEnabled&&batchJson.selectedConfigs.size>0" @click="batchJson.batch.show=true">📝
+            批量修改
+          </button>
         </div>
 
-        <!-- 在配置列表上方添加批量操作区域 -->
+<!--        &lt;!&ndash; 在配置列表上方添加批量操作区域 &ndash;&gt;
         <div class="config-header" v-if="configs.length > 0">
-          <!--          <button class="btn btn-submit" v-if="configs.length>0"  @click="toggleSelectAll">全选</button>-->
+          &lt;!&ndash;          <button class="btn btn-submit" v-if="configs.length>0"  @click="toggleSelectAll">全选</button>&ndash;&gt;
           <div class="sort-control-card">
             <el-switch
                 v-if="configs.length > 0"
@@ -1035,15 +1076,21 @@ const batchUpdate = () => {
           <button class="btn btn-submit" v-if="batchJson.selectedConfigs.size>0" @click="batchJson.batch.show=true">📝
             批量修改
           </button>
-        </div>
-      </div>
+        </div>-->
+<!--      </div>-->
 
       <div class="content-area">
-
+        <div class="selected-count-badge" v-if="multiSelectEnabled">
+          选中数：{{ selectedCount }} / {{ totalCount }}
+        </div>
+        <div class="enabled-count-badge">
+          启用数：{{ enabledCount }} / {{ totalCount }}
+        </div>
         <div class="config-list">
-          <div v-for="(config,index) in configs" :key="index" class="config-item">
-            <!--            <el-checkbox v-model="isConfigSelected"-->
-            <!--                         v-if="multiSelectEnabled"></el-checkbox>-->
+          <div v-for="(config,index) in configs" :key="index" class="config-item"
+               :class="{ 'selected': isConfigSelected(config.id) }"
+               @click="handleConfigSelection(config.id, !isConfigSelected(config.id))"
+               >
             <el-checkbox
                 :model-value="isConfigSelected(config.id)"
                 @update:model-value="(val) => handleConfigSelection(config.id, val)"
