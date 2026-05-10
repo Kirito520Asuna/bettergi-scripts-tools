@@ -153,11 +153,12 @@ const routes = [
         name: 'Logs',
         component: () => import('@views/LogViewerView.vue'),
         meta: {
+            excludeInMenu: true,
             isRoot: true,
             title: '日志',
             desc: '日志',
-            asSubParentTitle: '日志'//,
-            // icon: 'JavaScript'
+            asSubParentTitle: '日志',
+            icon: 'Logs'
         }
     },
     // 其他路由...

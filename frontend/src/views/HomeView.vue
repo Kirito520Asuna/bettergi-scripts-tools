@@ -91,6 +91,7 @@ const list = [
   {name: '退出登录', value: 'Logout'},
   {name: '重启', value: 'Restart'},
   {name: '设置', value: 'Settings'},
+  {name: '日志', value: 'Logs'},
 ]
 let index = 1
 let initJson = {
@@ -291,6 +292,13 @@ const toClick = async (item) => {
     router.push('/settings')
   } else if (value === 'Restart') {
     await restart(RestartClick)
+  } else {
+    await ElMessageBox.confirm(`确定要前往${item.name}吗？`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    router.push(value)
   }
 }
 
