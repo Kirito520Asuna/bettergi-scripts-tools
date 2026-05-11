@@ -117,11 +117,11 @@ const isConnected = ref(false)
 const currentFileInfo = ref(null)
 const logContainer = ref(null)
 const logToken = ref(null)
-const autoLoad = ref(false)
-const autoLoadInterval = ref(10)
+const autoLoad = ref(true)
+const autoLoadInterval = ref(3)
 const autoLoadTimer = ref(null)
 const lastTimestamp = ref(null)
-const autoScroll = ref(false)
+const autoScroll = ref(true)
 const appListFailCount = ref(0)
 const wsConnectFailCount = ref(0)
 const wsInstanceMismatchCount = ref(0)
@@ -152,9 +152,12 @@ const handleDisplayLinesChange = () => {
     logContent.value = ''
     lastTimestamp.value = null
     currentFileInfo.value = null
-    // if (autoLoad.value && isConnected.value && selectedFile.value && selectedApplication.value) {
-    //   loadLogFile()
-    // }
+    contentList.value.clear()
+    if (isConnected.value && selectedFile.value && selectedApplication.value) {
+      setTimeout(() => {
+        loadLogFile()
+      }, 100)
+    }
   }
 }
 
@@ -360,10 +363,10 @@ const setupWebSocket = async () => {
       wsConnectFailCount.value = 0
       wsInstanceMismatchCount.value = 0
       ElMessage.success('WebSocket连接成功')
-      // if (autoLoad.value && selectedFile.value && selectedApplication.value) {
-      //   loadLogFile()
-      //   startAutoLoad()
-      // }
+      if (autoLoad.value && selectedFile.value && selectedApplication.value) {
+        loadLogFile()
+        startAutoLoad()
+      }
     })
 
     LogWebSocket.on('no-connected', () => {
@@ -389,6 +392,7 @@ const setupWebSocket = async () => {
         LogWebSocket.shouldReconnect = false
       }
     })
+
     //完整加载无重复情况
     LogWebSocket.on('file_content', (data) => {
       let contentToAdd = ''

@@ -41,7 +41,7 @@ class LogWebSocket {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
         const wsUrl = url.replace(/^https?:/, protocol)
 
-        console.log('[LogWebSocket] 连接中...', wsUrl)
+        console.log('[LogWebSocket] 连接中...', wsUrl.substring(0,wsUrl.indexOf("?")))
 
         this.ws = new WebSocket(wsUrl)
 
