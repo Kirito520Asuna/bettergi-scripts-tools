@@ -84,35 +84,6 @@ let iconAsMap = iconAsMapDefault()
 const currentRoute = ref(router.currentRoute)
 // 统一管理所有功能项
 const featureGroup = ref([]);
-const list = [
-  // {isLink: true, name: 'API 调试链接', value: 'API 调试链接'},
-  {isSwagger: true, name: 'Swagger 文档入口', value: 'doc.html'},
-  // {isRote: true, name: '路由管理面板', value: '路由管理面板'},
-  {name: '退出登录', value: 'Logout'},
-  {name: '重启', value: 'Restart'},
-  {name: '设置', value: 'Settings'},
-  {name: '日志', value: 'Logs'},
-]
-let index = 1
-let initJson = {
-  title: '功能列表',
-  children: []
-}
-list.forEach(item => {
-  initJson.children.push({
-    id: index,
-    position: index % 2 === 1 ? "left" : "right",
-    isRote: item.isRote,
-    isLink: item.isLink,
-    isSwagger: item.isSwagger,
-    isUi: (item.isSwagger || item.isRote || item.isLink),
-    icon: item.icon || iconAsMap.get(item.value),
-    name: item.name,
-    value: item.value
-  });
-  index++
-})
-featureGroup.value.push(initJson);
 // 存储每个按钮的随机背景色
 const buttonBackgrounds = ref({});
 
@@ -131,50 +102,75 @@ const lightColors = [
   'rgba(255,141,195,0.54)',
   '#ced4da',
 ];
-onMounted(async () => {
-  /*================*/
+
+async function loadUi() {
+  const order_group_map = new Map([
+    ['JS扩展功能', 2], ['系统', 1],['演示', 3]
+  ]);
+  const group_list = new Array();
   let index = 1
-  let routerJson = {
-    title: '扩展功能列表',
-    children: []
-  }
+  const list = [
+    // {isLink: true, name: 'API 调试链接', value: 'API 调试链接'},
+    {isSwagger: true, group: "系统", name: 'Swagger 文档入口', value: 'doc.html'},
+    // {isRote: true, name: '路由管理面板', value: '路由管理面板'},
+    {name: '退出登录', group: "系统", value: 'Logout'},
+    {name: '重启', group: "系统", value: 'Restart'},
+    // {name: '设置', group: "系统", value: 'Settings'},
+    // {name: '日志', group: "系统", value: 'Logs'},
+  ]
 
-  router.getRoutes().filter(route => (!route?.meta?.excludeInMenu) && route.name !== 'home' && route.name !== 'login' && route?.meta?.isRoot).forEach(route => {
-    routerJson.children.push({
-      id: index,
-      position: index % 2 === 1 ? "left" : "right",
+  list.forEach(item => {
+    group_list.push({
+      group: item?.group || '扩展功能列表',
+      isRote: item.isRote || false,
+      isLink: item.isLink || false,
+      isSwagger: item.isSwagger || false,
+      icon: item.icon || iconAsMap.get(item.value),
+      name: item.name,
+      value: item.value
+    });
+    index++
+  })
+
+  router.getRoutes().filter(route => !route?.meta?.excludeInMenu).forEach(route => {
+    group_list.push({
+      group: route?.meta?.group || '扩展功能列表',
       isRote: true,
-      isUi: true,
+      isLink: false,
+      isSwagger: false,
       icon: route?.meta?.icon || iconAsMap.get(route?.name),
       name: route?.meta?.title,
       value: route.path
     });
-    index++
   });
-  // console.log('getRoutes', router.getRoutes().filter(route => route.name !== 'home'))
-  // console.log('routerJson', routerJson)
-  featureGroup.value.push(routerJson);
+  // console.log('group_list:'+JSON.stringify(group_list))
 
-  const homeRoute = router.getRoutes().find(route => route.name === 'home')
-  index = 1
-  let homeJson = {
-    title: homeRoute?.meta?.asSubParentTitle,
-    children: []
-  }
+  const group = [...new Set(group_list.map(item => item?.group).filter(item => item))].sort((a, b) => (order_group_map.get(a) || 999) - (order_group_map.get(b) || 999));
+  group.forEach((groupName) => {
+    let groupJson = {
+      title: groupName,
+      children: []
+    }
+    let childIndex = 1
+    group_list.filter(item => item.group === groupName).forEach(item => {
+      groupJson.children.push({
+        id: index,
+        position: childIndex % 2 === 1 ? "left" : "right",
+        isRote: item.isRote,
+        isLink: item.isLink,
+        isSwagger: item.isSwagger,
+        isUi: (item.isSwagger || item.isRote || item.isLink),
+        icon: item.icon || iconAsMap.get(item.value),
+        name: item.name,
+        value: item.value
+      })
+      index++
+      childIndex++
+    })
 
-  homeRoute.children.forEach(route => {
-    routerJson.children.push({
-      id: index,
-      position: index % 2 === 1 ? "left" : "right",
-      isRote: true,
-      isUi: true,
-      icon: route?.meta?.icon || iconAsMap.get(route?.name),
-      name: route?.meta?.title,
-      value: route.path
-    });
-    index++
-  });
-  featureGroup.value.push(homeJson);
+    featureGroup.value.push(groupJson);
+  })
+
 
   // 初始化按钮背景色
   let colorIndex = 0;
@@ -185,6 +181,10 @@ onMounted(async () => {
       colorIndex++;
     });
   });
+}
+
+onMounted(async () => {
+  await loadUi();
 });
 
 // 获取图标

@@ -22,12 +22,13 @@ const routes = [
         name: 'settings',
         component: () => import('@views/SettingsView.vue'),
         meta: {
-            excludeInMenu: true,
+            // excludeInMenu: true,
+            group: '系统',
             isRoot: true,
             title: '设置',
             desc: '设置',
             asSubParentTitle: '设置',
-            icon: 'icon-home'
+            icon: 'Settings'
         },
     },
     {
@@ -48,6 +49,7 @@ const routes = [
         name: 'capabilities',
         component: () => import('@views/CapabilitiesView.vue'),
         meta: {
+            group: '演示',
             isRoot: true,
             title: '程序功能演示',
             desc: '程序功能演示',
@@ -61,6 +63,7 @@ const routes = [
         name: 'Markdown',
         component: () => import('@views/MarkdownView.vue'),
         meta: {
+            group: '演示',
             isRoot: true,
             title: 'Markdown渲染',
             desc: 'Markdown渲染',
@@ -74,6 +77,7 @@ const routes = [
         name: 'AutoPlanConfig',
         component: () => import('@views/AutoPlanConfigView.vue'),
         meta: {
+            group: 'JS扩展功能',
             isRoot: true,
             title: '自动体力计划配置',
             desc: '自动体力计划配置',
@@ -87,6 +91,7 @@ const routes = [
         name: 'AutoPlanDomain',
         component: () => import('@views/AutoPlanDomainView.vue'),
         meta: {
+            group: 'JS扩展功能',
             isRoot: true,
             title: '全部秘境展示',
             desc: '全部秘境展示',
@@ -105,6 +110,7 @@ const routes = [
             // }
         ],
         meta: {
+            group: 'JS扩展功能',
             isRoot: true,
             title: '语法配置',
             desc: '语法配置',
@@ -117,6 +123,7 @@ const routes = [
         name: 'WsProxy',
         component: () => import('@views/WsProxyView.vue'),
         meta: {
+            group: 'JS扩展功能',
             isRoot: true,
             title: 'WebSocket代理授权管理',
             desc: 'WebSocket代理授权管理',
@@ -130,6 +137,7 @@ const routes = [
         component: () => import('@views/UidManagerView.vue'),
         meta: {
             isRoot: true,
+            group: 'JS扩展功能',
             title: 'UID 映射管理',
             desc: 'UID 映射管理',
             asSubParentTitle: 'UID 映射管理',
@@ -142,6 +150,7 @@ const routes = [
         component: () => import('@views/JavaScriptApiView.vue'),
         meta: {
             isRoot: true,
+            group: 'JS扩展功能',
             title: 'JavaScript API 文档',
             desc: '查看和管理脚本接口文档',
             asSubParentTitle: 'API 文档',
@@ -153,7 +162,8 @@ const routes = [
         name: 'Logs',
         component: () => import('@views/LogViewerView.vue'),
         meta: {
-            excludeInMenu: true,
+            // excludeInMenu: true,
+            group: '系统',
             isRoot: true,
             title: '日志',
             desc: '日志',
