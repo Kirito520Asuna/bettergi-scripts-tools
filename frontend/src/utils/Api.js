@@ -51,6 +51,7 @@ export function fieldForSort(obj) {
  * @returns {string} MD5 签名（十六进制）
  */
 export function generalSign({ salt, method, url, params, body, exCollection = [] }) {
+    console.log('签名URL:', url)
     // 构建用于生成签名的字符串
     let signatureString = `${method.toUpperCase()}${url}`
 

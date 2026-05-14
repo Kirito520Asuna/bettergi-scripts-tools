@@ -260,6 +260,7 @@ public interface AbsApiSign extends AbsBean {
         }
 
 
+
         log().debug("请求参数 parameter:{}", parameterMap);
         log().debug("请求参数 body:{}", body);
        /* String openFeign = request.getHeader(Openfeign.OPENFEIGN.getHeader());
@@ -290,7 +291,7 @@ public interface AbsApiSign extends AbsBean {
             String idAsName = apiProperties.getIdAsName();
             id = request.getHeader(idAsName);
         }
-
+        log().debug("请求参数 URL:{}", url);
         String generalSign = generalSign(salt, method, url, parameterMap, body, exCollection);
         String headerSign = request.getHeader(signAsName);
         headerSign = decryptSign(id, headerSign);

@@ -52,10 +52,16 @@ public class AuthJwtFilter extends OncePerRequestFilter implements AuthFilter, A
             if (!notTokenExpired) {
                 log().debug("token即将过期，重新生成token");
                 long expirationMs = ttl.getExpirationMs();
-                String username = jwtUtil.getUsernameFromToken(token);
-                String generateToken = jwtUtil.generateToken(username, expirationMs);
-                String tokenName = authProperties.getTokenName();
-                response.addHeader(tokenName, generateToken);
+                // 先从过期token中提取用户名（即使过期也能解析出claims）
+                String username = jwtUtil.getUsernameByToken(token);
+                if (StrUtil.isNotBlank(username)) {
+                    String generateToken = jwtUtil.generateToken(username, expirationMs);
+                    String tokenName = authProperties.getTokenName();
+                    response.addHeader(tokenName, generateToken);
+                    log().debug("成功刷新token，用户: {}", username);
+                } else {
+                    log().warn("无法从过期token中提取用户名");
+                }
             }
         }catch (Exception e){
             log().error("preSetToken error", e.getMessage());

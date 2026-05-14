@@ -69,6 +69,44 @@ public class JwtUtil {
         }
     }
 
+    /**
+     * 从已过期的token中提取用户名（忽略过期验证）
+     * @param token 过期的JWT token
+     * @return 用户名，如果解析失败返回null
+     */
+    public String getUsernameFromExpiredToken(String token) {
+        try {
+            // 使用宽松的解析器，允许过期token被解析
+            SecretKey secretKey = generalKey(getJWT_KEY());
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.getSubject();
+        } catch (ExpiredJwtException e) {
+            // token过期时，仍然可以从异常中获取claims
+            log.debug("token已过期，但仍可提取用户名: {}", e.getClaims().getSubject());
+            return e.getClaims().getSubject();
+        } catch (Exception e) {
+            log.error("无法从token中提取用户名: {}", e.getMessage());
+            return null;
+        }
+    }
+    public String getUsernameByToken(String token) {
+        try {
+            SecretKey secretKey = generalKey(getJWT_KEY());
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.getSubject();
+        } catch (Exception e) {
+            log.error("无法从token中提取用户名: {}", e.getMessage());
+            return null;
+        }
+    }
     public boolean validateToken(String token) {
         return isNotTokenExpired(token);
     }
