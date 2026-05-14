@@ -91,7 +91,6 @@ server:
       remote-ip-header: X-Forwarded-For
       protocol-header: X-Forwarded-Proto
       port-header: X-Forwarded-Port
-
 spring:
   application:
     name: bgi-tools
@@ -175,7 +174,6 @@ spring:
       sentinel:
         master: ${spring.redis.sentinel.master:} # 主节点名称
         nodes: ${spring.redis.sentinel.nodes:} # 哨兵节点
-
 local:
   cache:
     dir: ./cache
@@ -200,11 +198,9 @@ check:
     name: # token名称 默认为空
     value: # token值 默认为空
 bgi-tools:
-  version: 0.1.0
-
+  version: 0.1.1
 config:
   backup-path: backup
-
 #设置默认账号密码
 auth:
   enabled: true
