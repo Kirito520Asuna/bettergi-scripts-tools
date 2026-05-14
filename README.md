@@ -189,10 +189,55 @@ server {
 
     # 主应用代理
     location / {
-        proxy_set_header Host "域名";
         proxy_pass http://bgi-tools地址/;
     }
 }
+
+server {
+    listen 443 ssl;
+    server_name  域名;
+
+    # ======================= 证书配置开始 =======================
+    # 指定证书文件，请将 xxx.pem 替换为您实际使用的证书文件的绝对路径
+    ssl_certificate path/to/xxx.pem;
+    # 指定私钥文档，请将 xxx.key 替换为您实际使用的私钥文件的绝对路径
+    ssl_certificate_key path/to/xxx.key;
+    # 配置 SSL 会话缓存，提高性能
+    ssl_session_cache shared:SSL:1m;
+    # 设置 SSL 会话超时时间
+    ssl_session_timeout 5m;
+    # 自定义设置使用的TLS协议的类型以及加密套件（以下为配置示例，请您自行评估是否需要配置）
+    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+    # 指定允许的 TLS 协议版本，TLS协议版本越高，HTTPS通信的安全性越高，但是相较于低版本TLS协议，高版本TLS协议对浏览器的兼容性较差
+    ssl_protocols TLSv1.2 TLSv1.3;
+    # 优先使用服务端指定的加密套件
+    ssl_prefer_server_ciphers on;
+    # ======================= 证书配置结束 =======================
+
+    # 传递真实请求头信息
+    proxy_set_header Origin $scheme://$host;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    location /favicon.ico {
+        proxy_pass http://bgi-tools地址/bgi/ui/;
+    }
+
+    location /bgi/ws/logs {
+        proxy_pass http://bgi-tools地址/bgi/ws/logs;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    }
+
+    location / {
+        proxy_pass http://bgi-tools地址/;
+    }
+}
+
 ```
 ---
 
