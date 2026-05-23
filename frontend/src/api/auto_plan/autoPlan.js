@@ -28,7 +28,7 @@ import {ElMessage, ElMessageBox} from "element-plus";
  * @param autoPlanList
  * @returns {Promise<any>}
  */
-async function postUidPlan(uid, autoPlanList=[]) {
+async function postUidPlan(uid, autoPlanList = []) {
     // 构建请求负载对象
     const payload = {
         uid: uid,  // 用户ID
@@ -36,30 +36,32 @@ async function postUidPlan(uid, autoPlanList=[]) {
     };
     // 发送POST请求到指定端点
     const response = await service.post("/jwt/auto/plan/info", payload);
-    if (response.code === 200){
+    if (response.code === 200) {
         ElMessage.success("保存成功");
     }
     // 返回响应数据
     return response.data;
 }
+
 /**
  * 异步获取指定UID的JSON数据
  * @param {string|number} uid - 用户唯一标识符
  * @returns {Promise<Object>} 返回包含响应数据的Promise对象
  */
-async function getUidJson(uid){
+async function getUidJson(uid) {
     const response = await service.get('/jwt/auto/plan/json', {params: {uid: uid}})
-    if (response.code === 200){
+    if (response.code === 200) {
         ElMessage.success("加载成功");
     }
     // 返回响应数据
     return response.data;
 }
+
 /**
  * 获取所有用户ID的异步函数
  * @returns {Promise} 返回包含所有用户ID的数据
  */
-async function getAllUid(){
+async function getAllUid() {
     const response = await service.get('/jwt/auto/plan/uid/all/mapping')  // 发送GET请求获取所有用户ID
     // if (response.code === 200){  // 检查响应状态码是否为200
     //     ElMessage.success("加载成功");  // 如果成功，显示成功消息
@@ -67,14 +69,15 @@ async function getAllUid(){
     // 返回响应数据
     return response.data;
 }
+
 /**
  * 异步删除指定UID的JSON数据
  * @param uidStr
  * @returns {Promise<any>}
  */
-async function removeUidList(uidStr){
-    const response = await service.delete('/jwt/auto/plan/json',{params: {uidStr: uidStr}});
-    if (response.code === 200){
+async function removeUidList(uidStr) {
+    const response = await service.delete('/jwt/auto/plan/json', {params: {uidStr: uidStr}});
+    if (response.code === 200) {
         ElMessage.success("删除成功");
     }
     return response.data;
@@ -84,9 +87,9 @@ async function removeUidList(uidStr){
  * 异步获取所有JSON数据
  * @returns {Promise<Object>} 获取所有JSON数据
  */
-async function getBaseJsonAll(){
+async function getBaseJsonAll() {
     const response = await service.get('/jwt/auto/plan/domain/json/all');
-    if (response.code === 200){
+    if (response.code === 200) {
         ElMessage.success("全部加载成功");
     }
     return response.data;
@@ -96,13 +99,43 @@ async function getBaseJsonAll(){
  *
  * @returns {Promise<any>}
  */
-async function getBaseCountryJsonAll(){
+async function getBaseCountryJsonAll() {
     const response = await service.get('/jwt/auto/plan/country/json/all');
-    if (response.code === 200){
+    if (response.code === 200) {
         ElMessage.success("全部加载成功");
     }
     return response.data;
 }
+
+/**
+ * 保存全部 JSON 数据
+ * @param list
+ * @returns {Promise<any>}
+ */
+export async function saveBaseJsonAll(list) {
+    const source = "WEB_API"
+    // const source = "JS_API"
+    const data = {json: JSON.stringify(list), source: source};
+    const response = await service.post('/jwt/auto/plan/domain/json/all', data);
+    if (response?.code === 200) {
+        ElMessage.success("保存成功");
+    }
+    return response?.data;
+}
+
+/**
+ * 保存全部国家 JSON 数据
+ * @param list
+ * @returns {Promise<any>}
+ */
+export async function saveBaseCountryJsonAll(list) {
+    const response = await service.post('/jwt/auto/plan/country/json/all', {json: JSON.stringify(list)});
+    if (response?.code === 200) {
+        ElMessage.success("保存成功");
+    }
+    return response?.data;
+}
+
 export {
     // postUidJson,
     postUidPlan,

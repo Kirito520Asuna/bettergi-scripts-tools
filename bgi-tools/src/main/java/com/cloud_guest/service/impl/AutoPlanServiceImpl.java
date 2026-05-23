@@ -1,6 +1,7 @@
 package com.cloud_guest.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -14,6 +15,7 @@ import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.service.DbKVService;
 import com.cloud_guest.utils.object.ObjectUtils;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @Author yan
@@ -37,7 +40,7 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean saveBatchList(List<AutoPlanConfig> configList) {
-        if (CollUtil.isNotEmpty(configList)){
+        if (CollUtil.isNotEmpty(configList)) {
             AutoPlanConfig planConfig = configList.stream().findFirst().get();
             String uid = planConfig.getUid();
             removeByUidList(CollUtil.toList(uid));
@@ -69,11 +72,12 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
         return uidList;
     }
 
-//cache replace
+    //cache replace
     @Resource
     private CacheService cacheService;
     @Resource
     private DbKVService dbKVService;
+
     @Override
     public List<Map<String, Object>> findDomainAll() {
         LambdaQueryWrapper<DbKV> query = Wrappers.lambdaQuery(DbKV.class);
@@ -82,7 +86,7 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
         DbKV dbKV = dbKVService.getOne(query);
         List<JSONObject> objectList = Optional.ofNullable(dbKV).map(k -> {
             String value = k.getValue();
-            if (ObjectUtils.isEmpty(value)){
+            if (ObjectUtils.isEmpty(value)) {
                 return new ArrayList<JSONObject>();
             }
             List<JSONObject> list = JSONUtil.toList(value, JSONObject.class);
@@ -90,7 +94,7 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
         }).orElse(new ArrayList<>());
 
         List<Map<String, Object>> list = new ArrayList<>();
-        if (CollUtil.isNotEmpty(objectList)){
+        if (CollUtil.isNotEmpty(objectList)) {
             list.addAll(objectList);
         }
 
@@ -117,6 +121,58 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
         return dbKVService.saveOrUpdate(dbKV, Wrappers.lambdaQuery(DbKV.class).eq(DbKV::getType, id).eq(DbKV::getKeyName, id));
         //return cacheService.save(KeyConstants.auto_plan_key_domain_all, json);
     }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean saveDomainAllByAdd(String json) {
+        if (StrUtil.isBlank(json)) {
+            log.warn("saveDomainAllByAdd: json为空");
+            return false;
+        }
+
+        String id = KeyConstants.auto_plan_key_domain_all;
+
+        try {
+            // 解析新增数据
+            List<JSONObject> addJsonList = JSONUtil.toList(json, JSONObject.class);
+            if (CollUtil.isEmpty(addJsonList)) {
+                log.warn("saveDomainAllByAdd: 解析后的addList为空");
+                return false;
+            }
+
+            // 解析现有数据
+            LambdaQueryWrapper<DbKV> query = Wrappers.lambdaQuery(DbKV.class)
+                    .eq(DbKV::getType, id)
+                    .eq(DbKV::getKeyName, id);
+
+            DbKV kv = dbKVService.getOne(query);
+            List<JSONObject> existingJsonList = Optional.ofNullable(kv)
+                    .map(k -> StrUtil.isNotBlank(k.getValue())
+                            ? JSONUtil.toList(k.getValue(), JSONObject.class)
+                            : new ArrayList<JSONObject>())
+                    .orElse(new ArrayList<>());
+
+            // 合并并去重（优先保留新增数据）
+            Map<String, JSONObject> configMap = existingJsonList.stream()
+                    .collect(Collectors.toMap(j -> j.getStr("name"), j -> j));
+
+            addJsonList.forEach(j -> configMap.put(j.getStr("name"), j));
+
+            // 保存结果
+            DbKV dbKV = new DbKV();
+            dbKV.setType(id);
+            dbKV.setKeyName(id);
+            dbKV.setValue(JSONUtil.toJsonStr(configMap.values()));
+
+            boolean result = dbKVService.saveOrUpdate(dbKV, query);
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException("域名配置保存失败", e);
+        }
+    }
+
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -145,7 +201,7 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
         DbKV dbKV = dbKVService.getOne(query);
         List<String> objectList = Optional.ofNullable(dbKV).map(k -> {
             String value = k.getValue();
-            if (ObjectUtils.isEmpty(value)){
+            if (ObjectUtils.isEmpty(value)) {
                 return new ArrayList<String>();
             }
             List<String> list = JSONUtil.toList(value, String.class);
@@ -153,7 +209,7 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
         }).orElse(new ArrayList<>());
 
         List<String> list = new ArrayList<>();
-        if (CollUtil.isNotEmpty(objectList)){
+        if (CollUtil.isNotEmpty(objectList)) {
             list.addAll(objectList);
         }
 

@@ -3,6 +3,7 @@ package com.cloud_guest.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.pojo.AutoPlanConfig;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 import java.util.Map;
@@ -39,4 +40,6 @@ public interface AutoPlanService extends IService<AutoPlanConfig>, BaseService {
     List<String> findCountryAll();
 
     boolean saveBatchList(List<AutoPlanConfig> configList);
+
+    boolean saveDomainAllByAdd( String json);
 }

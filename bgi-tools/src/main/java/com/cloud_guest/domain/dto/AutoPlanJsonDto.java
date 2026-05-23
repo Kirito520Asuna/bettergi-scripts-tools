@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
 import java.io.Serializable;
 
 /**
@@ -26,7 +27,10 @@ public class AutoPlanJsonDto implements Serializable {
     @JsonView(value = {BasicJsonView.AutoPlanView.class})
     private String uid;
     @Schema(description = "json")
-    @NotNull(groups = {BasicJsonView.AutoPlanView.class,BasicJsonView.AutoPlanDomainALLView.class})
-    @JsonView(value = {BasicJsonView.AutoPlanView.class,BasicJsonView.AutoPlanDomainALLView.class})
+    @NotNull(groups = {BasicJsonView.AutoPlanView.class, BasicJsonView.AutoPlanDomainALLView.class})
+    @JsonView(value = {BasicJsonView.AutoPlanView.class, BasicJsonView.AutoPlanDomainALLView.class})
     private String json;
+    @Schema(description = "source")
+    @JsonView(value = {BasicJsonView.AutoPlanDomainALLView.class})
+    private String source = "JS_API";//WEB_API
 }

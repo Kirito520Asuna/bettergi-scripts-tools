@@ -70,7 +70,12 @@ public class AutoPlanController {
     public Result<String> saveDomainAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
                                         @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
                                         @RequestBody AutoPlanJsonDto dto) {
-        autoPlanService.saveDomainAll(dto.getJson());
+        String source = dto.getSource();
+        if (ObjectUtils.equals(source, "WEB_API")){
+            autoPlanService.saveDomainAll(dto.getJson());
+        }else if (ObjectUtils.equals(source, "JS_API")){
+            autoPlanService.saveDomainAllByAdd(dto.getJson());
+        }
         return ok();
     }
 
