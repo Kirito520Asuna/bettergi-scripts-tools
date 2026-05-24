@@ -198,7 +198,7 @@ check:
     name: # token名称 默认为空
     value: # token值 默认为空
 bgi-tools:
-  version: 0.1.1
+  version: 0.1.2
 config:
   backup-path: backup
 #设置默认账号密码
