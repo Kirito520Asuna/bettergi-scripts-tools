@@ -59,8 +59,14 @@
           </div>
           <div class="form-group">
             <label>类型</label>
-            <input v-model="editingItem.type" class="field-input" placeholder="类型(天赋/武器/圣遗物)"
-                   @change="handleEditTypeChange"/>
+<!--            <input v-model="editingItem.type" class="field-input" placeholder="类型(天赋/武器/圣遗物)"
+                   @change="handleEditTypeChange"/>-->
+
+            <el-select v-model="editingItem.type" class="field-select" @change="handleTypeChange" placeholder="请选择类型">
+              <el-option label="天赋" value="天赋" />
+              <el-option label="武器" value="武器" />
+              <el-option label="圣遗物" value="圣遗物" />
+            </el-select>
           </div>
           <div class="form-group">
             <label>刷取物品列表（最多{{ getMaxListLength(editingItem.type) }}个）</label>
@@ -97,11 +103,11 @@
           </div>
           <div class="form-group">
             <label>类型</label>
-            <select v-model="newItem.type" class="field-input" @change="handleTypeChange">
-              <option value="天赋">天赋</option>
-              <option value="武器">武器</option>
-              <option value="圣遗物">圣遗物</option>
-            </select>
+            <el-select v-model="newItem.type" class="field-select" @change="handleTypeChange" placeholder="请选择类型">
+              <el-option label="天赋" value="天赋" />
+              <el-option label="武器" value="武器" />
+              <el-option label="圣遗物" value="圣遗物" />
+            </el-select>
           </div>
           <div class="form-group">
             <label>刷取物品列表（最多{{ getMaxListLength(newItem.type) }}个）</label>
@@ -111,7 +117,7 @@
                   :key="index"
                   v-model="newItem.list[index]"
                   class="field-input list-item-input"
-                  :placeholder="`物品${index + 1}`"
+                  :placeholder="`物品${index + 1} ${newItem.type!=='圣遗物'?'<请严格按照游戏顺序填写>':''}`"
               />
             </div>
           </div>
@@ -479,6 +485,49 @@ onMounted(() => {
   outline: none;
   border-color: #00ffff;
   box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.1);
+}
+
+/* Select 美化样式 - 圆角 */
+.field-select {
+  width: 100%;
+}
+
+.field-select :deep(.el-input__wrapper) {
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+  color: black;
+}
+
+.field-select :deep(.el-input__wrapper:hover) {
+  border-color: #00ffff;
+}
+
+.field-select :deep(.el-input__wrapper.is-focus) {
+  border-color: #00ffff;
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.2);
+}
+
+.field-select :deep(.el-select-dropdown) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.field-select :deep(.el-select-dropdown__item) {
+  border-radius: 4px;
+  margin: 2px 8px;
+}
+
+.field-select :deep(.el-select-dropdown__item:hover) {
+  background: linear-gradient(135deg, #4195ff, #00ffff);
+  color: white;
+}
+
+.field-select :deep(.el-select-dropdown__item.is-selected) {
+  background: linear-gradient(135deg, #4195ff, #00ffff);
+  color: white;
+  font-weight: 600;
 }
 
 .list-inputs {
