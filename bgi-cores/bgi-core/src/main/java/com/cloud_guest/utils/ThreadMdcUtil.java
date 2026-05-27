@@ -20,7 +20,7 @@ public final class ThreadMdcUtil {
      * @return
      */
     public static String generateTraceId() {
-        return IdUtil.fastSimpleUUID();
+        return IdUtil.fastSimpleUUID().substring(0, 8);
     }
 
     /**
