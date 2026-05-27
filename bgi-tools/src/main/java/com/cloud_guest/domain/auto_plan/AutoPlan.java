@@ -45,6 +45,9 @@ public class AutoPlan {
     @Schema(description = "是否启用")
     @JsonProperty("enable")
     private Boolean enable = Boolean.TRUE;
+    @Schema(description = "是否记录执行")
+    @JsonProperty("record")
+    private Boolean record = Boolean.FALSE;
     @Schema(description = "秘境参数")
     @JsonProperty("autoFight")
     private AutoFight autoFight;
@@ -72,6 +75,7 @@ public class AutoPlan {
         planConfig.setDays(list.stream().map(String::valueOf).collect(Collectors.joining(",")));
         planConfig.setDayName(this.dayName);
         planConfig.setEnable(this.enable);
+        planConfig.setRecord(this.record);
         planConfig.setOrderSort(this.order);
         planConfig.setRunType(this.runType);
         planConfig.setSelectedType(this.selectedType);

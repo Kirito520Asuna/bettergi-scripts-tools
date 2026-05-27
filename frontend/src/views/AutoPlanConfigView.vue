@@ -316,6 +316,7 @@ const addConfig = (config = undefined) => {
       days: [],
       runType: runTypesDefault()[0],//先写死 预留地脉类型
       enable: true,
+      record: false,
       dayName: undefined,
       showDaysSelector: false,   // ← 新增
       showPhysicalSelector: false,   // ← 新增
@@ -527,6 +528,7 @@ const getFinalConfigs = () => {
       dayName: c.dayName,
       runType: c.runType,
       enable: c.enable,
+      record: c.record,
       // daysName: c.daysName,
       // physical: c.physical,
       selectedType: c.selectedType, // 新增字段
@@ -1114,6 +1116,13 @@ const totalCount = computed(() => {
                 <span style="color: red;">是否启用本计划</span>
               </div>
               <div class="form-group common">
+                <label>是否记录：</label>
+                <el-switch
+                    v-model="config.record"
+                />
+                <span style="color: red;">是否记录本计划</span>
+              </div>
+              <div class="form-group common">
                 <label>执行日：</label>
                 <div
                     class="days-display"
@@ -1407,6 +1416,13 @@ const totalCount = computed(() => {
               <button class="btn danger" @click="removeConfig(config.id)">🗑️ 删除</button>
               <button class="btn btn-submit" @click="addConfig(config)">拷贝一份</button>
             </div>
+          </div>
+
+          <!-- 添加配置占位卡片 -->
+          <div class="add-config-placeholder" @click="addConfig()">
+            <div class="placeholder-icon">+</div>
+            <div class="placeholder-text">添加新配置</div>
+            <div class="placeholder-hint">点击创建新的执行计划</div>
           </div>
         </div>
         <!-- 右侧固定触发按钮（悬浮在页面右中部） -->
@@ -1832,10 +1848,10 @@ const totalCount = computed(() => {
   min-width: 80px;
 }
 
-.empty-state {
+/*.empty-state {
   padding: 40px 0;
   text-align: center;
-}
+}*/
 
 .dialog-footer {
   display: flex;
@@ -1861,4 +1877,106 @@ const totalCount = computed(() => {
 .api-dialog-content::-webkit-scrollbar-thumb:hover {
   background: var(--el-color-info);
 }
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #a0aec0;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.empty-state h3 {
+  margin: 0 0 0.5rem 0;
+  color: #718096;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+
+/* 添加配置占位卡片样式 */
+.add-config-placeholder {
+  min-width: 280px;
+  max-width: 300px;
+  min-height: 400px;
+  border: 2px dashed rgba(100, 160, 255, 0.4);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.add-config-placeholder:hover {
+  border-color: rgba(100, 160, 255, 0.8);
+  background: rgba(255, 255, 255, 0.5);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(100, 160, 255, 0.2);
+}
+
+.add-config-placeholder .placeholder-icon {
+  font-size: 3rem;
+  color: #409eff;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.add-config-placeholder:hover .placeholder-icon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.add-config-placeholder .placeholder-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ff6a00;
+  letter-spacing: 0.5px;
+}
+
+.add-config-placeholder .placeholder-hint {
+  font-size: 0.85rem;
+  color: #0abf13;
+  text-align: center;
+}
+
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .add-config-placeholder {
+    min-width: 100%;
+    min-height: 200px;
+  }
+
+  .add-config-placeholder .placeholder-icon {
+    font-size: 2.5rem;
+  }
+
+  .add-config-placeholder .placeholder-text {
+    font-size: 1rem;
+  }
+}
+
+
 </style>

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS auto_plan_config (
     selected_type          VARCHAR(255),
     run_type               VARCHAR(255),
     enable                 BOOLEAN,                                     -- TINYINT(1) → BOOLEAN
+    record                 BOOLEAN,                                     -- TINYINT(1) → BOOLEAN
     auto_fight             TEXT,
     auto_ley_line_outcrop  TEXT,
     auto_stygian_onslaught TEXT,
@@ -33,6 +34,7 @@ COMMENT ON COLUMN auto_plan_config.day_name               IS '日期名称';
 COMMENT ON COLUMN auto_plan_config.selected_type          IS '选中类型';
 COMMENT ON COLUMN auto_plan_config.run_type               IS '运行类型';
 COMMENT ON COLUMN auto_plan_config.enable                 IS '是否启用';
+COMMENT ON COLUMN auto_plan_config.record                 IS '是否记录';
 COMMENT ON COLUMN auto_plan_config.auto_fight             IS '秘境配置';
 COMMENT ON COLUMN auto_plan_config.auto_ley_line_outcrop  IS '自动地脉花配置';
 COMMENT ON COLUMN auto_plan_config.auto_stygian_onslaught IS '自动幽境配置';

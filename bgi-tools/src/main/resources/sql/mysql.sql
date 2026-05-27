@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS `auto_plan_config` (
     `selected_type`          VARCHAR(255) DEFAULT NULL COMMENT '选中类型',
     `run_type`               VARCHAR(255) DEFAULT NULL COMMENT '运行类型',
     `enable`                 TINYINT(1)   DEFAULT NULL COMMENT '是否启用',
+    `record`                 TINYINT(1)   DEFAULT NULL COMMENT '是否记录',
     `auto_fight`             TEXT         DEFAULT NULL COMMENT '秘境配置',
     `auto_ley_line_outcrop`  TEXT         DEFAULT NULL COMMENT '自动地脉花配置',
     `auto_stygian_onslaught` TEXT         DEFAULT NULL COMMENT '自动幽境配置',

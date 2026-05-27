@@ -46,6 +46,8 @@ public class AutoPlanConfig extends BaseEntity {
     private String runType;
     @TableField(value = COL_ENABLE)
     private Boolean enable;
+    @TableField(value = COL_RECORD)
+    private Boolean record = Boolean.FALSE;
     @TableField(value = COL_AUTO_FIGHT)
     private String autoFight;
     @TableField(value = COL_AUTO_LEY_LINE_OUTCROP)
@@ -64,6 +66,7 @@ public class AutoPlanConfig extends BaseEntity {
     public static final String COL_SELECTED_TYPE = "selected_type";
     public static final String COL_RUN_TYPE = "run_type";
     public static final String COL_ENABLE = "enable";
+    public static final String COL_RECORD = "record";
     public static final String COL_AUTO_FIGHT = "auto_fight";
     public static final String COL_AUTO_LEY_LINE_OUTCROP = "auto_ley_line_outcrop";
     public static final String COL_AUTO_STYGIAN_ONSLAUGHT = "auto_stygian_onslaught";
@@ -73,6 +76,7 @@ public class AutoPlanConfig extends BaseEntity {
         autoPlanVo.setRunType(runType)
                 .setSelectedType(selectedType)
                 .setEnable(enable)
+                .setRecord(record)
                 .setDays(StrUtil.isBlank(days) ? new ArrayList<>() : Arrays.stream(days.split(",")).map(Integer::valueOf).toList())
                 .setDayName(dayName)
                 .setOrder(orderSort)

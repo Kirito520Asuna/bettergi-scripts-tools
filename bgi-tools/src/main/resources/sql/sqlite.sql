@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS auto_plan_config (
     selected_type          TEXT,                                 -- 选中类型
     run_type               TEXT,                                 -- 运行类型
     enable                 INTEGER DEFAULT 0,                   -- 是否启用（0/1）
+    record                 INTEGER DEFAULT 0,
     auto_fight             TEXT,                                -- 秘境配置
     auto_ley_line_outcrop  TEXT,                                -- 自动地脉花配置
     auto_stygian_onslaught TEXT,                                -- 自动幽境配置
