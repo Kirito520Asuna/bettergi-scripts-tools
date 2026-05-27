@@ -3,7 +3,7 @@ import service from "@utils/request.js";
 async function restartService(ids = []) {
     const response = await service.post('/jwt/application/restart', {
         ids: ids
-    })
+    }, { silentError: true })
     return response;
 }
 

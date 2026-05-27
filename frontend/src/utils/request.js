@@ -46,19 +46,25 @@ service.interceptors.response.use(async res => {
             return res.data
         }
         if (code === 401) {
-            ElMessage({message: msg, type: 'error'})
+            if (!res.config?.silentError) {
+                ElMessage({message: msg, type: 'error'})
+            }
             // const token_name = import.meta.env.VITE_BASE_TOKEN_NAME || 'bgi_tools_token'
             // localStorage.removeItem(token_name)
             await removeLocalToken()
             return Promise.reject(new Error(msg))
         } else if (code === 500) {
-            ElMessage({message: msg, type: 'error'})
+            if (!res.config?.silentError) {
+                ElMessage({message: msg, type: 'error'})
+            }
             return Promise.reject(new Error(msg))
         } else if (code === 601) {
             ElMessage({message: msg, type: 'warning'})
             return Promise.reject(new Error(msg))
         } else if (code !== 200) {
-            ElNotification.error({title: msg})
+            if (!res.config?.silentError) {
+                ElNotification.error({title: msg})
+            }
             return Promise.reject('error')
         } else {
             const tokenName = await getLocalTokenName();
@@ -81,7 +87,10 @@ service.interceptors.response.use(async res => {
         } else if (message.includes("Request failed with status code")) {
             message = "系统接口" + message.substr(message.length - 3) + "异常";
         }
-        ElMessage({message: message, type: 'error', duration: 5 * 1000})
+        console.log('error.config:', error.config)
+        if (!error.config?.silentError) {
+            ElMessage({message: message, type: 'error', duration: 5 * 1000})
+        }
         return Promise.reject(error)
     }
 )

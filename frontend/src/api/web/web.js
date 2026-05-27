@@ -82,7 +82,6 @@ async function restart(restartClickRef, applicationIds, restartTimeout = 3 * 60 
         }
         ElMessage.success('重启成功');
     } catch (error) {
-        // 捕获异常并提示用户
         console.error('重启请求失败:', error);
         ElMessage.error('重启请求异常，请稍后再试');
     } finally {
@@ -137,8 +136,6 @@ async function getAllSystemInfo(applicationIds, restartTimeout = 3 * 60 * 1000) 
 }
 
 
-
-
 /**
  * 前往主页的异步函数
  * 使用ElMessageBox显示确认对话框，用户确认后跳转到主页
@@ -157,6 +154,7 @@ async function toHomePage(confirm = true) {
     // 用户确认后，使用router进行页面导航到主页路径'/'
     router.push('/'); // 假设主页路径是 '/'
 }
+
 /**
  * 返回上一页
  */
@@ -170,6 +168,7 @@ async function goBack(confirm = true) {
     }
     router.go(-1);
 }
+
 /**
  * 设置本地存储的令牌
  * @param {string} token - 需要存储的令牌值
