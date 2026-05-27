@@ -6,11 +6,10 @@
 }
 
 .settings-container {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 80%);
-    border-radius: 20px;
-    padding: 40px;
     box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
     backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
 }
 
 .settings-title {
@@ -34,12 +33,12 @@
 .settings-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
-    margin-top: 20px;
+    gap: 10px;
+    margin-top: 15px;
 }
 
 .setting-card {
-    max-width: 500px;
+    width: 100%;
     background: whitesmoke;
     border-radius: 15px;
     overflow: hidden;
@@ -363,6 +362,7 @@
 .system-info-card {
     grid-column: span 2;
     max-width: 100%;
+    margin-bottom: 10px;
 }
 
 .system-info-content {
@@ -524,16 +524,17 @@
 
     .settings-grid {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 15px;
     }
 
     .setting-card {
-        max-width: 100%;
+        width: 100%;
     }
 
     .system-info-card {
         grid-column: span 1;
-        max-width: 100%;
+        width: 100%;
+        margin-bottom: 8px;
     }
 
     .system-info-content {
