@@ -54,9 +54,9 @@ knife4j:
     enable-dynamic-parameter: true
   #swagger
   basic:
-    enable: false
-    username: root
-    password: root
+    enable: ${auth.enabled:false}
+    username: ${auth.users[0].username:root}
+    password: ${auth.users[0].password:root}
 sign:
   api:
     name: ${spring.application.name}
