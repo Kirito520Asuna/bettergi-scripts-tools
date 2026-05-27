@@ -87,7 +87,7 @@ service.interceptors.response.use(async res => {
         } else if (message.includes("Request failed with status code")) {
             message = "系统接口" + message.substr(message.length - 3) + "异常";
         }
-        console.log('error.config:', error.config)
+        // console.log('error.config:', error.config)
         if (!error.config?.silentError) {
             ElMessage({message: message, type: 'error', duration: 5 * 1000})
         }

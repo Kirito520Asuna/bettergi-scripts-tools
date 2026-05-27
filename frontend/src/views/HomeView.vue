@@ -3,7 +3,6 @@
     <div v-if="RestartClick" class="restart-overlay" @keydown.esc.prevent tabindex="0">
       <div class="restart-modal">
         <div class="warning-header">
-          <span class="warning-icon">!</span>
           <h3>系统正在重启</h3>
         </div>
 

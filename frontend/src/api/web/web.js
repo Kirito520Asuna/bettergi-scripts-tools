@@ -82,8 +82,10 @@ async function restart(restartClickRef, applicationIds, restartTimeout = 3 * 60 
         }
         ElMessage.success('重启成功');
     } catch (error) {
-        console.error('重启请求失败:', error);
-        ElMessage.error('重启请求异常，请稍后再试');
+        if (!error.toString().includes("后端接口连接异常")) {
+            console.error('重启请求失败:', error);
+            ElMessage.error('重启请求异常，请稍后再试');
+        }
     } finally {
         // 无论成功与否，都恢复状态
         restartClickRef.value = false;

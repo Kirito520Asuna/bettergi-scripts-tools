@@ -8,7 +8,9 @@ async function restartService(ids = []) {
 }
 
 async function getApplicationIds() {
-    const response = await service.get('/jwt/application/applicationIds')
+    const response = await service.get('/jwt/application/applicationIds',{
+        silentError: true
+    })
     return response;
 }
 
