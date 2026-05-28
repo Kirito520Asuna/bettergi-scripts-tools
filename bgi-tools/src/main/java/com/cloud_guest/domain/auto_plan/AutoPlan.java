@@ -69,7 +69,7 @@ public class AutoPlan {
         planConfig.setAutoLeyLineOutcrop(JSONUtil.toJsonStr(this.autoLeyLineOutcrop));
         planConfig.setAutoStygianOnslaught(JSONUtil.toJsonStr(this.autoStygianOnslaught));
         List<Integer> list = new ArrayList<>();
-        if (CollUtil.isEmpty(this.days)) {
+        if (CollUtil.isNotEmpty(this.days)) {
             list.addAll(this.days);
         }
         planConfig.setDays(list.stream().map(String::valueOf).collect(Collectors.joining(",")));
