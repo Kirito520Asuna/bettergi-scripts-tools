@@ -595,6 +595,8 @@ const getFinalConfigsToKey = () => {
     key += "|"
     key += (item.order || 1)
     key += "|"
+    key += (item.record ? '1' : '')
+    key += "|"
     if (item.runType === runTypesDefault()[0]) {
       //"|队伍名称|秘境名称/刷取物品名称|刷几轮|限时/周日,..."
       let autoFight = item.autoFight;
@@ -915,7 +917,7 @@ const isConfigSelected = (configId) => {
 
 // 处理选中状态变化
 const handleConfigSelection = (configId, isSelected) => {
-  if(multiSelectEnabled){
+  if (multiSelectEnabled) {
     if (isSelected) {
       batchJson.value.selectedConfigs.add(configId)
     } else {
@@ -975,111 +977,79 @@ const totalCount = computed(() => {
 <template>
   <div class="home">
     <div class="container">
-<!--      <div class="fixed-container">-->
-        <h2 class="title">自动体力计划配置列表</h2>
-        <div class="config-header">
-          <!-- template 部分保持基本相同，但增加 v-if 判断 -->
-          <div class="sort-control-card">
-            <el-autocomplete
-                v-model="uid"
-                :fetch-suggestions="querySearchAsync"
-                placeholder="设置UID/点击云端配置"
-                :trigger-on-focus="hasCloudUidList"
-                :clearable="true"
-                :show-loading="cloud.LoadingUidList"
-                @select="handleUidSelect"
-                @focus="loadCloudUidListIfNeeded"
-                style="width: 180px;"
-            >
-              <template #default="{ item }">
-                <div class="uid-item">
-                  <span class="uid-text">{{ item?.uid ? item.uid : item }}</span>
-                  <span v-if="item.as" class="uid-as"> : {{ item.as }}</span>
-                </div>
-              </template>
 
-            </el-autocomplete>
-          </div>
+      <h2 class="title">自动体力计划配置列表</h2>
+      <div class="config-header">
+        <!-- template 部分保持基本相同，但增加 v-if 判断 -->
+        <div class="sort-control-card">
+          <el-autocomplete
+              v-model="uid"
+              :fetch-suggestions="querySearchAsync"
+              placeholder="设置UID/点击云端配置"
+              :trigger-on-focus="hasCloudUidList"
+              :clearable="true"
+              :show-loading="cloud.LoadingUidList"
+              @select="handleUidSelect"
+              @focus="loadCloudUidListIfNeeded"
+              style="width: 180px;"
+          >
+            <template #default="{ item }">
+              <div class="uid-item">
+                <span class="uid-text">{{ item?.uid ? item.uid : item }}</span>
+                <span v-if="item.as" class="uid-as"> : {{ item.as }}</span>
+              </div>
+            </template>
 
-          <!--          <div class="sort-control-card">
-                      <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
-                    </div>-->
-          <!-- 添加配置按钮 -->
-          <button @click="addConfig()" class="btn btn-add">➕ 添加一条配置</button>
-          <div class="sort-control-card">
-            <span class="sort-label">执行排序</span>
-            <el-switch
-                v-model="orderSortConfigs"
-                @change="debouncedSort"
-            />
-          </div>
-          <button @click="submitConfigToBackend" class="btn btn-submit">☁️🚀同步到云端</button>
-          <button @click="findDomains" class="btn btn-submit">☁️🔄加载云端配置</button>
-          <button @click="removeConfigToBackend" class="btn danger">☁️🗑️移除云端配置</button>
-          <button @click="removeConfigAll" class="btn danger">🗑️清除全部</button>
-          <button @click="handleApi" class="btn btn-submit">查看脚本配置API</button>
-
-          <div class="sort-control-card" v-if="configs.length > 0">
-            <el-switch
-                v-if="configs.length > 0"
-                v-model="multiSelectEnabled"
-                active-text="多选"
-                inactive-text="取消"
-                style="margin-left: 12px;"
-            />
-          </div>
-
-          <div class="sort-control-card" v-if="configs.length > 0&&multiSelectEnabled">
-            <el-switch
-                v-if="configs.length > 0"
-                v-model="isAllSelectedComputed"
-                active-text="全选"
-                inactive-text="取消"
-                style="margin-left: 12px;"
-            />
-          </div>
-
-          <button class="btn danger" v-if="configs.length > 0&&multiSelectEnabled" @click="removeConfigMultiple">🗑️ 批量删除
-          </button>
-          <button class="btn btn-submit" v-if="configs.length > 0&&multiSelectEnabled" @click="batchCopyConfigs">📋 批量复制
-          </button>
-          <button class="btn btn-submit"v-if="configs.length > 0&&multiSelectEnabled&&batchJson.selectedConfigs.size>0" @click="batchJson.batch.show=true">📝
-            批量修改
-          </button>
+          </el-autocomplete>
         </div>
 
-<!--        &lt;!&ndash; 在配置列表上方添加批量操作区域 &ndash;&gt;
-        <div class="config-header" v-if="configs.length > 0">
-          &lt;!&ndash;          <button class="btn btn-submit" v-if="configs.length>0"  @click="toggleSelectAll">全选</button>&ndash;&gt;
-          <div class="sort-control-card">
-            <el-switch
-                v-if="configs.length > 0"
-                v-model="multiSelectEnabled"
-                active-text="多选"
-                inactive-text="取消"
-                style="margin-left: 12px;"
-            />
-          </div>
-          <div class="sort-control-card" v-if="multiSelectEnabled">
-            <el-switch
-                v-if="configs.length > 0"
-                v-model="isAllSelectedComputed"
-                active-text="全选"
-                inactive-text="取消"
-                style="margin-left: 12px;"
-            />
-          </div>
+        <!--          <div class="sort-control-card">
+                    <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
+                  </div>-->
+        <!-- 添加配置按钮 -->
+        <button @click="addConfig()" class="btn btn-add">➕ 添加一条配置</button>
+        <div class="sort-control-card">
+          <span class="sort-label">执行排序</span>
+          <el-switch
+              v-model="orderSortConfigs"
+              @change="debouncedSort"
+          />
         </div>
-        <div class="config-header" v-if="multiSelectEnabled && configs.length > 0">
-          <button class="btn danger" @click="removeConfigMultiple">🗑️ 批量删除
-          </button>
-          <button class="btn btn-submit" @click="batchCopyConfigs">📋 批量复制
-          </button>
-          <button class="btn btn-submit" v-if="batchJson.selectedConfigs.size>0" @click="batchJson.batch.show=true">📝
-            批量修改
-          </button>
-        </div>-->
-<!--      </div>-->
+        <button @click="submitConfigToBackend" class="btn btn-submit">☁️🚀同步到云端</button>
+        <button @click="findDomains" class="btn btn-submit">☁️🔄加载云端配置</button>
+        <button @click="removeConfigToBackend" class="btn danger">☁️🗑️移除云端配置</button>
+        <button @click="removeConfigAll" class="btn danger">🗑️清除全部</button>
+        <button @click="handleApi" class="btn btn-submit">查看脚本配置API</button>
+
+        <div class="sort-control-card" v-if="configs.length > 0">
+          <el-switch
+              v-if="configs.length > 0"
+              v-model="multiSelectEnabled"
+              active-text="多选"
+              inactive-text="取消"
+              style="margin-left: 12px;"
+          />
+        </div>
+
+        <div class="sort-control-card" v-if="configs.length > 0&&multiSelectEnabled">
+          <el-switch
+              v-if="configs.length > 0"
+              v-model="isAllSelectedComputed"
+              active-text="全选"
+              inactive-text="取消"
+              style="margin-left: 12px;"
+          />
+        </div>
+
+        <button class="btn danger" v-if="configs.length > 0&&multiSelectEnabled" @click="removeConfigMultiple">🗑️ 批量删除
+        </button>
+        <button class="btn btn-submit" v-if="configs.length > 0&&multiSelectEnabled" @click="batchCopyConfigs">📋 批量复制
+        </button>
+        <button class="btn btn-submit" v-if="configs.length > 0&&multiSelectEnabled&&batchJson.selectedConfigs.size>0"
+                @click="batchJson.batch.show=true">📝
+          批量修改
+        </button>
+      </div>
 
       <div class="content-area">
         <div class="selected-count-badge" v-if="multiSelectEnabled">
@@ -1092,7 +1062,7 @@ const totalCount = computed(() => {
           <div v-for="(config,index) in configs" :key="index" class="config-item"
                :class="{ 'selected': isConfigSelected(config.id) }"
                @click="handleConfigSelection(config.id, !isConfigSelected(config.id))"
-               >
+          >
             <el-checkbox
                 :model-value="isConfigSelected(config.id)"
                 @update:model-value="(val) => handleConfigSelection(config.id, val)"
@@ -1430,10 +1400,6 @@ const totalCount = computed(() => {
           <i class="el-icon-document"></i>
           <span>查看/复制配置结果</span>
         </div>
-        <!--        <div class="fixed-search" @click="showResultDrawer = true" title="查看/复制配置结果">
-                  <i class="el-icon-document"></i>
-                  <span>sous</span>
-                </div>-->
       </div>
 
       <div class="external-pop-up-frame">
@@ -1894,8 +1860,12 @@ const totalCount = computed(() => {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .empty-state h3 {
