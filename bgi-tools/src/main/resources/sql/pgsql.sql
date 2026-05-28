@@ -134,12 +134,13 @@ COMMENT ON COLUMN db_kv.update_time IS '更新时间';
 COMMENT ON COLUMN db_kv.remark      IS '备注';
 
 
+
 -- =========================================================
 -- 表 5: sys_job
 -- =========================================================
 CREATE TABLE IF NOT EXISTS sys_job (
-    job_id          BIGINT       PRIMARY KEY,
-    job_name        VARCHAR(255),
+                                       job_id          BIGINT       PRIMARY KEY,
+                                       job_name        VARCHAR(255),
     job_group       VARCHAR(64),
     invoke_target   VARCHAR(500) NOT NULL,
     cron_expression VARCHAR(255),
