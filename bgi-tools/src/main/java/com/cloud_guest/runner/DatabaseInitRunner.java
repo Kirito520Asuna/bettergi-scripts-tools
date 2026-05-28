@@ -2,6 +2,7 @@ package com.cloud_guest.runner;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.cloud_guest.pojo.AutoPlanConfig;
 import com.cloud_guest.utils.ModeUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -48,36 +49,17 @@ public class DatabaseInitRunner {
         DB_TYPE_TO_SCRIPT.put("SQLite", "sqlite.sql");
 
         DB_TYPE_TO_DB_SCRIPT.put("SQLite", List.of(
-                "ALTER TABLE auto_plan_config ADD COLUMN record INTEGER DEFAULT 0"
+                String.format("ALTER TABLE %s ADD COLUMN %s INTEGER DEFAULT 0", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_RECORD)
         ));
 
-        DB_TYPE_TO_DB_SCRIPT.put("PostgreSQL", List.of("""
-            DO $$ 
-            BEGIN 
-                IF NOT EXISTS (
-                    SELECT 1 FROM information_schema.columns 
-                    WHERE table_name = 'auto_plan_config' AND column_name = 'record'
-                ) THEN 
-                    ALTER TABLE auto_plan_config ADD COLUMN record BOOLEAN DEFAULT NULL; 
-                    COMMENT ON COLUMN auto_plan_config.record IS '是否记录'; 
-                END IF; 
-            END $$;
-            """));
+        DB_TYPE_TO_DB_SCRIPT.put("PostgreSQL", List.of(
+                String.format("ALTER TABLE %s ADD COLUMN %s BOOLEAN DEFAULT NULL", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_RECORD),
+                String.format("COMMENT ON COLUMN %s.%s IS '是否记录'", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_RECORD)
+        ));
 
-        DB_TYPE_TO_DB_SCRIPT.put("MySQL", List.of("""
-            SET @dbname = DATABASE();
-            SET @tablename = 'auto_plan_config';
-            SET @columnname = 'record';
-            SET @preparedStatement = (SELECT IF(
-              (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-               WHERE TABLE_SCHEMA = @dbname AND TABLE_NAME = @tablename AND COLUMN_NAME = @columnname) > 0, 
-              'SELECT 1', 
-              CONCAT('ALTER TABLE ', @tablename, ' ADD COLUMN `', @columnname, '` TINYINT(1) DEFAULT NULL COMMENT ''是否记录'' AFTER `remark`')
-            ));
-            PREPARE alterIfNotExists FROM @preparedStatement;
-            EXECUTE alterIfNotExists;
-            DEALLOCATE PREPARE alterIfNotExists;
-            """));
+        DB_TYPE_TO_DB_SCRIPT.put("MySQL", List.of(
+                String.format("ALTER TABLE %s ADD COLUMN `%s` TINYINT(1) DEFAULT NULL COMMENT '是否记录' AFTER `remark`", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_RECORD)
+        ));
     }
 
     public DatabaseInitRunner(DataSource dataSource, ResourceLoader resourceLoader, Scheduler scheduler, JdbcTemplate jdbcTemplate) {
