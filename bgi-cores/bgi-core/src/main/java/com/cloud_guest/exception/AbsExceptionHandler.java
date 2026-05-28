@@ -59,14 +59,14 @@ public interface AbsExceptionHandler {
             ApiCode API_CODE = isProd() ? ApiCode.SERVICE_REPAIRING : ApiCode.SERVICE_CONFIG;
             code = API_CODE.getCode();
             message = API_CODE.getMessage();
-        } else if (e instanceof GlobalCustomException) {
+        } else if (e instanceof GlobalCustomException exception) {
             // 如果是全局自定义异常
-            GlobalCustomException exception = (GlobalCustomException) e;
+            //GlobalCustomException exception = (GlobalCustomException) e;
             code = exception.getCode();
             message = exception.getMessage();
-        } else if (e instanceof GlobalException) {
+        } else if (e instanceof GlobalException exception) {
             // 如果是全局异常
-            GlobalException exception = (GlobalException) e;
+            //GlobalException exception = (GlobalException) e;
             code = exception.getCode();
             message = exception.getMessage();
         } else {

@@ -33,8 +33,8 @@ public class Cache<T extends Object> {
         if (ObjectUtils.equals(this.getType(), "json")) {
             T data1 = this.getData();
             String data = "";
-            if (data1 instanceof String) {
-                data = (String) data1;
+            if (data1 instanceof String str) {
+                data = str;
             }
             if (JSONUtil.isTypeJSONArray(data)) {
                 List<String> maps = JSONUtil.toList(data, String.class);
@@ -63,8 +63,8 @@ public class Cache<T extends Object> {
         if (ObjectUtils.equals(this.getType(), CacheType.json.name())) {
             T data1 = this.getData();
             String data = "";
-            if (data1 instanceof String) {
-                data = (String) data1;
+            if (data1 instanceof String str) {
+                data = str;
             }
             if (JSONUtil.isTypeJSON(data) && !JSONUtil.isTypeJSONArray(data)) {
                 Map<String, Object> bean = JSONUtil.toBean(data, Map.class);
@@ -79,8 +79,8 @@ public class Cache<T extends Object> {
         if (ObjectUtils.equals(this.getType(), CacheType.json.name())) {
             T data1 = this.getData();
             String data = "";
-            if (data1 instanceof String) {
-                data = (String) data1;
+            if (data1 instanceof String str) {
+                data = str;
             }
             if (JSONUtil.isTypeJSONArray(data)) {
                 List<String> maps = JSONUtil.toList(data, String.class);

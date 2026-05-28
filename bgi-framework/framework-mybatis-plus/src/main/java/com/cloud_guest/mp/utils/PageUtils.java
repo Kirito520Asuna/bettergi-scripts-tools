@@ -30,13 +30,13 @@ public class PageUtils {
             if (ObjectUtil.isNotEmpty(o) && ObjectUtil.isNotEmpty(o1)) {
                 Integer pageNumber = null;
                 Integer pageSize = null;
-                if (o instanceof Integer && o1 instanceof Integer) {
-                    pageNumber = (Integer) o;
-                    pageSize = (Integer) o1;
+                if (o instanceof Integer number && o1 instanceof Integer size) {
+                    pageNumber = number;
+                    pageSize = size;
                     //PageHelper.startPage(pageNumber, pageSize);
-                } else if (o instanceof Long && o1 instanceof Long) {
-                    pageNumber = ((Long) o).intValue();
-                    pageSize = ((Long) o1).intValue();
+                } else if (o instanceof Long number && o1 instanceof Long size) {
+                    pageNumber = number.intValue();
+                    pageSize = size.intValue();
                     //PageHelper.startPage(pageNumber.intValue(), pageSize.intValue());
                 }
 
