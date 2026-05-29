@@ -1,4 +1,4 @@
-package com.cloud_guest.manager;
+package com.cloud_guest.websocket;
 
 import cn.hutool.core.util.StrUtil;
 import com.cloud_guest.domain.dto.WsProxyDto;

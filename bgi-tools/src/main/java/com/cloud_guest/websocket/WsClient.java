@@ -1,4 +1,4 @@
-package com.cloud_guest.manager;
+package com.cloud_guest.websocket;
 
 import jakarta.websocket.*;
 import java.net.URI;
