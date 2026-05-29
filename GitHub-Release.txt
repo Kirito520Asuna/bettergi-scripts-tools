@@ -1,5 +1,30 @@
 版本详情:
- - **修复圣遗物类型数据验证**：修正了圣遗物类型的排序标记与数量校验条件，同时修复了代码中的语法错误，确保数据验证逻辑正确执行。
- - **新增数据源控制与保存优化**：后端控制器增加数据来源判断（支持WEB_API与JS_API），前端API参数格式化及函数声明调整，DTO新增source字段。实现数据库批量保存与增量合并，完善数据校验机制，确保数据完整性。
- - **重构秘境视图交互与输入**：将新增与占位卡片点击统一为 `openAddDialog`，使用独立输入框替代文本域展示刷取物品列表，增加动态最大长度提示，优化类型切换与数据初始化流程，移除废弃字段，并适配响应式样式。
- - **秘境管理功能**：实现秘境数据的增删改查界面，支持按类型分组显示，集成后端API保存JSON数据，添加编辑/新增弹窗、物品列表输入限制及验证功能，提供卡片点击编辑与新增占位交互。
+
+### ✨ 新增功能
+- feat(auto-plan): 添加配置占位卡片和空状态样式
+- feat(auto-plan): 添加自动计划ID字段并优化配置转换逻辑
+- feat(request): 添加静默错误处理功能
+
+### 🔧 功能优化
+- refactor(auto-plan): 优化天数列表处理逻辑
+- refactor(database): 优化数据库初始化逻辑
+- refactor(database): 使用常量替换硬编码表名和列名
+- refactor(exception): 优化异常处理器中的类型转换逻辑
+- refactor(AutoPlanConfigView): 将原生select替换为el-select组件
+
+### 🐛 Bug修复
+- fix(auto-plan): 修复自动规划批量保存时ID映射和更新逻辑问题
+- fix(auto-plan): 修复自动规划配置页面的数据同步问题
+- fix(auto-plan): 修复自动计划配置视图中的键值生成和代码格式问题
+- fix(auto-plan): 添加ID字段并更新秘境标题显示
+- fix(database): 修复 PostgreSQL 数据库表结构定义格式
+- fix(utils): 限制追踪ID长度为8位
+- fix(ui): 移除重启提示中的警告图标并优化错误处理
+
+### 🎨 样式改进
+- style(form): 使用Element Plus组件替换原生select并添加美化样式
+- style(settings): 更新设置页面样式以优化布局和间距
+- feat(style): 添加加载动画样式
+
+### ️ 配置更新
+- config(security): 更新Swagger基本认证配置为环境变量驱动
