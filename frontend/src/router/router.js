@@ -93,9 +93,9 @@ const routes = [
         meta: {
             group: 'JS扩展功能',
             isRoot: true,
-            title: '全部秘境展示',
-            desc: '全部秘境展示',
-            asSubParentTitle: '全部秘境展示',
+            title: '全部秘境',
+            desc: '全部秘境',
+            asSubParentTitle: '全部秘境',
             icon: 'Domain'
         },
     }

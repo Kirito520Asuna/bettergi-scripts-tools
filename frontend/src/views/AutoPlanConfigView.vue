@@ -522,6 +522,7 @@ const getFinalConfigs = () => {
     // c.autoFight.physical.sort((a, b) => a.order - b.order)
     changShowDaysButton(c)
     let json = {
+      id: c.id,
       order: c.order,
       // day: c.day,
       days: c.days,
