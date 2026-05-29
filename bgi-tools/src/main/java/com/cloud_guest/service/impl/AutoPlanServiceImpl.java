@@ -40,10 +40,30 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
     @Transactional(rollbackFor = Exception.class)
     public boolean saveOrUpdateBatchList(List<AutoPlanConfig> configList) {
         if (CollUtil.isNotEmpty(configList)) {
-            //AutoPlanConfig planConfig = configList.stream().findFirst().get();
-            //String uid = planConfig.getUid();
-            //removeByUidList(CollUtil.toList(uid));
-            //boolean saveBatch = saveBatch(configList);
+            AutoPlanConfig planConfig = configList.stream().findFirst().get();
+            String uid = planConfig.getUid();
+
+            // 获取传入的所有有效ID
+            List<Long> ids = configList.stream()
+                    .map(AutoPlanConfig::getId)
+                    .filter(ObjectUtils::isNotEmpty)
+                    .toList();
+
+            // 查询数据库中该UID下的所有配置
+            List<AutoPlanConfig> existingList = this.lambdaQuery()
+                    .eq(AutoPlanConfig::getUid, uid)
+                    .list();
+
+            // 找出需要删除的配置：云端有但传入列表中没有的
+            List<Long> deleteIds = existingList.stream()
+                    .map(AutoPlanConfig::getId)
+                    .filter(id -> !ids.contains(id))
+                    .toList();
+
+            // 先删除不需要的配置，再保存/更新传入的配置
+            if (CollUtil.isNotEmpty(deleteIds)) {
+                removeBatchByIds(deleteIds);
+            }
             return saveOrUpdateBatch(configList);
         }
         return false;
@@ -171,7 +191,6 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
             throw new RuntimeException("域名配置保存失败", e);
         }
     }
-
 
 
     @Override
