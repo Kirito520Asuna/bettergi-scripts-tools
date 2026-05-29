@@ -26,6 +26,9 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Data @Accessors(chain = true)
 public class AutoPlan {
+    @Schema(description = "唯一id")
+    @JsonProperty("id")
+    private String id;
     @NotNull
     @Schema(description = "执行顺序")
     @JsonProperty("order")

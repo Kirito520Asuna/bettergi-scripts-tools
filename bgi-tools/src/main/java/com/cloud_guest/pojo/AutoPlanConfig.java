@@ -56,7 +56,6 @@ public class AutoPlanConfig extends BaseEntity {
     private String autoStygianOnslaught;
 
 
-
     public static final String TABLE_NAME = "auto_plan_config";
     public static final String COL_ID = "id";
     public static final String COL_UID = "uid";
@@ -73,7 +72,9 @@ public class AutoPlanConfig extends BaseEntity {
 
     public AutoPlanVo toVo() {
         AutoPlanVo autoPlanVo = new AutoPlanVo();
-        autoPlanVo.setRunType(runType)
+        autoPlanVo
+                .setId(id != null ? String.valueOf(id) : null)
+                .setRunType(runType)
                 .setSelectedType(selectedType)
                 .setEnable(enable)
                 .setRecord(record)
