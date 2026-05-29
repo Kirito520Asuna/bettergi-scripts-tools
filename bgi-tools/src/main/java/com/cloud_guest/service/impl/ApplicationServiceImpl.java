@@ -8,7 +8,7 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.exception.exceptions.GlobalException;
-import com.cloud_guest.pojo.DbKV;
+import com.cloud_guest.entitys.pojo.DbKV;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.ApplicationService;
 import com.cloud_guest.service.DbKVService;

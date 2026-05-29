@@ -1,7 +1,6 @@
 package com.cloud_guest.service;
 
-import com.cloud_guest.domain.LogKey;
-import org.springframework.transaction.annotation.Transactional;
+import com.cloud_guest.entitys.domain.LogKey;
 
 import java.util.List;
 

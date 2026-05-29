@@ -1,7 +1,7 @@
 package com.cloud_guest.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cloud_guest.pojo.SysJob;
+import com.cloud_guest.entitys.pojo.SysJob;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

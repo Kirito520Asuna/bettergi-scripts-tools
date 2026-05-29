@@ -2,7 +2,7 @@ package com.cloud_guest.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloud_guest.constants.KeyConstants;
-import com.cloud_guest.pojo.AutoPlanConfig;
+import com.cloud_guest.entitys.pojo.AutoPlanConfig;
 
 import java.util.List;
 import java.util.Map;

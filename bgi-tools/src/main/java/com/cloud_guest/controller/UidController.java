@@ -1,10 +1,9 @@
 package com.cloud_guest.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Token;
-import com.cloud_guest.domain.UidInfo;
-import com.cloud_guest.pojo.UidInfoConfig;
+import com.cloud_guest.entitys.domain.UidInfo;
+import com.cloud_guest.entitys.pojo.UidInfoConfig;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.UidService;
 import io.swagger.v3.oas.annotations.Operation;

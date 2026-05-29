@@ -1,7 +1,7 @@
 package com.cloud_guest.task.job;
 
 import cn.hutool.extra.spring.SpringUtil;
-import com.cloud_guest.domain.ApplicationInfo;
+import com.cloud_guest.entitys.domain.ApplicationInfo;
 import com.cloud_guest.service.ApplicationService;
 import com.cloud_guest.task.dstributed.DistributedJob;
 import com.cloud_guest.utils.ApplicationContextHolder;

@@ -2,7 +2,7 @@ package com.cloud_guest.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.cloud_guest.pojo.SysJob;
+import com.cloud_guest.entitys.pojo.SysJob;
 import org.quartz.Scheduler;
 
 import java.util.List;

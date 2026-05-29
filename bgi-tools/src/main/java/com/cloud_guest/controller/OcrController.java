@@ -1,7 +1,7 @@
 package com.cloud_guest.controller;
 
 import com.cloud_guest.aop.log.SysLog;
-import com.cloud_guest.domain.dto.OcrDto;
+import com.cloud_guest.entitys.dto.OcrDto;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.utils.ImageToBase64;
 import com.cloud_guest.utils.OcrUtils;

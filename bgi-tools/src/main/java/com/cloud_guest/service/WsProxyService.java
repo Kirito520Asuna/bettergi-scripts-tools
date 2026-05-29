@@ -2,10 +2,8 @@ package com.cloud_guest.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloud_guest.constants.KeyConstants;
-import com.cloud_guest.domain.UidInfo;
-import com.cloud_guest.domain.WsProxyAccess;
-import com.cloud_guest.mp.abs.service.MpIService;
-import com.cloud_guest.pojo.WsProxyAccessConfig;
+import com.cloud_guest.entitys.domain.WsProxyAccess;
+import com.cloud_guest.entitys.pojo.WsProxyAccessConfig;
 
 import java.util.List;
 

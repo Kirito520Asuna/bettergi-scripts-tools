@@ -9,13 +9,12 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cloud_guest.mapper.AutoPlanMapper;
 import com.cloud_guest.constants.KeyConstants;
-import com.cloud_guest.pojo.AutoPlanConfig;
-import com.cloud_guest.pojo.DbKV;
+import com.cloud_guest.entitys.pojo.AutoPlanConfig;
+import com.cloud_guest.entitys.pojo.DbKV;
 import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.service.CacheService;
 import com.cloud_guest.service.DbKVService;
 import com.cloud_guest.utils.object.ObjectUtils;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;

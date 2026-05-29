@@ -6,7 +6,7 @@ import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.BgiToolsApplication;
 import com.cloud_guest.constants.KeyConstants;
-import com.cloud_guest.domain.ApplicationInfo;
+import com.cloud_guest.entitys.domain.ApplicationInfo;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.redis.service.RedisService;
 import com.cloud_guest.service.CacheService;
@@ -17,11 +17,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 

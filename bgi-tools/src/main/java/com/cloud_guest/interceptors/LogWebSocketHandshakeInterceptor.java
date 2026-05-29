@@ -1,11 +1,9 @@
 package com.cloud_guest.interceptors;
 
 import cn.hutool.core.util.StrUtil;
-import com.cloud_guest.domain.LogKey;
+import com.cloud_guest.entitys.domain.LogKey;
 import com.cloud_guest.service.LogsService;
-import com.cloud_guest.utils.AuthContextUtil;
 import com.cloud_guest.utils.IdUtils;
-import com.cloud_guest.utils.jwt.JwtUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;

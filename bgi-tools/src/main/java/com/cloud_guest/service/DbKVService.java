@@ -2,7 +2,7 @@ package com.cloud_guest.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloud_guest.constants.KeyConstants;
-import com.cloud_guest.pojo.DbKV;
+import com.cloud_guest.entitys.pojo.DbKV;
 
 /**
  * @Author yan

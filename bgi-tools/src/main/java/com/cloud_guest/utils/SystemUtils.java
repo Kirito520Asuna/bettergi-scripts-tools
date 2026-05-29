@@ -2,7 +2,7 @@ package com.cloud_guest.utils;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
-import com.cloud_guest.domain.SystemInfo;
+import com.cloud_guest.entitys.domain.SystemInfo;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.management.ManagementFactory;

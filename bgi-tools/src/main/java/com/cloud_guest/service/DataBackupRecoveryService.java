@@ -3,7 +3,7 @@ package com.cloud_guest.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.cloud_guest.pojo.BackupInfo;
+import com.cloud_guest.entitys.pojo.BackupInfo;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

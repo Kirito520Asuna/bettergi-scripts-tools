@@ -2,11 +2,11 @@ package com.cloud_guest.controller;
 
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Login;
-import com.cloud_guest.domain.dto.CheckTokenDto;
+import com.cloud_guest.entitys.dto.CheckTokenDto;
 import com.cloud_guest.properties.check.TokenProperties;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.ApplicationService;
-import com.cloud_guest.vo.TokenVo;
+import com.cloud_guest.entitys.vo.TokenVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;

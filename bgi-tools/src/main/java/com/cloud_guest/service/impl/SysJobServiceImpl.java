@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cloud_guest.constants.schedule.ScheduleConstants;
 import com.cloud_guest.mapper.SysJobMapper;
-import com.cloud_guest.pojo.SysJob;
+import com.cloud_guest.entitys.pojo.SysJob;
 import com.cloud_guest.service.SysJobService;
 import com.cloud_guest.utils.bean.CustomBeanUtils;
 import com.cloud_guest.utils.object.ObjectUtils;
@@ -24,10 +24,8 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service

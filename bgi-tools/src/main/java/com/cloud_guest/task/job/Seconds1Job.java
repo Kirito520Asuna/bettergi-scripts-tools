@@ -1,7 +1,5 @@
 package com.cloud_guest.task.job;
 
-import cn.hutool.extra.spring.SpringUtil;
-import com.cloud_guest.domain.ApplicationInfo;
 import com.cloud_guest.task.config.QuartzConfig;
 import com.cloud_guest.task.domain.TaskInfo;
 import com.cloud_guest.task.dstributed.DistributedJob;
@@ -12,11 +10,9 @@ import com.cloud_guest.utils.object.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @Author yan

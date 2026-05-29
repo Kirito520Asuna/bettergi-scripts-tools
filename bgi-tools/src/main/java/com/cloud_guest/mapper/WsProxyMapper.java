@@ -2,7 +2,7 @@ package com.cloud_guest.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
-import com.cloud_guest.pojo.WsProxyAccessConfig;
+import com.cloud_guest.entitys.pojo.WsProxyAccessConfig;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

@@ -5,7 +5,7 @@ import cn.hutool.json.JSONUtil;
 import com.cloud_guest.abs.service.AbstractKeyService;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.domain.key.KeyInfo;
-import com.cloud_guest.pojo.DbKV;
+import com.cloud_guest.entitys.pojo.DbKV;
 import com.cloud_guest.service.BaseService;
 import com.cloud_guest.service.DbKVService;
 import com.cloud_guest.utils.IdUtils;

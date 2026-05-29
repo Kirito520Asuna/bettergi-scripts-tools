@@ -1,7 +1,7 @@
 package com.cloud_guest.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cloud_guest.pojo.AutoPlanConfig;
+import com.cloud_guest.entitys.pojo.AutoPlanConfig;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

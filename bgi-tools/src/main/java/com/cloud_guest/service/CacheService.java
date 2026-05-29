@@ -1,6 +1,6 @@
 package com.cloud_guest.service;
 
-import com.cloud_guest.domain.Cache;
+import com.cloud_guest.entitys.domain.Cache;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;

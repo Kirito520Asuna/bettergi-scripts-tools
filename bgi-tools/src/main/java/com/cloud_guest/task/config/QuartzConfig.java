@@ -2,7 +2,7 @@ package com.cloud_guest.task.config;
 
 
 import cn.hutool.extra.spring.SpringUtil;
-import com.cloud_guest.pojo.SysJob;
+import com.cloud_guest.entitys.pojo.SysJob;
 import com.cloud_guest.service.SysJobService;
 import com.cloud_guest.task.domain.TaskDef;
 import com.cloud_guest.task.domain.TaskInfo;

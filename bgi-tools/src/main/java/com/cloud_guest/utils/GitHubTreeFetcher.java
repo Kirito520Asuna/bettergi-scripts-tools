@@ -7,8 +7,8 @@ package com.cloud_guest.utils; /**
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.cloud_guest.domain.BetterGIScriptsListTreeNode;
-import com.cloud_guest.domain.tomapping.Mapping;
+import com.cloud_guest.entitys.domain.BetterGIScriptsListTreeNode;
+import com.cloud_guest.entitys.tomapping.Mapping;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
