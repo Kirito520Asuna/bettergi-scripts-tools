@@ -781,8 +781,15 @@ const handleCurrentConfig = (config, type) => {
     config.showPhysicalDialogFromStygianOnslaught = true
   } else if (type === "hide-physical-stygianOnslaught") {
     config.showPhysicalDialogFromStygianOnslaught = false
+  } else if (type === "show-more-settings") {
+    config.showMoreSettingsDialog = true
+  } else if (type === "hide-more-settings") {
+    config.showMoreSettingsDialog = false
   }
   updateCurrentConfig(config)
+}
+const handleMoreSettings = (config) => {
+  handleCurrentConfig(config, 'show-more-settings')
 }
 const updateCurrentConfig = (config) => {
   currentConfig.value = config
@@ -1329,8 +1336,18 @@ const totalCount = computed(() => {
                 />
               </div>
 
+              <div class="form-group leyLineOutcrop">
+                <label>更多配置：</label>
+                <el-button
+                    size="small"
+                    type="primary"
+                    @click="handleMoreSettings(config)"
+                >
+                  高级选项
+                </el-button>
+              </div>
 
-              <div class="form-group leyLineOutcrop checkbox-group" style="display: flex; flex-wrap: wrap; gap: 16px;">
+<!--              <div class="form-group leyLineOutcrop checkbox-group" style="display: flex; flex-wrap: wrap; gap: 16px;">
                 <el-checkbox v-model="config.autoLeyLineOutcrop.useAdventurerHandbook">
                   使用冒险之证
                 </el-checkbox>
@@ -1358,7 +1375,7 @@ const totalCount = computed(() => {
                     default="120"
                     placeholder="0 = 不限制"
                 />
-              </div>
+              </div>-->
             </div>
             <div class="stygianOnslaught-section" v-if="config.runType === runTypes[2]">
               <div class="form-group stygianOnslaught">
@@ -1491,6 +1508,66 @@ const totalCount = computed(() => {
 
         <el-dialog
             v-if="currentConfig"
+            v-model="currentConfig.showMoreSettingsDialog"
+            title="地脉高级配置"
+            width="480px"
+            :close-on-click-modal="false"
+            append-to-body
+        >
+          <div class="dialog-content">
+            <div class="form-group" style="margin-bottom: 24px;">
+              <label style="display: block; margin-bottom: 8px; font-weight: 600;">战斗超时时间（秒）：</label>
+              <input
+                  class="limited-input"
+                  v-model.number="currentConfig.autoLeyLineOutcrop.timeout"
+                  type="number"
+                  min="0"
+                  default="120"
+                  placeholder="0 = 不限制"
+                  style="width: 100%; max-width: 300px;"
+              />
+            </div>
+
+            <div style="margin-bottom: 12px; font-weight: 600; color: var(--el-text-color-primary);">
+              功能选项：
+            </div>
+
+            <div class="checkbox-grid">
+              <div class="checkbox-grid-item">
+                <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.useAdventurerHandbook">
+                  使用冒险之证
+                </el-checkbox>
+              </div>
+              <div class="checkbox-grid-item">
+                <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.useFragileResin">
+                  使用脆弱树脂
+                </el-checkbox>
+              </div>
+              <div class="checkbox-grid-item">
+                <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.useTransientResin">
+                  使用须臾树脂
+                </el-checkbox>
+              </div>
+              <div class="checkbox-grid-item">
+                <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.isGoToSynthesizer">
+                  合成浓缩树脂
+                </el-checkbox>
+              </div>
+              <div class="checkbox-grid-item">
+                <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.isNotification">
+                  完成后通知
+                </el-checkbox>
+              </div>
+            </div>
+
+            <div class="dialog-actions" style="margin-top: 28px; text-align: right;">
+              <el-button @click="currentConfig.showMoreSettingsDialog = false">关闭</el-button>
+            </div>
+          </div>
+        </el-dialog>
+
+        <el-dialog
+            v-if="currentConfig"
             v-model="currentConfig.showDaysDialog"
             title="选择执行日期"
             width="480px"
@@ -1514,6 +1591,7 @@ const totalCount = computed(() => {
             </div>
           </div>
         </el-dialog>
+
         <el-dialog
             v-if="currentConfig"
             v-model="currentConfig.showPhysicalDialogFromDomain"
@@ -1548,6 +1626,7 @@ const totalCount = computed(() => {
             </div>
           </div>
         </el-dialog>
+
         <el-dialog
             v-if="currentConfig"
             v-model="currentConfig.showPhysicalDialogFromStygianOnslaught"
@@ -1956,6 +2035,48 @@ const totalCount = computed(() => {
   text-align: center;
 }
 
+/* 抽屉自定义样式 */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 12px;
+  background: var(--el-fill-color-light);
+  border-radius: 8px;
+  border: 1px solid var(--el-border-color-light);
+}
+
+.checkbox-grid-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--el-bg-color);
+  border-radius: 6px;
+  border: 1px solid var(--el-border-color);
+  transition: all 0.3s ease;
+  min-height: 40px;
+}
+
+.checkbox-grid-item:hover {
+  background: var(--el-fill-color);
+  border-color: var(--el-color-primary-light-7);
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
+}
+
+.checkbox-grid-item :deep(.el-checkbox) {
+  width: 100%;
+}
+
+.checkbox-grid-item :deep(.el-checkbox__label) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+.api-config-dialog {
+  border-radius: 12px;
+}
 
 /* 响应式设计 */
 @media (max-width: 768px) {
@@ -1972,6 +2093,4 @@ const totalCount = computed(() => {
     font-size: 1rem;
   }
 }
-
-
 </style>
