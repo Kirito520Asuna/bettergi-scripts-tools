@@ -63,9 +63,16 @@
                    @change="handleEditTypeChange"/>-->
 
             <el-select v-model="editingItem.type" class="field-select" @change="handleTypeChange" placeholder="请选择类型">
-              <el-option label="天赋" value="天赋" />
-              <el-option label="武器" value="武器" />
-              <el-option label="圣遗物" value="圣遗物" />
+              <el-option
+                  v-for="type in [
+                      '天赋',
+                      '武器',
+                      '圣遗物',
+                  ]"
+                  :key="type"
+                  :label="type"
+                  :value="type"
+              />
             </el-select>
           </div>
           <div class="form-group">
@@ -104,9 +111,16 @@
           <div class="form-group">
             <label>类型</label>
             <el-select v-model="newItem.type" class="field-select" @change="handleTypeChange" placeholder="请选择类型">
-              <el-option label="天赋" value="天赋" />
-              <el-option label="武器" value="武器" />
-              <el-option label="圣遗物" value="圣遗物" />
+              <el-option
+                  v-for="type in [
+                      '天赋',
+                      '武器',
+                      '圣遗物',
+                  ]"
+                  :key="type"
+                  :label="type"
+                  :value="type"
+              />
             </el-select>
           </div>
           <div class="form-group">

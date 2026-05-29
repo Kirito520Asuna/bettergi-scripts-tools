@@ -111,10 +111,11 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
 
             List<String> allLines = FileUtil.readLines(logFile, StandardCharsets.UTF_8);
             int totalLines = allLines.size();
-
+            //todo: 以一个时间(记为时间1)为起点 到下一个时间(记为时间2)之前的内容 为1行(包括时间1，不包括时间2)
+            List<String> mergedLines = mergeLogLines(allLines);
             List<String> linesToSend;
             if (StrUtil.isNotBlank(lastTimestamp)) {
-                linesToSend = extractLinesAfterTimestamp(allLines, lastTimestamp);
+                linesToSend = extractLinesAfterTimestamp(mergedLines, lastTimestamp);
 
                 if (linesToSend.isEmpty()) {
                     log.info("[WS-LOG] 未找到时间戳后的内容 | Session: {} | File: {} | Timestamp: {}",
@@ -155,6 +156,48 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
+     * 合并日志行：将以时间戳开头的行作为新行，不以时间戳开头的行合并到上一行
+     *
+     * @param allLines 原始日志行列表
+     * @return 合并后的日志行列表
+     */
+    private List<String> mergeLogLines(List<String> allLines) {
+        if (allLines == null || allLines.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> mergedLines = new java.util.ArrayList<>();
+        StringBuilder currentLine = new StringBuilder();
+
+        for (String line : allLines) {
+            // 判断是否以时间戳开头（格式：yyyy-MM-dd HH:mm:ss.SSS）
+            if (line.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}.*")) {
+                // 如果当前行已有内容，先保存
+                if (currentLine.length() > 0) {
+                    mergedLines.add(currentLine.toString());
+                }
+                // 开始新的一行
+                currentLine = new StringBuilder(line);
+            } else {
+                // 不是时间戳开头的行，追加到上一行末尾
+                if (currentLine.length() > 0) {
+                    currentLine.append("\n").append(line);
+                } else {
+                    // 如果当前没有累积的行（文件开头就是非时间戳行），直接添加
+                    currentLine.append(line);
+                }
+            }
+        }
+
+        // 添加最后一行
+        if (currentLine.length() > 0) {
+            mergedLines.add(currentLine.toString());
+        }
+
+        return mergedLines;
+    }
+
+    /**
      * 提取指定时间戳之后的日志内容
      * 从目标时间戳所在行开始（包括该行），到下一个时间戳之前（不包括下一个时间戳行）的所有内容
      *
@@ -178,15 +221,20 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
             return List.of();
         }
 
+    // 初始化下一个时间戳的索引为-1，表示未找到下一个时间戳
         int nextTimestampIndex = -1;
+    // 从目标时间戳的下一行开始继续遍历，查找下一个时间戳
         for (int i = startIndex + 1; i < allLines.size(); i++) {
             String line = allLines.get(i);
+            //        // 使用正则表达式检查是否是时间戳行（格式：yyyy-MM-dd HH:mm:ss.SSS）
             if (line.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}.*")) {
+            // 找到下一个时间戳，记录其索引并退出循环
                 nextTimestampIndex = i;
                 break;
             }
         }
 
+    // 如果未找到下一个时间戳，返回空列表
         if (nextTimestampIndex == -1) {
             return List.of();
         }

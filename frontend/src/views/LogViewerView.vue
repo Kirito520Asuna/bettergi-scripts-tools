@@ -40,19 +40,56 @@
           </el-form-item>
 
           <el-form-item label="行数">
-            <el-select v-model="displayLines" placeholder="选择行数" style="width: 150px" @change="handleDisplayLinesChange">
-              <el-option label="50行" value="50"/>
-              <el-option label="100行" value="100"/>
-              <el-option label="200行" value="200"/>
-              <el-option label="500行" value="500"/>
-              <el-option label="全部内容" value="all"/>
+            <el-select v-model="displayLines" placeholder="选择行数" style="width: 150px"
+                       @change="handleDisplayLinesChange">
+              <el-option
+                  v-for="line in [
+                      {value: '50', label: '50行'},
+                      {value: '100', label: '100行'},
+                      {value: '200', label: '200行'},
+                      {value: '500', label: '500行'},
+                      {value: '1000', label: '1000行'},
+                      {value: 'all', label: '全部内容'}
+                  ]"
+                  :key="line.value"
+                  :label="line.label"
+                  :value="line.value"
+              />
             </el-select>
+          </el-form-item>
+
+          <el-form-item label="日志级别">
+            <el-select v-model="logLevelFilter" placeholder="全部级别" style="width: 120px" clearable
+                       @change="handleLogLevelFilterChange">
+              <el-option
+                  v-for="line in [
+                      {value: '', label: '全部'},
+                      {value: ' DEBUG ', label: 'DEBUG'},
+                      {value: ' INFO ', label: 'INFO'},
+                      {value: ' WARN ', label: 'WARN'},
+                      {value: ' ERROR ', label: 'ERROR'},
+                  ]"
+                  :key="line.value"
+                  :label="line.label"
+                  :value="line.value"
+              />
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="关键字">
+            <el-input
+                v-model="keywordFilter"
+                placeholder="输入过滤关键字"
+                style="width: 200px"
+                clearable
+                @input="handleKeywordFilterChange"
+            />
           </el-form-item>
 
           <el-form-item label="自动加载">
             <el-switch v-model="autoLoad" @change="handleAutoLoadChange"/>
           </el-form-item>
-<!--加一个追踪√ 自动将滚动条拉到最底部          -->
+          <!--加一个追踪√ 自动将滚动条拉到最底部          -->
           <el-form-item label="间隔(秒)" v-if="autoLoad">
             <el-input-number v-model="autoLoadInterval" :min="1" :max="60" @change="handleIntervalChange"/>
           </el-form-item>
@@ -70,6 +107,9 @@
         <el-tag :type="isConnected ? 'success' : 'danger'">
           {{ isConnected ? '已连接' : '未连接' }}
         </el-tag>
+        <el-tag v-if="logLevelFilter || keywordFilter" type="warning" style="margin-left: 10px">
+          过滤中
+        </el-tag>
       </el-card>
 
       <el-card class="log-content">
@@ -82,8 +122,11 @@
           </div>
         </template>
 
-        <div class="log-container" >
-          <div class="log-text" v-html="coloredLogContent" ref="logContainer"></div>
+        <div class="log-container">
+          <div class="log-text" v-if="(logLevelFilter&&logLevelFilter!=='') || (keywordFilter&&keywordFilter!=='')" v-html="coloredLogContentFilter"
+               ref="logContainerFilter"></div>
+
+          <div class="log-text" v-else v-html="coloredLogContent" ref="logContainer"></div>
         </div>
       </el-card>
     </div>
@@ -115,6 +158,7 @@ const applicationList = ref([])
 const logContent = ref('')
 const isConnected = ref(false)
 const currentFileInfo = ref(null)
+const logContainerFilter = ref(null)
 const logContainer = ref(null)
 const logToken = ref(null)
 const autoLoad = ref(true)
@@ -127,6 +171,10 @@ const wsConnectFailCount = ref(0)
 const wsInstanceMismatchCount = ref(0)
 const canReset = ref(false)
 const contentList = ref(new Set())
+const logLevelFilter = ref('')
+const keywordFilter = ref('')
+const rawContentList = ref([])
+
 const goToHome = async () => {
   await toHomePage();
 };
@@ -160,6 +208,35 @@ const handleDisplayLinesChange = () => {
     }
   }
 }
+
+const handleLogLevelFilterChange = () => {
+  applyFilters()
+}
+
+const handleKeywordFilterChange = () => {
+  applyFilters()
+}
+
+const applyFilters = () => {
+  let filteredContent = rawContentList.value
+
+  if (logLevelFilter.value) {
+    filteredContent = filteredContent.filter(line => line.includes(logLevelFilter.value))
+  }
+
+  if (keywordFilter.value) {
+    const keyword = keywordFilter.value.toLowerCase()
+    filteredContent = filteredContent.filter(line => line.toLowerCase().includes(keyword))
+  }
+  logContent.value = filteredContent.join('\n') + '\n'
+  logContainerFilter.value = filteredContent.join('\n') + '\n'
+}
+
+const filteredLineCount = computed(() => {
+  if (!logContainerFilter.value) return 0
+  return logContainerFilter.value.trim().split('\n').filter(line => line.trim()).length
+})
+
 
 const loadApplicationList = async () => {
   try {
@@ -199,7 +276,7 @@ const loadFileList = async () => {
     try {
       const response = await getFileNames(selectedApplication.value)
       const data = response.data
-      if (data){
+      if (data) {
         if (data?.fileNames) {
           fileList.value = data.fileNames || []
 
@@ -214,7 +291,7 @@ const loadFileList = async () => {
           fileList.value = []
         }
 
-        if (data?.applicationId === selectedApplication.value){
+        if (data?.applicationId === selectedApplication.value) {
           break
         }
       }
@@ -290,7 +367,9 @@ const parseLogColor = (text) => {
 
   return html
 }
-
+const coloredLogContentFilter = computed(() => {
+  return parseLogColor(logContainerFilter.value)
+})
 const coloredLogContent = computed(() => {
   return parseLogColor(logContent.value)
 })
@@ -394,83 +473,141 @@ const setupWebSocket = async () => {
     })
 
     //完整加载无重复情况
+    // LogWebSocket.on('file_content', (data) => {
+    //   let contentToAdd = ''
+    //   if (Array.isArray(data.data)) {
+    //     // logContent.value = data.data.join('\n') + '\n'
+    //     // for (const item of data.data) {
+    //     //   if (!contentList.value.has(item)) {
+    //     //     contentList.value.add(item)
+    //     //   }
+    //     // }
+    //
+    //     let array = new Array();
+    //     for (const item of data.data) {
+    //       if (!contentList.value.has(item)) {
+    //         //去重
+    //         contentList.value.add(item)
+    //         array.push(item);
+    //       }
+    //     }
+    //
+    //     if (array.length > 0) {
+    //       contentToAdd = array.join('\n') + '\n'
+    //     }
+    //
+    //   } else if (data.data && data.data.trim()) {
+    //     if (!contentList.value.has(data.data)) {
+    //       contentToAdd = data.data
+    //       contentList.value.add(data.data)
+    //     }
+    //   }
+    //
+    //   if (contentToAdd !== '') {
+    //     logContent.value = contentToAdd
+    //     currentFileInfo.value = {
+    //       filename: data.filename,
+    //       totalLines: data.totalLines,
+    //       sentLines: data.sentLines
+    //     }
+    //   }
+    //
+    //   if (autoScroll.value) {
+    //     scrollToBottom()
+    //   }
+    // })
+    // ... existing code ...
     LogWebSocket.on('file_content', (data) => {
-      let contentToAdd = ''
-      if (Array.isArray(data.data)) {
-        // logContent.value = data.data.join('\n') + '\n'
-        // for (const item of data.data) {
-        //   if (!contentList.value.has(item)) {
-        //     contentList.value.add(item)
-        //   }
-        // }
+      rawContentList.value = []
+      contentList.value.clear()
 
-        let array = new Array();
+      if (Array.isArray(data.data)) {
         for (const item of data.data) {
           if (!contentList.value.has(item)) {
-            //去重
             contentList.value.add(item)
-            array.push(item);
+            rawContentList.value.push(item)
           }
         }
-
-        if (array.length > 0) {
-          contentToAdd = array.join('\n') + '\n'
-        }
-
       } else if (data.data && data.data.trim()) {
         if (!contentList.value.has(data.data)) {
-          contentToAdd = data.data
           contentList.value.add(data.data)
+          rawContentList.value.push(data.data)
         }
       }
 
-      if (contentToAdd !== ''){
-        logContent.value = contentToAdd
-        currentFileInfo.value = {
-          filename: data.filename,
-          totalLines: data.totalLines,
-          sentLines: data.sentLines
-        }
+      currentFileInfo.value = {
+        filename: data.filename,
+        totalLines: data.totalLines,
+        sentLines: data.sentLines
       }
+
+      applyFilters()
 
       if (autoScroll.value) {
         scrollToBottom()
       }
     })
     //追加可能存在重复情况
+    // LogWebSocket.on('file_content_add', (data) => {
+    //   let contentToAdd = ''
+    //   if (Array.isArray(data.data)) {
+    //     let array = new Array();
+    //     for (const item of data.data) {
+    //       if (!contentList.value.has(item)) {
+    //         //去重
+    //         contentList.value.add(item)
+    //         array.push(item);
+    //       }
+    //     }
+    //
+    //     if (array.length > 0) {
+    //       contentToAdd = array.join('\n') + '\n'
+    //     }
+    //   } else if (data.data && data.data.trim()) {
+    //     if (!contentList.value.has(data.data)) {
+    //       contentList.value.add(data.data)
+    //       contentToAdd = data.data
+    //     }
+    //   }
+    //
+    //
+    //   if (contentToAdd !== '') {
+    //     logContent.value += contentToAdd
+    //     currentFileInfo.value = {
+    //       filename: data.filename,
+    //       totalLines: data.totalLines,
+    //       sentLines: (currentFileInfo.value?.sentLines || 0) + data.sentLines
+    //     }
+    //     if (autoScroll.value) {
+    //       scrollToBottom()
+    //     }
+    //   }
+    // })
     LogWebSocket.on('file_content_add', (data) => {
-      let contentToAdd = ''
       if (Array.isArray(data.data)) {
-        let array = new Array();
         for (const item of data.data) {
           if (!contentList.value.has(item)) {
-            //去重
             contentList.value.add(item)
-            array.push(item);
+            rawContentList.value.push(item)
           }
-        }
-
-        if (array.length > 0) {
-          contentToAdd = array.join('\n') + '\n'
         }
       } else if (data.data && data.data.trim()) {
         if (!contentList.value.has(data.data)) {
           contentList.value.add(data.data)
-          contentToAdd = data.data
+          rawContentList.value.push(data.data)
         }
       }
 
+      currentFileInfo.value = {
+        filename: data.filename,
+        totalLines: data.totalLines,
+        sentLines: (currentFileInfo.value?.sentLines || 0) + data.sentLines
+      }
 
-      if (contentToAdd !== '') {
-        logContent.value += contentToAdd
-        currentFileInfo.value = {
-          filename: data.filename,
-          totalLines: data.totalLines,
-          sentLines: (currentFileInfo.value?.sentLines || 0) + data.sentLines
-        }
-        if (autoScroll.value) {
-          scrollToBottom()
-        }
+      applyFilters()
+
+      if (autoScroll.value) {
+        scrollToBottom()
       }
     })
 
@@ -478,27 +615,48 @@ const setupWebSocket = async () => {
       ElMessage.error('错误: ' + data.message)
     })
 
+    // LogWebSocket.on('log', (data) => {
+    //
+    //   let contentToAdd = ''
+    //   if (Array.isArray(data.data)) {
+    //     let array = new Array();
+    //     for (const item of data.data) {
+    //       if (!contentList.value.has(item)) {
+    //         //去重
+    //         contentList.value.add(item)
+    //         array.push(item);
+    //       }
+    //     }
+    //     contentToAdd = array.join('\n') + '\n'
+    //   } else if (data.data && data.data.trim()) {
+    //     contentToAdd = data.data + '\n'
+    //     contentList.value.add(data.data)
+    //   }
+    //
+    //   if (contentToAdd) {
+    //     logContent.value += contentToAdd
+    //   }
+    //
+    //   if (autoScroll.value) {
+    //     scrollToBottom()
+    //   }
+    // })
     LogWebSocket.on('log', (data) => {
-
-      let contentToAdd = ''
       if (Array.isArray(data.data)) {
-        let array = new Array();
         for (const item of data.data) {
           if (!contentList.value.has(item)) {
-            //去重
             contentList.value.add(item)
-            array.push(item);
+            rawContentList.value.push(item)
           }
         }
-        contentToAdd = array.join('\n') + '\n'
       } else if (data.data && data.data.trim()) {
-        contentToAdd = data.data + '\n'
-        contentList.value.add(data.data)
+        if (!contentList.value.has(data.data)) {
+          contentList.value.add(data.data)
+          rawContentList.value.push(data.data)
+        }
       }
 
-      if (contentToAdd) {
-        logContent.value += contentToAdd
-      }
+      applyFilters()
 
       if (autoScroll.value) {
         scrollToBottom()
@@ -540,15 +698,23 @@ const loadLogFile = () => {
 
 const clearLog = () => {
   logContent.value = ''
+  rawContentList.value = []
   currentFileInfo.value = null
   lastTimestamp.value = null
+  contentList.value.clear()
 }
 
 const scrollToBottom = async () => {
   await nextTick()
-  if (logContainer.value) {
-    logContainer.value.scrollTop = logContainer.value.scrollHeight
+
+  const container = ((logLevelFilter.value !== "" && logLevelFilter.value) || keywordFilter.value) ? logContainerFilter.value : logContainer.value
+  if (container) {
+    container.scrollTop = container.scrollHeight
   }
+
+  // if (logContainer.value) {
+  //   logContainer.value.scrollTop = logContainer.value.scrollHeight
+  // }
 }
 </script>
 
@@ -608,9 +774,11 @@ const scrollToBottom = async () => {
   border-radius: 24px;
   padding: 10px;
 }
+
 .log-content::-webkit-scrollbar {
   display: none !important;
 }
+
 .log-container {
   width: 100%;
   height: 100%;
