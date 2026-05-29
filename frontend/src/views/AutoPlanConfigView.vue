@@ -528,8 +528,13 @@ const getFinalConfigs = () => {
     let autoStygianOnslaught = c.autoStygianOnslaught
     // c.autoFight.physical.sort((a, b) => a.order - b.order)
     changShowDaysButton(c)
+    let id = c.id;
+    //id 带非数字时 设置id=undefined
+    if (id && /\D/.test(id)) {
+      id = undefined;
+    }
     let json = {
-      id: c.id,
+      id: id,
       order: c.order,
       // day: c.day,
       days: c.days,
