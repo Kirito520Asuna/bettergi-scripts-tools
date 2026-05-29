@@ -39,12 +39,13 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean saveBatchList(List<AutoPlanConfig> configList) {
+    public boolean saveOrUpdateBatchList(List<AutoPlanConfig> configList) {
         if (CollUtil.isNotEmpty(configList)) {
-            AutoPlanConfig planConfig = configList.stream().findFirst().get();
-            String uid = planConfig.getUid();
-            removeByUidList(CollUtil.toList(uid));
-            return saveBatch(configList);
+            //AutoPlanConfig planConfig = configList.stream().findFirst().get();
+            //String uid = planConfig.getUid();
+            //removeByUidList(CollUtil.toList(uid));
+            //boolean saveBatch = saveBatch(configList);
+            return saveOrUpdateBatch(configList);
         }
         return false;
     }

@@ -106,7 +106,7 @@ public class AutoPlanController {
         dto.checkValid();
         List<AutoPlanConfig> configList = dto.toConfigList();
         //autoPlanService.save(dto.getUid(), JSONUtil.toJsonStr(dto.getAutoPlanList()));
-        autoPlanService.saveBatchList(configList);
+        autoPlanService.saveOrUpdateBatchList(configList);
         //autoPlanService.saveBatch(configList);
         return ok(dto.getUid());
     }

@@ -68,6 +68,7 @@ public class AutoPlan {
     //}
     public AutoPlanConfig toConfig() {
         AutoPlanConfig planConfig = new AutoPlanConfig();
+        planConfig.setId(id!=null?Long.parseLong(id):null);
         planConfig.setAutoFight(JSONUtil.toJsonStr(this.autoFight));
         planConfig.setAutoLeyLineOutcrop(JSONUtil.toJsonStr(this.autoLeyLineOutcrop));
         planConfig.setAutoStygianOnslaught(JSONUtil.toJsonStr(this.autoStygianOnslaught));
