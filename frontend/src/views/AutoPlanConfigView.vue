@@ -235,18 +235,22 @@ const removeConfigToBackend = async () => {
   return
 }
 const submitConfigToBackend = async () => {
-  if (!uid.value) {
-    ElMessage.warning("请先设置 UID");
-    return;
+  try {
+    if (!uid.value) {
+      ElMessage.warning("请先设置 UID");
+      return;
+    }
+    await ElMessageBox.confirm(`确定提交UID:${uid.value}的数据至云端吗？`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    const planList = getFinalConfigs()
+    // await postUidJson(uid.value, JSON.stringify(json))
+    await postUidPlan(uid.value, planList)
+  } finally {
+    await findDomains(false)
   }
-  await ElMessageBox.confirm(`确定提交UID:${uid.value}的数据至云端吗？`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  })
-  const planList = getFinalConfigs()
-  // await postUidJson(uid.value, JSON.stringify(json))
-  await postUidPlan(uid.value, planList)
 };
 const initConfigsId = () => {
   configs.value.forEach(
@@ -258,16 +262,19 @@ const initConfigsId = () => {
       }
   )
 }
-const findDomains = async () => {
+const findDomains = async (confirm = true) => {
   if (!uid.value) {
     ElMessage.warning("请先设置 UID");
     return;
   }
-  await ElMessageBox.confirm(`确定加载UID:${uid.value}的云端数据吗？`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  })
+  if (confirm) {
+    await ElMessageBox.confirm(`确定加载UID:${uid.value}的云端数据吗？`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+  }
+
   try {
     const response = await getUidJson(uid.value)
     configs.value = response;
@@ -1113,7 +1120,7 @@ const totalCount = computed(() => {
                 <el-select
                     v-model="config.runType"
                     placeholder="请选择执行类型"
-                    clearable                  style="width: 80%"
+                    clearable style="width: 80%"
                 >
                   <el-option
                       v-for="type in runTypes"
@@ -1145,7 +1152,7 @@ const totalCount = computed(() => {
                     v-model="config.selectedType"
                     @change="handleSundaySelection(config)"
                     placeholder="请选择秘境类型"
-                    clearable                  style="width: 80%"
+                    clearable style="width: 80%"
                 >
                   <el-option
                       v-for="type in domainTypes"
@@ -1161,7 +1168,7 @@ const totalCount = computed(() => {
                 <el-select
                     v-model="config.autoFight.domainName"
                     placeholder="请选择秘境"
-                    clearable                  style="width: 80%"
+                    clearable style="width: 80%"
                 >
                   <el-option
                       v-for="d in filteredDomainsType(config.selectedType)"
@@ -1176,7 +1183,7 @@ const totalCount = computed(() => {
                 <el-select
                     v-model="config.autoFight.domainName"
                     placeholder="请选择秘境"
-                    clearable                  style="width: 80%"
+                    clearable style="width: 80%"
                 >
                   <el-option
                       v-for="d in filteredDomainsType(config.selectedType)"
@@ -1193,7 +1200,7 @@ const totalCount = computed(() => {
                 <el-select
                     v-model="config.autoFight.sundaySelectedValue"
                     placeholder="请选择材料"
-                    clearable                    style="width: 80%"
+                    clearable style="width: 80%"
                 >
                   <el-option
                       v-for="(item,index) in domainMap.get(config.autoFight.domainName)?.list || []"
@@ -1210,7 +1217,7 @@ const totalCount = computed(() => {
                     v-model="config.autoFight.sundaySelectedDomain"
                     @change="handleSundaySelection(config)"
                     placeholder="请选择材料"
-                    clearable                    style="width: 80%"
+                    clearable style="width: 80%"
                 >
                   <el-option
                       v-for="(item) in getFilteredMaterials(config)|| []"
@@ -1268,7 +1275,7 @@ const totalCount = computed(() => {
                 <el-select
                     v-model="config.autoLeyLineOutcrop.leyLineOutcropType"
                     placeholder="请选择地脉类型"
-                    clearable                  style="width: 80%"
+                    clearable style="width: 80%"
                 >
                   <el-option
                       v-for="item in leyLineOutcropTypes"
@@ -1283,7 +1290,7 @@ const totalCount = computed(() => {
                 <el-select
                     v-model="config.autoLeyLineOutcrop.country"
                     placeholder="请选择国家/地区"
-                    clearable                  style="width: 80%"
+                    clearable style="width: 80%"
                 >
                   <el-option
                       v-for="item in countryList"
@@ -1364,7 +1371,7 @@ const totalCount = computed(() => {
                 <el-select
                     v-model="config.autoStygianOnslaught.bossNum"
                     placeholder="请选择"
-                    clearable                  style="width: 80%"
+                    clearable style="width: 80%"
                 >
                   <el-option
                       v-for="type in [{key:'战场一',value:1},{key:'战场二',value:2},{key:'战场三',value:3}]"
