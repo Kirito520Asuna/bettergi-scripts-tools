@@ -3,6 +3,7 @@ package com.cloud_guest.task.job;
 import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.entitys.domain.ApplicationInfo;
 import com.cloud_guest.service.ApplicationService;
+import com.cloud_guest.task.dstributed.ConcurrencyJob;
 import com.cloud_guest.task.dstributed.DistributedJob;
 import com.cloud_guest.utils.ApplicationContextHolder;
 import com.cloud_guest.utils.ApplicationUtil;
@@ -21,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
  */
 @Slf4j
 @Component
-public class Seconds3Job extends DistributedJob {
+public class Seconds3Job extends ConcurrencyJob {
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         ApplicationService bean = SpringUtil.getBean(ApplicationService.class);

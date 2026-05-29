@@ -2,6 +2,7 @@ package com.cloud_guest.task.job;
 
 import com.cloud_guest.task.config.QuartzConfig;
 import com.cloud_guest.task.domain.TaskInfo;
+import com.cloud_guest.task.dstributed.ConcurrencyJob;
 import com.cloud_guest.task.dstributed.DistributedJob;
 import com.cloud_guest.task.util.QuartzUtil;
 import com.cloud_guest.utils.ApplicationContextHolder;
@@ -21,7 +22,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Component
-public class Seconds1Job extends DistributedJob {
+public class Seconds1Job extends ConcurrencyJob {
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         //设置超时
