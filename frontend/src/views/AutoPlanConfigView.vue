@@ -1109,16 +1109,18 @@ const totalCount = computed(() => {
               </div>
               <div class="form-group common">
                 <label>执行类型：</label>
-                <select v-model="config.runType">
-                  <option :value="undefined">请选择执行类型</option>
-                  <option
+                <el-select
+                    v-model="config.runType"
+                    placeholder="请选择执行类型"
+                    clearable                  style="width: 80%"
+                >
+                  <el-option
                       v-for="type in runTypes"
                       :key="type"
+                      :label="type"
                       :value="type"
-                  >
-                    {{ type }}
-                  </option>
-                </select>
+                  />
+                </el-select>
               </div>
             </div>
             <div class="domain-section" v-if="config.runType === runTypes[0]">
@@ -1138,74 +1140,84 @@ const totalCount = computed(() => {
               <!-- 新增 type 选择器 -->
               <div class="form-group domain">
                 <label>秘境类型：</label>
-                <select v-model="config.selectedType"
-                        @change="handleSundaySelection(config)">
-                  <option :value="undefined">请选择秘境类型</option>
-                  <option
+                <el-select
+                    v-model="config.selectedType"
+                    @change="handleSundaySelection(config)"
+                    placeholder="请选择秘境类型"
+                    clearable                  style="width: 80%"
+                >
+                  <el-option
                       v-for="type in domainTypes"
                       :key="type.value"
+                      :label="type.label"
                       :value="type.value"
-                  >
-                    {{ type.label }}
-                  </option>
-                </select>
+                  />
+                </el-select>
               </div>
               <!-- 秘境选择（根据 selectedType 过滤） -->
               <div class="form-group domain" v-if="!config.autoFight.sundaySelectedDomain">
                 <label>秘境：</label>
-                <select v-model="config.autoFight.domainName">
-                  <option :value="undefined">请选择秘境</option>
-                  <option
+                <el-select
+                    v-model="config.autoFight.domainName"
+                    placeholder="请选择秘境"
+                    clearable                  style="width: 80%"
+                >
+                  <el-option
                       v-for="d in filteredDomainsType(config.selectedType)"
                       :key="d.name"
+                      :label="d.name"
                       :value="d.name"
-                  >
-                    {{ d.name }}
-                  </option>
-                </select>
+                  />
+                </el-select>
               </div>
               <div class="form-group domain" v-else>
                 <label>秘境：</label>
-                <select v-model="config.autoFight.domainName">
-                  <option :value="null">请选择秘境</option>
-                  <option
+                <el-select
+                    v-model="config.autoFight.domainName"
+                    placeholder="请选择秘境"
+                    clearable                  style="width: 80%"
+                >
+                  <el-option
                       v-for="d in filteredDomainsType(config.selectedType)"
                       :key="d.name"
+                      :label="d.name"
                       :value="d.name"
-                  >
-                    {{ d.name }}
-                  </option>
-                </select>
+                  />
+                </el-select>
               </div>
               <!-- 物品名称选择（根据 domainName 过滤） -->
               <div class="form-group domain"
                    v-if="config.autoFight.domainName&&domainMap.get(config.autoFight.domainName)?.hasOrder">
                 <label>周日/限时材料：</label>
-                <select
-                    v-model="config.autoFight.sundaySelectedValue">
-                  <option
+                <el-select
+                    v-model="config.autoFight.sundaySelectedValue"
+                    placeholder="请选择材料"
+                    clearable                    style="width: 80%"
+                >
+                  <el-option
                       v-for="(item,index) in domainMap.get(config.autoFight.domainName)?.list || []"
                       :key="item"
+                      :label="item"
                       :value="index + 1"
-                  >
-                    {{ item }}
-                  </option>
-                </select>
+                  />
+                </el-select>
               </div>
               <div class="form-group domain"
                    v-else-if="(!config.autoFight.domainName)&&config.selectedType&&!excludeDomainTypes.includes(config.selectedType)">
                 <label>周日/限时材料：</label>
-                <select
+                <el-select
                     v-model="config.autoFight.sundaySelectedDomain"
-                    @change="handleSundaySelection(config)">
-                  <option
+                    @change="handleSundaySelection(config)"
+                    placeholder="请选择材料"
+                    clearable                    style="width: 80%"
+                >
+                  <el-option
                       v-for="(item) in getFilteredMaterials(config)|| []"
                       :key="item.name"
+                      :label="item.name"
                       :value="item"
-                  >
-                    {{ item.name }}
-                  </option>
-                </select>
+                  />
+                </el-select>
               </div>
 
               <div
@@ -1252,30 +1264,33 @@ const totalCount = computed(() => {
             <div class="leyLineOutcrop-section" v-else-if="config.runType === runTypes[1]">
               <div class="form-group leyLineOutcrop">
                 <label>地脉类型：</label>
-                <select v-model="config.autoLeyLineOutcrop.leyLineOutcropType">
-                  <option :value="undefined">请选择地脉类型</option>
-                  <option
+                <el-select
+                    v-model="config.autoLeyLineOutcrop.leyLineOutcropType"
+                    placeholder="请选择地脉类型"
+                    clearable                  style="width: 80%"
+                >
+                  <el-option
                       v-for="item in leyLineOutcropTypes"
                       :key="item.value"
+                      :label="item.value"
                       :value="item.name"
-                      :default="leyLineOutcropTypes[0].name"
-                  >
-                    {{ item.value }}
-                  </option>
-                </select>
+                  />
+                </el-select>
               </div>
               <div class="form-group leyLineOutcrop">
                 <label>国家/地区：</label>
-                <select v-model="config.autoLeyLineOutcrop.country">
-                  <option :value="undefined">请选择国家/地区</option>
-                  <option
+                <el-select
+                    v-model="config.autoLeyLineOutcrop.country"
+                    placeholder="请选择国家/地区"
+                    clearable                  style="width: 80%"
+                >
+                  <el-option
                       v-for="item in countryList"
                       :key="item"
+                      :label="item"
                       :value="item"
-                  >
-                    {{ item }}
-                  </option>
-                </select>
+                  />
+                </el-select>
               </div>
               <div class="form-group leyLineOutcrop">
                 <label>刷取次数：</label>
@@ -1345,16 +1360,18 @@ const totalCount = computed(() => {
               </div>
               <div class="form-group stygianOnslaught">
                 <label>指定刷取战场（可选）：</label>
-                <select v-model="config.autoStygianOnslaught.bossNum">
-                  <option :value="undefined">请选择</option>
-                  <option
-                      v-for="type in [{key:'战场一',value:1},{key:'战场二',value:2},{key:'战场三',value:3}] "
+                <el-select
+                    v-model="config.autoStygianOnslaught.bossNum"
+                    placeholder="请选择"
+                    clearable                  style="width: 80%"
+                >
+                  <el-option
+                      v-for="type in [{key:'战场一',value:1},{key:'战场二',value:2},{key:'战场三',value:3}]"
                       :key="type.key"
+                      :label="type.key"
                       :value="type.value"
-                  >
-                    {{ type.key }}
-                  </option>
-                </select>
+                  />
+                </el-select>
               </div>
               <div class="form-group stygianOnslaught">
                 <label>自定义树脂使用：</label>
