@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ public class DatabaseInitRunner {
 
     private static final Map<String, String> DB_TYPE_TO_SCRIPT = new HashMap<>();
     private static final Map<String, List<String>> DB_TYPE_TO_DB_SCRIPT = new HashMap<>();
+
     static {
         DB_TYPE_TO_SCRIPT.put("MySQL", "mysql.sql");
         DB_TYPE_TO_SCRIPT.put("PostgreSQL", "pgsql.sql");
@@ -67,6 +69,21 @@ public class DatabaseInitRunner {
         this.resourceLoader = resourceLoader;
         this.scheduler = scheduler;
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    private static boolean isColumnAlreadyExistsError(Throwable e, Collection<String> keys) {
+        while (e != null) {
+            String msg = e.getMessage();
+            if (msg != null) {
+                for (String key : keys) {
+                    if (msg.toLowerCase().contains(key.toLowerCase())) {
+                        return true;
+                    }
+                }
+            }
+            e = e.getCause();
+        }
+        return false;
     }
 
     @PostConstruct
@@ -97,12 +114,9 @@ public class DatabaseInitRunner {
                                 jdbcTemplate.execute(sql);
                             } catch (Exception e) {
                                 String msg = e.getMessage();
-                                if (msg != null && (
-                                        msg.contains("duplicate column name") ||
-                                                msg.contains("Duplicate column name") ||
-                                                msg.contains("column already exists") ||
-                                                msg.contains("already exists")
-                                )) {
+                                if (
+                                isColumnAlreadyExistsError(e, List.of("duplicate column", "Duplicate column", "already exists", "column already exists"))
+                                ) {
                                     log.debug("字段已存在，跳过添加, {}", msg);
                                 } else {
                                     log.warn("执行迁移脚本失败: {}", sql, e);
