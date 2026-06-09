@@ -73,7 +73,7 @@
                       <div class="part-header">
                         <span class="part-number">部件 {{ partIndex + 1 }}</span>
                         <button
-                            v-if="configData.parts.length > 1"
+                            v-if="configData.parts.length > 0"
                             @click="removePart(partIndex)"
                             class="btn-remove-part"
                             title="删除此部件"
