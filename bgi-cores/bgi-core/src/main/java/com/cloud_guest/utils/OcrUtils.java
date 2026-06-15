@@ -45,7 +45,7 @@ public class OcrUtils {
         }
     }
 
-    @SneakyThrows
+/*    @SneakyThrows
     public static void main(String[] args) {
         test();
         if (true) return;
@@ -86,7 +86,7 @@ public class OcrUtils {
             System.out.println(JSONUtil.toJsonStr(ocrResult.getResList()));
         }
         //System.out.println(JSONUtil.toJsonStr(ocrResult));
-    }
+    }*/
 
     /**
      * 通用ocr

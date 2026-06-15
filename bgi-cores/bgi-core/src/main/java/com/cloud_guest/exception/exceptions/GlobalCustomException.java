@@ -13,7 +13,7 @@ import lombok.Getter;
 public class GlobalCustomException extends GlobalException {
 
     public GlobalCustomException(ApiCode apiCode) {
-        super(apiCode.getCode(),apiCode.getMessage());
+        super(apiCode);
     }
 
     public GlobalCustomException(int code, String message) {

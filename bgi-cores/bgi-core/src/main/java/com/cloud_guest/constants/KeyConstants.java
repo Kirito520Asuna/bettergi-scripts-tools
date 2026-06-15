@@ -30,9 +30,9 @@ public interface KeyConstants {
     String outline_application_key = "outline_application";
     String key = "TEMP:KEY:";
     String db_kv_key = "db:kv:";
-
+    String encrypt_salt = "sign.encrypt.salt";
     List<String> ex_backup_list = new ArrayList<>(Arrays.asList(restart_key, online_application_key, outline_application_key));
-
+    String cache_key="cache:";
     String redis_file_json_key = "redis:file:json:";
     String task_key = "task:";
     String lock_key = "lock:";

@@ -1,5 +1,7 @@
 package com.cloud_guest.utils;
 
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.json.JSONObject;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.utils.yml.YmlUtils;
 import com.cloud_guest.wrappers.lock.LockWrapper;
@@ -16,6 +18,39 @@ import java.util.concurrent.TimeUnit;
  * @Description
  */
 public class LockYmlUtil extends YmlUtils {
+    /**
+     * 向指定 YAML 文件写入键值对（线程安全）
+     *
+     * @param yamlPath YAML 文件路径
+     * @param key      键名
+     * @param value    键值
+     */
+    public static void write(String yamlPath, String key, String value) {
+        File file = FileUtil.newFile(yamlPath);
+        if (file == null || !file.exists()) {
+            return;
+        }
+
+        String lockKey = "yml_lock_" + yamlPath;
+        LockWrapper lock = LockUtil.getLock(lockKey);
+
+        boolean tryLock = lock.tryLock();
+        if (!tryLock) {
+            throw new GlobalException("存在其他操作，请稍后再试!");
+        }
+
+        try {
+            JSONObject jsonObject = YmlUtils.readValueToJSONObject(yamlPath);
+            jsonObject.put(key, value);
+            YmlUtils.writeValue(file, jsonObject);
+        } catch (IOException e) {
+            throw new GlobalException("写入 YAML 文件失败: " + e.getMessage());
+        } finally {
+            if (lock.isLocked()) {
+                lock.unlock();
+            }
+        }
+    }
     /**
      * 向指定路径写入值的方法重载，使用锁键获取锁
      *

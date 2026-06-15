@@ -30,14 +30,21 @@ import java.util.Optional;
 public class UidController {
     @Resource
     private UidService uidService;
+
     @SysLog
+    @Token
     @Operation(summary = "查询全部uid映射")
     @GetMapping("all")
     public Result<List<UidInfo>> all() {
-        List<UidInfo> uidAll = uidService.findUidAll().stream().map(UidInfoConfig::toUidInfo).toList();
+        List<UidInfo> uidAll = uidService.findUidAll().stream().map(UidInfoConfig::toUidInfo).map(o -> {
+            o.setPassword(null);
+            return o;
+        }).toList();
         return Result.ok(uidAll);
     }
+
     @SysLog
+    @Token
     @Operation(summary = "查询uid映射")
     @GetMapping("info")
     public Result<UidInfo> getUid(@RequestParam String uid) {
@@ -46,6 +53,7 @@ public class UidController {
                 .orElse(null);   // 返回一个空的 UidInfo 对象（确保 UidInfo 有无参构造）
         return Result.ok(uidInfo);
     }
+
     @SysLog
     @Token
     @Operation(summary = "新增uid映射")
@@ -54,6 +62,7 @@ public class UidController {
         uidService.saveOrUpdate(uidInfo.toConfig());
         return Result.ok();
     }
+
     @SysLog
     @Token
     @Operation(summary = "移除uid映射")

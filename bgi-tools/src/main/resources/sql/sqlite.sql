@@ -40,6 +40,9 @@ CREATE TABLE IF NOT EXISTS ws_proxy_access_config (
 CREATE TABLE IF NOT EXISTS uid_info_config (
     uid         TEXT PRIMARY KEY,                               -- 用户唯一标识
     col_as        TEXT,                                           -- AS字段（as 是保留字，需用双引号）
+    username   TEXT,
+    password    TEXT,
+    salt        TEXT,
     create_by   TEXT,
     create_time TEXT DEFAULT (datetime('now','localtime')),
     update_by   TEXT,

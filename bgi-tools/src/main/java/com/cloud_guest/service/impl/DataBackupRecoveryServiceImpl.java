@@ -8,6 +8,7 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.entitys.domain.UidInfo;
 import com.cloud_guest.entitys.domain.WsProxyAccess;
 import com.cloud_guest.entitys.common.auto_plan.AutoPlan;
@@ -16,11 +17,15 @@ import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.mapper.BackupMapper;
 import com.cloud_guest.properties.load.LoadProperties;
 import com.cloud_guest.service.*;
+import com.cloud_guest.utils.JSONUtils;
 import com.cloud_guest.utils.StrUtils;
 import com.cloud_guest.utils.yml.YmlUtils;
 import com.google.common.collect.Maps;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +40,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -47,6 +53,8 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 @Service
 public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, BackupInfo> implements DataBackupRecoveryService {
+    @Resource
+    private CacheService cacheService;
 
     private String data = "data";
     private String config = "config";
@@ -66,12 +74,12 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
             String path = backup + File.separator + name;
             File backupDir = new File(path);
             if (!backupDir.exists()) {
-                throw new GlobalException(name+"备份不存在");
+                throw new GlobalException(name + "备份不存在");
             }
             String content = FileUtil.readUtf8String(path);
             JSONObject bean = JSONUtil.toBean(content, JSONObject.class);
-            map.putAll( bean);
-        }else {
+            map.putAll(bean);
+        } else {
             LambdaQueryWrapper<BackupInfo> queryWrapper = Wrappers.<BackupInfo>lambdaQuery()
                     .eq(BackupInfo::getBackupName, name)
                     .eq(BackupInfo::getId, id);
@@ -89,7 +97,7 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
 
 
             JSONObject bean = JSONUtil.toBean(info.getBackupJson(), JSONObject.class);
-            map.putAll( bean);
+            map.putAll(bean);
         }
         recovery(map);
         return true;
@@ -130,6 +138,7 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
                 .collect(Collectors.toList());
         return infos;
     }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteBatchBackup(List<Long> ids) {
@@ -219,13 +228,13 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
     @Override
     public boolean recovery(Map<String, Object> map) {
         Object o = map.get(data);
-       if (o == null){
-           log.info("旧版数据恢复");
-           return recoveryLegacy( map);
-       }else {
-           log.info("新版数据恢复");
-           return recoveryV1(map);
-       }
+        if (o == null) {
+            log.info("旧版数据恢复");
+            return recoveryLegacy(map);
+        } else {
+            log.info("新版数据恢复");
+            return recoveryV1(map);
+        }
     }
 
     public boolean recoveryV1(Map<String, Object> map) {
@@ -242,6 +251,7 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
         }
         return true;
     }
+
     // 恢复处理器映射：Key = 服务后缀，Value = 恢复逻辑
     private Map<String, Consumer<String>> recoveryHandlers;
     @Resource
@@ -252,6 +262,7 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
     private AutoPlanService autoPlanService;
     @Resource
     private DbKVService dbKVService;
+
     // 初始化恢复处理器
     @PostConstruct
     public void initRecoveryHandlers() {
@@ -284,7 +295,7 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
             List<DbKV> list = JSONUtil.toList(json, dbKVService.getEntityClass())
                     .stream().map(item -> {
                         String keyName = item.getKeyName();
-                        if (StrUtils.isBlank(keyName)){
+                        if (StrUtils.isBlank(keyName)) {
                             item.setKeyName(item.getType());
                         }
                         return item;
@@ -295,13 +306,30 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
             dbKVService.saveOrUpdateBatch((List) list);
         };
         recoveryHandlers.put(dbKVService.getSuffix(), dbConsumer);
+
+        //通用缓存
+        Consumer<String> cacheConsumer = json -> {
+            CacheJson cacheJson = JSONUtil.toBean(json, CacheJson.class);
+            cacheService.saveKeyValue(cacheJson.getKey(), cacheJson.getValue());
+        };
+        recoveryHandlers.put(KeyConstants.cache_key, cacheConsumer);
     }
 
-
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class CacheJson {
+        String key;
+        String value;
+    }
 
     public JSONObject backupV1() {
         JSONObject backup = new JSONObject();
         JSONObject jsonObject = new JSONObject();
+        String encrypt_salt = KeyConstants.cache_key + KeyConstants.encrypt_salt;
+        //单个缓存key
+        jsonObject.put(encrypt_salt, JSONUtil.toJsonStr(new CacheJson(KeyConstants.encrypt_salt, cacheService.findValueByKey(KeyConstants.encrypt_salt))));
+
         jsonObject.put(uidService.getSuffix(), JSONUtil.toJsonStr(uidService.list()));
         jsonObject.put(wsProxyService.getSuffix(), JSONUtil.toJsonStr(wsProxyService.list()));
         jsonObject.put(autoPlanService.getSuffix(), JSONUtil.toJsonStr(autoPlanService.list()));
@@ -312,7 +340,8 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
         for (String yamlPath : yamlPaths) {
             try {
                 JSONObject entries = YmlUtils.readValueToJSONObject(yamlPath);
-                jsonObjectConfig.putAll(entries);
+                //jsonObjectConfig.putAll(entries);
+                JSONUtils.deepMerge(jsonObjectConfig, entries);
             } catch (Exception e) {
                 log.error("读取文件失败：{}", yamlPath, e);
             }
@@ -331,11 +360,14 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
 
     public boolean recoveryDataV1(Map<String, Object> map) {
         boolean allSuccess = true;
-
+        String cacheKey = KeyConstants.cache_key;
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String key = entry.getKey();
             String json = entry.getValue().toString();
             Consumer<String> handler = recoveryHandlers.get(key);
+            if (handler == null && key.startsWith(cacheKey)) {
+                handler = recoveryHandlers.get(cacheKey);
+            }
 
             if (handler == null) {
                 log.warn("未找到对应的恢复处理器，key: {}", key);
@@ -355,6 +387,7 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
 
     /**
      * 兼容旧版备份数据格式的导入方法
+     *
      * @param map 备份 Map，键格式如 AUTO_PLAN:UID:123、MAPPING:UID:456 等
      * @return 全部导入成功返回 true，任一失败返回 false
      */
@@ -420,7 +453,7 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
         String uid = key.substring("AUTO_PLAN:UID:".length());
         List<AutoPlanConfig> planList = JSONUtil.toList(dataJson, AutoPlan.class).stream()
                 .map(AutoPlan::toConfig)
-                .map(o->{
+                .map(o -> {
                     o.setUid(uid);
                     return o;
                 })

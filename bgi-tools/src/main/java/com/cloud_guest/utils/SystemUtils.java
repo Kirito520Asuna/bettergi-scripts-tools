@@ -22,9 +22,9 @@ import java.util.Properties;
  */
 @Slf4j
 public class SystemUtils {
-    public static void main(String[] args) {
+/*    public static void main(String[] args) {
         printSystemInfo();
-    }
+    }*/
 
     /**
      * 获取系统信息

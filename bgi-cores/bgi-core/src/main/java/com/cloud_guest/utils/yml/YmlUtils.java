@@ -34,11 +34,11 @@ public class YmlUtils {
 
     private static final ObjectMapper YAML_MAPPER = new YAMLMapper();
 
-    public static void main(String[] args) throws IOException {
+/*    public static void main(String[] args) throws IOException {
         test03();
         //test02();
         //test01();
-    }
+    }*/
 
     private static void test03() throws IOException {
         String path = "G:\\code\\bettergi-scripts-tools\\bgi-cores\\bgi-core\\src\\main\\java\\com\\cloud_guest\\utils\\yml\\application.yml";

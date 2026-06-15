@@ -98,7 +98,7 @@ public class ImageToBase64 {
         return encodeFileToBase64(imagePath);
     }
 
-    // 简单测试入口
+/*    // 简单测试入口
     public static void main(String[] args) {
         String path = "D:\\Administrator\\Pictures\\Snipaste_2026-04-29_12-08-19.jpg";
         String result = encodeFileToBase64(path);
@@ -107,5 +107,5 @@ public class ImageToBase64 {
             // 可输出前 100 个字符预览
             log.info("{}", result);
         }
-    }
+    }*/
 }

@@ -1,6 +1,12 @@
 package com.cloud_guest.service;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
+import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.entitys.domain.Cache;
+import com.cloud_guest.redis.service.RedisService;
+import com.cloud_guest.utils.LocalCacheUtils;
+import com.cloud_guest.utils.ModeUtil;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -28,21 +34,22 @@ public interface CacheService {
      * @param json 要保存的JSON格式字符串
      * @return 保存操作是否成功，成功返回true，失败返回false
      */
-    default boolean save(String id, String json){
-        return save(id,json,null,null);
+    default boolean save(String id, String json) {
+        return save(id, json, null, null);
     }
+
     /**
      * 保存指定ID对应的JSON数据
      *
-     * @param id   要保存数据的唯一标识符
-     * @param json 要保存的JSON格式字符串
+     * @param id         要保存数据的唯一标识符
+     * @param json       要保存的JSON格式字符串
      * @param expireTime 过期时间
-     * @param timeUnit 时间单位
+     * @param timeUnit   时间单位
      * @return 删除操作是否成功执行
      * true - 删除成功
      * false - 删除失败
      */
-    boolean save(String id, String json,Long expireTime, TimeUnit timeUnit);
+    boolean save(String id, String json, Long expireTime, TimeUnit timeUnit);
 
     /**
      * 根据键和ID移除对应的元素
@@ -55,6 +62,7 @@ public interface CacheService {
 
     /**
      * 根据键移除对应的元素
+     *
      * @param key
      * @return
      */
@@ -68,10 +76,10 @@ public interface CacheService {
      * @return 保存操作是否成功
      */
     default boolean saveId(String key, String id) {
-       return saveId(key,id,null,null);
+        return saveId(key, id, null, null);
     }
 
-    boolean saveId(String key, String id,Long expireTime, TimeUnit timeUnit);
+    boolean saveId(String key, String id, Long expireTime, TimeUnit timeUnit);
 
     /**
      * 根据指定的ID查找缓存中的数据
@@ -81,6 +89,16 @@ public interface CacheService {
      * @return 返回找到的缓存数据，类型为Cache<String>，如果没有找到则可能返回null
      */
     Cache<String> find(String id);
+
+    /**
+     * 保存键值对的函数
+     *
+     * @param key   要保存的键，类型为String
+     * @param value 要保存的值，类型为String
+     * @return 保存操作是否成功，返回boolean类型
+     * true表示保存成功，false表示保存失败
+     */
+    boolean saveKeyValue(String key, String value);
 
     /**
      * 根据键查找对应的值

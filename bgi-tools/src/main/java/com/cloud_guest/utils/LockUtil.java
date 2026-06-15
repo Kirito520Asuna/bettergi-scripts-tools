@@ -115,7 +115,7 @@ public class LockUtil {
     }
 
 
-    public static void main(String[] args) {
+/*    public static void main(String[] args) {
         // 示例使用
         String lockKey = "test-lock-key";
 
@@ -154,6 +154,6 @@ public class LockUtil {
                 System.out.println("Redis分布式锁获取失败");
             }
         }
-    }
+    }*/
 }
 

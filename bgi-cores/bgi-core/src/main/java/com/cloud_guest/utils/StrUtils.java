@@ -51,9 +51,9 @@ public class StrUtils extends cn.hutool.core.util.StrUtil {
         return flag;
     }
 
-    public static void main(String[] args) {
+/*    public static void main(String[] args) {
         System.out.println(isNotBlank("1", null));
         System.out.println(isNotBlank("1", "2"));
         System.out.println(isNotBlank(true, "1", null));
-    }
+    }*/
 }

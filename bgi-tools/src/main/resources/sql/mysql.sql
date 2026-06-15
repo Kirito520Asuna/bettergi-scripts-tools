@@ -42,6 +42,9 @@ CREATE TABLE IF NOT EXISTS `uid_info_config`
 (
     `uid`         varchar(64) NOT NULL COMMENT '用户唯一标识',
     `col_as`          varchar(64) DEFAULT NULL COMMENT 'AS字段（注意：as是保留字，需反引号）',
+    `username`       varchar(255) DEFAULT NULL COMMENT '用户名',
+    `password`       varchar(255) DEFAULT NULL COMMENT '密码',
+    `salt`       varchar(255) DEFAULT NULL COMMENT '盐值',
     -- 通用审计字段
     `create_by`   VARCHAR(64) DEFAULT NULL COMMENT '创建者',
     `create_time` TIMESTAMP   DEFAULT NULL COMMENT '创建时间',

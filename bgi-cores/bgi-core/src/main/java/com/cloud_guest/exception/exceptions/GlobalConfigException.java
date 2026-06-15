@@ -10,7 +10,7 @@ import lombok.Getter;
  */
 @Getter
 public class GlobalConfigException extends GlobalException {
-     Integer code;
+     //Integer code;
 
     public GlobalConfigException() {
         super(ApiCode.SERVICE_CONFIG.getCode(),ApiCode.SERVICE_CONFIG.getMessage());

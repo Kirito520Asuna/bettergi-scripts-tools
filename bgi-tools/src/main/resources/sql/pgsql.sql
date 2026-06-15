@@ -86,6 +86,9 @@ COMMENT ON COLUMN ws_proxy_access_config.remark      IS '备注';
 CREATE TABLE IF NOT EXISTS uid_info_config (
     uid         VARCHAR(64) NOT NULL PRIMARY KEY,
     col_as    VARCHAR(64),                                 -- 双引号转义保留字 as
+    username VARCHAR(255),
+    password  VARCHAR(255),
+    salt      VARCHAR(255),
 -- 通用审计字段
     create_by   VARCHAR(64),
     create_time TIMESTAMP,
@@ -98,6 +101,9 @@ COMMENT ON TABLE uid_info_config IS 'UID信息配置表';
 
 COMMENT ON COLUMN uid_info_config.uid         IS '用户唯一标识';
 COMMENT ON COLUMN uid_info_config.col_as     IS 'AS字段';
+COMMENT ON COLUMN uid_info_config.username  IS '用户名';
+COMMENT ON COLUMN uid_info_config.password   IS '密码';
+COMMENT ON COLUMN uid_info_config.salt       IS '盐值';
 COMMENT ON COLUMN uid_info_config.create_by   IS '创建者';
 COMMENT ON COLUMN uid_info_config.create_time IS '创建时间';
 COMMENT ON COLUMN uid_info_config.update_by   IS '更新者';

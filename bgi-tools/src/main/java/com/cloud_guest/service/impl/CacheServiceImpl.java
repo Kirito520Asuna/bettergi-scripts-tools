@@ -14,6 +14,7 @@ import com.cloud_guest.utils.LockUtil;
 import com.cloud_guest.utils.ModeUtil;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.wrappers.lock.LockWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashSet;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
  * @Date 2026/2/6 16:01:48
  * @Description
  */
+@Slf4j
 @Service
 public class CacheServiceImpl implements CacheService {
     @Override
@@ -239,7 +241,18 @@ public class CacheServiceImpl implements CacheService {
         Cache<String> cache = JSONUtil.toBean(o, Cache.class);
         return cache;
     }
-
+    @Override
+    public  boolean saveKeyValue(String key,String value) {
+        if (ModeUtil.isLocal()) {
+            log.debug("使用本地缓存");
+            LocalCacheUtils.put(key,value);
+        } else if (ModeUtil.isRedis()) {
+            String keyRedis = key.startsWith(KeyConstants.redis_file_json_key) ? key : KeyConstants.redis_file_json_key + key;
+            RedisService bean = SpringUtil.getBean(RedisService.class);
+            bean.save(keyRedis,value);
+        }
+        return true;
+    }
     @Override
     public String findValueByKey(String key) {
         String o = StrUtil.EMPTY;

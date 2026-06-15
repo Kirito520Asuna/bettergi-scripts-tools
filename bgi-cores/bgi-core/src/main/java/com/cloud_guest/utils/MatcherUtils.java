@@ -45,22 +45,22 @@ public class MatcherUtils {
         return PATH_MATCHER.match(pattern, path);
     }
 
-    public static void main(String[] args) {
-        //System.out.println(matches("/api/user"));           // true
-        //System.out.println(matches("/api/user/123"));       // true
-        //System.out.println(matches("/api/v1/orders"));      // true
-        //System.out.println(matches("/user/api"));           // false
-        //System.out.println(matches("/api"));
-        System.out.println(matches("/bgi/api/11", "/api/**"));
-
-        System.out.println(matches("/api", "**/api/key/a"));
-        System.out.println(matches("/api", "**/api/key/a",true));
-        System.out.println(matches("/api/key/a", "**/api/key/a"));
-        System.out.println(matches("/api/key/a", "/api/key/a"));
-        System.out.println(matches("/api/key/a", "**/api/key/a",true));
-        String url = "http://localhost:8080/bgi/api/11";
-        int index = url.indexOf("/bgi");
-        System.out.println(url.substring(index));
-    }
+    //public static void main(String[] args) {
+    //    //System.out.println(matches("/api/user"));           // true
+    //    //System.out.println(matches("/api/user/123"));       // true
+    //    //System.out.println(matches("/api/v1/orders"));      // true
+    //    //System.out.println(matches("/user/api"));           // false
+    //    //System.out.println(matches("/api"));
+    //    System.out.println(matches("/bgi/api/11", "/api/**"));
+    //
+    //    System.out.println(matches("/api", "**/api/key/a"));
+    //    System.out.println(matches("/api", "**/api/key/a",true));
+    //    System.out.println(matches("/api/key/a", "**/api/key/a"));
+    //    System.out.println(matches("/api/key/a", "/api/key/a"));
+    //    System.out.println(matches("/api/key/a", "**/api/key/a",true));
+    //    String url = "http://localhost:8080/bgi/api/11";
+    //    int index = url.indexOf("/bgi");
+    //    System.out.println(url.substring(index));
+    //}
 
 }

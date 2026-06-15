@@ -3,6 +3,7 @@ package com.cloud_guest.runner;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.entitys.pojo.AutoPlanConfig;
+import com.cloud_guest.entitys.pojo.UidInfoConfig;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Scheduler;
@@ -50,6 +51,9 @@ public class DatabaseInitRunner {
                         "classpath:sql/sqlite.sql",
                         List.of(
                                 String.format("ALTER TABLE %s ADD COLUMN %s INTEGER DEFAULT 0", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_RECORD),
+                                String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_USERNAME),
+                                String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_PASSWORD),
+                                String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_SALT),
                                 StrUtil.EMPTY
                         )
                 )
@@ -61,6 +65,12 @@ public class DatabaseInitRunner {
                         List.of(
                                 String.format("ALTER TABLE %s ADD COLUMN %s BOOLEAN DEFAULT NULL", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_RECORD),
                                 String.format("COMMENT ON COLUMN %s.%s IS '是否记录'", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_RECORD),
+                                String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR(255) DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_USERNAME),
+                                String.format("COMMENT ON COLUMN %s.%s IS '用户名'", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_USERNAME),
+                                String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR(255) DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_PASSWORD),
+                                String.format("COMMENT ON COLUMN %s.%s IS '密码'", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_PASSWORD),
+                                String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR(255) DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_SALT),
+                                String.format("COMMENT ON COLUMN %s.%s IS '盐值'", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_SALT),
                                 StrUtil.EMPTY
                         )
                 )
@@ -71,6 +81,9 @@ public class DatabaseInitRunner {
                         "classpath:sql/mysql.sql",
                         List.of(
                                 String.format("ALTER TABLE %s ADD COLUMN `%s` TINYINT(1) DEFAULT NULL COMMENT '是否记录' AFTER `remark`", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_RECORD),
+                                String.format("ALTER TABLE %s ADD COLUMN `%s` varchar(255) DEFAULT NULL COMMENT '用户名' AFTER `remark`", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_USERNAME),
+                                String.format("ALTER TABLE %s ADD COLUMN `%s` varchar(255) DEFAULT NULL COMMENT '密码' AFTER `remark`", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_PASSWORD),
+                                String.format("ALTER TABLE %s ADD COLUMN `%s` varchar(255) DEFAULT NULL COMMENT '盐值' AFTER `remark`", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_SALT),
                                 StrUtil.EMPTY
                         )
                 )

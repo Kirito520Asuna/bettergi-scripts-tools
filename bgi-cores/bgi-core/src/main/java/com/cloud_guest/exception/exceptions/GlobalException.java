@@ -16,6 +16,9 @@ public class GlobalException extends RuntimeException {
     public GlobalException(String message) {
         super(message);
     }
+    public GlobalException(ApiCode apiCode) {
+        this(apiCode.getCode(), apiCode.getMessage());
+    }
 
     public GlobalException(Integer code, String message) {
         super(message);

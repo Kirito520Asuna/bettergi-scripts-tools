@@ -322,7 +322,7 @@ public class JwtUtil {
         return after;
     }
 
-    public static void main(String[] args) {
+/*    public static void main(String[] args) {
         String username = "admin";
         Long ttlMillis = 1000 * 60 * 60 * 24 * 30L;
         String jwt = createJWT(username, ttlMillis);
@@ -333,5 +333,5 @@ public class JwtUtil {
         if (notTokenExpired) {
             System.out.println("即将过期");
         }
-    }
+    }*/
 }
