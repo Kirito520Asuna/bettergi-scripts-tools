@@ -7,10 +7,11 @@ import {
   getUidJson,
   postUidPlan,
   removeUidList,
-  getAllUid
+  getAllUid, getBaseBossListJsonAll
 } from "@api/auto_plan/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
 import {
+  bossListDefault,
   countryListDefault,
   domainsDefault,
   domainTypesDefault,
@@ -142,8 +143,10 @@ const configs = ref([])
 const isLoading = ref(false);
 // 秘境数据（保持不变，建议单独抽到一个文件）
 const defaultDomains = domainsDefault
+const defaultBossList = bossListDefault
 const domains = ref([])
 const domainTypes = ref([])
+const bossList = ref([])
 const runTypes = ref([])
 const leyLineOutcropTypes = ref([])
 const countryList = ref(null)
@@ -215,6 +218,23 @@ const fetchDomains = async () => {
         }
       }
     })
+  }
+};
+const fetchBossList = async () => {
+  try {
+    // const response = await service.get('/auto/plan/domain/json/all');
+    const response = await getBaseBossListJsonAll()
+    // console.log('response', response)
+    if (response && response.length > 0) {
+      bossList.value = response;
+    } else {
+      bossList.value = defaultBossList;
+      ElMessage.warning('无数据存储，使用默认数据。');
+    }
+  } catch (error) {
+    // console.error('请求失败:', error);
+    bossList.value = defaultBossList;
+    // ElMessage.warning('使用默认秘境数据。');
   }
 };
 const removeConfigToBackend = async () => {
@@ -294,7 +314,8 @@ const findDomains = async (confirm = true) => {
 
 const asDaysMap = selectedAsDaysMap()
 onMounted(() => {
-  fetchDomains();
+  fetchDomains()
+  fetchBossList()
   initDomainTypes()
   initRunTypes()
   initLeyLineOutcropTypes()
@@ -368,6 +389,30 @@ const addConfig = (config = undefined) => {
         specifyResinUse: false,// 是否指定使用
         bossNum: undefined,
         fightTeamName: "",
+      },
+      autoBoss: {
+        /** 需要讨伐的 Boss 名称。*/
+        bossName: "",
+        /** UI 中选择的战斗策略名称；当没有自定义策略路径时会同步更新 <see cref="CombatStrategyPath"/>。*/
+        strategyName: "",
+        /** 实际用于解析自动战斗脚本的路径。JS 可直接设置该路径来覆盖 UI 选择。*/
+        combatStrategyPath: "",
+        /** 讨伐前需要切换到的队伍名称；为空时保持当前队伍。*/
+        teamName: "",
+        /** 是否启用“指定讨伐次数”模式；关闭时刷取至原粹树脂耗尽。*/
+        specifyRunCount: true,
+        /** 指定模式下成功领取奖励的目标次数。*/
+        runCount: 1,
+        /** 指定讨伐次数模式下，原粹树脂不足时是否允许使用须臾树脂补充。*/
+        useTransientResin: false,
+        /** 指定讨伐次数模式下，原粹树脂不足时是否允许使用脆弱树脂补充。*/
+        useFragileResin: false,
+        /** 检测到角色死亡后，回神像恢复并重试当前首领讨伐的最大次数。*/
+        reviveRetryCount: 3,
+        /** 每轮领奖后是否先返回七天神像，再重新前往 Boss。*/
+        returnToStatueAfterEachRound: false,
+        /** 是否启用奖励名称识别。默认关闭。*/
+        rewardRecognitionEnabled: false,
       }
     };
   } else {
@@ -515,17 +560,20 @@ watchEffect(
     {deep: true}
 )
 
+/*
 // 初始化时至少有一条（可选）
 if (configs.value.length === 0) {
   addConfig()
 }
+*/
 
 // 获取最终用于保存/提交的数据
 const getFinalConfigs = () => {
   return configs.value.map(c => {
-    let autoFight = c.autoFight
-    let autoLeyLineOutcrop = c.autoLeyLineOutcrop
-    let autoStygianOnslaught = c.autoStygianOnslaught
+    let autoFight = c?.autoFight
+    let autoLeyLineOutcrop = c?.autoLeyLineOutcrop
+    let autoStygianOnslaught = c?.autoStygianOnslaught
+    let autoBoss = c?.autoBoss
     // c.autoFight.physical.sort((a, b) => a.order - b.order)
     changShowDaysButton(c)
     let id = c.id;
@@ -535,24 +583,23 @@ const getFinalConfigs = () => {
     }
     let json = {
       id: id,
-      order: c.order,
+      order: c?.order,
       // day: c.day,
-      days: c.days,
-      dayName: c.dayName,
-      runType: c.runType,
-      enable: c.enable,
-      record: c.record,
+      days: c?.days,
+      dayName: c?.dayName,
+      runType: c?.runType,
+      enable: c?.enable,
+      record: c?.record,
       // daysName: c.daysName,
       // physical: c.physical,
-      selectedType: c.selectedType, // 新增字段
-      autoFight: autoFight,
-      autoLeyLineOutcrop: autoLeyLineOutcrop,
-      autoStygianOnslaught: autoStygianOnslaught,
+      selectedType: c?.selectedType, // 新增字段
+      autoFight: undefined,
+      autoLeyLineOutcrop: undefined,
+      autoStygianOnslaught: undefined,
+      autoBoss: undefined,
     };
-    if (c.runType === runTypesDefault()[0]) {
-      json.autoLeyLineOutcrop = undefined
-      json.autoStygianOnslaught = undefined
 
+    if (c?.runType === runTypesDefault()[0]) {
       if (autoFight.domainName) {
         const info = domainMap.value.get(autoFight.domainName);
         let index = 1
@@ -565,12 +612,12 @@ const getFinalConfigs = () => {
         }
       }
       json.autoFight = autoFight
-    } else if (c.runType === runTypesDefault()[1]) {
-      json.autoFight = undefined
-      json.autoStygianOnslaught = undefined
-    } else if (c.runType === runTypesDefault()[2]) {
-      json.autoFight = undefined
-      json.autoLeyLineOutcrop = undefined
+    } else if (c?.runType === runTypesDefault()[1]) {
+      json.autoLeyLineOutcrop = autoLeyLineOutcrop
+    } else if (c?.runType === runTypesDefault()[2]) {
+      json.autoStygianOnslaught = autoStygianOnslaught
+    } else if (c?.runType === runTypesDefault()[3]) {
+      json.autoBoss = autoBoss;
     } else {
       /*      ElMessage.error("请选择类型！")
             throw new Error("请选择类型！")*/
@@ -625,7 +672,8 @@ const getFinalConfigsToKey = () => {
       key += (autoFight.sundaySelectedValue || 1)
       key += "|"
       key += (physical.filter(p => p.open).map(p => p.name).join('/') || "")
-    } else if (item.runType === runTypesDefault()[1]) {
+    }
+    else if (item.runType === runTypesDefault()[1]) {
       //"|队伍名称|国家|刷几轮|花类型|好感队|是否使用脆弱树脂|是否使用须臾树脂|是否前往合成台合成浓缩树脂|是否使用冒险之证|发送详细通知|战斗超时时间,..."
       let autoLeyLineOutcrop = item.autoLeyLineOutcrop;
       //todo:  LeyLineOutcrop
@@ -650,7 +698,8 @@ const getFinalConfigsToKey = () => {
       key += (autoLeyLineOutcrop.isNotification || "")
       key += "|"
       key += (autoLeyLineOutcrop.timeout || "")
-    } else if (item.runType === runTypesDefault()[2]) {
+    }
+    else if (item.runType === runTypesDefault()[2]) {
       let autoStygianOnslaught = item.autoStygianOnslaught
       let physical = autoStygianOnslaught.physical
       key += (autoStygianOnslaught.bossNum || "")
@@ -664,6 +713,30 @@ const getFinalConfigsToKey = () => {
         key += "|"
         key += (physical.filter(p => p.open).map(p => p.count).join('/') || "")
       }
+    }
+    else if (item.runType === runTypesDefault()[3]) {
+      let autoBoss = item.autoBoss
+      key += (autoBoss.bossName || "")
+      key += "|"
+      key += (autoBoss.strategyName || "")
+      key += "|"
+      key += (autoBoss.combatStrategyPath || "")
+      key += "|"
+      key += (autoBoss.teamName || "")
+      key += "|"
+      key += (autoBoss.specifyRunCount || "")
+      key += "|"
+      key += (autoBoss.runCount || 1)
+      key += "|"
+      key += (autoBoss.useTransientResin || "")
+      key += "|"
+      key += (autoBoss.useFragileResin || "")
+      key += "|"
+      key += (autoBoss.reviveRetryCount || "")
+      key += "|"
+      key += (autoBoss.returnToStatueAfterEachRound || "")
+      key += "|"
+      key += (autoBoss.rewardRecognitionEnabled || "")
     }
     key += ","
   })
@@ -1179,13 +1252,15 @@ const totalCount = computed(() => {
                 <label>秘境：</label>
                 <el-select
                     v-model="config.autoFight.domainName"
-                    placeholder="请选择秘境"
-                    clearable style="width: 80%"
+                    placeholder="请选择或输入秘境"
+                    clearable
+                    filterable
+                    allow-create style="width: 80%"
                 >
                   <el-option
                       v-for="d in filteredDomainsType(config.selectedType)"
                       :key="d.name"
-                      :label="d.name"
+                      :label="'['+d?.name+']----'+d?.list?.join('/')"
                       :value="d.name"
                   />
                 </el-select>
@@ -1194,13 +1269,15 @@ const totalCount = computed(() => {
                 <label>秘境：</label>
                 <el-select
                     v-model="config.autoFight.domainName"
-                    placeholder="请选择秘境"
-                    clearable style="width: 80%"
+                    placeholder="请选择或输入秘境"
+                    clearable
+                    filterable
+                    allow-create style="width: 80%"
                 >
                   <el-option
                       v-for="d in filteredDomainsType(config.selectedType)"
                       :key="d.name"
-                      :label="d.name"
+                      :label="'['+d?.name+']--'+d?.list?.join('/')"
                       :value="d.name"
                   />
                 </el-select>
@@ -1228,8 +1305,11 @@ const totalCount = computed(() => {
                 <el-select
                     v-model="config.autoFight.sundaySelectedDomain"
                     @change="handleSundaySelection(config)"
-                    placeholder="请选择材料"
-                    clearable style="width: 80%"
+                    placeholder="请选择或输入材料"
+                    clearable
+                    filterable
+                    allow-create
+                    style="width: 80%"
                 >
                   <el-option
                       v-for="(item) in getFilteredMaterials(config)|| []"
@@ -1301,8 +1381,11 @@ const totalCount = computed(() => {
                 <label>国家/地区：</label>
                 <el-select
                     v-model="config.autoLeyLineOutcrop.country"
-                    placeholder="请选择国家/地区"
-                    clearable style="width: 80%"
+                    placeholder="请(选择/输入)国家/地区"
+                    clearable
+                    filterable
+                    allow-create
+                    style="width: 80%"
                 >
                   <el-option
                       v-for="item in countryList"
@@ -1352,37 +1435,37 @@ const totalCount = computed(() => {
                 </el-button>
               </div>
 
-<!--              <div class="form-group leyLineOutcrop checkbox-group" style="display: flex; flex-wrap: wrap; gap: 16px;">
-                <el-checkbox v-model="config.autoLeyLineOutcrop.useAdventurerHandbook">
-                  使用冒险之证
-                </el-checkbox>
-                <el-checkbox v-model="config.autoLeyLineOutcrop.useFragileResin">
-                  使用脆弱树脂
-                </el-checkbox>
-                <el-checkbox v-model="config.autoLeyLineOutcrop.useTransientResin">
-                  使用须臾树脂
-                </el-checkbox>
-                <el-checkbox v-model="config.autoLeyLineOutcrop.isGoToSynthesizer">
-                  合成浓缩树脂
-                </el-checkbox>
-                <el-checkbox v-model="config.autoLeyLineOutcrop.isNotification">
-                  完成后通知
-                </el-checkbox>
-              </div>
+              <!--              <div class="form-group leyLineOutcrop checkbox-group" style="display: flex; flex-wrap: wrap; gap: 16px;">
+                              <el-checkbox v-model="config.autoLeyLineOutcrop.useAdventurerHandbook">
+                                使用冒险之证
+                              </el-checkbox>
+                              <el-checkbox v-model="config.autoLeyLineOutcrop.useFragileResin">
+                                使用脆弱树脂
+                              </el-checkbox>
+                              <el-checkbox v-model="config.autoLeyLineOutcrop.useTransientResin">
+                                使用须臾树脂
+                              </el-checkbox>
+                              <el-checkbox v-model="config.autoLeyLineOutcrop.isGoToSynthesizer">
+                                合成浓缩树脂
+                              </el-checkbox>
+                              <el-checkbox v-model="config.autoLeyLineOutcrop.isNotification">
+                                完成后通知
+                              </el-checkbox>
+                            </div>
 
-              <div class="form-group leyLineOutcrop">
-                <label>战斗超时时间（秒）：</label>
-                <input
-                    class="limited-input"
-                    v-model.number="config.autoLeyLineOutcrop.timeout"
-                    type="number"
-                    min="0"
-                    default="120"
-                    placeholder="0 = 不限制"
-                />
-              </div>-->
+                            <div class="form-group leyLineOutcrop">
+                              <label>战斗超时时间（秒）：</label>
+                              <input
+                                  class="limited-input"
+                                  v-model.number="config.autoLeyLineOutcrop.timeout"
+                                  type="number"
+                                  min="0"
+                                  default="120"
+                                  placeholder="0 = 不限制"
+                              />
+                            </div>-->
             </div>
-            <div class="stygianOnslaught-section" v-if="config.runType === runTypes[2]">
+            <div class="stygianOnslaught-section" v-else-if="config.runType === runTypes[2]">
               <div class="form-group stygianOnslaught">
                 <label>队伍名称（可选）：</label>
                 <input class="limited-input" v-model="config.autoStygianOnslaught.fightTeamName"
@@ -1426,6 +1509,68 @@ const totalCount = computed(() => {
                   }}
                 </span>
                 </div>
+              </div>
+            </div>
+            <div class="boss-section" v-else-if="config.runType === runTypes[3]">
+              <div class="form-group boss">
+                <label>Boss 名称：</label>
+                <el-select
+                    v-model="config.autoBoss.bossName"
+                    placeholder="请选择或输入 Boss"
+                    allow-create
+                    filterable
+                    clearable
+                    style="width: 80%"
+                >
+                  <!-- 支持列表可通过 v-for 扩展，此处配合 allow-create 作为输入框 -->
+                  <el-option
+                      v-for="boss in bossList"
+                      :key="boss.name"
+                      :label="boss?.country?'['+boss?.country+']--'+boss.name:+boss.name"
+                      :value="boss.name"
+                  />
+                </el-select>
+              </div>
+
+              <div class="form-group boss">
+                <label>队伍名称：</label>
+                <input
+                    class="limited-input"
+                    v-model="config.autoBoss.teamName"
+                    placeholder="切换到的队伍名称"
+                />
+              </div>
+
+              <div class="form-group boss">
+                <label>指定讨伐次数：</label>
+                <el-switch v-model="config.autoBoss.specifyRunCount"/>
+                <span style="color: red; margin-left: 8px;">
+      关闭后刷至原粹树脂耗尽
+    </span>
+              </div>
+
+              <template v-if="config.autoBoss.specifyRunCount">
+                <div class="form-group boss">
+                  <label>讨伐次数：</label>
+                  <el-input-number
+                      v-model="config.autoBoss.runCount"
+                      :min="1"
+                      :max="99"
+                      style="width: 120px"
+                  />
+                </div>
+
+              </template>
+
+              <div class="form-group boss">
+                <label>更多配置：</label>
+                <el-button
+                    size="small"
+                    type="primary"
+                    @click="handleMoreSettings(config)"
+                >
+                  高级选项
+                </el-button>
               </div>
             </div>
             <div class="config-btn">
@@ -1514,56 +1659,118 @@ const totalCount = computed(() => {
         <el-dialog
             v-if="currentConfig"
             v-model="currentConfig.showMoreSettingsDialog"
-            title="地脉高级配置"
+            :title="currentConfig.runType === runTypes[1] ? '地脉高级配置' : currentConfig.runType === runTypes[3] ? 'Boss高级配置' : '高级配置'"
             width="480px"
             :close-on-click-modal="false"
             append-to-body
         >
           <div class="dialog-content">
-            <div class="form-group" style="margin-bottom: 24px;">
-              <label style="display: block; margin-bottom: 8px; font-weight: 600;">战斗超时时间（秒）：</label>
-              <input
-                  class="limited-input"
-                  v-model.number="currentConfig.autoLeyLineOutcrop.timeout"
-                  type="number"
-                  min="0"
-                  default="120"
-                  placeholder="0 = 不限制"
-                  style="width: 100%; max-width: 300px;"
-              />
-            </div>
+            <!-- 地脉高级选项 -->
+            <template v-if="currentConfig.runType === runTypes[1]">
+              <div class="form-group" style="margin-bottom: 24px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">战斗超时时间（秒）：</label>
+                <input
+                    class="limited-input"
+                    v-model.number="currentConfig.autoLeyLineOutcrop.timeout"
+                    type="number"
+                    min="0"
+                    default="120"
+                    placeholder="0 = 不限制"
+                    style="width: 100%; max-width: 300px;"
+                />
+              </div>
 
-            <div style="margin-bottom: 12px; font-weight: 600; color: var(--el-text-color-primary);">
-              功能选项：
-            </div>
+              <div style="margin-bottom: 12px; font-weight: 600; color: var(--el-text-color-primary);">
+                功能选项：
+              </div>
 
-            <div class="checkbox-grid">
-              <div class="checkbox-grid-item">
-                <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.useAdventurerHandbook">
-                  使用冒险之证
-                </el-checkbox>
+              <div class="checkbox-grid">
+                <div class="checkbox-grid-item">
+                  <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.useAdventurerHandbook">
+                    使用冒险之证
+                  </el-checkbox>
+                </div>
+                <div class="checkbox-grid-item">
+                  <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.useFragileResin">
+                    使用脆弱树脂
+                  </el-checkbox>
+                </div>
+                <div class="checkbox-grid-item">
+                  <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.useTransientResin">
+                    使用须臾树脂
+                  </el-checkbox>
+                </div>
+                <div class="checkbox-grid-item">
+                  <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.isGoToSynthesizer">
+                    合成浓缩树脂
+                  </el-checkbox>
+                </div>
+                <div class="checkbox-grid-item">
+                  <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.isNotification">
+                    完成后通知
+                  </el-checkbox>
+                </div>
               </div>
-              <div class="checkbox-grid-item">
-                <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.useFragileResin">
-                  使用脆弱树脂
-                </el-checkbox>
+            </template>
+
+            <!-- Boss 高级选项 -->
+            <template v-else-if="currentConfig.runType === runTypes[3]">
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 600;">战斗策略名称：</label>
+                <input
+                    class="limited-input"
+                    v-model="currentConfig.autoBoss.strategyName"
+                    placeholder="UI 选择的策略名称"
+                />
               </div>
-              <div class="checkbox-grid-item">
-                <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.useTransientResin">
-                  使用须臾树脂
-                </el-checkbox>
+
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 600;">自动战斗脚本路径（可选）：</label>
+                <input
+                    class="limited-input"
+                    v-model="currentConfig.autoBoss.combatStrategyPath"
+                    placeholder="直接指定路径以覆盖 UI 选择"
+                />
               </div>
-              <div class="checkbox-grid-item">
-                <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.isGoToSynthesizer">
-                  合成浓缩树脂
-                </el-checkbox>
+
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 600;">复活重试次数：</label>
+                <el-input-number
+                    v-model="currentConfig.autoBoss.reviveRetryCount"
+                    :min="0"
+                    :max="10"
+                    style="width: 120px"
+                />
+                <span style="color: red; margin-left: 8px;">
+      角色死亡后回神像恢复并重试
+    </span>
               </div>
-              <div class="checkbox-grid-item">
-                <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.isNotification">
-                  完成后通知
-                </el-checkbox>
+
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 600;">每轮后返回神像：</label>
+                <el-switch v-model="currentConfig.autoBoss.returnToStatueAfterEachRound"/>
               </div>
-            </div>
+
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 600;">启用奖励名称识别：</label>
+                <el-switch v-model="currentConfig.autoBoss.rewardRecognitionEnabled"/>
+              </div>
+
+              <!-- 树脂补充选项（仅在指定讨伐次数模式下显示） -->
+              <template v-if="currentConfig.autoBoss.specifyRunCount">
+                <div class="form-group" style="margin-bottom: 16px;">
+                  <label style="display: block; margin-bottom: 4px; font-weight: 600;">树脂补充选项：</label>
+                  <div style="display: flex; gap: 16px;">
+                    <el-checkbox v-model="currentConfig.autoBoss.useTransientResin">
+                      允许使用须臾树脂
+                    </el-checkbox>
+                    <el-checkbox v-model="currentConfig.autoBoss.useFragileResin">
+                      允许使用脆弱树脂
+                    </el-checkbox>
+                  </div>
+                </div>
+              </template>
+            </template>
 
             <div class="dialog-actions" style="margin-top: 28px; text-align: right;">
               <el-button @click="currentConfig.showMoreSettingsDialog = false">关闭</el-button>

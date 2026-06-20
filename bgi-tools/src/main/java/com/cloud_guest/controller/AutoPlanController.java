@@ -60,6 +60,14 @@ public class AutoPlanController {
                                          @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
                                          @RequestBody AutoPlanJsonDto dto) {
         autoPlanService.saveCountryAll(dto.getJson());
+
+        String source = dto.getSource();
+        if (ObjectUtils.equals(source, "WEB_API")){
+            autoPlanService.saveCountryAll(dto.getJson());
+        }else if (ObjectUtils.equals(source, "JS_API")){
+            autoPlanService.saveCountryAllByAdd(dto.getJson());
+        }
+
         return ok();
     }
 
@@ -78,7 +86,21 @@ public class AutoPlanController {
         }
         return ok();
     }
-
+    @PostMapping("boss/json/all")
+    @SysLog
+    @Token
+    @Operation(summary = "[需要登录/授权token]存储BOSS基础全部JSON")
+    public Result<String> saveBossAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
+                                        @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
+                                        @RequestBody AutoPlanJsonDto dto) {
+        String source = dto.getSource();
+        if (ObjectUtils.equals(source, "WEB_API")){
+            autoPlanService.saveBossAll(dto.getJson());
+        }else if (ObjectUtils.equals(source, "JS_API")){
+            autoPlanService.saveBossAllByAdd(dto.getJson());
+        }
+        return ok();
+    }
     @SysLog(result = false)
     @Operation(summary = "查询基础全部JSON")
     @GetMapping("domain/json/all")
@@ -86,7 +108,13 @@ public class AutoPlanController {
         List<Map<String, Object>> list = autoPlanService.findDomainAll();
         return ok(list);
     }
-
+    @SysLog(result = false)
+    @Operation(summary = "查询Boss基础全部JSON")
+    @GetMapping("boss/json/all")
+    public Result<List<Map<String, Object>>> infoBossAll() {
+        List<Map<String, Object>> list = autoPlanService.findBossAll();
+        return ok(list);
+    }
     //@PostMapping("json")
     //@SysLog
     //@Token

@@ -54,6 +54,7 @@ public class DatabaseInitRunner {
                                 String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_USERNAME),
                                 String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_PASSWORD),
                                 String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_SALT),
+                                String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_AUTO_BOSS),
                                 StrUtil.EMPTY
                         )
                 )
@@ -71,6 +72,8 @@ public class DatabaseInitRunner {
                                 String.format("COMMENT ON COLUMN %s.%s IS '密码'", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_PASSWORD),
                                 String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR(255) DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_SALT),
                                 String.format("COMMENT ON COLUMN %s.%s IS '盐值'", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_SALT),
+                                String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_AUTO_BOSS),
+                                String.format("COMMENT ON COLUMN %s.%s IS '自动Boss配置'", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_AUTO_BOSS),
                                 StrUtil.EMPTY
                         )
                 )
@@ -84,6 +87,7 @@ public class DatabaseInitRunner {
                                 String.format("ALTER TABLE %s ADD COLUMN `%s` varchar(255) DEFAULT NULL COMMENT '用户名' AFTER `remark`", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_USERNAME),
                                 String.format("ALTER TABLE %s ADD COLUMN `%s` varchar(255) DEFAULT NULL COMMENT '密码' AFTER `remark`", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_PASSWORD),
                                 String.format("ALTER TABLE %s ADD COLUMN `%s` varchar(255) DEFAULT NULL COMMENT '盐值' AFTER `remark`", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_SALT),
+                                String.format("ALTER TABLE %s ADD COLUMN `%s` TEXT DEFAULT NULL COMMENT '自动Boss配置' AFTER `remark`", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_AUTO_BOSS),
                                 StrUtil.EMPTY
                         )
                 )

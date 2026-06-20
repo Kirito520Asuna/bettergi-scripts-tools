@@ -39,7 +39,7 @@ public class AutoPlanDTO implements Serializable {
     private List<AutoPlan> autoPlanList = new ArrayList<>();
 
     public void checkValid() {
-        List<String> runTypes = Arrays.asList("秘境", "地脉","幽境");
+        List<String> runTypes = Arrays.asList("秘境", "地脉","幽境","Boss");
         for (AutoPlan autoPlan : this.autoPlanList) {
             if (!runTypes.contains(autoPlan.getRunType())) {
                 String runTypesStr = runTypes.stream().collect(Collectors.joining(","));

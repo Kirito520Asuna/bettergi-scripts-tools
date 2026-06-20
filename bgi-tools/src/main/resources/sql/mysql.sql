@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `auto_plan_config` (
     `auto_fight`             TEXT         DEFAULT NULL COMMENT '秘境配置',
     `auto_ley_line_outcrop`  TEXT         DEFAULT NULL COMMENT '自动地脉花配置',
     `auto_stygian_onslaught` TEXT         DEFAULT NULL COMMENT '自动幽境配置',
+    `auto_boss` TEXT         DEFAULT NULL COMMENT '自动Boss配置',
     -- ↓ 通用审计字段 ↓
     `create_by`              VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
     `create_time`            TIMESTAMP     DEFAULT NULL COMMENT '创建时间',

@@ -96,6 +96,17 @@ async function getBaseJsonAll() {
 }
 
 /**
+ * 异步获取所有JSON数据
+ * @returns {Promise<Object>} 获取所有JSON数据
+ */
+export async function getBaseBossListJsonAll() {
+    const response = await service.get('/jwt/auto/plan/boss/json/all');
+    if (response.code === 200) {
+        ElMessage.success("全部加载成功");
+    }
+    return response.data;
+}
+/**
  *
  * @returns {Promise<any>}
  */
@@ -122,14 +133,29 @@ export async function saveBaseJsonAll(list) {
     }
     return response?.data;
 }
-
+/**
+ * 保存全部 JSON 数据
+ * @param list
+ * @returns {Promise<any>}
+ */
+export async function saveBaseBossJsonAll(list) {
+    const source = "WEB_API"
+    // const source = "JS_API"
+    const data = {json: JSON.stringify(list), source: source};
+    const response = await service.post('/jwt/auto/plan/boss/json/all', data);
+    if (response?.code === 200) {
+        ElMessage.success("保存成功");
+    }
+    return response?.data;
+}
 /**
  * 保存全部国家 JSON 数据
  * @param list
  * @returns {Promise<any>}
  */
 export async function saveBaseCountryJsonAll(list) {
-    const response = await service.post('/jwt/auto/plan/country/json/all', {json: JSON.stringify(list)});
+    const source = "WEB_API"
+    const response = await service.post('/jwt/auto/plan/country/json/all', {json: JSON.stringify(list), source: source});
     if (response?.code === 200) {
         ElMessage.success("保存成功");
     }

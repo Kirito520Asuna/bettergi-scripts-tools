@@ -1,4 +1,4 @@
-const domainsDefault = [
+export const domainsDefault = [
     {
         "name": "无光的深都",
         "type": "天赋",
@@ -322,7 +322,7 @@ const domainsDefault = [
         ]
     }
 ]
-const selectedAsDaysMap = () => {
+export const selectedAsDaysMap = () => {
     const selectedAsDaysMap = new Map();
     //1--days 0,1,4 周日,1,4
     //2--days 0,2,5 周日,2,5
@@ -333,7 +333,7 @@ const selectedAsDaysMap = () => {
     return selectedAsDaysMap
 }
 
-const iconAsMapDefault = () => {
+export const iconAsMapDefault = () => {
     const iconAsMap = new Map();
 
     iconAsMap.set('Markdown',
@@ -4727,21 +4727,21 @@ OToxMjo1MiswMDowMIK5/3oAAAAASUVORK5CYII=" />
 
     return iconAsMap
 }
-const runTypesDefault = () => {
-    const runTypes = ["秘境","地脉","幽境"];
+export const runTypesDefault = () => {
+    const runTypes = ["秘境","地脉","幽境","Boss"];
     // ["秘境","地脉"]
     return runTypes;
 }
-const leyLineOutcropTypeNamesDefault = () => {
+export const leyLineOutcropTypeNamesDefault = () => {
     return ["启示之花","藏金之花"];
 }
-const leyLineOutcropTypesDefault = () => {
+export const leyLineOutcropTypesDefault = () => {
     return [{name:"启示之花",value:"经验书"},{name:"藏金之花",value:"摩拉"}];
 }
-const countryListDefault = () => {
+export const countryListDefault = () => {
     return ['蒙德', '璃月', '稻妻', '须弥', '枫丹', '纳塔','挪德卡莱'];
 }
-const domainTypesDefault = () => {
+export const domainTypesDefault = () => {
     const domainTypes = [
         '天赋',
         '武器',
@@ -4749,20 +4749,196 @@ const domainTypesDefault = () => {
     ];
     return domainTypes;
 }
-const excludeDomainTypesDefault = () => {
+export const excludeDomainTypesDefault = () => {
     const excludeDomainTypes = new Array()
     excludeDomainTypes.push('圣遗物')
     return excludeDomainTypes;
 }
 
-export {
-    domainsDefault,
-    iconAsMapDefault,
-    selectedAsDaysMap,
-    domainTypesDefault,
-    excludeDomainTypesDefault,
-    runTypesDefault,
-    leyLineOutcropTypesDefault,
-    leyLineOutcropTypeNamesDefault,
-    countryListDefault,
-}
+export const bossListDefault=
+     [
+        {
+            "name": "急冻树",
+            "country": "蒙德"
+        },
+        {
+            "name": "无相之雷",
+            "country": "蒙德"
+        },
+        {
+            "name": "守望者·天",
+            "country": "蒙德"
+        },
+        {
+            "name": "爆炎树",
+            "country": "璃月"
+        },
+        {
+            "name": "纯水精灵",
+            "country": "璃月"
+        },
+        {
+            "name": "古岩龙蜥",
+            "country": "璃月"
+        },
+        {
+            "name": "无相之岩",
+            "country": "璃月"
+        },
+        {
+            "name": "遗迹巨蛇",
+            "country": "璃月"
+        },
+        {
+            "name": "隐山兽",
+            "country": "璃月"
+        },
+        {
+            "name": "无相之火",
+            "country": "稻妻"
+        },
+        {
+            "name": "恒常机关阵列",
+            "country": "稻妻"
+        },
+        {
+            "name": "雷音权现",
+            "country": "稻妻"
+        },
+        {
+            "name": "魔偶剑鬼",
+            "country": "稻妻"
+        },
+        {
+            "name": "无相之水",
+            "country": "稻妻"
+        },
+
+        {
+            "name": "掣电树",
+            "country": "须弥"
+        },
+        {
+            "name": "半永恒统辖矩阵",
+            "country": "须弥"
+        },
+        {
+            "name": "翠翎恐草",
+            "country": "须弥"
+        },
+        {
+            "name": "风蚀沙虫",
+            "country": "须弥"
+        },
+        {
+            "name": "无相之草",
+            "country": "须弥"
+        },
+        {
+            "name": "深罪浸礼者",
+            "country": "须弥"
+        },
+        {
+            "name": "兆载永劫龙兽",
+            "country": "须弥"
+        },
+
+        {
+            "name": "歌裴莉娅的葬送",
+            "country": "枫丹"
+        },
+        {
+            "name": "歌裴莉娅的葬送",
+            "country": "枫丹"
+        },
+        {
+            "name": "科培琉司的劫罚",
+            "country": "枫丹"
+        },
+        {
+            "name": "实验性场力发生装置",
+            "country": "枫丹"
+        },
+        {
+            "name": "魔像督军",
+            "country": "枫丹"
+        },
+        {
+            "name": "千年珍珠骏麟",
+            "country": "枫丹"
+        },
+        {
+            "name": "水形幻人",
+            "country": "枫丹"
+        },
+        {
+            "name": "铁甲熔火帝皇",
+            "country": "枫丹"
+        },
+
+        {
+            "name": "金焰绒翼龙暴君",
+            "country": "纳塔"
+        },
+        {
+            "name": "灵觉隐修的迷者",
+            "country": "纳塔"
+        },
+        {
+            "name": "秘源机兵·构型械",
+            "country": "纳塔"
+        },
+        {
+            "name": "秘源机兵·统型械",
+            "country": "纳塔"
+        },
+        {
+            "name": "熔岩辉龙像",
+            "country": "纳塔"
+        },
+        {
+            "name": "深邃摹结株",
+            "country": "纳塔"
+        },
+        {
+            "name": "贪食匿叶龙山王",
+            "country": "纳塔"
+        },
+        {
+            "name": "蕴光月守宫",
+            "country": "挪德卡莱"
+        },
+        {
+            "name": "深黯魔语之主",
+            "country": "挪德卡莱"
+        },
+        {
+            "name": "超重型陆巡舰·机动战垒",
+            "country": "挪德卡莱"
+        },
+        {
+            "name": "霜夜巡天灵主",
+            "country": "挪德卡莱"
+        },
+        {
+            "name": "蕴光月幻蝶",
+            "country": "挪德卡莱"
+        },
+        {
+            "name": "重拳出击鸭",
+            "country": "挪德卡莱"
+        }
+    ]
+
+
+// export {
+//     domainsDefault,
+//     iconAsMapDefault,
+//     selectedAsDaysMap,
+//     domainTypesDefault,
+//     excludeDomainTypesDefault,
+//     runTypesDefault,
+//     leyLineOutcropTypesDefault,
+//     leyLineOutcropTypeNamesDefault,
+//     countryListDefault,
+// }

@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -99,6 +102,29 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
     private DbKVService dbKVService;
 
     @Override
+    public List<Map<String, Object>> findBossAll() {
+        LambdaQueryWrapper<DbKV> query = Wrappers.lambdaQuery(DbKV.class);
+        query.eq(DbKV::getType, KeyConstants.auto_plan_key_boss_all);
+
+        DbKV dbKV = dbKVService.getOne(query);
+        List<JSONObject> objectList = Optional.ofNullable(dbKV).map(k -> {
+            String value = k.getValue();
+            if (ObjectUtils.isEmpty(value)) {
+                return new ArrayList<JSONObject>();
+            }
+            List<JSONObject> list = JSONUtil.toList(value, JSONObject.class);
+            return list;
+        }).orElse(new ArrayList<>());
+
+        List<Map<String, Object>> list = new ArrayList<>();
+        if (CollUtil.isNotEmpty(objectList)) {
+            list.addAll(objectList);
+        }
+
+        return list;
+    }
+
+    @Override
     public List<Map<String, Object>> findDomainAll() {
         LambdaQueryWrapper<DbKV> query = Wrappers.lambdaQuery(DbKV.class);
         query.eq(DbKV::getType, KeyConstants.auto_plan_key_domain_all);
@@ -142,56 +168,97 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
         //return cacheService.save(KeyConstants.auto_plan_key_domain_all, json);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean saveBossAll(String json) {
+        DbKV dbKV = new DbKV();
+        String id = KeyConstants.auto_plan_key_boss_all;
+        dbKV.setType(id);
+        dbKV.setKeyName(id);
+        dbKV.setValue(json);
+
+        return dbKVService.saveOrUpdate(dbKV, Wrappers.lambdaQuery(DbKV.class).eq(DbKV::getType, id).eq(DbKV::getKeyName, id));
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean saveDomainAllByAdd(String json) {
+        return addConfigsToDbKV(KeyConstants.auto_plan_key_domain_all, "name", json,
+                Collectors.toMap(j -> j.getStr("name"), j -> j));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean saveCountryAllByAdd(String json) {
+        return addConfigsToDbKV(KeyConstants.auto_plan_key_country_all, "name", json,
+                Collectors.toMap(j -> j.getStr("name"), j -> j));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean saveBossAllByAdd(String json) {
+        return addConfigsToDbKV(KeyConstants.auto_plan_key_boss_all, "name", json, null);
+    }
+
+    /**
+     * 新增配置到指定 KV 键，同名配置以新增为准（去重合并）
+     *
+     * @param kvKey 数据库 KV 键，例如 KeyConstants.auto_plan_key_domain_all
+     * @param json  新增配置的 JSON 数组字符串
+     * @return 保存是否成功
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean addConfigsToDbKV(String kvKey, String keyField, String json, Collector<JSONObject, ?, Map<String, JSONObject>> collector) {
         if (StrUtil.isBlank(json)) {
-            log.warn("saveDomainAllByAdd: json为空");
+            log.warn("addConfigsToDbKV: json为空, key=" + kvKey);
             return false;
         }
 
-        String id = KeyConstants.auto_plan_key_domain_all;
-
         try {
-            // 解析新增数据
-            List<JSONObject> addJsonList = JSONUtil.toList(json, JSONObject.class);
-            if (CollUtil.isEmpty(addJsonList)) {
-                log.warn("saveDomainAllByAdd: 解析后的addList为空");
+            List<JSONObject> addList = JSONUtil.toList(json, JSONObject.class);
+            if (CollUtil.isEmpty(addList)) {
+                log.warn("addConfigsToDbKV: 解析后新增列表为空, key=" + kvKey);
                 return false;
             }
 
-            // 解析现有数据
             LambdaQueryWrapper<DbKV> query = Wrappers.lambdaQuery(DbKV.class)
-                    .eq(DbKV::getType, id)
-                    .eq(DbKV::getKeyName, id);
+                    .eq(DbKV::getType, kvKey)
+                    .eq(DbKV::getKeyName, kvKey);
 
-            DbKV kv = dbKVService.getOne(query);
-            List<JSONObject> existingJsonList = Optional.ofNullable(kv)
+            DbKV existingKV = dbKVService.getOne(query);
+            List<JSONObject> existingList = Optional.ofNullable(existingKV)
                     .map(k -> StrUtil.isNotBlank(k.getValue())
                             ? JSONUtil.toList(k.getValue(), JSONObject.class)
                             : new ArrayList<JSONObject>())
-                    .orElse(new ArrayList<>());
+                    .orElseGet(ArrayList::new);
+            if (StrUtil.isBlankIfStr(keyField)) {
+                keyField = "name";
+            }
+            // 合并：现有配置中同名项保留先出现的（处理自身重复），再用新增配置覆盖同名项
+            if (collector == null) {
+                String finalKeyField = keyField;
+                collector = Collectors.toMap(
+                        j -> j.getStr(finalKeyField),
+                        j -> j,
+                        (first, second) -> first   // 自身冲突时保留第一个
+                );
+            }
 
-            // 合并并去重（优先保留新增数据）
-            Map<String, JSONObject> configMap = existingJsonList.stream()
-                    .collect(Collectors.toMap(j -> j.getStr("name"), j -> j));
+            Map<String, JSONObject> mergedMap = existingList.stream()
+                    .collect(collector);
+            String finalKeyField1 = keyField;
+            addList.forEach(item -> mergedMap.put(item.getStr(finalKeyField1), item));
 
-            addJsonList.forEach(j -> configMap.put(j.getStr("name"), j));
+            DbKV newKV = new DbKV();
+            newKV.setType(kvKey);
+            newKV.setKeyName(kvKey);
+            newKV.setValue(JSONUtil.toJsonStr(mergedMap.values()));
 
-            // 保存结果
-            DbKV dbKV = new DbKV();
-            dbKV.setType(id);
-            dbKV.setKeyName(id);
-            dbKV.setValue(JSONUtil.toJsonStr(configMap.values()));
-
-            boolean result = dbKVService.saveOrUpdate(dbKV, query);
-            return result;
+            return dbKVService.saveOrUpdate(newKV, query);
         } catch (Exception e) {
-            throw new RuntimeException("域名配置保存失败", e);
+            throw new RuntimeException("配置追加保存失败，key=" + kvKey, e);
         }
     }
-
 
     @Override
     @Transactional(rollbackFor = Exception.class)

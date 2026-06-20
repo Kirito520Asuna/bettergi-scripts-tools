@@ -3,6 +3,7 @@ package com.cloud_guest.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.entitys.pojo.AutoPlanConfig;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 import java.util.Map;
@@ -27,10 +28,12 @@ public interface AutoPlanService extends IService<AutoPlanConfig>, BaseService {
     List<AutoPlanConfig> find(String uid,Boolean enable);
 
     boolean saveDomainAll(String json);
+    boolean saveBossAll(String json);
 
     List<String> findUidAll();
 
     //boolean saveUid(String uid);
+    List<Map<String, Object>> findBossAll();
 
     List<Map<String, Object>> findDomainAll();
 
@@ -41,4 +44,7 @@ public interface AutoPlanService extends IService<AutoPlanConfig>, BaseService {
     boolean saveOrUpdateBatchList(List<AutoPlanConfig> configList);
 
     boolean saveDomainAllByAdd( String json);
+    boolean saveBossAllByAdd( String json);
+
+    boolean saveCountryAllByAdd(String json);
 }

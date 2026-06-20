@@ -40,7 +40,7 @@
                   <p class="header-desc">{{ selectedCategory.description }}</p>
                 </div>
               </div>
-              <div class="header-actions">
+              <div class="header-actions holy_relics_up" v-if="selectedCategory.id === 'holy_relics_up'">
                 <button @click="addPart" class="btn btn-add">
                   <span class="btn-icon">+</span>
                   添加部件

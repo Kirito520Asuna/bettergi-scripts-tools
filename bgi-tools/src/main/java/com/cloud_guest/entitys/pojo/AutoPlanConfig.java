@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.cloud_guest.entitys.common.auto_plan.AutoBoss;
 import com.cloud_guest.entitys.common.auto_plan.AutoFight;
 import com.cloud_guest.entitys.common.auto_plan.AutoLeyLineOutcrop;
 import com.cloud_guest.entitys.common.auto_plan.AutoStygianOnslaught;
@@ -53,6 +54,8 @@ public class AutoPlanConfig extends BaseEntity {
     private String autoLeyLineOutcrop;
     @TableField(value = COL_AUTO_STYGIAN_ONSLAUGHT)
     private String autoStygianOnslaught;
+    @TableField(value = COL_AUTO_BOSS)
+    private String autoBoss;
 
 
     public static final String TABLE_NAME = "auto_plan_config";
@@ -68,6 +71,7 @@ public class AutoPlanConfig extends BaseEntity {
     public static final String COL_AUTO_FIGHT = "auto_fight";
     public static final String COL_AUTO_LEY_LINE_OUTCROP = "auto_ley_line_outcrop";
     public static final String COL_AUTO_STYGIAN_ONSLAUGHT = "auto_stygian_onslaught";
+    public static final String COL_AUTO_BOSS = "auto_boss";
 
     public AutoPlanVo toVo() {
         AutoPlanVo autoPlanVo = new AutoPlanVo();
@@ -82,7 +86,9 @@ public class AutoPlanConfig extends BaseEntity {
                 .setOrder(orderSort)
                 .setAutoFight(StrUtil.isBlank(autoFight) ? null : JSONUtil.toBean(autoFight, AutoFight.class))
                 .setAutoLeyLineOutcrop(StrUtil.isBlank(autoLeyLineOutcrop) ? null : JSONUtil.toBean(autoLeyLineOutcrop, AutoLeyLineOutcrop.class))
-                .setAutoStygianOnslaught(StrUtil.isBlank(autoStygianOnslaught) ? null : JSONUtil.toBean(autoStygianOnslaught, AutoStygianOnslaught.class));
+                .setAutoStygianOnslaught(StrUtil.isBlank(autoStygianOnslaught) ? null : JSONUtil.toBean(autoStygianOnslaught, AutoStygianOnslaught.class))
+                .setAutoBoss(StrUtil.isBlank(autoBoss) ? null : JSONUtil.toBean(autoBoss, AutoBoss.class))
+        ;
         return autoPlanVo;
     }
 }

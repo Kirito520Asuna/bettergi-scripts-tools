@@ -119,6 +119,24 @@ const routes = [
         }
     },
     {
+        name: 'Constants',
+        path: '/Constants',
+        component: () => import('@views/ConstantsView.vue'),
+        children: [
+            // {
+            //
+            // }
+        ],
+        meta: {
+            group: 'JS扩展功能',
+            isRoot: true,
+            title: '常量配置',
+            desc: '常量配置',
+            asSubParentTitle: '常量配置',
+            icon: 'SyntaxKey'
+        }
+    },
+    {
         path: '/ws-proxy',
         name: 'WsProxy',
         component: () => import('@views/WsProxyView.vue'),

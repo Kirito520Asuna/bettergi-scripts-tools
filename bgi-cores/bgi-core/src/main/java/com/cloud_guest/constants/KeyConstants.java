@@ -21,6 +21,7 @@ public interface KeyConstants {
     String mapping_uid_key = "MAPPING:UID:";
     String auto_plan_key = "AUTO_PLAN:UID:";
     String auto_plan_key_uid_all = "AUTO_PLAN:UID:ALL";
+    String auto_plan_key_boss_all = "AUTO_PLAN_BOSS:ALL";
     String auto_plan_key_domain_all = "AUTO_PLAN_DOMAIN:ALL";
     String auto_plan_key_country_all = "AUTO_PLAN_COUNTRY:ALL";
     String all_application_key = "ALL:application";

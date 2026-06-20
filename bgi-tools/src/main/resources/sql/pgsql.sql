@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS auto_plan_config (
     auto_fight             TEXT,
     auto_ley_line_outcrop  TEXT,
     auto_stygian_onslaught TEXT,
+    auto_boss TEXT,
     -- 通用审计字段
     create_by              VARCHAR(64),
     create_time            TIMESTAMP,
@@ -38,6 +39,7 @@ COMMENT ON COLUMN auto_plan_config.record                 IS '是否记录';
 COMMENT ON COLUMN auto_plan_config.auto_fight             IS '秘境配置';
 COMMENT ON COLUMN auto_plan_config.auto_ley_line_outcrop  IS '自动地脉花配置';
 COMMENT ON COLUMN auto_plan_config.auto_stygian_onslaught IS '自动幽境配置';
+COMMENT ON COLUMN auto_plan_config.auto_boss              IS '自动Boss配置';
 COMMENT ON COLUMN auto_plan_config.create_by              IS '创建者';
 COMMENT ON COLUMN auto_plan_config.create_time            IS '创建时间';
 COMMENT ON COLUMN auto_plan_config.update_by              IS '更新者';

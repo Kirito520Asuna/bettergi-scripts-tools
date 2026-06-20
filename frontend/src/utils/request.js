@@ -1,6 +1,6 @@
 import axios from 'axios'
 import {ElNotification, ElMessageBox, ElMessage, ElLoading} from 'element-plus'
-import {getLocalToken, getLocalTokenName, removeLocalToken, setLocalToken} from "@api/web/web.js";
+import {getLocalToken, getLocalTokenName, removeLocalToken, setLocalToken, toHomePage} from "@api/web/web.js";
 
 let downloadLoadingInstance;
 // 是否显示重新登录
@@ -52,6 +52,8 @@ service.interceptors.response.use(async res => {
             // const token_name = import.meta.env.VITE_BASE_TOKEN_NAME || 'bgi_tools_token'
             // localStorage.removeItem(token_name)
             await removeLocalToken()
+            await toHomePage(false)
+
             return Promise.reject(new Error(msg))
         } else if (code === 500) {
             if (!res.config?.silentError) {

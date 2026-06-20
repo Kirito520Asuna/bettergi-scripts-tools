@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS auto_plan_config (
     auto_fight             TEXT,                                -- 秘境配置
     auto_ley_line_outcrop  TEXT,                                -- 自动地脉花配置
     auto_stygian_onslaught TEXT,                                -- 自动幽境配置
+    auto_boss              TEXT,                                -- 自动Boss配置
     create_by              TEXT,                                -- 创建者
     create_time            TEXT DEFAULT (datetime('now','localtime')), -- 创建时间
     update_by              TEXT,                                -- 更新者
