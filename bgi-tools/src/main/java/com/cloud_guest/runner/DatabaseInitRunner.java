@@ -111,8 +111,8 @@ public class DatabaseInitRunner {
                                         AutoPlanConfig.COL_AUTO_BOSS, AutoPlanConfig.REMARK_COL_AUTO_BOSS,
                                         List.of(
                                                 new DbSqlType(SQLite, "TEXT", "NULL"),
-                                                new DbSqlType(MySQL, "VARCHAR(255)", "NULL"),
-                                                new DbSqlType(PostgreSQL, "VARCHAR(255)", "NULL")
+                                                new DbSqlType(MySQL, "TEXT", "NULL"),
+                                                new DbSqlType(PostgreSQL, "TEXT", "NULL")
                                         )
                                 ),
                                 new SqlColumn(
