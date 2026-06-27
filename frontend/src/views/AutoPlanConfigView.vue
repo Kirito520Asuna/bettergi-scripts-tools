@@ -476,7 +476,7 @@ const domainMap = computed(() => {
 const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 const changSortConfigs = () => {
   if (orderSortConfigs.value) {
-    configs.value.sort((a, b) => b.order - a.order)
+    configs.value = [...configs.value].sort((a, b) => (b?.order ?? 0) - (a?.order ?? 0));
   }
 }
 
