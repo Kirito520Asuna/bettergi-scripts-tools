@@ -73,6 +73,10 @@ public class AutoPlanConfig extends BaseEntity {
     public static final String COL_AUTO_STYGIAN_ONSLAUGHT = "auto_stygian_onslaught";
     public static final String COL_AUTO_BOSS = "auto_boss";
 
+    public static final String REMARK_COL_AUTO_BOSS = "自动Boss配置";
+    public static final String REMARK_COL_RECORD = "是否记录";
+
+
     public AutoPlanVo toVo() {
         AutoPlanVo autoPlanVo = new AutoPlanVo();
         autoPlanVo

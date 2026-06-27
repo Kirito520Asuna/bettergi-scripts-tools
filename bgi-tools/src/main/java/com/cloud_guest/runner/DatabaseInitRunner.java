@@ -1,9 +1,11 @@
 package com.cloud_guest.runner;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.entitys.pojo.AutoPlanConfig;
 import com.cloud_guest.entitys.pojo.UidInfoConfig;
+import com.google.common.collect.Maps;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Scheduler;
@@ -41,58 +43,150 @@ public class DatabaseInitRunner {
 
     private static final List<DbScript> DB_SCRIPT_LIST = new ArrayList<>();
 
-    record DbScript(String dbType, String scriptFileName, List<String> scriptSqlList) {
+    record SqlFormat(String dbType, String format, int formatSize, String remarkFormat, int remarkFormatSize) {
+    }
+
+    record DbScript(String dbType, String scriptFileName, List<ColumnSql> scriptSqlList) {
+    }
+
+    record ColumnSql(String table, String column, String remark, String sql) {
+    }
+
+    record SqlTable(String table, List<SqlColumn> columns) {
+    }
+
+    record SqlColumn(String column, String remark, List<DbSqlType> types) {
+    }
+
+    record DbSqlType(String db, String type, String columnDefault) {
     }
 
     static {
+        String SQLite = "SQLite", MySQL = "MySQL", PostgreSQL = "PostgreSQL";
 
-        DB_SCRIPT_LIST.add(
-                new DbScript("SQLite",
-                        "classpath:sql/sqlite.sql",
-                        List.of(
-                                String.format("ALTER TABLE %s ADD COLUMN %s INTEGER DEFAULT 0", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_RECORD),
-                                String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_USERNAME),
-                                String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_PASSWORD),
-                                String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_SALT),
-                                String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_AUTO_BOSS),
-                                StrUtil.EMPTY
+        SqlFormat SQLiteFormat = new SqlFormat(SQLite, "ALTER TABLE %s ADD COLUMN %s %s DEFAULT %s", 4, StrUtil.EMPTY, 0),
+                MySQLFormat = new SqlFormat(MySQL, "ALTER TABLE %s ADD COLUMN %s %s DEFAULT %s COMMENT '%s' AFTER `remark`", 5, StrUtil.EMPTY, 0),
+                PostgreSQLFormat = new SqlFormat(PostgreSQL, "ALTER TABLE %s ADD COLUMN %s %s DEFAULT %s", 4, "COMMENT ON COLUMN %s.%s IS '%s'", 3);
+
+        Map<String, SqlFormat> SqlFormatMap = Maps.newLinkedHashMap();
+
+        SqlFormatMap.put(SQLite, SQLiteFormat);
+        SqlFormatMap.put(MySQL, MySQLFormat);
+        SqlFormatMap.put(PostgreSQL, PostgreSQLFormat);
+        //=================================================================================================================
+        List<SqlTable> sqlTableList = CollUtil.newArrayList();
+        //uid
+        SqlTable uidSQL = new SqlTable(UidInfoConfig.TABLE_NAME,
+                List.of(
+                        new SqlColumn(
+                                UidInfoConfig.COL_USERNAME, UidInfoConfig.REMARK_COL_USERNAME,
+                                List.of(
+                                        new DbSqlType(SQLite, "TEXT", "NULL"),
+                                        new DbSqlType(MySQL, "VARCHAR(255)", "NULL"),
+                                        new DbSqlType(PostgreSQL, "VARCHAR(255)", "NULL")
+                                )
+                        ),
+                        new SqlColumn(
+                                UidInfoConfig.COL_PASSWORD, UidInfoConfig.REMARK_COL_PASSWORD,
+                                List.of(
+                                        new DbSqlType(SQLite, "TEXT", "NULL"),
+                                        new DbSqlType(MySQL, "VARCHAR(255)", "NULL"),
+                                        new DbSqlType(PostgreSQL, "VARCHAR(255)", "NULL")
+                                )
+                        ),
+                        new SqlColumn(
+                                UidInfoConfig.COL_SALT, UidInfoConfig.REMARK_COL_SALT,
+                                List.of(
+                                        new DbSqlType(SQLite, "TEXT", "NULL"),
+                                        new DbSqlType(MySQL, "VARCHAR(255)", "NULL"),
+                                        new DbSqlType(PostgreSQL, "VARCHAR(255)", "NULL")
+                                )
                         )
                 )
+        ),
+                autoPlanSQL = new SqlTable(
+                        AutoPlanConfig.TABLE_NAME,
+                        List.of(
+                                new SqlColumn(
+                                        AutoPlanConfig.COL_AUTO_BOSS, AutoPlanConfig.REMARK_COL_AUTO_BOSS,
+                                        List.of(
+                                                new DbSqlType(SQLite, "TEXT", "NULL"),
+                                                new DbSqlType(MySQL, "VARCHAR(255)", "NULL"),
+                                                new DbSqlType(PostgreSQL, "VARCHAR(255)", "NULL")
+                                        )
+                                ),
+                                new SqlColumn(
+                                        AutoPlanConfig.COL_RECORD, AutoPlanConfig.REMARK_COL_RECORD,
+                                        List.of(
+                                                new DbSqlType(SQLite, "INTEGER", "0"),
+                                                new DbSqlType(MySQL, "TINYINT(1)", "NULL"),
+                                                new DbSqlType(PostgreSQL, "BOOLEAN", "NULL")
+                                        )
+                                )
+                        )
+                );
+        sqlTableList.add(uidSQL);
+        sqlTableList.add(autoPlanSQL);
+        //=================================================================================================================
+        Map<String, List<ColumnSql>> SqlScriptMap = Maps.newLinkedHashMap();
+        List<ColumnSql> SQLiteScripts = CollUtil.newArrayList(),
+                MySQLScripts = CollUtil.newArrayList(),
+                PostgreSQLScripts = CollUtil.newArrayList();
+        SqlScriptMap.put(SQLite, SQLiteScripts);
+        SqlScriptMap.put(MySQL, MySQLScripts);
+        SqlScriptMap.put(PostgreSQL, PostgreSQLScripts);
+        //=================================================================================================================
+        sqlTableList.forEach(sqlTable -> {
+            String table = sqlTable.table;
+            sqlTable.columns.forEach(sqlColumn -> {
+                String column = sqlColumn.column;
+                String remark = sqlColumn.remark;
+                List<DbSqlType> types = sqlColumn.types;
+                types.stream().forEach(type -> {
+                    String db = type.db,
+                            typeName = type.type,
+                            columnDefault = type.columnDefault;
+                    SqlFormat sqlFormat = SqlFormatMap.get(db);
+
+                    String format = sqlFormat.format, remarkFormat = sqlFormat.remarkFormat;
+                    int formatSize = sqlFormat.formatSize, remarkFormatSize = sqlFormat.remarkFormatSize;
+
+                    List<String> list = CollUtil.newArrayList(table, column, typeName);
+                    if (formatSize == 5) {
+                        list.add(remark);
+                    }
+                    list.add(columnDefault);
+
+                    List<ColumnSql> sqlList = CollUtil.newArrayList();
+                    String sql = String.format(format, list.toArray(new String[formatSize]));
+                    sqlList.add(new ColumnSql(table, column, remark, sql));
+                    if (remarkFormatSize > 0 && !StrUtil.isBlankIfStr(remarkFormat)) {
+                        String remarkSql = String.format(remarkFormat, table, column, remark);
+                        sqlList.add(new ColumnSql(table, column, remark, remarkSql));
+                    }
+                    List<ColumnSql> SqlScriptList = SqlScriptMap.get(db);
+                    SqlScriptList.addAll(sqlList);
+                    //SqlScriptList.add(StrUtil.EMPTY);
+                    SqlScriptMap.put(db, SqlScriptList);
+                });
+            });
+        });
+        //=================================================================================================================
+
+
+        DB_SCRIPT_LIST.add(
+                new DbScript(SQLite, "classpath:sql/sqlite.sql", SQLiteScripts)
         );
 
         DB_SCRIPT_LIST.add(
-                new DbScript("PostgreSQL",
-                        "classpath:sql/pgsql.sql",
-                        List.of(
-                                String.format("ALTER TABLE %s ADD COLUMN %s BOOLEAN DEFAULT NULL", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_RECORD),
-                                String.format("COMMENT ON COLUMN %s.%s IS '是否记录'", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_RECORD),
-                                String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR(255) DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_USERNAME),
-                                String.format("COMMENT ON COLUMN %s.%s IS '用户名'", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_USERNAME),
-                                String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR(255) DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_PASSWORD),
-                                String.format("COMMENT ON COLUMN %s.%s IS '密码'", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_PASSWORD),
-                                String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR(255) DEFAULT NULL", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_SALT),
-                                String.format("COMMENT ON COLUMN %s.%s IS '盐值'", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_SALT),
-                                String.format("ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_AUTO_BOSS),
-                                String.format("COMMENT ON COLUMN %s.%s IS '自动Boss配置'", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_AUTO_BOSS),
-                                StrUtil.EMPTY
-                        )
-                )
+                new DbScript(PostgreSQL, "classpath:sql/pgsql.sql", PostgreSQLScripts)
         );
 
         DB_SCRIPT_LIST.add(
-                new DbScript("MySQL",
-                        "classpath:sql/mysql.sql",
-                        List.of(
-                                String.format("ALTER TABLE %s ADD COLUMN `%s` TINYINT(1) DEFAULT NULL COMMENT '是否记录' AFTER `remark`", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_RECORD),
-                                String.format("ALTER TABLE %s ADD COLUMN `%s` varchar(255) DEFAULT NULL COMMENT '用户名' AFTER `remark`", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_USERNAME),
-                                String.format("ALTER TABLE %s ADD COLUMN `%s` varchar(255) DEFAULT NULL COMMENT '密码' AFTER `remark`", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_PASSWORD),
-                                String.format("ALTER TABLE %s ADD COLUMN `%s` varchar(255) DEFAULT NULL COMMENT '盐值' AFTER `remark`", UidInfoConfig.TABLE_NAME, UidInfoConfig.COL_SALT),
-                                String.format("ALTER TABLE %s ADD COLUMN `%s` TEXT DEFAULT NULL COMMENT '自动Boss配置' AFTER `remark`", AutoPlanConfig.TABLE_NAME, AutoPlanConfig.COL_AUTO_BOSS),
-                                StrUtil.EMPTY
-                        )
-                )
+                new DbScript(MySQL, "classpath:sql/mysql.sql", MySQLScripts)
         );
     }
+
 
     public DatabaseInitRunner(DataSource dataSource, ResourceLoader resourceLoader, Scheduler scheduler, JdbcTemplate jdbcTemplate) {
         this.dataSource = dataSource;
@@ -131,6 +225,7 @@ public class DatabaseInitRunner {
     @PostConstruct
     public void init() {
         // 1. 检测数据库类型并执行脚本
+        log.info("====================================");
         String dbType = detectDatabaseType();
         if (dbType != null) {
             //log.info("数据库类型：{}", dbType);
@@ -155,24 +250,38 @@ public class DatabaseInitRunner {
                 } else {
                     log.info("脚本文件 {} 不存在，跳过执行", location);
                 }
-
-                List<String> sqlList = dbScript.scriptSqlList();
-                for (String sql : sqlList) {
-                    if (StrUtil.isBlank(sql)) {
+                List<ColumnSql> errorList = CollUtil.newArrayList();
+                List<ColumnSql> sqlList = dbScript.scriptSqlList();
+                log.info("正在添加字段：{} Size", sqlList.size());
+                for (ColumnSql sql : sqlList) {
+                    if (StrUtil.isBlank(sql.sql)) {
                         //log.warn("SQL 语句为空，跳过执行");
                         continue;
                     }
                     try {
-                        jdbcTemplate.execute(sql);
+                        log.info("[添加字段] `{}.{},备注:{}`", sql.table, sql.column,sql.remark);
+                        jdbcTemplate.execute(sql.sql);
+                        //log.info("[字段添加成功] `{}.{}`", sql.table, sql.column);
                     } catch (Exception e) {
                         String msg = e.getMessage();
                         if (isColumnAlreadyExistsError(e, List.of("duplicate column", "Duplicate column", "duplicate column name", "already exists", "column already exists"))) {
-                            log.debug("字段已存在，跳过添加, {}", msg);
+                            //log.warn("[字段存在]`{}.{}`字段已存在，跳过添加", sql.table, sql.column);
+                            errorList.add(sql);
+                            //log.debug("{}", msg);
                         } else {
-                            log.warn("执行迁移脚本失败: {}", sql, e);
+                            log.warn("执行迁移脚本失败: {}", sql.sql, e);
                         }
                     }
                 }
+                if (errorList.size() != sqlList.size()) {
+                    log.info("====================================");
+                }
+                sqlList.stream().filter(sql -> !errorList.contains(sql)).forEach(sql -> log.info("[字段添加成功] `{}.{}`,备注:{}", sql.table, sql.column,sql.remark));
+                if (errorList.size() != sqlList.size() || CollUtil.isNotEmpty(errorList)) {
+                    log.info("====================================");
+                }
+                errorList.stream().forEach(sql -> log.warn("[字段存在] `{}.{}`字段已存在，跳过添加 {}", sql.table, sql.column,sql.remark));
+                log.info("====================================");
             } else {
                 log.info("数据库类型 {} 未配置对应脚本，跳过", dbType);
             }

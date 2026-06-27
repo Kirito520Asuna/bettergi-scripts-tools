@@ -50,6 +50,11 @@ public class UidInfoConfig extends BaseEntity {
     public static final String COL_SALT = "salt";
     public static final String COL_AS = "col_as";
 
+    public static final String REMARK_COL_USERNAME = "用户名";
+    public static final String REMARK_COL_PASSWORD = "密码";
+    public static final String REMARK_COL_SALT = "盐值";
+
+
     @SneakyThrows
     public UidInfo toUidInfo() {
         String decryptedPassword = StrUtil.isBlankIfStr(password) ? password : decryptPassword(password, salt);
