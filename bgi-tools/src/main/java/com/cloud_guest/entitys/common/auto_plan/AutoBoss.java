@@ -40,7 +40,7 @@ public class AutoBoss {
     private boolean useFragileResin;
     /** 检测到角色死亡后，回神像恢复并重试当前首领讨伐的最大次数。*/
     @Schema(description = "检测到角色死亡后，回神像恢复并重试当前首领讨伐的最大次数。")
-    private int rviveRetryCount = 3;
+    private int reviveRetryCount = 3;
     /** 每轮领奖后是否先返回七天神像，再重新前往 Boss。*/
     @Schema(description = "每轮领奖后是否先返回七天神像，再重新前往 Boss。")
     private boolean returnToStatueAfterEachRound;
