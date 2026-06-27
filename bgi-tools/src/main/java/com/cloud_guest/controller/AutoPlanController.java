@@ -25,6 +25,7 @@ import jakarta.validation.constraints.NotBlank;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.cloud_guest.result.Result.ok;
 
@@ -62,9 +63,9 @@ public class AutoPlanController {
         autoPlanService.saveCountryAll(dto.getJson());
 
         String source = dto.getSource();
-        if (ObjectUtils.equals(source, "WEB_API")){
+        if (ObjectUtils.equals(source, "WEB_API")) {
             autoPlanService.saveCountryAll(dto.getJson());
-        }else if (ObjectUtils.equals(source, "JS_API")){
+        } else if (ObjectUtils.equals(source, "JS_API")) {
             autoPlanService.saveCountryAllByAdd(dto.getJson());
         }
 
@@ -79,28 +80,30 @@ public class AutoPlanController {
                                         @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
                                         @RequestBody AutoPlanJsonDto dto) {
         String source = dto.getSource();
-        if (ObjectUtils.equals(source, "WEB_API")){
+        if (ObjectUtils.equals(source, "WEB_API")) {
             autoPlanService.saveDomainAll(dto.getJson());
-        }else if (ObjectUtils.equals(source, "JS_API")){
+        } else if (ObjectUtils.equals(source, "JS_API")) {
             autoPlanService.saveDomainAllByAdd(dto.getJson());
         }
         return ok();
     }
+
     @PostMapping("boss/json/all")
     @SysLog
     @Token
     @Operation(summary = "[需要登录/授权token]存储BOSS基础全部JSON")
     public Result<String> saveBossAll(@JsonView(value = BasicJsonView.AutoPlanDomainALLView.class)
-                                        @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
-                                        @RequestBody AutoPlanJsonDto dto) {
+                                      @Validated(value = BasicJsonView.AutoPlanDomainALLView.class)
+                                      @RequestBody AutoPlanJsonDto dto) {
         String source = dto.getSource();
-        if (ObjectUtils.equals(source, "WEB_API")){
+        if (ObjectUtils.equals(source, "WEB_API")) {
             autoPlanService.saveBossAll(dto.getJson());
-        }else if (ObjectUtils.equals(source, "JS_API")){
+        } else if (ObjectUtils.equals(source, "JS_API")) {
             autoPlanService.saveBossAllByAdd(dto.getJson());
         }
         return ok();
     }
+
     @SysLog(result = false)
     @Operation(summary = "查询基础全部JSON")
     @GetMapping("domain/json/all")
@@ -108,6 +111,7 @@ public class AutoPlanController {
         List<Map<String, Object>> list = autoPlanService.findDomainAll();
         return ok(list);
     }
+
     @SysLog(result = false)
     @Operation(summary = "查询Boss基础全部JSON")
     @GetMapping("boss/json/all")
@@ -142,9 +146,18 @@ public class AutoPlanController {
     @SysLog
     @Operation(summary = "查询UID映射JSON")
     @GetMapping("json")
-    public Result<List<AutoPlanVo>> info(@RequestParam String uid, @RequestParam(required = false) Boolean enable) {
-        List<AutoPlanVo> list = autoPlanService.find(uid, enable)
-                .stream().map(AutoPlanConfig::toVo).toList();
+    public Result<List<AutoPlanVo>> info(@RequestParam String uid, @RequestParam(required = false) Boolean enable, @RequestParam(required = false, defaultValue = "true") Boolean order) {
+        Stream<AutoPlanVo> stream = autoPlanService.find(uid, enable).stream().map(AutoPlanConfig::toVo);
+
+        Comparator<AutoPlanVo> comparator = Comparator.comparing(
+                AutoPlanVo::getOrder,
+                Comparator.nullsLast(Comparator.<Integer>naturalOrder()) // 安全处理 null
+        );
+        if (order) {
+            comparator = comparator.reversed();
+        }
+
+        List<AutoPlanVo> list = stream.sorted(comparator).toList();
         return ok(list);
     }
 

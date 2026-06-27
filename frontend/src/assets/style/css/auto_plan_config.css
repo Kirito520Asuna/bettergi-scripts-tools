@@ -392,7 +392,7 @@ h2 {
     background-color: #85ce61;
 }
 
-.sort-control-card {
+.control-card {
     max-height: 50px;
     display: flex;
     align-items: center;
@@ -409,7 +409,7 @@ h2 {
     transition: all 0.3s ease; /* 平滑过渡效果 */
 }
 
-.sort-control-card:hover {
+.control-card:hover {
     transform: translateY(-1px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -422,7 +422,20 @@ h2 {
     font-weight: 500;
     letter-spacing: 0.3px;
 }
-
+.control-card-sort{
+    background-color: #85ce61;
+    /*background: linear-gradient(135deg, #d6ab4e, #ea7a3e);*/
+    padding: 4px 8px;
+    border-radius: 8px; /* 圆角 */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 添加阴影，模拟卡片效果 */
+    border: none; /* 去除边框 */
+    font-weight: bold; /* 加粗文字 */
+    transition: all 0.3s ease; /* 平滑过渡效果 */
+}
+.switch-select {
+    --el-switch-on-color: #787878;
+    --el-switch-off-color: #df2b97;
+}
 /* 讓 switch 看起來更精緻（可選） */
 :deep(.el-switch__core) {
     border-color: rgba(96, 165, 250, 0.5) !important;
@@ -1055,7 +1068,7 @@ h2 {
         font-size: 0.9rem;
     }
 
-    .sort-control-card {
+    .control-card {
         max-height: 45px;
         padding: 3px 6px;
         gap: 8px;
@@ -1367,7 +1380,7 @@ h2 {
         border-radius: 5px;
     }
 
-    .sort-control-card {
+    .control-card {
         max-height: 40px;
         padding: 2px 5px;
         gap: 6px;

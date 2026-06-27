@@ -296,10 +296,10 @@ const findDomains = async (confirm = true) => {
   }
 
   try {
-    const response = await getUidJson(uid.value)
+    const response = await getUidJson(uid.value,orderSortConfigs.value)
     configs.value = response;
     configs.value.forEach(config => {
-      let autoStygianOnslaught = config.autoStygianOnslaught;
+      let autoStygianOnslaught = config?.autoStygianOnslaught;
       if (autoStygianOnslaught?.bossNum === null) {
         autoStygianOnslaught.bossNum = undefined
       }
@@ -309,6 +309,7 @@ const findDomains = async (confirm = true) => {
     ElMessage.error(error.message);
   } finally {
     initConfigsId()
+    changSortConfigs()
   }
 };
 
@@ -332,6 +333,7 @@ const goToBack = async () => {
   await goBack();
 }
 const showResultDrawer = ref(false)
+// 排序状态：false 降序，true 升序
 const orderSortConfigs = ref(false)
 const uid = ref("")
 // 新增一条空白配置
@@ -475,9 +477,11 @@ const domainMap = computed(() => {
 })
 const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 const changSortConfigs = () => {
+  let compareFn = (a, b) => (a?.order ?? 0) - (b?.order ?? 0);
   if (orderSortConfigs.value) {
-    configs.value = [...configs.value].sort((a, b) => (b?.order ?? 0) - (a?.order ?? 0));
+     compareFn = (a, b) => (b?.order ?? 0) - (a?.order ?? 0);
   }
+  configs.value = [...configs.value].sort(compareFn);
 }
 
 // 在 script setup 部分添加方法
@@ -1030,17 +1034,17 @@ const batchUpdate = () => {
   const autoFight = batch.autoFight;
   configs.value.forEach(config => {
     if (batchJson.value.selectedConfigs.has(config.id)) {
-      if (config.runType === runTypesDefault()[0]) {
+      if (config?.runType === runTypesDefault()[0]) {
         //秘境
         if (autoFight.partyName)
           config.autoFight.partyName = autoFight.partyName
-      } else if (config.runType === runTypesDefault()[1]) {
+      } else if (config?.runType === runTypesDefault()[1]) {
         //地脉
         if (autoLeyLineOutcrop.team)
           config.autoLeyLineOutcrop.team = autoLeyLineOutcrop.team
         if (autoLeyLineOutcrop.friendshipTeam)
           config.autoLeyLineOutcrop.friendshipTeam = autoLeyLineOutcrop.friendshipTeam
-      } else if (config.runType === runTypesDefault()[2]) {
+      } else if (config?.runType === runTypesDefault()[2]) {
         if (autoLeyLineOutcrop.fightTeamName)
           config.autoStygianOnslaught.fightTeamName = autoStygianOnslaught.fightTeamName
         if (autoLeyLineOutcrop.bossNum)
@@ -1074,7 +1078,7 @@ const totalCount = computed(() => {
       <h2 class="title">自动体力计划配置列表</h2>
       <div class="config-header">
         <!-- template 部分保持基本相同，但增加 v-if 判断 -->
-        <div class="sort-control-card">
+        <div class="control-card">
           <el-autocomplete
               v-model="uid"
               :fetch-suggestions="querySearchAsync"
@@ -1096,42 +1100,61 @@ const totalCount = computed(() => {
           </el-autocomplete>
         </div>
 
-        <!--          <div class="sort-control-card">
+        <!--          <div class="control-card">
                     <input type="text" v-model="uid" placeholder="设置 UID" class="uid-input"/>
                   </div>-->
         <!-- 添加配置按钮 -->
         <button @click="addConfig()" class="btn btn-add">➕ 添加一条配置</button>
-        <div class="sort-control-card">
-          <span class="sort-label">执行排序</span>
-          <el-switch
-              v-model="orderSortConfigs"
-              @change="debouncedSort"
-          />
-        </div>
         <button @click="submitConfigToBackend" class="btn btn-submit">☁️🚀同步到云端</button>
         <button @click="findDomains" class="btn btn-submit">☁️🔄加载云端配置</button>
         <button @click="removeConfigToBackend" class="btn danger">☁️🗑️移除云端配置</button>
         <button @click="removeConfigAll" class="btn danger">🗑️清除全部</button>
         <button @click="handleApi" class="btn btn-submit">查看脚本配置API</button>
 
-        <div class="sort-control-card" v-if="configs.length > 0">
-          <el-switch
-              v-if="configs.length > 0"
-              v-model="multiSelectEnabled"
-              active-text="多选"
-              inactive-text="取消"
-              style="margin-left: 12px;"
-          />
+        <div class="control-card-sort">
+          <el-tooltip
+              :content="orderSortConfigs ? '当前为降序 (大→小)' : '当前为升序 (小→大)'"
+              placement="top"
+          >
+            <el-switch
+                class="switch-select"
+                v-model="orderSortConfigs"
+                active-text="降序"
+                inactive-text="升序"
+                inline-prompt
+                @change="debouncedSort"
+            />
+          </el-tooltip>
         </div>
-
-        <div class="sort-control-card" v-if="configs.length > 0&&multiSelectEnabled">
-          <el-switch
-              v-if="configs.length > 0"
-              v-model="isAllSelectedComputed"
-              active-text="全选"
-              inactive-text="取消"
-              style="margin-left: 12px;"
-          />
+        <div class="control-card-sort" v-if="configs.length > 0">
+          <el-tooltip
+              :content="multiSelectEnabled ? '当前为多选' : '当前为单选'"
+              placement="top"
+          >
+            <el-switch 
+                class="switch-select"
+                v-if="configs.length > 0"
+                v-model="multiSelectEnabled"
+                active-text="多选"
+                inactive-text="单选"
+                inline-prompt
+            />
+          </el-tooltip>
+        </div>
+        <div class="control-card-sort" v-if="configs.length > 0&&multiSelectEnabled">
+          <el-tooltip
+              :content="isAllSelectedComputed ? '全选' : '取消全选'"
+              placement="top"
+          >
+            <el-switch
+                class="switch-select"
+                v-if="configs.length > 0"
+                v-model="isAllSelectedComputed"
+                active-text="全选"
+                inactive-text="取消"
+                inline-prompt
+            />
+          </el-tooltip>
         </div>
 
         <button class="btn danger" v-if="configs.length > 0&&multiSelectEnabled" @click="removeConfigMultiple">🗑️ 批量删除

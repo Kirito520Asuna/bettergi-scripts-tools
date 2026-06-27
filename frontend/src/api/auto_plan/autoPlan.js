@@ -48,8 +48,8 @@ async function postUidPlan(uid, autoPlanList = []) {
  * @param {string|number} uid - 用户唯一标识符
  * @returns {Promise<Object>} 返回包含响应数据的Promise对象
  */
-async function getUidJson(uid) {
-    const response = await service.get('/jwt/auto/plan/json', {params: {uid: uid}})
+async function getUidJson(uid,order=true) {
+    const response = await service.get('/jwt/auto/plan/json', {params: {uid: uid,order: order}})
     if (response.code === 200) {
         ElMessage.success("加载成功");
     }
