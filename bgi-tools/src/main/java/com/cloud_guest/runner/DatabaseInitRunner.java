@@ -153,13 +153,18 @@ public class DatabaseInitRunner {
 
                     List<String> list = CollUtil.newArrayList(table, column, typeName);
                     if (formatSize == 5) {
-                        list.add(remark);
+                        // MySQL 的格式需要 5 个参数：表名, 列名, 类型, DEFAULT值, COMMENT值
+                        list.add(columnDefault); // ✅ 第4个参数：DEFAULT 值
+                        list.add(remark);       // ✅ 第5个参数：COMMENT 内容
+                    } else {
+                        // SQLite、PostgreSQL 等格式只有 4 个参数，不需要 COMMENT，直接放 columnDefault
+                        list.add(columnDefault);
                     }
-                    list.add(columnDefault);
 
                     List<ColumnSql> sqlList = CollUtil.newArrayList();
                     String sql = String.format(format, list.toArray(new String[formatSize]));
                     sqlList.add(new ColumnSql(table, column, remark, sql));
+                    // 如果该数据库支持 COMMENT ON 语句（如 PostgreSQL）
                     if (remarkFormatSize > 0 && !StrUtil.isBlankIfStr(remarkFormat)) {
                         String remarkSql = String.format(remarkFormat, table, column, remark);
                         sqlList.add(new ColumnSql(table, column, remark, remarkSql));
