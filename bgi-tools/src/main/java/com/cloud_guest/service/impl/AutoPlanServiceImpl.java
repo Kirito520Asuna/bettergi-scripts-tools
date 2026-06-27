@@ -20,10 +20,7 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.Resource;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collector;
@@ -180,79 +177,123 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
         return dbKVService.saveOrUpdate(dbKV, Wrappers.lambdaQuery(DbKV.class).eq(DbKV::getType, id).eq(DbKV::getKeyName, id));
     }
 
+    // 1. 领域数据（JSONObject 列表，按 "name" 字段合并）
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean saveDomainAllByAdd(String json) {
-        return addConfigsToDbKV(KeyConstants.auto_plan_key_domain_all, "name", json,
-                Collectors.toMap(j -> j.getStr("name"), j -> j));
+        return addConfigsToDbKV(
+                KeyConstants.auto_plan_key_domain_all,
+                "name",
+                json,
+                null,                                    // 使用默认历史数据冲突策略
+                JSONObject.class,
+                j -> j.getStr("name")                    // 类型安全的键提取
+        );
     }
 
+    // 2. 国家列表（纯字符串数组，键为字符串本身）
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean saveCountryAllByAdd(String json) {
-        return addConfigsToDbKV(KeyConstants.auto_plan_key_country_all, "name", json,
-                Collectors.toMap(j -> j.getStr("name"), j -> j));
+        return addConfigsToDbKV(
+                KeyConstants.auto_plan_key_country_all,
+                null,                                    // 无需字段反射，直接使用整体作为键
+                json,
+                null,
+                String.class,
+                Function.identity()                       // 字符串身份作为键
+        );
     }
 
+    // 3. BOSS 数据（JSONObject 列表，按 "name" 字段合并，使用默认内部冲突规则）
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean saveBossAllByAdd(String json) {
-        return addConfigsToDbKV(KeyConstants.auto_plan_key_boss_all, "name", json, null);
+        return addConfigsToDbKV(
+                KeyConstants.auto_plan_key_boss_all,
+                "name",
+                json,
+                null,                                    // 使用默认历史数据冲突策略
+                JSONObject.class,
+                j -> j.getStr("name")
+        );
     }
 
     /**
-     * 新增配置到指定 KV 键，同名配置以新增为准（去重合并）
+     * 向数据库键值配置表追加/合并配置。
+     * <p>
+     * 合并规则：现有配置中的同名项保留先出现的；新增配置中的同名项保留后出现的（后覆盖前），
+     * 最终用新增项覆盖现有项中同名的记录。
      *
-     * @param kvKey 数据库 KV 键，例如 KeyConstants.auto_plan_key_domain_all
-     * @param json  新增配置的 JSON 数组字符串
-     * @return 保存是否成功
+     * @param kvKey    配置键（type与keyName共用）
+     * @param keyField 作为合并依据的字段名，为空时默认使用 "name"
+     * @param json     待新增的 JSON 数组字符串
+     * @param collector 自定义合并收集器，为 null 时使用默认规则（现有个保留先出现的）
+     * @param clazz    目标实体类型
+     * @param keyExtractor 从实体中提取键的函数（替代反射调用 getStr，提供类型安全）
+     * @param <T>      实体类型
+     * @return 保存成功返回 true，json 为空或解析后列表为空返回 false
      */
     @Transactional(rollbackFor = Exception.class)
-    public boolean addConfigsToDbKV(String kvKey, String keyField, String json, Collector<JSONObject, ?, Map<String, JSONObject>> collector) {
+    public <T> boolean addConfigsToDbKV(String kvKey, String keyField, String json,
+                                        Collector<T, ?, Map<String, T>> collector,
+                                        Class<T> clazz,
+                                        Function<T, String> keyExtractor) {
+
+        // 1. 空值快速失败
         if (StrUtil.isBlank(json)) {
-            log.warn("addConfigsToDbKV: json为空, key=" + kvKey);
+            log.debug("addConfigsToDbKV: json 为空，跳过处理，key="+kvKey);
             return false;
         }
 
         try {
-            List<JSONObject> addList = JSONUtil.toList(json, JSONObject.class);
+            // 2. 解析新增列表
+            List<T> addList = JSONUtil.toList(json, clazz);
             if (CollUtil.isEmpty(addList)) {
-                log.warn("addConfigsToDbKV: 解析后新增列表为空, key=" + kvKey);
+                log.warn("addConfigsToDbKV: 解析后新增列表为空，key="+kvKey);
                 return false;
             }
 
+            // 3. 确定键字段名，并构建类型安全的键提取器
+            if (StrUtil.isBlank(keyField)) {
+                keyField = "name";
+            }
+            String finalKeyField = keyField;
+
+            // 4. 新建有序 Map，保证多次保存的 JSON 数组顺序一致
+            Map<String, T> mergedMap = new LinkedHashMap<>();
+
+            // 5. 处理历史数据
             LambdaQueryWrapper<DbKV> query = Wrappers.lambdaQuery(DbKV.class)
                     .eq(DbKV::getType, kvKey)
                     .eq(DbKV::getKeyName, kvKey);
-
             DbKV existingKV = dbKVService.getOne(query);
-            List<JSONObject> existingList = Optional.ofNullable(existingKV)
-                    .map(k -> StrUtil.isNotBlank(k.getValue())
-                            ? JSONUtil.toList(k.getValue(), JSONObject.class)
-                            : new ArrayList<JSONObject>())
-                    .orElseGet(ArrayList::new);
-            if (StrUtil.isBlankIfStr(keyField)) {
-                keyField = "name";
-            }
-            // 合并：现有配置中同名项保留先出现的（处理自身重复），再用新增配置覆盖同名项
-            if (collector == null) {
-                String finalKeyField = keyField;
-                collector = Collectors.toMap(
-                        j -> j.getStr(finalKeyField),
-                        j -> j,
-                        (first, second) -> first   // 自身冲突时保留第一个
-                );
+
+            if (existingKV != null && StrUtil.isNotBlank(existingKV.getValue())) {
+                List<T> existingList = JSONUtil.toList(existingKV.getValue(), clazz);
+                if (CollUtil.isNotEmpty(existingList)) {
+                    // 使用默认或自定义合并策略先处理历史数据内部重复
+                    Collector<T, ?, Map<String, T>> existingCollector = (collector != null)
+                            ? collector
+                            : Collectors.toMap(keyExtractor, Function.identity(), (first, second) -> first);
+                    Map<String, T> existingMap = existingList.stream().collect(existingCollector);
+                    mergedMap.putAll(existingMap); // 保留现有配置
+                }
             }
 
-            Map<String, JSONObject> mergedMap = existingList.stream()
-                    .collect(collector);
-            String finalKeyField1 = keyField;
-            addList.forEach(item -> mergedMap.put(item.getStr(finalKeyField1), item));
+            // 6. 合并新增数据（新值覆盖旧值，新增内部后出现的覆盖先出现的）
+            //    使用 LinkedHashMap 保持添加顺序
+            Map<String, T> addMap = addList.stream()
+                    .collect(Collectors.toMap(keyExtractor, Function.identity(),
+                            (oldInAdd, newInAdd) -> newInAdd, // 新增内部冲突：保留后出现的
+                            LinkedHashMap::new));
+            mergedMap.putAll(addMap); // 后 put 会覆盖同名字段
 
+            // 7. 保存（values 顺序确定）
             DbKV newKV = new DbKV();
             newKV.setType(kvKey);
             newKV.setKeyName(kvKey);
-            newKV.setValue(JSONUtil.toJsonStr(mergedMap.values()));
+            newKV.setValue(JSONUtil.toJsonStr(new ArrayList<>(mergedMap.values())));
 
             return dbKVService.saveOrUpdate(newKV, query);
         } catch (Exception e) {
