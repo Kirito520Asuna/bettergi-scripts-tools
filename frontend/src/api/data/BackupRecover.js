@@ -83,8 +83,8 @@ async function recovery(file = null, isLocal = false, name = null, id = null) {
  */
 async function getLocalBackupList() {
     try {
-        const response = await service.get('/jwt/data/backup/local');
-        return response.data || [];
+        const {code,data} = await service.get('/jwt/data/backup/local');
+        return data || [];
     } catch (error) {
         console.error('获取本地备份列表失败:', error);
         throw error;
@@ -99,13 +99,13 @@ async function getLocalBackupList() {
  */
 async function getRemoteBackupPage(pageNumber, pageSize) {
     try {
-        const response = await service.get('/jwt/data/backup/page', {
+        const {code,data} = await service.get('/jwt/data/backup/page', {
             params: {
                 pageNumber: pageNumber || 1,
                 pageSize: pageSize || 10
             }
         });
-        return response.data || undefined;
+        return data || undefined;
     } catch (error) {
         console.error('获取远程备份列表失败:', error);
         throw error;

@@ -7,11 +7,11 @@ import service from "@utils/request";
  */
 async function ocrBytes(bytes) {
     // 发送POST请求到OCR服务端点，传递字节数据
-    const response = await service.post('/jwt/ocr/bytes', {
+    const {code,data} = await service.post('/jwt/ocr/bytes', {
         bytes: bytes,  // 将字节数据作为请求参数发送
     })
     // 返回响应数据中的结果部分
-    return response.data;
+    return data;
 }
 export {
     ocrBytes,

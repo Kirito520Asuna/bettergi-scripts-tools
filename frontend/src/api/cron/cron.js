@@ -18,7 +18,7 @@ async function getNextTimestamp(cronExpression, startTimestamp, endTimestamp){
     //     // 传入结束时间戳
     //     endTimestamp: endTimestamp,
     // })
-    const response = await ApiService.post("/api/cron/next-timestamp", {
+    const {code,data} = await ApiService.post("/api/cron/next-timestamp", {
         // 传入cron表达式
         cronExpression: cronExpression,
         // 传入开始时间戳
@@ -27,7 +27,7 @@ async function getNextTimestamp(cronExpression, startTimestamp, endTimestamp){
         endTimestamp: endTimestamp,
     })
     // 返回响应数据
-    return response.data;
+    return data;
 }
 /**
  * 获取所有cron表达式的下一个执行时间戳
@@ -35,11 +35,11 @@ async function getNextTimestamp(cronExpression, startTimestamp, endTimestamp){
  * @returns {Promise} 返回一个Promise对象，解析后的数据为所有cron表达式的下一个执行时间戳
  */
 async function getNextTimestampAll(cronList=[]){ // 定义异步函数，获取所有cron表达式的下一个执行时间
-    const response = await ApiService.post('/api/cron/next-timestamp/all', { // 发送POST请求获取下一个时间戳
+    const {code,data} = await ApiService.post('/api/cron/next-timestamp/all', { // 发送POST请求获取下一个时间戳
         cronList: cronList, // 传入cron表达式列表
     });
     // 返回响应数据
-    return response.data; // 返回服务器响应中的data部分
+    return data; // 返回服务器响应中的data部分
 }
 
 

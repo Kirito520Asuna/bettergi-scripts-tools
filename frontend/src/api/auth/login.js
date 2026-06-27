@@ -8,9 +8,9 @@ import {ApiService} from "@utils/ApiRequest.js";
  * @returns {Promise<Object>} 返回登录结果数据
  */
 async function login(username, password) {
-    const res = await ApiService.post('/auth/login', {username: username, password: password})  // 注意 context-path 是 /bgi
+    const {code,data} = await ApiService.post('/auth/login', {username: username, password: password})  // 注意 context-path 是 /bgi
     // console.log("res:", res)
-    return res.data
+    return data
 }
 /**
  * 更新用户信息的异步函数
@@ -30,8 +30,8 @@ async function  updateUserInfo(username, password) {
  * @returns {Promise<any>}
  */
 async function getCurrentUserName() {
-    const res = await service.get('/auth/info/username');
-    return res?.data
+    const {code,data} = await service.get('/auth/info/username');
+    return data
 }
 export {
     login,

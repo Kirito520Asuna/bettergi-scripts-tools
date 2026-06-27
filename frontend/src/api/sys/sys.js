@@ -1,27 +1,27 @@
 import service from "@utils/request.js";
 
 async function restartService(ids = []) {
-    const response = await service.post('/jwt/application/restart', {
+    const re = await service.post('/jwt/application/restart', {
         ids: ids
     }, { silentError: true })
-    return response;
+    return re;
 }
 
 async function getApplicationIds() {
-    const response = await service.get('/jwt/application/applicationIds',{
+    const re = await service.get('/jwt/application/applicationIds',{
         silentError: true
     })
-    return response;
+    return re;
 }
 
 async function getVersion() {
-    const response = await service.get('/context/bgi-tools/version').then(response => response)
-    return response.data
+    const {code,data} = await service.get('/context/bgi-tools/version')
+    return data
 }
 
 async function getSystemInfo(ids="") {
-    const response = await service.get('/jwt/application/sys/info',{params:{ids:ids}})
-    return response.data
+    const {code,data} = await service.get('/jwt/application/sys/info',{params:{ids:ids}})
+    return data
 }
 
 export {

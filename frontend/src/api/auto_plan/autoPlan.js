@@ -15,11 +15,11 @@ import {ElMessage, ElMessageBox} from "element-plus";
 //     };
 //     // 发送POST请求到指定端点
 //     const response = await service.post("/auto/plan/json", payload);
-//     if (response.code === 200){
+//     if (code === 200){
 //         ElMessage.success("保存成功");
 //     }
 //     // 返回响应数据
-//     return response.data;
+//     return data;
 // }
 
 /**
@@ -35,12 +35,12 @@ async function postUidPlan(uid, autoPlanList = []) {
         autoPlanList: autoPlanList //体力计划
     };
     // 发送POST请求到指定端点
-    const response = await service.post("/jwt/auto/plan/info", payload);
-    if (response.code === 200) {
+    const {code, data} = await service.post("/jwt/auto/plan/info", payload);
+    if (code === 200) {
         ElMessage.success("保存成功");
     }
     // 返回响应数据
-    return response.data;
+    return data;
 }
 
 /**
@@ -49,12 +49,12 @@ async function postUidPlan(uid, autoPlanList = []) {
  * @returns {Promise<Object>} 返回包含响应数据的Promise对象
  */
 async function getUidJson(uid,order=true) {
-    const response = await service.get('/jwt/auto/plan/json', {params: {uid: uid,order: order}})
-    if (response.code === 200) {
+    const {code, data} = await service.get('/jwt/auto/plan/json', {params: {uid: uid,order: order}})
+    if (code === 200) {
         ElMessage.success("加载成功");
     }
     // 返回响应数据
-    return response.data;
+    return data;
 }
 
 /**
@@ -62,12 +62,12 @@ async function getUidJson(uid,order=true) {
  * @returns {Promise} 返回包含所有用户ID的数据
  */
 async function getAllUid() {
-    const response = await service.get('/jwt/auto/plan/uid/all/mapping')  // 发送GET请求获取所有用户ID
-    // if (response.code === 200){  // 检查响应状态码是否为200
+    const {code, data} = await service.get('/jwt/auto/plan/uid/all/mapping')  // 发送GET请求获取所有用户ID
+    // if (code === 200){  // 检查响应状态码是否为200
     //     ElMessage.success("加载成功");  // 如果成功，显示成功消息
     // }
     // 返回响应数据
-    return response.data;
+    return data;
 }
 
 /**
@@ -76,11 +76,11 @@ async function getAllUid() {
  * @returns {Promise<any>}
  */
 async function removeUidList(uidStr) {
-    const response = await service.delete('/jwt/auto/plan/json', {params: {uidStr: uidStr}});
-    if (response.code === 200) {
+    const {code, data}  = await service.delete('/jwt/auto/plan/json', {params: {uidStr: uidStr}});
+    if (code === 200) {
         ElMessage.success("删除成功");
     }
-    return response.data;
+    return data;
 }
 
 /**
@@ -88,11 +88,11 @@ async function removeUidList(uidStr) {
  * @returns {Promise<Object>} 获取所有JSON数据
  */
 async function getBaseJsonAll() {
-    const response = await service.get('/jwt/auto/plan/domain/json/all');
-    if (response.code === 200) {
+    const {code, data} = await service.get('/jwt/auto/plan/domain/json/all');
+    if (code === 200) {
         ElMessage.success("全部加载成功");
     }
-    return response.data;
+    return data;
 }
 
 /**
@@ -100,22 +100,22 @@ async function getBaseJsonAll() {
  * @returns {Promise<Object>} 获取所有JSON数据
  */
 export async function getBaseBossListJsonAll() {
-    const response = await service.get('/jwt/auto/plan/boss/json/all');
-    if (response.code === 200) {
+    const {code, data} = await service.get('/jwt/auto/plan/boss/json/all');
+    if (code === 200) {
         ElMessage.success("全部加载成功");
     }
-    return response.data;
+    return data;
 }
 /**
  *
  * @returns {Promise<any>}
  */
 async function getBaseCountryJsonAll() {
-    const response = await service.get('/jwt/auto/plan/country/json/all');
-    if (response.code === 200) {
+    const {code, data} = await service.get('/jwt/auto/plan/country/json/all');
+    if (code === 200) {
         ElMessage.success("全部加载成功");
     }
-    return response.data;
+    return data;
 }
 
 /**
@@ -126,12 +126,11 @@ async function getBaseCountryJsonAll() {
 export async function saveBaseJsonAll(list) {
     const source = "WEB_API"
     // const source = "JS_API"
-    const data = {json: JSON.stringify(list), source: source};
-    const response = await service.post('/jwt/auto/plan/domain/json/all', data);
-    if (response?.code === 200) {
+    const {code, data} = await service.post('/jwt/auto/plan/domain/json/all', {json: JSON.stringify(list), source: source});
+    if (code === 200) {
         ElMessage.success("保存成功");
     }
-    return response?.data;
+    return data;
 }
 /**
  * 保存全部 JSON 数据
@@ -141,12 +140,11 @@ export async function saveBaseJsonAll(list) {
 export async function saveBaseBossJsonAll(list) {
     const source = "WEB_API"
     // const source = "JS_API"
-    const data = {json: JSON.stringify(list), source: source};
-    const response = await service.post('/jwt/auto/plan/boss/json/all', data);
-    if (response?.code === 200) {
+    const {code, data} = await service.post('/jwt/auto/plan/boss/json/all', {json: JSON.stringify(list), source: source});
+    if (code === 200) {
         ElMessage.success("保存成功");
     }
-    return response?.data;
+    return data;
 }
 /**
  * 保存全部国家 JSON 数据
@@ -155,11 +153,11 @@ export async function saveBaseBossJsonAll(list) {
  */
 export async function saveBaseCountryJsonAll(list) {
     const source = "WEB_API"
-    const response = await service.post('/jwt/auto/plan/country/json/all', {json: JSON.stringify(list), source: source});
-    if (response?.code === 200) {
+    const {code, data} = await service.post('/jwt/auto/plan/country/json/all', {json: JSON.stringify(list), source: source});
+    if (code === 200) {
         ElMessage.success("保存成功");
     }
-    return response?.data;
+    return data;
 }
 
 export {

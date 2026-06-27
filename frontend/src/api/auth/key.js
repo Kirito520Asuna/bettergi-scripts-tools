@@ -9,11 +9,11 @@ import {ApiService} from "@utils/ApiRequest.js";
  * @returns {Promise<any>} 返回响应数据，如果响应不存在则返回undefined
  */
 export async function postKey(keyInfo) {
-    const res = await ApiService.post('/key/exchangeKey', {}, {
+    const {code,data} = await ApiService.post('/key/exchangeKey', {}, {
         headers: {[keyInfo.name]: keyInfo.value},
         config: {
             noDoubleEncryption: true// 禁用双重加密
         }
     })
-    return res?.data
+    return data
 }
