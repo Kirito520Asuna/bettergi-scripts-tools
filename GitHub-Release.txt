@@ -1,30 +1,37 @@
-版本详情:
+### 版本变更详情
 
-### ✨ 新增功能
-- feat(auto-plan): 添加配置占位卡片和空状态样式
-- feat(auto-plan): 添加自动计划ID字段并优化配置转换逻辑
-- feat(request): 添加静默错误处理功能
+#### 🆕 新增功能
+- **UID 认证管理**
+  - 新增 `UidInfoConfig` 实体，支持存储用户名、密码及盐值。
+  - 实现基于 PBKDF2 + AES 的密码加密存储与解密读取，保障凭证安全。
+  - 前端表格增加“用户名”列，新增用户名/密码表单字段及一致性校验。
+  - 所有 UID 相关接口添加 `@Token` 注解，增强权限控制。
+- **BOSS 自动讨伐**
+  - 新增 `AutoBoss` 实体与配置项，支持 BOSS 名称、战斗策略、队伍切换、讨伐次数、树脂补充等设置。
+  - 提供高级配置对话框，可配置战斗策略路径、复活重试及奖励识别。
+  - 运行类型中新增“BOSS”选项，支持 BOSS 数据的增删改查及 JSON 批量导入/导出。
+- **缓存与工具增强**
+  - `CacheService` 新增 `saveKeyValue` 方法，支持本地缓存与 Redis 键值对存储。
+  - 新增 `JSONUtils` 工具类，提供点分路径转换、键值对移除、深度合并等 JSON 操作。
+  - `LockYmlUtil` 增加线程安全的 YAML 文件写入功能。
+- **常量配置中心**
+  - 新增 `ConstantsView.vue` 可视化界面，支持国家、BOSS 等分类常量的搜索、筛选、增删改查与批量提交。
 
-### 🔧 功能优化
-- refactor(auto-plan): 优化天数列表处理逻辑
-- refactor(database): 优化数据库初始化逻辑
-- refactor(database): 使用常量替换硬编码表名和列名
-- refactor(exception): 优化异常处理器中的类型转换逻辑
-- refactor(AutoPlanConfigView): 将原生select替换为el-select组件
+#### 🐛 问题修复
+- **部件删除按钮**：修正显示逻辑，将条件 `parts.length > 1` 改为 `parts.length > 0`，确保单个部件时亦可正常删除。
+- **自动配置语法**：修复 `runType` 条件判断的语法结构，统一缩进与字符串拼接，保证配置键值完整性。
+- **秘源机兵名称**：将纳塔地区“秘源机兵·构型械”更正为“秘源机兵·统型械”。
+- **UID 安全漏洞**：修复后端接口返回敏感密码信息的问题，修正加密解密逻辑中的参数错误。
 
-### 🐛 Bug修复
-- fix(auto-plan): 修复自动规划批量保存时ID映射和更新逻辑问题
-- fix(auto-plan): 修复自动规划配置页面的数据同步问题
-- fix(auto-plan): 修复自动计划配置视图中的键值生成和代码格式问题
-- fix(auto-plan): 添加ID字段并更新秘境标题显示
-- fix(database): 修复 PostgreSQL 数据库表结构定义格式
-- fix(utils): 限制追踪ID长度为8位
-- fix(ui): 移除重启提示中的警告图标并优化错误处理
+#### 🔧 重构与优化
+- **数据库初始化重构**
+  - 重构初始化脚本，统一支持 MySQL、PostgreSQL、SQLite 三种数据库。
+  - 引入 `SqlFormat`、`DbScript`、`ColumnSql` 数据结构，利用 Map/Stream 简化脚本生成。
+  - 为字段添加备注（remark）支持，优化日志输出格式与存在性检查。
+- **复活重试配置**：将字段名 `rviveRetryCount` 更正为 `reviveRetryCount`，同步更新配置键与表单绑定。
+- **前端样式**：优化代码格式、空行可读性，更新选择器（秘境、周日材料、国家/地区）的占位符与过滤、创建功能。
+- **测试代码清理**：注释掉多个工具类（GitHubTreeFetcher、ImageToBase64、JwtUtil、LockUtil 等）的 main 测试方法，消除对生产代码的干扰。
 
-### 🎨 样式改进
-- style(form): 使用Element Plus组件替换原生select并添加美化样式
-- style(settings): 更新设置页面样式以优化布局和间距
-- feat(style): 添加加载动画样式
-
-### ️ 配置更新
-- config(security): 更新Swagger基本认证配置为环境变量驱动
+#### 🗄️ 数据库变更
+- **用户认证字段**：`uid_info_config` 表新增 `user_name`、`password`、`salt` 字段（MySQL/PostgreSQL/SQLite 均已同步）。
+- **BOSS 配置字段**：`auto_plan_config` 表新增 `auto_boss` 列（三种数据库均已添加）。
