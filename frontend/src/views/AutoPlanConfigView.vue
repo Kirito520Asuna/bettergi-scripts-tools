@@ -1189,25 +1189,45 @@ const totalCount = computed(() => {
             <div class="common-section">
               <div class="form-group common">
                 <label>执行顺序：</label>
-                <input class="limited-input" @change="debouncedSort" v-model.number="config.order" type="number" min="1"
-                       max="99999999"
-                       placeholder="建议 1~10"/>
-                <span style="color: red;">数值高的优先执行</span>
+                <el-tooltip
+                    :content="'数值高的优先执行'"
+                    placement="top"
+                >
+                  <input class="limited-input" @change="debouncedSort" v-model.number="config.order" type="number" min="1"
+                         max="99999999"
+                         placeholder="建议 1~10"/>
+                </el-tooltip>
               </div>
-              <div class="form-group common">
-                <label>启用：</label>
-                <el-switch
-                    v-model="config.enable"
-                />
-                <span style="color: red;">启用本计划</span>
+              <div class="form-group switch">
+                <el-tooltip
+                    :content="'是否启用计划'"
+                    placement="top"
+                >
+                  <el-switch
+                      class="switch-common"
+                      :content="config.enable ? '启用计划' : '忽略计划'"
+                      v-model="config.enable"
+                      active-text="启用计划"
+                      inactive-text="忽略计划"
+                      inline-prompt
+                  />
+                </el-tooltip>
+                <el-tooltip
+                    :content="'是否记录计划'"
+                    placement="top"
+                >
+                  <el-switch
+                      class="switch-common"
+                      :content="config.record ? '记录计划' : '忽略记录'"
+                      active-text="记录计划"
+                      inactive-text="忽略记录"
+                      inline-prompt
+                      placement="top"
+                      v-model="config.record"
+                  />
+                </el-tooltip>
               </div>
-              <div class="form-group common">
-                <label>记录：</label>
-                <el-switch
-                    v-model="config.record"
-                />
-                <span style="color: red;">记录本计划</span>
-              </div>
+
               <div class="form-group common">
                 <label>执行日：</label>
                 <div
@@ -1509,12 +1529,22 @@ const totalCount = computed(() => {
                   />
                 </el-select>
               </div>
-              <div class="form-group stygianOnslaught">
-                <label>自定义树脂使用：</label>
-                <el-switch
-                    v-model="config.autoStygianOnslaught.specifyResinUse"
-                />
+
+              <div class="form-group switch">
+                <el-tooltip
+                    :content="'自定义树脂使用'"
+                    placement="top"
+                >
+                  <el-switch
+                      class="switch-common"
+                      v-model="config.autoStygianOnslaught.specifyResinUse"
+                      active-text="启用自定义树脂使用"
+                      inactive-text="忽略自定义树脂使用"
+                      inline-prompt
+                  />
+                </el-tooltip>
               </div>
+
               <!--          <hr/>-->
               <div class="form-group stygianOnslaught">
                 <label>自定义树脂使用顺序：</label>
@@ -1564,12 +1594,19 @@ const totalCount = computed(() => {
                 />
               </div>
 
-              <div class="form-group boss">
-                <label>指定讨伐次数：</label>
-                <el-switch v-model="config.autoBoss.specifyRunCount"/>
-                <span style="color: red; margin-left: 8px;">
-      关闭后刷至原粹树脂耗尽
-    </span>
+              <div class="form-group switch">
+                <el-tooltip
+                    :content="'指定讨伐次数,关闭后刷至原粹树脂耗尽'"
+                    placement="top"
+                >
+                  <el-switch
+                      class="switch-common"
+                      v-model="config.autoBoss.specifyRunCount"
+                      active-text="启用指定讨伐次数"
+                      inactive-text="忽略指定讨伐次数"
+                      inline-prompt
+                  />
+                </el-tooltip>
               </div>
 
               <template v-if="config.autoBoss.specifyRunCount">
@@ -1769,14 +1806,32 @@ const totalCount = computed(() => {
     </span>
               </div>
 
-              <div class="form-group" style="margin-bottom: 16px;">
-                <label style="display: block; margin-bottom: 4px; font-weight: 600;">每轮后返回神像：</label>
-                <el-switch v-model="currentConfig.autoBoss.returnToStatueAfterEachRound"/>
-              </div>
+              <div class="form-group switch">
+                <el-tooltip
+                    :content="'每轮后返回神像'"
+                    placement="top"
+                >
+                  <el-switch
+                      class="switch-common"
+                      v-model="currentConfig.autoBoss.returnToStatueAfterEachRound"
+                      active-text="启用每轮后返回神像"
+                      inactive-text="忽略每轮后返回神像"
+                      inline-prompt
+                  />
+                </el-tooltip>
 
-              <div class="form-group" style="margin-bottom: 16px;">
-                <label style="display: block; margin-bottom: 4px; font-weight: 600;">启用奖励名称识别：</label>
-                <el-switch v-model="currentConfig.autoBoss.rewardRecognitionEnabled"/>
+                <el-tooltip
+                    :content="'奖励名称识别'"
+                    placement="top"
+                >
+                  <el-switch
+                      class="switch-common"
+                      v-model="currentConfig.autoBoss.rewardRecognitionEnabled"
+                      active-text="启用奖励名称识别"
+                      inactive-text="忽略奖励名称识别"
+                      inline-prompt
+                  />
+                </el-tooltip>
               </div>
 
               <!-- 树脂补充选项（仅在指定讨伐次数模式下显示） -->
@@ -1848,7 +1903,7 @@ const totalCount = computed(() => {
                 <div class="draggable-item">
                   <span class="drag-handle">☰</span>
                   <span class="physical-name">{{ element.name }}</span>
-                  <el-switch
+                  <el-switch class="switch-common"
                       v-model="element.open"
                       @change="updatePhysicalOrder(currentConfig)"
                   />
@@ -1888,7 +1943,8 @@ const totalCount = computed(() => {
                     <el-input-number class="physical-count-number" width="10px" v-model="element.count" min="0"
                                      placeholder="运行次数" style="width: 100px;"></el-input-number>
                   </div>
-                  <el-switch
+                  <el-switch class="switch-common"
+
                       v-model="element.open"
                       @change="updatePhysicalOrder(currentConfig)"
                   />
@@ -1977,11 +2033,20 @@ const totalCount = computed(() => {
                 <label class="result-key">通用配置</label>
               </div>
               <div class="batch-item">
-                <label>启用计划：</label>
-                <el-switch
-                    v-model="batchJson.batch.common.enable"
-                />
-                <span style="color: red;">启用</span>
+                <div class="form-group switch">
+                  <el-tooltip
+                      :content="'是否启用计划'"
+                      placement="top"
+                  >
+                    <el-switch
+                        class="switch-common"
+                        v-model="batchJson.batch.common.enable"
+                        active-text="启用计划"
+                        inactive-text="忽略计划"
+                        inline-prompt
+                    />
+                  </el-tooltip>
+                </div>
               </div>
             </div>
             <div class="batch-card" style="margin-top: 24px;">

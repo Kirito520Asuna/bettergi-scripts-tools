@@ -264,6 +264,11 @@ h2 {
 .form-group {
     margin-bottom: 8px;
 }
+.form-group.switch {
+    display: flex;          /* 开启弹性布局，让子元素横向排列 */
+    align-items: center;    /* 垂直方向居中对齐 */
+    gap: 12px;              /* 子元素之间的间距，可根据设计调整 */
+}
 
 .form-group label {
     font-size: 0.9rem; /* 从默认大小减小 */
@@ -435,6 +440,10 @@ h2 {
 .switch-select {
     --el-switch-on-color: #787878;
     --el-switch-off-color: #df2b97;
+}
+.switch-common {
+    --el-switch-on-color: #04f8e1;
+    --el-switch-off-color: #787878;
 }
 /* 讓 switch 看起來更精緻（可選） */
 :deep(.el-switch__core) {
