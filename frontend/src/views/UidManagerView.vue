@@ -1,10 +1,11 @@
 <script setup>
 import {onMounted, reactive, ref} from "vue"
 import {ElMessage, ElMessageBox} from "element-plus"
-import {getAllUid, saveUid, removeUidList} from "@api/uid/uid.js"
+import {getAllUid, saveUid, removeUidList, getUid} from "@api/uid/uid.js"
 import {goBack, toHomePage} from "@api/web/web.js"
 import router from "@router/router.js";
-
+import { CopyDocument } from '@element-plus/icons-vue'
+import {CopyToClipboard} from "@utils/local.js";
 const currentRoute = ref(router.currentRoute)
 // 表单数据
 const formData = reactive({
@@ -37,6 +38,7 @@ const rules = {
 const loadData = async () => {
   loading.value = true
   try {
+    Object.keys(passwordMap).forEach(key => delete passwordMap[key]);
     const response = await getAllUid()
     tableData.value = response || []
   } catch (error) {
@@ -156,6 +158,41 @@ const handleSelectionChange = (selection) => {
   })
 }
 
+
+// 密码显示状态
+const passwordMap = reactive({})
+const passwordLoading = reactive({})
+
+// 获取密码（使用已有的 getUid）
+const handleFetchPassword = async (row) => {
+  //清空所有passwordMap
+  Object.keys(passwordMap).forEach(key => delete passwordMap[key]);
+  if (passwordMap[row.uid]) return
+  if (passwordLoading[row.uid]) return
+  passwordLoading[row.uid] = true
+  try {
+    const data = await getUid(row.uid)
+    // getUid 返回的是整个 data 对象，里面包含 password
+    if (data && data.password !== undefined) {
+      passwordMap[row.uid] = data.password
+    }
+  } catch (error) {
+    ElMessage.error('获取密码失败')
+  } finally {
+    passwordLoading[row.uid] = false
+  }
+}
+
+// 复制密码
+const copyPassword = async (uid) => {
+  const pwd = passwordMap[uid]
+  if (!pwd) {
+    ElMessage.warning('请先获取密码')
+    return
+  }
+  await CopyToClipboard(pwd)
+}
+
 // 跳转主页
 const goToHome = async () => {
   await toHomePage()
@@ -207,6 +244,31 @@ onMounted(() => {
               <el-table-column prop="uid" label="UID"/>
               <el-table-column prop="as" label="别称"/>
               <el-table-column prop="username" label="用户名"/>
+
+              <el-table-column label="密码" width="200">
+                <template #default="{ row }">
+                  <div v-if="passwordMap[row?.uid]" class="password-cell">
+                    <span class="password-text">{{ passwordMap[row?.uid] }}</span>
+                    <el-button
+                        type="success"
+                        size="small"
+                        :icon="CopyDocument"
+                        circle
+                        @click="copyPassword(row?.uid)"
+                        title="复制密码"
+                    />
+                  </div>
+                  <el-button
+                      v-else
+                      type="warning"
+                      size="small"
+                      :loading="passwordLoading[row?.uid]"
+                      @click="handleFetchPassword(row)"
+                  >
+                    获取密码
+                  </el-button>
+                </template>
+              </el-table-column>
               <el-table-column label="操作" fixed="right">
                 <template #default="{ row }">
                   <el-button
@@ -411,7 +473,18 @@ onMounted(() => {
 .button-text {
   letter-spacing: 1px;
 }
-
+.password-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.password-text {
+  font-family: monospace;
+  background: #f5f5f5;
+  padding: 2px 8px;
+  border-radius: 4px;
+  user-select: all;
+}
 @keyframes rotate {
   from {
     transform: rotate(0deg);
