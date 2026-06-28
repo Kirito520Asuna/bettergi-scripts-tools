@@ -1195,18 +1195,18 @@ const totalCount = computed(() => {
                 <span style="color: red;">数值高的优先执行</span>
               </div>
               <div class="form-group common">
-                <label>是否启用：</label>
+                <label>启用：</label>
                 <el-switch
                     v-model="config.enable"
                 />
-                <span style="color: red;">是否启用本计划</span>
+                <span style="color: red;">启用本计划</span>
               </div>
               <div class="form-group common">
-                <label>是否记录：</label>
+                <label>记录：</label>
                 <el-switch
                     v-model="config.record"
                 />
-                <span style="color: red;">是否记录本计划</span>
+                <span style="color: red;">记录本计划</span>
               </div>
               <div class="form-group common">
                 <label>执行日：</label>
@@ -1981,7 +1981,7 @@ const totalCount = computed(() => {
                 <el-switch
                     v-model="batchJson.batch.common.enable"
                 />
-                <span style="color: red;">是否启用</span>
+                <span style="color: red;">启用</span>
               </div>
             </div>
             <div class="batch-card" style="margin-top: 24px;">
