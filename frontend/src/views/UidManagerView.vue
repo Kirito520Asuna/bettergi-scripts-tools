@@ -95,15 +95,25 @@ const handleSubmit = async () => {
     await saveUid(uidInfo)
     // ElMessage.success(`${action}成功`)
     formData.show = false
+    await loadData()
   } catch (error) {
     if (error !== 'cancel') {
       console.error('操作失败:', error)
       ElMessage.error('操作失败')
     }
   }
-  await loadData()
 }
-
+const localCacheDelete=async (ids=[])=>{
+  for (let id of ids) {
+    // ✅ 在本地数组中直接移除，实现实时更新
+    const index = tableData.value.findIndex(item => item?.uid === id)
+    if (index !== -1) {
+      tableData.value.splice(index, 1)
+    }
+    // 同时清除对应行的密码缓存
+    delete passwordMap[id]
+  }
+}
 // 删除单条
 const handleDelete = async (row) => {
   try {
@@ -115,13 +125,14 @@ const handleDelete = async (row) => {
 
     await removeUidList(row.uid)
     // ElMessage.success('删除成功')
+    await loadData()
+    await localCacheDelete([row.uid])
   } catch (error) {
     if (error !== 'cancel') {
       console.error('删除失败:', error)
       ElMessage.error('删除失败')
     }
   }
-  await loadData()
 }
 
 // 批量删除
@@ -141,13 +152,14 @@ const handleBatchDelete = async () => {
     await removeUidList(Array.from(multipleSelection.value))
     // ElMessage.success('批量删除成功')
     multipleSelection.value.clear()
+    await loadData()
+    await localCacheDelete(Array.from(multipleSelection.value))
   } catch (error) {
     if (error !== 'cancel') {
       console.error('批量删除失败:', error)
       ElMessage.error('批量删除失败')
     }
   }
-  await loadData()
 }
 
 // 表格选择变化
