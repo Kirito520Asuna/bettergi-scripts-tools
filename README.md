@@ -405,6 +405,141 @@ Content-Type: application/json
     fullRegion.Dispose();
 })();
 ```
+### 5. 自动体力计划服务(推送--待BGI-JS开发)
+
+> 期望其他作者开发 
+> 
+> 具体的json 文档:http://localhost:8081/bgi/doc.html#/other/自动体力计划服务/saveInfo
+> 
+> 待开发识别 `培养计划` JS脚本模块 核心功能:(识别功能,计算功能,推送功能)
+> 
+> 推送后可直接调用 脚本`自动体力计划JS` https://bgi.sh/?type=js&path=AutoPlan
+
+#### 调用工具类
+```javascript
+export class BgiTools {
+    /**
+     * 上传培养计划
+     * @param http_api -- API地址
+     * @param json -- 培养计划Json 
+     * @param token -- 授权token 
+     * @returns {Promise<void>}
+     */
+    static async uploadTrainingProgram(http_api="http://localhost:8081/bgi/auto/plan/saveInfo",
+                                       json=
+                                       {
+                                         uid: "",
+                                         cultivate: true,
+                                         removeCultivate: true,
+                                         autoPlanList:[
+                                             {
+                                                 order: 0,
+                                                 days: [],
+                                                 dayName: "",
+                                                 selectedType: "",
+                                                 runType: "",
+                                                 enable: true,
+                                                 record: true,
+                                                 autoStygianOnslaught:{},
+                                                 autoLeyLineOutcrop:{},
+                                                 autoBoss:{},
+                                                 autoFight:{}
+                                             }
+                                         ]
+                                       }, token = {name: "Authorization", value: ''}
+    ){
+
+        let header = {
+            "Content-Type": "application/json",
+            [token.name]: token.value
+        };
+        const {status_code, body:{code,data}} = await http.request(
+            "POST", http_api
+            , JSON.stringify(json), JSON.stringify(header)
+        )
+        if (status_code === 200 && code === 200){
+          log.info("上传培养计划成功")
+        }else {
+            throw new Error("上传培养计划失败,error:" + data)
+        }
+    }
+}
+```
+#### 推送数据格式(培养计划Json):
+```json
+{
+  "uid": "",
+  "cultivate": true,
+  "removeCultivate": true,
+  "autoPlanList": [
+    {
+      "id": "",
+      "order": 0,
+      "days": [],
+      "dayName": "",
+      "selectedType": "",
+      "runType": "",
+      "enable": true,
+      "cultivate": true,
+      "record": true,
+      "autoFight": {
+        "sundaySelectedName": "",
+        "domainName": "",
+        "sundaySelectedValue": 0,
+        "partyName": "",
+        "domainRoundNum": 0,
+        "physical": [
+          {
+            "order": 0,
+            "name": "",
+            "open": true,
+            "count": 0
+          }
+        ]
+      },
+      "autoLeyLineOutcrop": {
+        "count": 0,
+        "country": "",
+        "leyLineOutcropType": "",
+        "useAdventurerHandbook": true,
+        "friendshipTeam": "",
+        "team": "",
+        "timeout": 0,
+        "useFragileResin": true,
+        "useTransientResin": true,
+        "isGoToSynthesizer": true,
+        "isNotification": true
+      },
+      "autoStygianOnslaught": {
+        "physical": [
+          {
+            "order": 0,
+            "name": "",
+            "open": true,
+            "count": 0
+          }
+        ],
+        "specifyResinUse": true,
+        "bossNum": 0,
+        "fightTeamName": ""
+      },
+      "autoBoss": {
+        "bossName": "",
+        "strategyName": "",
+        "combatStrategyPath": "",
+        "teamName": "",
+        "specifyRunCount": true,
+        "runCount": 0,
+        "useTransientResin": true,
+        "useFragileResin": true,
+        "reviveRetryCount": 0,
+        "returnToStatueAfterEachRound": true,
+        "rewardRecognitionEnabled": true
+      }
+    }
+  ]
+}
+```
 
 > 若使用 `check.token` 鉴权，请将 URL 中的 `/bgi/` 替换为 `/bgi/jwt/`，并在请求头中加入 `token 名称` 和 `token 值`。
 
