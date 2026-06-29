@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
  * @Date 2026/6/21 4:34:09
  * @Description
  */
-@Data
+@Data @Schema(description = "Boss参数")
 @NoArgsConstructor
 @AllArgsConstructor
 public class AutoBoss {

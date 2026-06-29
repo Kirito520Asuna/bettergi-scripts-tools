@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
  * @Date 2026/2/18 0:53:08
  * @Description
  */
-@Data
+@Data @Schema(description = "地脉参数")
 @NoArgsConstructor
 @AllArgsConstructor
 public class AutoLeyLineOutcrop {
