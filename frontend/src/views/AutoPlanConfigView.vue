@@ -412,7 +412,7 @@ const addConfig = (config = undefined) => {
         /** 检测到角色死亡后，回神像恢复并重试当前首领讨伐的最大次数。*/
         reviveRetryCount: 3,
         /** 每轮领奖后是否先返回七天神像，再重新前往 Boss。*/
-        returnToStatueAfterEachRound: false,
+        returnToStatueAfterEachRound: true,
         /** 是否启用奖励名称识别。默认关闭。*/
         rewardRecognitionEnabled: false,
       }
@@ -1478,36 +1478,6 @@ const totalCount = computed(() => {
                   高级选项
                 </el-button>
               </div>
-
-              <!--              <div class="form-group leyLineOutcrop checkbox-group" style="display: flex; flex-wrap: wrap; gap: 16px;">
-                              <el-checkbox v-model="config.autoLeyLineOutcrop.useAdventurerHandbook">
-                                使用冒险之证
-                              </el-checkbox>
-                              <el-checkbox v-model="config.autoLeyLineOutcrop.useFragileResin">
-                                使用脆弱树脂
-                              </el-checkbox>
-                              <el-checkbox v-model="config.autoLeyLineOutcrop.useTransientResin">
-                                使用须臾树脂
-                              </el-checkbox>
-                              <el-checkbox v-model="config.autoLeyLineOutcrop.isGoToSynthesizer">
-                                合成浓缩树脂
-                              </el-checkbox>
-                              <el-checkbox v-model="config.autoLeyLineOutcrop.isNotification">
-                                完成后通知
-                              </el-checkbox>
-                            </div>
-
-                            <div class="form-group leyLineOutcrop">
-                              <label>战斗超时时间（秒）：</label>
-                              <input
-                                  class="limited-input"
-                                  v-model.number="config.autoLeyLineOutcrop.timeout"
-                                  type="number"
-                                  min="0"
-                                  default="120"
-                                  placeholder="0 = 不限制"
-                              />
-                            </div>-->
             </div>
             <div class="stygianOnslaught-section" v-else-if="config.runType === runTypes[2]">
               <div class="form-group stygianOnslaught">
