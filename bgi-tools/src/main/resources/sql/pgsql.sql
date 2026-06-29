@@ -82,6 +82,25 @@ COMMENT ON COLUMN ws_proxy_access_config.update_by   IS '更新者';
 COMMENT ON COLUMN ws_proxy_access_config.update_time IS '更新时间';
 COMMENT ON COLUMN ws_proxy_access_config.remark      IS '备注';
 
+
+CREATE TABLE IF NOT EXISTS auto_plan_uid_global_config
+(
+    uid         VARCHAR(64),
+    cultivate   BOOLEAN,
+-- 通用审计字段
+    create_by   VARCHAR(64),
+    create_time TIMESTAMP,
+    update_by   VARCHAR(64),
+    update_time TIMESTAMP,
+    remark      TEXT
+    );
+COMMENT ON COLUMN auto_plan_uid_global_config.uid   IS '用户唯一标识';
+COMMENT ON COLUMN auto_plan_uid_global_config.cultivate   IS '是培养计划';
+COMMENT ON COLUMN auto_plan_uid_global_config.create_by   IS '创建者';
+COMMENT ON COLUMN auto_plan_uid_global_config.create_time IS '创建时间';
+COMMENT ON COLUMN auto_plan_uid_global_config.update_by   IS '更新者';
+COMMENT ON COLUMN auto_plan_uid_global_config.update_time IS '更新时间';
+COMMENT ON COLUMN auto_plan_uid_global_config.remark      IS '备注';
 -- =========================================================
 -- 表 3: uid_info_config
 -- =========================================================
@@ -112,6 +131,7 @@ COMMENT ON COLUMN uid_info_config.update_by   IS '更新者';
 COMMENT ON COLUMN uid_info_config.update_time IS '更新时间';
 COMMENT ON COLUMN uid_info_config.remark      IS '备注';
 
+ALTER TABLE uid_info_config ADD COLUMN is_delete BOOLEAN  DEFAULT false
 -- =========================================================
 -- 表 4: db_kv
 -- =========================================================

@@ -6,7 +6,7 @@ import com.cloud_guest.entitys.dto.CheckTokenDto;
 import com.cloud_guest.properties.check.TokenProperties;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.ApplicationService;
-import com.cloud_guest.entitys.vo.TokenVo;
+import com.cloud_guest.entitys.records.TokenVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
@@ -36,10 +36,7 @@ public class AuthTokenController {
     public Result<TokenVo> token() {
         String tokenName = tokenProperties.getName();
         String tokenValue = tokenProperties.getValue();
-        TokenVo tokenVo = new TokenVo();
-        tokenVo.setName(tokenName);
-        tokenVo.setValue(tokenValue);
-        return ok(tokenVo);
+        return ok(new TokenVo(tokenName, tokenValue));
     }
 
     @Login

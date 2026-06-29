@@ -6,8 +6,9 @@ CREATE TABLE IF NOT EXISTS `auto_plan_config` (
     `day_name`               VARCHAR(255) DEFAULT NULL COMMENT '日期名称',
     `selected_type`          VARCHAR(255) DEFAULT NULL COMMENT '选中类型',
     `run_type`               VARCHAR(255) DEFAULT NULL COMMENT '运行类型',
-    `enable`                 TINYINT(1)   DEFAULT NULL COMMENT '是否启用',
-    `record`                 TINYINT(1)   DEFAULT NULL COMMENT '是否记录',
+    `enable`                 TINYINT(1)   DEFAULT 1 COMMENT '是否启用',
+    `record`                 TINYINT(1)   DEFAULT 0 COMMENT '是否记录',
+    `cultivate`                 TINYINT(1)   DEFAULT 0 COMMENT '是培养计划',
     `auto_fight`             TEXT         DEFAULT NULL COMMENT '秘境配置',
     `auto_ley_line_outcrop`  TEXT         DEFAULT NULL COMMENT '自动地脉花配置',
     `auto_stygian_onslaught` TEXT         DEFAULT NULL COMMENT '自动幽境配置',
@@ -38,6 +39,19 @@ CREATE TABLE IF NOT EXISTS `ws_proxy_access_config` (
     `remark`      TEXT         DEFAULT NULL COMMENT '备注',
     PRIMARY KEY (`uid`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='WebSocket代理接入配置表';
+
+CREATE TABLE IF NOT EXISTS `auto_plan_uid_global_config`
+(
+    `uid`         varchar(64) NOT NULL COMMENT '用户唯一标识',
+    `cultivate`   TINYINT(1) DEFAULT 0 COMMENT '是培养计划',
+    -- 通用审计字段
+    `create_by`   VARCHAR(64) DEFAULT NULL COMMENT '创建者',
+    `create_time` TIMESTAMP   DEFAULT NULL COMMENT '创建时间',
+    `update_by`   VARCHAR(64) DEFAULT NULL COMMENT '更新者',
+    `update_time` TIMESTAMP   DEFAULT NULL COMMENT '更新时间',
+    `remark`      TEXT        DEFAULT NULL COMMENT '备注',
+    PRIMARY KEY (`uid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='全局UID自动计划配置表';
 
 CREATE TABLE IF NOT EXISTS `uid_info_config`
 (

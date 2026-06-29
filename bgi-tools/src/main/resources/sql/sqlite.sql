@@ -37,6 +37,18 @@ CREATE TABLE IF NOT EXISTS ws_proxy_access_config (
           remark      TEXT
     );
 
+
+CREATE TABLE IF NOT EXISTS auto_plan_uid_global_config
+(
+    uid         TEXT PRIMARY KEY,
+    cultivate   INTEGER DEFAULT 0,
+    create_by   TEXT,
+    create_time TEXT DEFAULT (datetime('now','localtime')),
+    update_by   TEXT,
+    update_time TEXT DEFAULT (datetime('now','localtime')),
+    remark      TEXT
+);
+
 -- UID信息配置表
 CREATE TABLE IF NOT EXISTS uid_info_config (
     uid         TEXT PRIMARY KEY,                               -- 用户唯一标识

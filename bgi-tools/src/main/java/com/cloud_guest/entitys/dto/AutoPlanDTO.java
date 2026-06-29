@@ -8,6 +8,7 @@ import com.cloud_guest.entitys.common.auto_plan.AutoPlan;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.entitys.pojo.AutoPlanConfig;
 import com.cloud_guest.utils.object.ObjectUtils;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,6 +35,10 @@ public class AutoPlanDTO implements Serializable {
     @Schema(description = "uid")
     @NotBlank(message = "uid不能为空")
     private String uid;
+    @Schema(description = "cultivate 是培养计划")
+    private Boolean cultivate;
+    @Schema(description = "先移除原有培养计划再新增")
+    private Boolean removeCultivate;
     @Schema(description = "自动计划列表")
     @NotEmptyList(message = "自动计划列表不能为空")
     private List<AutoPlan> autoPlanList = new ArrayList<>();
@@ -72,6 +77,9 @@ public class AutoPlanDTO implements Serializable {
         List<AutoPlanConfig> list = autoPlanList.stream().map(autoPlan -> {
             AutoPlanConfig config = autoPlan.toConfig();
             config.setUid(uid);
+            if(Boolean.TRUE.equals(cultivate)){
+                config.setCultivate(Boolean.TRUE);
+            }
             return config;
         }).collect(Collectors.toList());
         return list;

@@ -12,6 +12,7 @@ import com.cloud_guest.entitys.common.auto_plan.AutoLeyLineOutcrop;
 import com.cloud_guest.entitys.common.auto_plan.AutoStygianOnslaught;
 import com.cloud_guest.mp.pojo.BaseEntity;
 import com.cloud_guest.entitys.vo.AutoPlanVo;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -46,6 +47,8 @@ public class AutoPlanConfig extends BaseEntity {
     private String runType;
     @TableField(value = COL_ENABLE)
     private Boolean enable;
+    @TableField(value = COL_CULTIVATE)
+    private Boolean cultivate = Boolean.FALSE;
     @TableField(value = COL_RECORD)
     private Boolean record = Boolean.FALSE;
     @TableField(value = COL_AUTO_FIGHT)
@@ -67,6 +70,7 @@ public class AutoPlanConfig extends BaseEntity {
     public static final String COL_SELECTED_TYPE = "selected_type";
     public static final String COL_RUN_TYPE = "run_type";
     public static final String COL_ENABLE = "enable";
+    public static final String COL_CULTIVATE = "cultivate";
     public static final String COL_RECORD = "record";
     public static final String COL_AUTO_FIGHT = "auto_fight";
     public static final String COL_AUTO_LEY_LINE_OUTCROP = "auto_ley_line_outcrop";
@@ -75,6 +79,7 @@ public class AutoPlanConfig extends BaseEntity {
 
     public static final String REMARK_COL_AUTO_BOSS = "自动Boss配置";
     public static final String REMARK_COL_RECORD = "是否记录";
+    public static final String REMARK_COL_CULTIVATE = "是培养计划";
 
 
     public AutoPlanVo toVo() {
@@ -82,6 +87,7 @@ public class AutoPlanConfig extends BaseEntity {
         autoPlanVo
                 .setId(id != null ? String.valueOf(id) : null)
                 .setRunType(runType)
+                .setCultivate(cultivate)
                 .setSelectedType(selectedType)
                 .setEnable(enable)
                 .setRecord(record)

@@ -21,7 +21,6 @@ import jakarta.annotation.Resource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -38,11 +37,16 @@ public class AutoPlanServiceImpl extends ServiceImpl<AutoPlanMapper, AutoPlanCon
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean saveOrUpdateBatchList(List<AutoPlanConfig> configList) {
+    public boolean saveOrUpdateBatchList(List<AutoPlanConfig> configList, Boolean removeCultivate) {
         if (CollUtil.isNotEmpty(configList)) {
             AutoPlanConfig planConfig = configList.stream().findFirst().get();
             String uid = planConfig.getUid();
 
+            if (Boolean.TRUE.equals(removeCultivate)) {
+               remove(this.lambdaQuery()
+                       .eq(AutoPlanConfig::getUid, uid)
+                       .eq(AutoPlanConfig::getCultivate,Boolean.TRUE));
+            }
             // 获取传入的所有有效ID
             List<Long> ids = configList.stream()
                     .map(AutoPlanConfig::getId)

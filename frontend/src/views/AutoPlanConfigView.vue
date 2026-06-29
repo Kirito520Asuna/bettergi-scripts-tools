@@ -7,7 +7,7 @@ import {
   getUidJson,
   postUidPlan,
   removeUidList,
-  getAllUid, getBaseBossListJsonAll
+  getAllUid, getBaseBossListJsonAll, getUidGlobalInfo, postUidGlobalInfo
 } from "@api/auto_plan/autoPlan";
 import {CopyToClipboard} from "@utils/local.js";
 import {
@@ -34,7 +34,6 @@ const cloud = ref({
   // 設定冷卻時間（單位：毫秒），例如每 1 秒最多請求 1 次
   cooldownMs: 1000,
 })
-
 
 const showDialogApi = ref(false)
 const ApiList = ref([])
@@ -296,7 +295,7 @@ const findDomains = async (confirm = true) => {
   }
 
   try {
-    const response = await getUidJson(uid.value,orderSortConfigs.value)
+    const response = await getUidJson(uid.value, orderSortConfigs.value)
     configs.value = response;
     configs.value.forEach(config => {
       let autoStygianOnslaught = config?.autoStygianOnslaught;
@@ -347,6 +346,7 @@ const addConfig = (config = undefined) => {
       runType: runTypesDefault()[0],//先写死 预留地脉类型
       enable: true,
       record: false,
+      cultivate: false,
       dayName: undefined,
       showDaysSelector: false,   // ← 新增
       showPhysicalSelector: false,   // ← 新增
@@ -479,7 +479,7 @@ const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '�
 const changSortConfigs = () => {
   let compareFn = (a, b) => (a?.order ?? 0) - (b?.order ?? 0);
   if (orderSortConfigs.value) {
-     compareFn = (a, b) => (b?.order ?? 0) - (a?.order ?? 0);
+    compareFn = (a, b) => (b?.order ?? 0) - (a?.order ?? 0);
   }
   configs.value = [...configs.value].sort(compareFn);
 }
@@ -594,6 +594,7 @@ const getFinalConfigs = () => {
       runType: c?.runType,
       enable: c?.enable,
       record: c?.record,
+      cultivate: c?.cultivate,
       // daysName: c.daysName,
       // physical: c.physical,
       selectedType: c?.selectedType, // 新增字段
@@ -676,8 +677,7 @@ const getFinalConfigsToKey = () => {
       key += (autoFight.sundaySelectedValue || 1)
       key += "|"
       key += (physical.filter(p => p.open).map(p => p.name).join('/') || "")
-    }
-    else if (item.runType === runTypesDefault()[1]) {
+    } else if (item.runType === runTypesDefault()[1]) {
       //"|队伍名称|国家|刷几轮|花类型|好感队|是否使用脆弱树脂|是否使用须臾树脂|是否前往合成台合成浓缩树脂|是否使用冒险之证|发送详细通知|战斗超时时间,..."
       let autoLeyLineOutcrop = item.autoLeyLineOutcrop;
       //todo:  LeyLineOutcrop
@@ -702,8 +702,7 @@ const getFinalConfigsToKey = () => {
       key += (autoLeyLineOutcrop.isNotification || "")
       key += "|"
       key += (autoLeyLineOutcrop.timeout || "")
-    }
-    else if (item.runType === runTypesDefault()[2]) {
+    } else if (item.runType === runTypesDefault()[2]) {
       let autoStygianOnslaught = item.autoStygianOnslaught
       let physical = autoStygianOnslaught.physical
       key += (autoStygianOnslaught.bossNum || "")
@@ -717,8 +716,7 @@ const getFinalConfigsToKey = () => {
         key += "|"
         key += (physical.filter(p => p.open).map(p => p.count).join('/') || "")
       }
-    }
-    else if (item.runType === runTypesDefault()[3]) {
+    } else if (item.runType === runTypesDefault()[3]) {
       let autoBoss = item.autoBoss
       key += (autoBoss.bossName || "")
       key += "|"
@@ -1069,7 +1067,39 @@ const enabledCount = computed(() => {
 const totalCount = computed(() => {
   return configs.value.length
 })
+const planUidGlobalInfo = ref({uid: undefined, cultivate: false})
+const PlanGlobal = ref({
+  showPlanUidGlobalInfo: false,
+})
+const selectGlobalUid = async () => {
+  const id = uid.value;
+  if (!id) {
+    ElMessage.error('请选择一个有效的UID')
+    return
+  }
 
+  let uidGlobalInfo = await getUidGlobalInfo(id);
+  if (uidGlobalInfo) {
+    planUidGlobalInfo.value = {
+      uid: uidGlobalInfo.uid,
+      cultivate: uidGlobalInfo.cultivate ?? false,  // 确保 cultivate 字段存在
+    };
+  }
+  planUidGlobalInfo.value.uid = id;
+}
+const handleGlobalUid = async (json = {uid: uid.value, cultivate: false}) => {
+  await postUidGlobalInfo(json)
+  await selectGlobalUid()
+}
+const editPlanGlobalInfo = async (show = true) => {
+  PlanGlobal.value.showPlanUidGlobalInfo = show
+  if (show && uid.value) {
+    await selectGlobalUid()
+  } else if (show && !uid.value) {
+    ElMessage.error('请选择一个有效的UID')
+    PlanGlobal.value.showPlanUidGlobalInfo = false
+  }
+}
 </script>
 
 <template>
@@ -1111,6 +1141,7 @@ const totalCount = computed(() => {
         <button @click="removeConfigToBackend" class="btn danger">☁️🗑️移除云端配置</button>
         <button @click="removeConfigAll" class="btn danger">🗑️清除全部</button>
         <button @click="handleApi" class="btn btn-submit">查看脚本配置API</button>
+        <button @click="editPlanGlobalInfo" class="btn btn-submit">查看全局配置</button>
 
         <div class="control-card-sort">
           <el-tooltip
@@ -1132,7 +1163,7 @@ const totalCount = computed(() => {
               :content="multiSelectEnabled ? '当前为多选' : '当前为单选'"
               placement="top"
           >
-            <el-switch 
+            <el-switch
                 class="switch-select"
                 v-if="configs.length > 0"
                 v-model="multiSelectEnabled"
@@ -1194,7 +1225,8 @@ const totalCount = computed(() => {
                     :content="'数值高的优先执行'"
                     placement="top"
                 >
-                  <input class="limited-input" @change="debouncedSort" v-model.number="config.order" type="number" min="1"
+                  <input class="limited-input" @change="debouncedSort" v-model.number="config.order" type="number"
+                         min="1"
                          max="99999999"
                          placeholder="建议 1~10"/>
                 </el-tooltip>
@@ -1225,6 +1257,20 @@ const totalCount = computed(() => {
                       inline-prompt
                       placement="top"
                       v-model="config.record"
+                  />
+                </el-tooltip>
+                <el-tooltip
+                    :content="'是否启用培养计划'"
+                    placement="top"
+                >
+                  <el-switch
+                      class="switch-common"
+                      :content="config.cultivate ? '启用培养计划' : '忽略培养计划'"
+                      active-text="启用培养计划"
+                      inactive-text="忽略培养计划"
+                      inline-prompt
+                      placement="top"
+                      v-model="config.cultivate"
                   />
                 </el-tooltip>
               </div>
@@ -1875,8 +1921,8 @@ const totalCount = computed(() => {
                   <span class="drag-handle">☰</span>
                   <span class="physical-name">{{ element.name }}</span>
                   <el-switch class="switch-common"
-                      v-model="element.open"
-                      @change="updatePhysicalOrder(currentConfig)"
+                             v-model="element.open"
+                             @change="updatePhysicalOrder(currentConfig)"
                   />
                 </div>
               </template>
@@ -1889,6 +1935,40 @@ const totalCount = computed(() => {
         </el-dialog>
 
         <el-dialog
+            v-if="PlanGlobal.showPlanUidGlobalInfo"
+            v-model="PlanGlobal.showPlanUidGlobalInfo"
+            title="全局配置"
+            width="520px"
+            :close-on-click-modal="false"
+        >
+          <div class="dialog-content" v-if="planUidGlobalInfo">
+            <div class="form-group">
+              <label>UID:</label>
+              <span>{{ planUidGlobalInfo.uid }}</span>
+            </div>
+            <div class="form-group switch">
+              <el-tooltip content="培养计划" placement="top">
+                <el-switch
+                    class="switch-common"
+                    v-model="planUidGlobalInfo.cultivate"
+                    active-text="启用培养计划"
+                    inactive-text="忽略培养计划"
+                    inline-prompt
+                />
+              </el-tooltip>
+            </div>
+          </div>
+          <template #footer>
+    <span class="dialog-footer">
+      <el-button @click="PlanGlobal.showPlanUidGlobalInfo = false">取消</el-button>
+      <el-button type="primary" @click="handleGlobalUid(planUidGlobalInfo); PlanGlobal.showPlanUidGlobalInfo = false">
+        确定
+      </el-button>
+    </span>
+          </template>
+        </el-dialog>
+
+        <el-dialog
             v-if="currentConfig"
             v-model="currentConfig.showPhysicalDialogFromStygianOnslaught"
             title="调整树脂使用顺序与启用状态"
@@ -1897,7 +1977,6 @@ const totalCount = computed(() => {
             :close-on-click-modal="false"
         >
           <div class="dialog-content">
-            <div class="selector-title">拖拽调整顺序</div>
             <draggable
                 v-if="currentConfig"
                 v-model="currentConfig.autoStygianOnslaught.physical"
@@ -1916,8 +1995,8 @@ const totalCount = computed(() => {
                   </div>
                   <el-switch class="switch-common"
 
-                      v-model="element.open"
-                      @change="updatePhysicalOrder(currentConfig)"
+                             v-model="element.open"
+                             @change="updatePhysicalOrder(currentConfig)"
                   />
                 </div>
               </template>

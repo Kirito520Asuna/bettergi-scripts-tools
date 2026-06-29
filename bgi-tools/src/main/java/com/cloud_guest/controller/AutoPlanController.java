@@ -6,9 +6,12 @@ import com.cloud_guest.entitys.domain.UidInfo;
 import com.cloud_guest.entitys.dto.AutoPlanDTO;
 import com.cloud_guest.entitys.dto.AutoPlanJsonDto;
 import com.cloud_guest.entitys.pojo.AutoPlanConfig;
+import com.cloud_guest.entitys.pojo.AutoPlanUidGlobalConfig;
 import com.cloud_guest.entitys.pojo.UidInfoConfig;
+import com.cloud_guest.entitys.records.UidGlobalInfo;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AutoPlanService;
+import com.cloud_guest.service.AutoPlanUidGlobalService;
 import com.cloud_guest.service.UidService;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.view.BasicJsonView;
@@ -39,6 +42,8 @@ import static com.cloud_guest.result.Result.ok;
 @RestController
 @RequestMapping(value = {"/auto/plan/", "/api/auto/plan/", "/jwt/auto/plan/"})
 public class AutoPlanController {
+    @Resource
+    private AutoPlanUidGlobalService uidGlobalService;
     @Resource
     private UidService uidService;
 
@@ -119,16 +124,25 @@ public class AutoPlanController {
         List<Map<String, Object>> list = autoPlanService.findBossAll();
         return ok(list);
     }
-    //@PostMapping("json")
-    //@SysLog
-    //@Token
-    //@Operation(summary = "[需要登录/授权token]存储UID映射JSON")
-    //public Result<String> save(@JsonView(value = BasicJsonView.AutoPlanView.class)
-    //                           @Validated(value = BasicJsonView.AutoPlanView.class)
-    //                           @RequestBody AutoPlanJsonDto dto) {
-    //    autoPlanService.save(dto.getUid(), dto.getJson());
-    //    return ok(dto.getUid());
-    //}
+
+    @GetMapping("uid/global/info")
+    @SysLog
+    @Operation(summary = "查询UID全局体力配置")
+    public Result<UidGlobalInfo> uidGlobalInfo(@RequestParam String uid) {
+        AutoPlanUidGlobalConfig uidGlobalConfig = uidGlobalService.getById(uid);
+        UidGlobalInfo data = ObjectUtils.isEmpty(uidGlobalConfig) ? null : uidGlobalConfig.toInfo();
+        return ok(data);
+    }
+
+    @PostMapping("uid/global/info")
+    @SysLog
+    @Token
+    @Operation(summary = "[需要登录/授权token]存储UID全局体力配置")
+    public Result uidGlobalInfo(@RequestBody UidGlobalInfo info) {
+        AutoPlanUidGlobalConfig globalConfig = AutoPlanUidGlobalConfig.toThis(info);
+        uidGlobalService.saveOrUpdate(globalConfig);
+        return ok();
+    }
 
     @PostMapping("info")
     @SysLog
@@ -138,7 +152,7 @@ public class AutoPlanController {
         dto.checkValid();
         List<AutoPlanConfig> configList = dto.toConfigList();
         //autoPlanService.save(dto.getUid(), JSONUtil.toJsonStr(dto.getAutoPlanList()));
-        autoPlanService.saveOrUpdateBatchList(configList);
+        autoPlanService.saveOrUpdateBatchList(configList, dto.getRemoveCultivate());
         //autoPlanService.saveBatch(configList);
         return ok(dto.getUid());
     }
@@ -146,18 +160,34 @@ public class AutoPlanController {
     @SysLog
     @Operation(summary = "查询UID映射JSON")
     @GetMapping("json")
-    public Result<List<AutoPlanVo>> info(@RequestParam String uid, @RequestParam(required = false) Boolean enable, @RequestParam(required = false, defaultValue = "true") Boolean order) {
-        Stream<AutoPlanVo> stream = autoPlanService.find(uid, enable).stream().map(AutoPlanConfig::toVo);
+    public Result<List<AutoPlanVo>> info(@RequestParam String uid, @RequestParam(required = false, defaultValue = "JS_API") String source,
+                                         @RequestParam(required = false) Boolean enable,
+                                         @RequestParam(required = false, defaultValue = "true") Boolean order) {
 
-        Comparator<AutoPlanVo> comparator = Comparator.comparing(
-                AutoPlanVo::getOrder,
-                Comparator.nullsLast(Comparator.<Integer>naturalOrder()) // 安全处理 null
-        );
-        if (order) {
-            comparator = comparator.reversed();
+        Stream<AutoPlanVo> stream = autoPlanService.find(uid, enable).stream().map(AutoPlanConfig::toVo);
+        if ("JS_API".equals(source)){
+            AutoPlanUidGlobalConfig uidGlobalConfig = uidGlobalService.getById(uid);
+            if (ObjectUtils.isNotEmpty(uidGlobalConfig) && Boolean.FALSE.equals(uidGlobalConfig.getCultivate())) {
+                stream = stream.filter(o -> !Boolean.TRUE.equals(o.getCultivate()));
+            }
         }
 
-        List<AutoPlanVo> list = stream.sorted(comparator).toList();
+        List<AutoPlanVo> list = stream.sorted((
+                a, b
+        ) -> {
+            // 将可能为 null 的 cultivate 安全转化为 boolean，null 视为 false
+            boolean cultivateA = Boolean.TRUE.equals(a.getCultivate());
+            boolean cultivateB = Boolean.TRUE.equals(b.getCultivate());
+            // 比较 cultivate，false < true
+            int cultivateCmp = Boolean.compare(cultivateA, cultivateB);
+            if (cultivateCmp != 0) {
+                return order ? cultivateCmp : -cultivateCmp;
+            }
+            // cultivate 相同，比较 order 字段
+            int orderCmp = Integer.compare(a.getOrder(), b.getOrder());
+            return order ? orderCmp : -orderCmp;
+        }).toList();
+
         return ok(list);
     }
 

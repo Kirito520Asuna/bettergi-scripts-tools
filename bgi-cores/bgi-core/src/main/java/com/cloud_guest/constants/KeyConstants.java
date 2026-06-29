@@ -20,6 +20,7 @@ public interface KeyConstants {
     String bettergi_scripts_list = "BETTERGI_SCRIPTS_LIST:";
     String mapping_uid_key = "MAPPING:UID:";
     String auto_plan_key = "AUTO_PLAN:UID:";
+    String auto_plan_global_key = "AUTO_PLAN:UID:GLOBAL:";
     String auto_plan_key_uid_all = "AUTO_PLAN:UID:ALL";
     String auto_plan_key_boss_all = "AUTO_PLAN_BOSS:ALL";
     String auto_plan_key_domain_all = "AUTO_PLAN_DOMAIN:ALL";

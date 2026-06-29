@@ -41,13 +41,16 @@ public class AutoPlan {
     //@Schema(description = "执行类型(展示用)")
     @JsonProperty("selectedType")
     private String selectedType;
-    @Schema(description = "执行类型(秘境|地脉)")
+    @Schema(description = "执行类型(秘境|地脉|幽境|Boss)")
     @NotBlank
     @JsonProperty("runType")
     private String runType;
     @Schema(description = "是否启用")
     @JsonProperty("enable")
     private Boolean enable = Boolean.TRUE;
+    @Schema(description = "是培养计划")
+    @JsonProperty("cultivate")
+    private Boolean cultivate = Boolean.FALSE;
     @Schema(description = "是否记录执行")
     @JsonProperty("record")
     private Boolean record = Boolean.FALSE;
@@ -72,6 +75,7 @@ public class AutoPlan {
     public AutoPlanConfig toConfig() {
         AutoPlanConfig planConfig = new AutoPlanConfig();
         planConfig.setId(id!=null?Long.parseLong(id):null);
+        planConfig.setCultivate(this.cultivate);
         planConfig.setAutoFight(JSONUtil.toJsonStr(this.autoFight));
         planConfig.setAutoLeyLineOutcrop(JSONUtil.toJsonStr(this.autoLeyLineOutcrop));
         planConfig.setAutoStygianOnslaught(JSONUtil.toJsonStr(this.autoStygianOnslaught));

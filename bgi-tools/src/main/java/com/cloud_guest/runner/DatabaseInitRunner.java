@@ -119,8 +119,16 @@ public class DatabaseInitRunner {
                                         AutoPlanConfig.COL_RECORD, AutoPlanConfig.REMARK_COL_RECORD,
                                         List.of(
                                                 new DbSqlType(SQLite, "INTEGER", "0"),
-                                                new DbSqlType(MySQL, "TINYINT(1)", "NULL"),
-                                                new DbSqlType(PostgreSQL, "BOOLEAN", "NULL")
+                                                new DbSqlType(MySQL, "TINYINT(1)", "1"),
+                                                new DbSqlType(PostgreSQL, "BOOLEAN", "false")
+                                        )
+                                ),
+                                new SqlColumn(
+                                        AutoPlanConfig.COL_CULTIVATE, AutoPlanConfig.REMARK_COL_CULTIVATE,
+                                        List.of(
+                                                new DbSqlType(SQLite, "INTEGER", "0"),
+                                                new DbSqlType(MySQL, "TINYINT(1)", "0"),
+                                                new DbSqlType(PostgreSQL, "BOOLEAN", "false")
                                         )
                                 )
                         )
