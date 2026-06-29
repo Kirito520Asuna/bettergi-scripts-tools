@@ -453,14 +453,14 @@ export class BgiTools {
             "Content-Type": "application/json",
             [token.name]: token.value
         };
-        const {status_code, body:{code,data}} = await http.request(
+        const response = await http.request(
             "POST", http_api
             , JSON.stringify(json), JSON.stringify(header)
         )
-        if (status_code === 200 && code === 200){
+        if (response.status_code === 200 && response.body?.code === 200){
           log.info("上传培养计划成功")
         }else {
-            throw new Error("上传培养计划失败,error:" + data)
+            throw new Error(`上传失败，状态码: ${response.status_code}, 业务码: ${response.body?.code}, 错误信息: ${response.body?.message}`)
         }
     }
 }
