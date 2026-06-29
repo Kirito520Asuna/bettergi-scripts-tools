@@ -1069,6 +1069,7 @@ const enabledCount = computed(() => {
 const totalCount = computed(() => {
   return configs.value.length
 })
+
 </script>
 
 <template>
@@ -1415,7 +1416,7 @@ const totalCount = computed(() => {
                   <el-option
                       v-for="item in leyLineOutcropTypes"
                       :key="item.value"
-                      :label="item.value"
+                      :label="item.name+'-'+item.value"
                       :value="item.name"
                   />
                 </el-select>
