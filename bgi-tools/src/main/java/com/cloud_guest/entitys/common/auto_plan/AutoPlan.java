@@ -40,6 +40,7 @@ public class AutoPlan {
     private String dayName;
     //@Schema(description = "执行类型(展示用)")
     @JsonProperty("selectedType")
+    @Schema(description = "秘境类型(天赋|武器|圣遗物)")
     private String selectedType;
     @Schema(description = "执行类型(秘境|地脉|幽境|Boss)")
     @NotBlank
