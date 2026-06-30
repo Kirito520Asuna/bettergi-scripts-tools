@@ -62,7 +62,7 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
     private String config = "config";
     @Value(value = "${config.backup-path:backup}")
     private String backup;
-
+    private List<String> configExcludeKeys = List.of("server.port", "server.servlet.context-path");
     @Resource
     private ApplicationService applicationService;
     @Resource
@@ -354,6 +354,7 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
                 log.error("读取文件失败：{}", yamlPath, e);
             }
         }
+        jsonObjectConfig = JSONUtils.removeByPathList(jsonObjectConfig, configExcludeKeys);
         backup.put(config, JSONUtil.toJsonStr(jsonObjectConfig));
         return backup;
     }
@@ -361,6 +362,7 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
     @SneakyThrows
     public boolean recoveryConfigV1(Map<String, Object> map) {
         JSONObject bean = JSONUtil.toBean(JSONUtil.toJsonStr(map), JSONObject.class);
+        bean = JSONUtils.removeByPathList(bean, configExcludeKeys);
         applicationService.saveLoadApplicationYml(bean);
         applicationService.loadApplicationYml(null);
         return true;
