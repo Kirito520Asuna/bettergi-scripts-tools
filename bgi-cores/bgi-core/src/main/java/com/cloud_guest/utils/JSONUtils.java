@@ -5,6 +5,8 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -67,6 +69,23 @@ public class JSONUtils {
         return jsonObject;
     }
 
+    /**
+     * 按点分路径移除JSONObject中的键
+     * @param jsonObject
+     * @param pathList
+     * @return
+     */
+    public static JSONObject removeByPathList(JSONObject jsonObject, List<String> pathList) {
+        if (jsonObject == null || pathList == null || pathList.isEmpty()) {
+            return jsonObject;
+        }
+        // 使用 LinkedHashSet 去重并保持顺序
+        List<String> uniquePaths = new ArrayList<>(new LinkedHashSet<>(pathList));
+        for (String path : uniquePaths) {
+             removeByPath(jsonObject, path);
+        }
+        return jsonObject;
+    }
 
     /**
      * 按点分路径移除JSONObject中的键
@@ -85,17 +104,36 @@ public class JSONUtils {
             return jsonObject;
         }
 
+        // 保存路径上的所有 JSONObject，parents[0] 为根，parents[k] 对应 parts[k-1] 的子对象
+        List<JSONObject> parents = new ArrayList<>();
+        parents.add(jsonObject);
         JSONObject current = jsonObject;
         for (int i = 0; i < parts.length - 1; i++) {
             Object obj = current.get(parts[i]);
             if (obj instanceof JSONObject) {
                 current = (JSONObject) obj;
+                parents.add(current);
             } else {
                 return jsonObject;
             }
         }
 
+        // 删除叶子节点
         current.remove(parts[parts.length - 1]);
+
+        // 自底向上清理空对象
+        for (int i = parents.size() - 1; i > 0; i--) {
+            JSONObject child = parents.get(i);
+            if (child.isEmpty()) {
+                // 从上级对象中删除对应的键
+                JSONObject parent = parents.get(i - 1);
+                parent.remove(parts[i - 1]);
+            } else {
+                // 遇到非空对象，停止清理
+                break;
+            }
+        }
+
         return jsonObject;
     }
 
