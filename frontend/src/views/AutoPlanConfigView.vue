@@ -1948,12 +1948,12 @@ const editPlanGlobalInfo = async (show = true) => {
               <span>{{ planUidGlobalInfo.uid }}</span>
             </div>
             <div class="form-group switch">
-              <el-tooltip content="培养/日常计划" placement="top">
+              <el-tooltip content="启用培养计划" placement="top">
                 <el-switch
                     class="switch-common"
                     v-model="planUidGlobalInfo.cultivate"
-                    active-text="培养计划"
-                    inactive-text="日常计划"
+                    active-text="启用培养计划"
+                    inactive-text="关闭培养计划"
                     inline-prompt
                 />
               </el-tooltip>
