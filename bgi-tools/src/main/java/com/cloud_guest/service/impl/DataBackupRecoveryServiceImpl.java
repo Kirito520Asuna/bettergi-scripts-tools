@@ -54,6 +54,8 @@ import java.util.stream.Collectors;
 @Service
 public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, BackupInfo> implements DataBackupRecoveryService {
     @Resource
+    private AutoPlanUidGlobalService autoPlanUidGlobalService;
+    @Resource
     private CacheService cacheService;
 
     private String data = "data";
@@ -290,6 +292,12 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
             autoPlanService.saveOrUpdateBatch((List) list);
         });
 
+        recoveryHandlers.put(autoPlanUidGlobalService.getSuffix(), json -> {
+            List<?> list = JSONUtil.toList(json, autoPlanUidGlobalService.getEntityClass());
+            autoPlanUidGlobalService.remove(Wrappers.lambdaQuery(autoPlanUidGlobalService.getEntityClass())
+                    .ne(AutoPlanUidGlobalConfig::getUid, null));
+            autoPlanUidGlobalService.saveOrUpdateBatch((List) list);
+        });
 
         Consumer<String> dbConsumer = json -> {
             List<DbKV> list = JSONUtil.toList(json, dbKVService.getEntityClass())
