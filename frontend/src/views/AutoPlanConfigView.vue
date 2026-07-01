@@ -477,9 +477,18 @@ const domainMap = computed(() => {
 })
 const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 const changSortConfigs = () => {
-  let compareFn = (a, b) => (a?.order ?? 0) - (b?.order ?? 0);
+   let compareFn = (a, b) => {
+    if (a?.cultivate !== b?.cultivate){
+      return (a?.cultivate ? 1 : 0)-(b?.cultivate ? 1 : 0);
+    }
+    return (a?.order ?? 0) - (b?.order ?? 0)
+  };
   if (orderSortConfigs.value) {
-    compareFn = (a, b) => (b?.order ?? 0) - (a?.order ?? 0);
+    compareFn = (a, b) => {
+      if (a?.cultivate !== b?.cultivate){
+        return (b?.cultivate ? 1 : 0)-(a?.cultivate ? 1 : 0);
+      }
+      return (b?.order ?? 0) - (a?.order ?? 0)};
   }
   configs.value = [...configs.value].sort(compareFn);
 }
@@ -1145,7 +1154,7 @@ const editPlanGlobalInfo = async (show = true) => {
 
         <div class="control-card-sort">
           <el-tooltip
-              :content="orderSortConfigs ? '当前为降序 (大→小)' : '当前为升序 (小→大)'"
+              :content="orderSortConfigs ? '当前为降序 (大→小)|排序:培养->执行顺序' : '当前为升序 (小→大)|排序:日常->执行顺序'"
               placement="top"
           >
             <el-switch
