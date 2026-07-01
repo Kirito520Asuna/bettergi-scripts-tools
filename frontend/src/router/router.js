@@ -178,7 +178,7 @@ const routes = [
     {
         path: '/logs',
         name: 'Logs',
-        component: () => import('@views/LogViewerView.vue'),
+        component: () => import('@views/LogView.vue'),
         meta: {
             // excludeInMenu: true,
             group: '系统',
