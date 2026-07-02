@@ -11,10 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +30,8 @@ public class LogsController {
     @Resource
     private LogsService logsService;
 
-
     @SysLog
+    @Login
     @Operation(summary = "日志文件列表")
     @GetMapping("file-names")
     public Result<Map<String, Object>> fileNames(@RequestParam String applicationId) {
@@ -42,7 +39,7 @@ public class LogsController {
 
         Map<String, Object> result = null;
 
-        if(StrUtil.equals(applicationId, currentApplicationId)){
+        if (StrUtil.equals(applicationId, currentApplicationId)) {
             List<String> list = logsService.getFileNames();
             result = new HashMap<>();
             result.put("applicationId", currentApplicationId);
