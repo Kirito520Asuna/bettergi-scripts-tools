@@ -1,0 +1,276 @@
+/* 全局页面根容器 */
+/*.home {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #0c1018 0%, #141a26 100%);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}*/
+
+/* 日志主容器毛玻璃卡片 */
+.log-viewer {
+    width: 82vw;
+    height: 96vh;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(22, 26, 34, 0.75);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+            0 24px 72px rgba(0, 0, 0, 0.4),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.log-viewer::-webkit-scrollbar {
+    display: none;
+}
+
+/* 渐变标题优化 */
+.title {
+    text-align: center;
+    margin: 4px 0 12px;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: transparent;
+    background: linear-gradient(90deg, #ff7575, #ff4791, #ff9160);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: gradient-flow 6s linear infinite;
+}
+@keyframes gradient-flow {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
+/* 顶部控制面板 */
+.control-panel {
+    padding: 16px 20px;
+    border-radius: 20px;
+    background: rgba(40, 46, 56, 0.6);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.control-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+.control-form.between {
+    justify-content: space-between;
+}
+/* 新增水平居中 */
+.control-form.center {
+    justify-content: center;
+}
+.control-form.right {
+    justify-content: flex-end;
+}
+
+.control-form .el-form-item {
+    margin-bottom: 8px;
+}
+
+/* 日志内容卡片 */
+.log-content {
+    flex: 1;
+    overflow: hidden;
+    border-radius: 20px;
+    padding: 0;
+}
+.log-container {
+    background: #161a22;
+    color: #d4d4d4;
+    border-radius: 12px;
+    font-family: 'Consolas', 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.3);
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+/* 日志表格外层容器 */
+.log-table-wrap {
+    border: 1px solid #333945;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #1e222a;
+    color: #e5eaf3;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 表头固定 */
+.log-table-header {
+    display: grid;
+    grid-template-columns: 140px 90px 340px 1fr;
+    top: 0;
+    z-index: 10;
+    background: #282e38 !important;
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 1px solid #333945;
+}
+
+/* 表格滚动区域 */
+.log-table-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.log-table-body::-webkit-scrollbar {
+    width: 8px !important;
+    display: block !important;
+}
+.log-table-body::-webkit-scrollbar-track {
+    background: #282e38 !important;
+    border-radius: 4px;
+}
+.log-table-body::-webkit-scrollbar-thumb {
+    background: #ff8100 !important;
+    border-radius: 4px;
+}
+.log-table-body::-webkit-scrollbar-thumb:hover {
+    background: #1dfbfb !important;
+}
+
+/* 日志行样式 */
+.log-row {
+    display: grid;
+    grid-template-columns: 140px 90px 340px 1fr;
+    font-size: 13px;
+    border-bottom: 1px solid #2d323c;
+    transition: background-color 0.18s ease;
+}
+.log-row:nth-child(odd) {
+    background-color: #1e222a;
+}
+.log-row:nth-child(even) {
+    background-color: #232730;
+}
+.log-row:hover {
+    background-color: #303642;
+    box-shadow: inset 0 0 0 1px rgba(64, 158, 255, 0.2);
+}
+
+/* 单元格通用 */
+.log-col {
+    padding: 10px 8px;
+    box-sizing: border-box;
+    border-right: 1px solid #333945;
+}
+.log-col:last-child {
+    border-right: none;
+}
+
+/* 各列样式 */
+.time-col-header, .time-col {
+    color: #cccccc;
+}
+.level-col-header, .level-col {
+    text-align: center;
+    font-weight: 500;
+}
+.type-col-header, .type-col {
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    color: #00ffe9;
+}
+.type-col-header {
+    color: #ffffff !important;
+}
+.content-col-header, .content-col {
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-wrap: break-word;
+}
+
+/* 日志级别文字色 */
+.level-dbg { color: #67e8a9; }
+.level-inf { color: #74c0fc; }
+.level-war { color: #ffd479; }
+.level-err { color: #ff7875; }
+
+/* 空数据提示 */
+.empty-tip {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1e1e1e;
+    color: #86909c;
+    font-size: 14px;
+    min-height: 320px;
+}
+
+/* 上传区域 深色适配 */
+.file-upload-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+}
+.file-upload-area {
+    width: 100%;
+    max-width: 420px;
+    padding: 36px 24px;
+    border: 2px dashed #409eff;
+    border-radius: 16px;
+    text-align: center;
+    background-color: #232730;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.file-upload-area:hover {
+    background-color: rgba(64, 158, 255, 0.12);
+    border-color: #74c0fc;
+
+}
+.file-input {
+    display: none;
+}
+.upload-icon {
+    font-size: 2.5rem;
+    color: #409eff;
+    margin-bottom: 12px;
+}
+.upload-text {
+    font-size: 1rem;
+    color: #e5eaf3;
+    margin: 0;
+}
+.file-upload-area:hover .upload-text{
+    color: #74c0fc;
+}
+.file-upload-area:hover .file-info{
+    color: #202122;
+}
+.file-info {
+    font-size: 0.9rem;
+    color: #a0a8b8;
+    margin-top: 12px;
+}
+
+/* 按钮美化 */
+.upload-analysis {
+    margin-left: 12px;
+    padding: 8px 20px;
+    border-radius: 30px;
+}

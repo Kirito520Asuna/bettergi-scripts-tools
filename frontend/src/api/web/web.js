@@ -8,7 +8,7 @@ import router from "@router/router.js";
  * @param {Array} applicationIds - 需要重启的应用程序ID列表
  * @param {number} restartTimeout - 重启超时时间，默认为3分钟（毫秒）
  */
-async function restart(restartClickRef, applicationIds, restartTimeout = 3 * 60 * 1000) {
+export async function restart(restartClickRef, applicationIds, restartTimeout = 3 * 60 * 1000) {
 // 可選：二次確認（看需求加不加）
     await ElMessageBox.confirm('确定要重启系统吗？', '提示', {
         confirmButtonText: '确定',
@@ -99,7 +99,7 @@ async function restart(restartClickRef, applicationIds, restartTimeout = 3 * 60 
  * @param {Number} restartTimeout - 重启超时时间（毫秒），默认为3分钟
  * @returns {Array} 返回系统信息列表
  */
-async function getAllSystemInfo(applicationIds, restartTimeout = 3 * 60 * 1000) {
+export async function getAllSystemInfo(applicationIds, restartTimeout = 3 * 60 * 1000) {
     let systemInfoList = []; // 存储系统信息的列表
     // 如果没有提供applicationIds或applicationIds为空数组，则获取所有应用程序ID
     if ((!applicationIds) || applicationIds?.length === 0) {
@@ -142,7 +142,7 @@ async function getAllSystemInfo(applicationIds, restartTimeout = 3 * 60 * 1000) 
  * 前往主页的异步函数
  * 使用ElMessageBox显示确认对话框，用户确认后跳转到主页
  */
-async function toHomePage(confirm = true) {
+export async function toHomePage(confirm = true) {
     // 使用Element Plus的MessageBox显示确认对话框
     // 包含确认、取消按钮和警告类型图标
     if (confirm) {
@@ -160,7 +160,7 @@ async function toHomePage(confirm = true) {
 /**
  * 返回上一页
  */
-async function goBack(confirm = true) {
+export async function goBack(confirm = true) {
     if (confirm) {
         await ElMessageBox.confirm('确定返回上级目录吗？', '提示', {
             confirmButtonText: '确定',    // 确认按钮文本
@@ -175,7 +175,7 @@ async function goBack(confirm = true) {
  * 设置本地存储的令牌
  * @param {string} token - 需要存储的令牌值
  */
-async function setLocalToken(token) {
+export async function setLocalToken(token) {
     // 如果没有提供token值，则直接返回
     if (!token) {
         return
@@ -190,27 +190,27 @@ async function setLocalToken(token) {
  * 移除本地存储的认证令牌
  * 该函数会根据环境变量或默认名称移除localStorage中的令牌
  */
-async function removeLocalToken() {
+export async function removeLocalToken() {
     const token_name = await getLocalTokenName()// 从环境变量获取令牌名称，如果不存在则使用默认名称'bgi_tools_token'// 从环境变量获取令牌名称，如果不存在则使用默认名称'bgi_tools_token'
     localStorage.removeItem(token_name) // 从localStorage中移除指定名称的令牌
 }
 
-async function removeLocalVersion() {
+export async function removeLocalVersion() {
     const versionName = await getLocalVersionName();
     localStorage.removeItem(versionName)
 }
 
-async function setLocalVersion(version) {
+export async function setLocalVersion(version) {
     const versionName = await getLocalVersionName();
     localStorage.setItem(versionName, version)
 }
 
-async function getLocalVersion() {
+export async function getLocalVersion() {
     const versionName = await getLocalVersionName();
     return localStorage.getItem(versionName)
 }
 
-async function getLocalVersionName() {
+export async function getLocalVersionName() {
     return "bgi-tools-version"
 }
 
@@ -219,7 +219,7 @@ async function getLocalVersionName() {
  * 从localStorage获取本地存储的令牌
  * @returns {string|null} 返回存储的令牌值，如果不存在则返回null
  */
-async function getLocalToken() {
+export async function getLocalToken() {
     const token_name = await getLocalTokenName()// 从环境变量获取令牌名称，如果不存在则使用默认名称'bgi_tools_token'
     return localStorage.getItem(token_name)
 }
@@ -229,21 +229,16 @@ async function getLocalToken() {
  * 该函数会尝试从环境变量中获取令牌名称，如果环境变量不存在，则使用默认名称
  * @returns {Promise<string>} 返回令牌名称的Promise对象
  */
-async function getLocalTokenName() {
+export async function getLocalTokenName() {
     const token_name = import.meta.env.VITE_BASE_TOKEN_NAME || 'bgi_tools_token' // 从环境变量获取令牌名称，如果不存在则使用默认名称'bgi_tools_token'
     return token_name
 }
 
-export {
-    restart,
-    toHomePage,
-    setLocalToken,
-    removeLocalToken,
-    getLocalToken,
-    getLocalTokenName,
-    setLocalVersion,
-    removeLocalVersion,
-    getLocalVersion,
-    getAllSystemInfo,
-    goBack,
+export async function uploadFile(file){
+    return {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        bytes: await file.arrayBuffer()
+    }
 }

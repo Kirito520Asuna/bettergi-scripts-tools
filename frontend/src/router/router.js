@@ -189,6 +189,20 @@ const routes = [
             icon: 'Logs'
         }
     },
+    {
+        path: '/bgi/logs',
+        name: 'BgiLogs',
+        component: () => import('@views/BgiLogView.vue'),
+        meta: {
+            group: '系统',
+            isRoot: true,
+            title: 'BGI日志解析',
+            desc: 'BGI日志解析',
+            asSubParentTitle: 'BGI日志解析',
+            icon: 'Logs',
+            isPublic: true
+        }
+    },
     // 其他路由...
 ]
 const VITE_BASE_PATH = (import.meta.env.VITE_BASE_PATH || '/bgi/ui/');
@@ -204,20 +218,27 @@ router.beforeEach(async (to, from, next) => {
     // if (import.meta.env.VITE_SERVER_PORT) {
     //     return next()
     // }
-    let item = await getLocalToken()
-    if (to.path === '/login') {
-        if (item) {
-            next('/')
-        } else {
-            next()
-        }
-    } else {
-        if (item) {
-            next()
-        } else {
-            next('/login')
-        }
+    let token;
+    try {
+        token = await getLocalToken();
+    } catch {
+        return next('/login');
+    }
 
+    const isAuthenticated = !!token;
+
+
+    // 登录页特殊处理：已登录用户访问登录页自动跳转首页
+    if (to.path === '/login') {
+        return isAuthenticated ? next('/') : next();
+    }
+
+
+    // 已登录 或 目标页面是公开页面 → 放行
+    if (isAuthenticated || to.meta?.isPublic) {
+        next();
+    } else {
+        next('/login');
     }
 })
 
