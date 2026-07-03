@@ -55,12 +55,16 @@ const handleApi = async () => {
       value: hostPrefix + 'auto/plan/json',
     },
     {
-      name: '推送全部配置API',
+      name: '推送秘境常量API',
       value: hostPrefix + 'auto/plan/domain/json/all',
     },
     {
-      name: '推送全部国家配置API',
+      name: '推送国家常量API',
       value: hostPrefix + 'auto/plan/country/json/all',
+    },
+    {
+      name: '推送Boss常量API',
+      value: hostPrefix + 'auto/plan/boss/json/all',
     },
     {
       name: '授权Token',
