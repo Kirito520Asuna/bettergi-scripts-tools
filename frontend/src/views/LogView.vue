@@ -12,6 +12,7 @@
                 placeholder="选择应用实例"
                 style="width: 300px"
                 @change="handleApplicationChange"
+                popper-class="black-select-popper"
             >
               <el-option
                   v-for="app in applicationList"
@@ -29,6 +30,7 @@
                 style="width: 300px"
                 @change="handleFileChange"
                 :disabled="!selectedApplication"
+                popper-class="black-select-popper"
             >
               <el-option
                   v-for="file in fileList"
@@ -41,6 +43,7 @@
 
           <el-form-item label="行数">
             <el-select v-model="displayLines" placeholder="选择行数" style="width: 150px"
+                       popper-class="black-select-popper"
                        @change="handleDisplayLinesChange">
               <el-option
                   v-for="line in [
@@ -60,6 +63,7 @@
 
           <el-form-item label="日志级别">
             <el-select v-model="logLevelFilter" placeholder="全部级别" style="width: 120px" clearable
+                       popper-class="black-select-popper"
                        @change="handleLogLevelFilterChange">
               <el-option
                   v-for="line in [
@@ -113,8 +117,8 @@
       </el-card>
 
       <el-card class="log-content">
-        <template #header>
-          <div class="card-header">
+        <template #header  class="card-log-header">
+          <div class="log-header" >
             <span>日志内容</span>
             <el-tag v-if="currentFileInfo" type="info">
               {{ currentFileInfo.filename }} (共{{ currentFileInfo.totalLines }}行，显示{{ currentFileInfo.sentLines }}行)
@@ -719,154 +723,125 @@ const scrollToBottom = async () => {
 </script>
 
 <style scoped>
-.log-viewer {
-  width: 80vw;
-  height: 96vh;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+@import "@css/log.css";
 
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3),
-  inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-  overflow-y: auto;
-  position: relative;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+/*// 卡片全局深色覆盖*/
+:deep(.el-card) {
+  background: rgba(30, 34, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
-.title {
-  text-align: center;
-  margin-bottom: 10px;
-  font-size: 32px;
-  color: transparent;
-  background: linear-gradient(90deg, #ff6b6b, #ef006a);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-
-.control-panel {
-  flex-shrink: 0;
-  border-radius: 24px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.control-form {
-  margin-bottom: 0;
-}
-
-.log-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: 24px;
-  padding: 10px;
-}
-
-.log-content::-webkit-scrollbar {
-  display: none !important;
-}
-
-.log-container {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background-color: #1e1e1e;
-  border-radius: 4px;
-  flex: 1;
-}
-
-.log-container::-webkit-scrollbar {
-  display: none !important;
-}
-
-.log-text {
-  margin: 0;
+:deep(.el-card__header) {
+  background: transparent;
+  border-bottom: 1px solid #333945;
   color: #d4d4d4;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  height: 100%;
-  overflow-y: auto;
 }
 
-.log-text::-webkit-scrollbar {
-  width: 8px !important;
-  display: block !important;
+
+/* 输入框占位文字也改成白色半透，更协调 */
+.control-form :deep(.el-select__placeholder) {
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
-.log-text::-webkit-scrollbar-track {
-  background: #4e8dbd !important;
-  border-radius: 4px;
+
+/* 1. 表单 label 白色高亮 */
+.control-form :deep(.el-form-item__label) {
+  color: #ffffff !important;
+  font-weight: 500;
 }
 
-.log-text::-webkit-scrollbar-thumb {
-  background: #ff8100 !important;
-  border-radius: 4px;
+/* ========== el-input 普通输入框 ========== */
+.control-form :deep(.el-input__wrapper) {
+  background-color: #232730;
+  box-shadow: none;
 }
 
-.log-text::-webkit-scrollbar-thumb:hover {
-  background: #1dfbfb !important;
-}
-
-.log-text {
-  margin: 0;
-  color: #d4d4d4;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-.log-text :deep(.log-white) {
+.control-form :deep(.el-input__inner) {
   color: #ffffff;
 }
 
-.log-text :deep(.log-cyan) {
-  color: #00bcd4;
+.control-form :deep(.el-input__inner::placeholder) {
+  color: rgba(255, 255, 255, 0.65);
 }
 
-.log-text :deep(.log-green) {
-  color: #4caf50;
+/* 清除按钮 */
+.control-form :deep(.el-input__suffix .el-icon-circle-close) {
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.log-text :deep(.log-blue) {
-  color: #2196f3;
+/* ========== el-input-number 数字输入框 ========== */
+/* ========== el-input-number 数字输入框 完整修复（仅.control-form内生效） ========== */
+.control-form :deep(.el-input-number) {
+  --el-input-bg-color: #232730;
 }
 
-.log-text :deep(.log-yellow) {
-  color: #ffeb3b;
-  font-weight: bold;
+/* 输入框主体背景 */
+.control-form :deep(.el-input-number__inner-wrapper .el-input__wrapper) {
+  background-color: #232730 !important;
+  box-shadow: none;
 }
 
-.log-text :deep(.log-red) {
-  color: #f44336;
+/* 减号按钮 */
+.control-form :deep(.el-input-number__decrease) {
+  background-color: #232730 !important;
+  color: #ffffff !important;
+  border-color: #383c46;
 }
 
-.log-text :deep(.log-magenta) {
-  color: #952ded;
+/* 加号按钮 */
+.control-form :deep(.el-input-number__increase) {
+  background-color: #232730 !important;
+  color: #ffffff !important;
+  border-color: #383c46;
 }
 
-.log-text :deep(.log-thread) {
-  color: #c8fd00;
+/* 按钮hover深色适配 */
+.control-form :deep(.el-input-number__increase:hover,
+.control-form :deep(.el-input-number__decrease:hover)) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-.log-text :deep(.log-trace-id) {
-  color: #d11594;
+/* 输入框内部文字白色 */
+.control-form :deep(.el-input-number__inner-wrapper .el-input__inner) {
+  color: #ffffff;
+}
+
+/* ========== el-select 选择框本体 ========== */
+.control-form :deep(.el-select__wrapper) {
+  background: #232730;
+  /*box-shadow: none;*/
+}
+
+.control-form :deep(.el-select__placeholder, .el-select__selected-item) {
+  color: #ffffff;
+}
+
+.control-form :deep(.el-select__suffix) {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+</style>
+<style>
+.black-select-popper {
+  background-color: #232730 !important;
+  /* 清除默认下拉内边距、圆角、边框阴影，和输入框对齐 */
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+.black-select-popper .el-select-dropdown__item {
+  color: #ffffff;
+  background-color: transparent;
+}
+
+.black-select-popper .el-select-dropdown__item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.black-select-popper .el-select-dropdown__item.selected {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
 }
 </style>

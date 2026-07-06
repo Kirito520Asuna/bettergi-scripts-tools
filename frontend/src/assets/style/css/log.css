@@ -1,0 +1,180 @@
+
+.log-viewer {
+    width: 82vw;
+    height: 96vh;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(22, 26, 34, 0.75);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+            0 24px 72px rgba(0, 0, 0, 0.4),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.log-viewer::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* 顶部控制面板 */
+.control-panel {
+    padding: 16px 20px;
+    border-radius: 20px;
+    background: rgba(40, 46, 56, 0.6);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.control-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+.control-form.between {
+    justify-content: space-between;
+}
+/* 新增水平居中 */
+.control-form.center {
+    justify-content: center;
+}
+.control-form.right {
+    justify-content: flex-end;
+}
+
+.control-form .el-form-item {
+    margin-bottom: 8px;
+}
+
+
+/*.log-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 10px;
+}*/
+.log-content {
+    flex: 1;
+    overflow: hidden;
+    border-radius: 20px;
+    padding: 0;
+}
+.log-content::-webkit-scrollbar {
+    display: none !important;
+}
+
+/*.log-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #1e1e1e;
+  border-radius: 4px;
+  flex: 1;
+}*/
+.log-container {
+    background: #161a22;
+    color: #d4d4d4;
+    border-radius: 12px;
+    font-family: 'Consolas', 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.3);
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+.log-container::-webkit-scrollbar {
+    display: none !important;
+}
+
+.log-text {
+    margin: 0;
+    color: #d4d4d4;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.log-text::-webkit-scrollbar {
+    width: 8px !important;
+    display: block !important;
+}
+
+.log-text::-webkit-scrollbar-track {
+    background: #4e8dbd !important;
+    border-radius: 4px;
+}
+
+.log-text::-webkit-scrollbar-thumb {
+    background: #ff8100 !important;
+    border-radius: 4px;
+}
+
+.log-text::-webkit-scrollbar-thumb:hover {
+    background: #1dfbfb !important;
+}
+
+.log-text {
+    margin: 0;
+    color: #d4d4d4;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.log-text :deep(.log-white) {
+    color: #ffffff;
+}
+
+.log-text :deep(.log-cyan) {
+    color: #00bcd4;
+}
+
+.log-text :deep(.log-green) {
+    color: #4caf50;
+}
+
+.log-text :deep(.log-blue) {
+    color: #2196f3;
+}
+
+.log-text :deep(.log-yellow) {
+    color: #ffeb3b;
+    font-weight: bold;
+}
+
+.log-text :deep(.log-red) {
+    color: #f44336;
+}
+
+.log-text :deep(.log-magenta) {
+    color: #952ded;
+}
+
+.log-text :deep(.log-thread) {
+    color: #c8fd00;
+}
+
+.log-text :deep(.log-trace-id) {
+    color: #d11594;
+}

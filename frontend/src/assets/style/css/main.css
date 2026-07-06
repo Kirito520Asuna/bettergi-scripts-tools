@@ -38,7 +38,23 @@ body::-webkit-scrollbar,
 .home::-webkit-scrollbar {
     display: none;
 }
-
+.main-container{
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(22, 26, 34, 0.75);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+            0 24px 72px rgba(0, 0, 0, 0.4),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
 .container {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -57,6 +73,24 @@ body::-webkit-scrollbar,
     border: 3px solid #6a89cc;
 }
 
+/* 渐变标题优化 */
+.title {
+    text-align: center;
+    margin: 4px 0 12px;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: transparent;
+    background: linear-gradient(90deg, #ff7575, #ff4791, #ff9160);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: gradient-flow 6s linear infinite;
+}
+@keyframes gradient-flow {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
 /*返回主页*/
 /* 固定按钮样式 */
 .fixed-back {

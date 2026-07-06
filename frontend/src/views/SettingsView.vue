@@ -626,7 +626,7 @@ onUnmounted(() => {
 
     <div class="settings">
       <div class="settings-container">
-        <h2 class="settings-title">系统设置</h2>
+        <h2 class="title">系统设置</h2>
         <div class="settings-grid">
 
           <!-- 系统信息卡片 -->

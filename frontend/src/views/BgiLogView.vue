@@ -977,13 +977,6 @@ const goToBack = async () => {
   color: #ffffff;
 }
 
-/* 修复日志表头固定吸附 */
-.log-table-header {
-  position: sticky !important;
-  top: 0;
-  z-index: 10;
-  background: #282e38 !important;
-}
 
 /* 仅 upload-dialog 弹窗的遮罩层改为纯黑半透 */
 .el-overlay:has(.upload-dialog) {
