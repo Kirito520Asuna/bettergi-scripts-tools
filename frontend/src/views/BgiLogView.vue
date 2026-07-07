@@ -254,7 +254,11 @@ async function readLogFile(handle, autoLoad = false, throwError = false) {
     // 每次强制读取磁盘最新文件
     const latestFile = await handle.getFile();
     const bytes = await readFileAsBytes(latestFile);
-    const {fileName, logLines, timestamp} = await BgiLog.analysisBgiLog(latestFile.name, bytes, fileJson.lastTimestamp)
+    let lastTimestamp = fileJson.lastTimestamp
+    if (latestFile.name !== fileJson.fileName) {
+      lastTimestamp = undefined
+    }
+    const {fileName, logLines, timestamp} = await BgiLog.analysisBgiLog(latestFile.name, bytes, lastTimestamp)
     // 新增日志去重逻辑，防止无限叠加
     if (fileName !== fileJson.fileName) {
       // 切换文件，清空历史
@@ -643,7 +647,7 @@ const goToBack = async () => {
 :deep(.upload-dialog.el-dialog) {
   background-color: #1e222a !important;
   border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* 弹窗标题栏背景+文字白色 */
@@ -651,9 +655,11 @@ const goToBack = async () => {
   background-color: transparent;
   padding: 16px 20px 8px;
 }
+
 :deep(.upload-dialog .el-dialog__title) {
   color: #ffffff !important;
 }
+
 /* 关闭叉号变白 */
 :deep(.upload-dialog .el-dialog__headerbtn .el-icon) {
   color: #cccccc;
@@ -677,13 +683,16 @@ const goToBack = async () => {
   background: #232730;
   border: 2px dashed #409eff;
 }
+
 .upload-dialog .loading-view {
   text-align: center;
   padding: 40px 20px;
 }
+
 .upload-dialog .loading-text {
   color: #e5eaf3;
 }
+
 /* 限制上传盒子宽度，自适应弹窗内边距，杜绝横向溢出 */
 .upload-area .file-upload-area {
   width: 100% !important;
@@ -697,6 +706,7 @@ const goToBack = async () => {
   box-sizing: border-box;
   padding: 12px 20px 16px;
 }
+
 /* ========= upload-dialog 弹窗整体内部纯黑 ========= */
 /* 弹窗底部按钮单独深色适配 */
 :deep(.upload-dialog .el-dialog__footer .el-button) {
@@ -710,6 +720,7 @@ const goToBack = async () => {
   border-color: #383c46;
   color: #ffffff;
 }
+
 :deep(.upload-dialog .el-dialog__footer .el-button--default:hover) {
   background-color: rgba(255, 255, 255, 0.1);
   border-color: #409eff;
@@ -721,6 +732,7 @@ const goToBack = async () => {
   border-color: #409eff;
   color: #ffffff;
 }
+
 :deep(.upload-dialog .el-dialog__footer .el-button--primary:hover) {
   background-color: #66b1ff;
   border-color: #66b1ff;
@@ -732,40 +744,48 @@ const goToBack = async () => {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
+
 /* 弹窗头部 */
 :deep(.upload-dialog .el-dialog__header) {
   background-color: #000000;
   padding: 16px 20px 8px;
 }
+
 /* 弹窗标题白色高亮 */
 :deep(.upload-dialog .el-dialog__title) {
   color: #ffffff !important;
 }
+
 /* 关闭按钮白色 */
 :deep(.upload-dialog .el-dialog__headerbtn .el-icon) {
   color: #cccccc;
 }
+
 /* 弹窗主体内容区纯黑 */
 :deep(.upload-dialog .el-dialog__body) {
   background-color: #000000;
   color: #e5eaf3;
   padding: 12px 20px 16px;
 }
+
 /* 弹窗底部按钮栏纯黑 */
 :deep(.upload-dialog .el-dialog__footer) {
   background-color: #000000;
   border-top: 1px solid #333945;
   padding: 12px 20px 16px;
 }
+
 /* 弹窗内上传区域底色同步页面深色 #232730 */
 .upload-dialog .upload-area .file-upload-area {
   background: #232730;
   border: 2px dashed #409eff;
 }
+
 /* 加载文字白色 */
 .upload-dialog .loading-text {
   color: #ffffff;
 }
+
 /*.upload-dialog .load-dialog {
   display: flex;
   flex-direction: column;
