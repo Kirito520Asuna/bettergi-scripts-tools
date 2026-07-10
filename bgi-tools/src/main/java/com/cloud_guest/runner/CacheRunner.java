@@ -1,13 +1,10 @@
 package com.cloud_guest.runner;
 
 import cn.hutool.core.io.FileUtil;
-import jakarta.annotation.PostConstruct;
+import cn.hutool.extra.spring.SpringUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.stereotype.Component;
+import org.springframework.core.env.Environment;
 
-import javax.sql.DataSource;
 import java.io.File;
 
 /**
@@ -16,17 +13,22 @@ import java.io.File;
  * @Description
  */
 @Slf4j
-@Component
-@AutoConfigureBefore(DataSource.class)
-public class CacheRunner {
-    @Value("${local.cache.dir:./cache}")
-    String CACHE_DIR;
-    @PostConstruct
-    public void init() {
+//@Component
+public class CacheRunner   {
+    //@PostConstruct
+    //public void init() {
+    //    createCacheDir();
+    //}
+
+    public static void createCacheDir() {
+        Environment env = SpringUtil.getBean(Environment.class);
+        String CACHE_DIR = env.getProperty("local.cache.dir", "cache");
+        log.info("初始化缓存目录：{}", CACHE_DIR);
         File file = FileUtil.newFile(CACHE_DIR);
         if (!file.exists()){
             file.mkdirs();
             log.info("创建缓存目录：{}",CACHE_DIR);
         }
     }
+
 }

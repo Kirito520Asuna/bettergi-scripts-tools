@@ -176,7 +176,7 @@ spring:
         nodes: ${spring.redis.sentinel.nodes:} # 哨兵节点
 local:
   cache:
-    dir: ./cache
+    dir: cache
     json-file-path: ${local.cache.dir}/bgi-tools.json
 db:
   primary: SQLite
