@@ -1,12 +1,10 @@
 package com.cloud_guest.runner;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.utils.object.ObjectUtils;
-import jakarta.annotation.PreDestroy;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,24 +16,34 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
 /**
- * 开发环境清理器
- * 在应用关闭时自动清理开发环境的缓存、日志和备份目录
- *
  * @Author yan
- * @Date 2026/5/29 15:14:04
+ * @Date 2026/5/11 4:04:04
+ * @Description
  */
 @Slf4j
-@Component
-public class DevelopmentRunner {
+public class RunnerTools {
 
-    @Resource
-    private Environment env;
+    public static void init() {
+        createCacheDir();
+    }
 
-    /**
-     * 应用销毁时清理开发环境临时文件
-     */
-    @PreDestroy
-    public void destroy() {
+    public static void destroy() {
+        cleanDevDir();
+    }
+
+    public static void createCacheDir() {
+        Environment env = SpringUtil.getBean(Environment.class);
+        String CACHE_DIR = env.getProperty("local.cache.dir", "cache");
+        log.info("初始化缓存目录：{}", CACHE_DIR);
+        File file = FileUtil.newFile(CACHE_DIR);
+        if (!file.exists()) {
+            file.mkdirs();
+            log.info("创建缓存目录：{}", CACHE_DIR);
+        }
+    }
+
+    public static void cleanDevDir() {
+        Environment env = SpringUtil.getBean(Environment.class);
         String activeProfile = env.getProperty("spring.profiles.active");
         String prodProfile = "prod";
         //log.info("当前环境：{}", activeProfile);
@@ -43,6 +51,7 @@ public class DevelopmentRunner {
         if (ObjectUtils.equals(activeProfile, prodProfile)) {
             return;
         }
+
         log.info("开发环境，开始清理临时目录...");
 
         // 获取项目根目录（bgi-tools 模块所在目录）
@@ -60,13 +69,14 @@ public class DevelopmentRunner {
         ).forEach(clean -> cleanDirectory(clean.path, clean.name));
     }
 
+
     /**
      * 清理指定目录
      *
      * @param dirPath 目录路径
      * @param dirName 目录名称（用于日志）
      */
-    private void cleanDirectory(String dirPath, String dirName) {
+    public static void cleanDirectory(String dirPath, String dirName) {
         try {
             File dir = new File(dirPath);
             if (!dir.exists()) {
@@ -92,7 +102,9 @@ public class DevelopmentRunner {
                         } catch (Exception ex) {
                             log.warn("无法标记文件为开机删除：{}", file.getFileName());
                         }
+
                     }
+
                     return FileVisitResult.CONTINUE;
                 }
 
@@ -108,6 +120,7 @@ public class DevelopmentRunner {
                         } catch (Exception ex) {
                             log.warn("无法标记目录为开机删除：{}", dir.getFileName());
                         }
+
                     }
                     return FileVisitResult.CONTINUE;
                 }
