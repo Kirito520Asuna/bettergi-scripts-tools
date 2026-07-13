@@ -18,6 +18,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Map;
 
 /**
@@ -83,11 +84,11 @@ public interface AbsSysLog extends AbsAop {
                             .append("\n==>请求IP : {} <==")
                             .append("\n==>请求地址 : {} <==")
                             .append("\n==>请求方式 : {} <==")
-                            .append("\n==>请求参数 : {} <==")
                             .append("\n==>请求类方法 : {}.{} <==")
+                            .append("\n==>请求参数 : {} <==")
                             .append("\n================================================================================")
                             .toString()
-                    , traceId, applicationName, module, title, remoteAddr, url, method, args, declaringTypeName, name);
+                    , traceId, applicationName, module, title, remoteAddr, url, method, declaringTypeName, name, args);
         }
 
         Object around = null;
@@ -102,15 +103,18 @@ public interface AbsSysLog extends AbsAop {
                 String timeFormat = formatDuration(totalMilliseconds);
                 String resultStr = around == null ? "返回值为空" : JSONUtil.toJsonStr(around, JSON_CONFIG);
 
-                log().info("\n====================================响应内容====================================\n" +
-                                "==>TRACE_ID : {} <==\n" +
-                                "==>耗时 : {} <==\n" +
-                                "==>响应 : {} <==\n" +
-                                "================================================================================",
-                        traceId, timeFormat, resultStr);
+                log().info(new StringBuffer()
+                        .append("\n====================================响应内容====================================")
+                        .append("\n==>TRACE_ID : {} <==")
+                        .append("\n==>耗时 : {} <==")
+                        .append("\n==>响应 : {} <==")
+                        .append("\n================================================================================")
+                        .toString()
+                , traceId, timeFormat, resultStr);
             }
         }
     }
+
     /**
      * 将毫秒数转换为时分秒格式
      */
@@ -124,6 +128,7 @@ public interface AbsSysLog extends AbsAop {
 
         return String.format("%02dh %02dm %02ds %03dms", hours, minutes, seconds, millis);
     }
+
     @Override
     default int getOrder() {
         return AopConstants.SysLogOrder;

@@ -4,8 +4,9 @@ import {ElMessage, ElMessageBox} from "element-plus"
 import {getAllUid, saveUid, removeUidList, getUid} from "@api/uid/uid.js"
 import {goBack, toHomePage} from "@api/web/web.js"
 import router from "@router/router.js";
-import { CopyDocument } from '@element-plus/icons-vue'
+import {CopyDocument} from '@element-plus/icons-vue'
 import {CopyToClipboard} from "@utils/local.js";
+
 const currentRoute = ref(router.currentRoute)
 // 表单数据
 const formData = reactive({
@@ -81,7 +82,10 @@ const handleSubmit = async () => {
       type: 'warning'
     })
     // console.log("formData:", JSON.stringify(formData))
-    if (formData.password !== formData.password1) {
+    if (
+        (formData.password || formData.password1) &&
+        formData.password !== formData.password1
+    ) {
       ElMessage.error('密码不一致')
       return
     }
@@ -103,7 +107,7 @@ const handleSubmit = async () => {
     }
   }
 }
-const localCacheDelete=async (ids=[])=>{
+const localCacheDelete = async (ids = []) => {
   for (let id of ids) {
     // ✅ 在本地数组中直接移除，实现实时更新
     const index = tableData.value.findIndex(item => item?.uid === id)
@@ -485,11 +489,13 @@ onMounted(() => {
 .button-text {
   letter-spacing: 1px;
 }
+
 .password-cell {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 .password-text {
   font-family: monospace;
   background: #f5f5f5;
@@ -497,6 +503,7 @@ onMounted(() => {
   border-radius: 4px;
   user-select: all;
 }
+
 @keyframes rotate {
   from {
     transform: rotate(0deg);

@@ -24,31 +24,22 @@ public interface BanManager {
     }
     // 封禁 IP（全局）
     void banIP(String ipAddress, long duration, TimeUnit timeUnit);
-
-    // 检查 IP 是否被全局封禁
-    boolean isIPBanned(String ipAddress);
-
-    // 解除 IP 封禁
-    void unbanIP(String ipAddress);
-
     // 封禁接口
     void banInterface(String interfaceName, long duration, TimeUnit timeUnit);
-
-    // 检查接口是否被封禁
-    boolean isInterfaceBanned(String interfaceName);
-
-    // 解除接口封禁
-    void unbanInterface(String interfaceName);
-
     // 封禁 IP+接口
     void banIPInterface(String ipAddress, String interfaceName, long duration, TimeUnit timeUnit);
-
+    // 检查 IP 是否被全局封禁
+    boolean isIPBanned(String ipAddress);
+    // 检查接口是否被封禁
+    boolean isInterfaceBanned(String interfaceName);
     // 检查 IP+接口是否被封禁
     boolean isIPInterfaceBanned(String ipAddress, String interfaceName);
-
+    // 解除 IP 封禁
+    void unbanIP(String ipAddress);
+    // 解除接口封禁
+    void unbanInterface(String interfaceName);
     // 解除 IP+接口封禁
     void unbanIPInterface(String ipAddress, String interfaceName);
-
     // 检查请求频率并自动封禁
     boolean checkAndBan(String key, long windowSeconds, long maxRequests, long banDuration, TimeUnit timeUnit, BanType banType, String ipAddress, String interfaceName);
 }
