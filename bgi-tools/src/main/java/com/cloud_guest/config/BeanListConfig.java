@@ -4,9 +4,13 @@ import com.cloud_guest.abs.service.AbstractApiSaltService;
 import com.cloud_guest.abs.service.AbstractKeyService;
 import com.cloud_guest.abs.service.SimpleApiSaltService;
 import com.cloud_guest.abs.service.SimpleKeyService;
+import com.cloud_guest.mp.service.AuthUserService;
+import com.cloud_guest.mp.service.impl.SimpleAuthUserService;
+import com.cloud_guest.service.impl.AuthUserServiceImpl;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /**
  * @Author yan
@@ -19,6 +23,10 @@ public class BeanListConfig {
     @ConditionalOnMissingBean(AbstractApiSaltService.class)
     public AbstractApiSaltService apiSaltService() {
         return new SimpleApiSaltService();
+    }
+    @Bean
+    public AuthUserService authUserService() {
+        return new AuthUserServiceImpl();
     }
 
     //@Bean

@@ -25,7 +25,7 @@ public class TraceFilter extends OncePerRequestFilter implements Ordered {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        log.debug("TraceFilter 启动");
+        //log.debug("TraceFilter 启动");
         try {
             // 从请求头获取 traceId，如果不存在则生成新的
             String traceId = request.getHeader(TRACE_ID_HEADER);
@@ -37,7 +37,7 @@ public class TraceFilter extends OncePerRequestFilter implements Ordered {
             // 返回 traceId 给客户端，方便前后端串联
             response.setHeader(TRACE_ID_HEADER, traceId);
 
-            log.debug("TraceFilter 设置 traceId = {}", traceId);
+            //log.debug("TraceFilter 设置 traceId = {}", traceId);
             filterChain.doFilter(request, response);
         } finally {
             // 请求结束必须移除，避免线程池线程复用时 MDC 残留

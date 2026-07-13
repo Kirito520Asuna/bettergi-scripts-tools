@@ -53,7 +53,7 @@ public abstract class BaseEntity extends SearchEntity implements Serializable {
      */
     @Schema(description = "更新者")
     //@TableField(value = "`update_by`", fill = FieldFill.UPDATE)
-    @TableField(value = COL_UPDATE_BY, fill = FieldFill.UPDATE)
+    @TableField(value = COL_UPDATE_BY, fill = FieldFill.INSERT_UPDATE)
     private String updateBy;
 
     /**
