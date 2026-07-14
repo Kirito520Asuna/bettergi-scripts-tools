@@ -28,7 +28,7 @@ public class Seconds3Job extends ConcurrencyJob {
         ApplicationService bean = SpringUtil.getBean(ApplicationService.class);
         bean.loadApplicationYml(4000l);
         ThreadPoolTaskExecutor executor = SpringUtil.getBean(ThreadPoolTaskExecutor.class);
-        CompletableFuture.runAsync(() -> {
+        CompletableFuture.supplyAsync(() -> {
             //上报在线
             ApplicationInfo applicationInfo = ApplicationUtil.getApplicationInfo();
             if (applicationInfo != null) {
@@ -41,7 +41,11 @@ public class Seconds3Job extends ConcurrencyJob {
                 log.debug("检查在线");
                 ApplicationContextHolder.checkAndGetOnline(null);
             }
-        }, executor);
+            return true;
+        }, executor).exceptionally(ex -> {
+            log.error("上报在线异常", ex);
+            return false;
+        });
 
     }
 }

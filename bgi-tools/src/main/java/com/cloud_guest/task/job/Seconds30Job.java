@@ -31,22 +31,28 @@ public class Seconds30Job extends DistributedJob {
         AbstractKeyService keyService = SpringUtil.getBean(AbstractKeyService.class);
         LogsService logsService = SpringUtil.getBean(LogsService.class);
         ThreadPoolTaskExecutor executor = SpringUtil.getBean(ThreadPoolTaskExecutor.class);
-        CompletableFuture.runAsync(() -> {
-            log.debug("清理离线");
-            ApplicationContextHolder.clearOutlineKeys();
-            log.debug("清理重启");
-            ApplicationContextHolder.clearRestartKeys();
+        CompletableFuture.supplyAsync(() -> {
+                    log.debug("清理离线");
+                    ApplicationContextHolder.clearOutlineKeys();
+                    log.debug("清理重启");
+                    ApplicationContextHolder.clearRestartKeys();
 
-            if (ModeUtil.isLocal()){
-                //本地模式，清理过期key redis模式设置了有效期无需管理
-                List<KeyInfo> allExpiredKeyInfoList = keyService.getAllExpiredKeyInfoList();
-                if (ObjectUtils.isNotEmpty(allExpiredKeyInfoList)){
-                    log.debug("清理过期key");
-                    keyService.remove(allExpiredKeyInfoList.stream().map(KeyInfo::getId).toList());
-                }
-            }
+                    if (ModeUtil.isLocal()) {
+                        //本地模式，清理过期key redis模式设置了有效期无需管理
+                        List<KeyInfo> allExpiredKeyInfoList = keyService.getAllExpiredKeyInfoList();
+                        if (ObjectUtils.isNotEmpty(allExpiredKeyInfoList)) {
+                            log.debug("清理过期key");
+                            keyService.remove(allExpiredKeyInfoList.stream().map(KeyInfo::getId).toList());
+                        }
+                    }
 
-            logsService.getAllExpiredLogKeyList().forEach(logsService::remove);
-        }, executor);
+                    logsService.getAllExpiredLogKeyList().forEach(logsService::remove);
+                    return true;
+                }, executor)
+                .exceptionally(ex -> {
+                    log.error("清理异常", ex);
+                    return false;
+                })
+        ;
     }
 }
