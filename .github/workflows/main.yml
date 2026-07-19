@@ -585,6 +585,10 @@ jobs:
           body: |
             **下载地址**
             Github: https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-jar-linux.outputs.tag_name }}
+            Gh-Proxy Github: 
+             -${{ github.event.repository.name }}-Windows.zip ==> https://cdn.gh-proxy.org/github.com/${{ github.repository }}/releases/download/${{ needs.build-jar-linux.outputs.tag_name }}/${{ github.event.repository.name }}-Windows.zip
+             -${{ github.event.repository.name }}.exe ==> https://cdn.gh-proxy.org/github.com/${{ github.repository }}/releases/download/${{ needs.build-jar-linux.outputs.tag_name }}/${{ github.event.repository.name }}.exe
+             -${{ github.event.repository.name }}.jar ==> https://cdn.gh-proxy.org/github.com/${{ github.repository }}/releases/download/${{ needs.build-jar-linux.outputs.tag_name }}/${{ github.event.repository.name }}.jar
             **发布信息**
             - 标签：${{ needs.build-jar-linux.outputs.tag_name }}
             - Java 版本：${{ needs.build-jar-linux.outputs.java_version }}
