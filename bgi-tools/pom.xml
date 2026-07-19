@@ -237,15 +237,15 @@
                         </configuration>
                     </execution>
 
-                    <execution>
+                    <!--<execution>
                         <id>npm-version</id>
                         <goals>
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <arguments>--version</arguments>
+                            <arguments>&#45;&#45;version</arguments>
                         </configuration>
-                    </execution>
+                    </execution>-->
 
 
                     <!-- npm install -->
