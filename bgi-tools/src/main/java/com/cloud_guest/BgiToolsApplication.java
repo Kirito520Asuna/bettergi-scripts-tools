@@ -1,9 +1,6 @@
 package com.cloud_guest;
 
-import com.cloud_guest.runner.RunnerTools;
 import com.cloud_guest.utils.ApplicationContextHolder;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -19,16 +16,5 @@ public class BgiToolsApplication {
 		ConfigurableApplicationContext context = SpringApplication.run(BgiToolsApplication.class, args);
 		// 保存上下文和参数
 		ApplicationContextHolder.setContext(context, args);
-	}
-
-	@PostConstruct
-	public void init() {
-		// 启动时加载
-		RunnerTools.init();
-	}
-	@PreDestroy
-	public void destroy() {
-		// 关闭时清理
-		RunnerTools.destroy();
 	}
 }

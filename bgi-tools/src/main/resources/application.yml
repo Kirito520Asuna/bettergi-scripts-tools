@@ -212,10 +212,15 @@ auth:
     - username: bgi_tools
       password: bgi_tools
 logging:
+  #自定义
+  file-path: ./logs/
+  file-simple-name: bgi-tools
+  file-suffix-name: .log
   #设置日志存储路径
   file:
-    path: ./logs
-    name: ${logging.file.path}/bgi-tools
+    path: ${logging.file-path}
+    name: ${logging.file-path}${logging.file-simple-name}${logging.file-suffix-name}
+
   logback:
     rollingpolicy:
       #单个日志文件最大大小
