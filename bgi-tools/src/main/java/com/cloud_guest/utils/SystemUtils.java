@@ -31,7 +31,7 @@ public class SystemUtils {
      *
      * @return SystemInfoVO
      */
-    public static SystemInfo initSystemInfo() {
+    public static SystemInfo getSystemInfo() {
         SystemInfo vo = new SystemInfo();
 
         Properties props = System.getProperties();
@@ -68,6 +68,11 @@ public class SystemUtils {
 
         return vo;
     }
+
+    public static SystemInfo initSystemInfo() {
+        return getSystemInfo();
+    }
+
     public static SystemInfo updateSystemInfo(SystemInfo systemInfo) {
         systemInfo.setJvmUptimeSeconds((System.currentTimeMillis() - systemInfo.getJvmStartTimeStamp()) / 1000);
         return systemInfo;
@@ -76,8 +81,8 @@ public class SystemUtils {
     /**
      * 打印系统信息到控制台
      */
-    public static void printSystemInfo() {
-        SystemInfo info = initSystemInfo();
+    public static void printSystemInfo(SystemInfo info ) {
+        if (info == null) info = initSystemInfo();
         System.out.println("========== 系统信息 ==========");
         System.out.println("主机名：" + info.getHostName());
         System.out.println("IP 地址：" + info.getIpAddress());

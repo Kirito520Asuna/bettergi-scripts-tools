@@ -23,7 +23,10 @@ async function getSystemInfo(ids="") {
     const {code,data} = await service.get('/jwt/application/sys/info',{params:{ids:ids}})
     return data
 }
-
+export async function getGithubTagLatest() {
+    const {code,data} = await service.get('/jwt/application/github/tag/latest')
+    return data
+}
 export {
     restartService,
     getApplicationIds,

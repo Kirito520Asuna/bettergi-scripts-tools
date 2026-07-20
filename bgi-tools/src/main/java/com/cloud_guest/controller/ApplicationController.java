@@ -1,15 +1,19 @@
 package com.cloud_guest.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.http.Header;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Login;
 import com.cloud_guest.entitys.dto.ApplicationDto;
+import com.cloud_guest.entitys.records.GitHubTag;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.utils.ApplicationContextHolder;
 import com.cloud_guest.utils.ApplicationUtil;
 import com.cloud_guest.entitys.domain.SystemInfo;
+import com.cloud_guest.utils.GitHubUtils;
 import com.github.xiaoymin.knife4j.core.util.StrUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -73,6 +77,15 @@ public class ApplicationController {
             systemInfo = ApplicationUtil.getNewSystemInfo();
         }
         return Result.ok(systemInfo);
+    }
+    @SysLog
+    @Operation(summary = "获取最新更新信息")
+    @GetMapping("github/tag/latest")
+    public Result<GitHubTag> githubLatest(@RequestHeader("User-Agent") String userAgent) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Header.USER_AGENT.getValue(), userAgent);
+        GitHubTag tagInfo = GitHubUtils.getBgiToolsLatestGitHubTagInfo(headers);
+        return Result.ok(tagInfo);
     }
 /*    @Login
     @SysLog

@@ -3,7 +3,7 @@ import {onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {getCurrentUserName, updateUserInfo} from "@api/auth/login.js";
 import {getTokenInfo, updateToken} from "@api/auth/token.js";
-import {getAllSystemInfo, goBack, removeLocalToken, restart, toHomePage} from "@api/web/web.js";
+import {getAllSystemInfo, getLocalVersion, goBack, removeLocalToken, restart, toHomePage} from "@api/web/web.js";
 import {
   backup,
   backupDownload, deleteBatchBackup, deleteBatchBackupLocal,
@@ -12,14 +12,20 @@ import {
   getRemoteBackupPage,
   recovery
 } from "@api/data/BackupRecover.js";
+import {getGithubTagLatest} from "@api/sys/sys.js";
+import { Loading, Right, Download, Document, CopyDocument } from '@element-plus/icons-vue'
+import { computed } from 'vue'
+import {CopyToClipboard} from "@utils/local.js";
 const dialogVisible = reactive(
     {
       upload:false,
       user: false,
       token: false,
       backup: false,
+      tag: false,
     }
 )
+const showCurrentVersionFiles = ref(false)
 const RestartClick = ref(false)
 const info = reactive({
   update: {
@@ -35,6 +41,31 @@ const info = reactive({
   token: {
     tokenName: '',
     tokenValue: ''
+  },
+  tag:{
+    //当前版本
+    currentTag: 'unknown',
+    // 新版本信息
+    newTag: {
+      //版本
+      name: 'unknown',
+      //最新的Docker镜像名称
+      dockerImage: undefined,
+      dockerImagePull: undefined,
+      // proxyApi: "",
+      //文件list下载地址
+      gitHubFileList: [
+        // {
+        //   //文件名称
+        //   name: "",
+        //   proxyApi: "",
+        //   //直接下载地址
+        //   downloadUrl: "",
+        //   //代理下载地址
+        //   proxyDownloadUrl: ""
+        // }
+      ]
+    }
   }
 })
 // 表单验证规则
@@ -582,7 +613,120 @@ const getMemoryColor = (value) => {
   return '#f56c6c'
 }
 
+const checkingUpdate = ref(false)
 
+// 检查更新（占位函数，后续对接后端接口）
+const checkUpdate = async () => {
+  checkingUpdate.value = true
+  try {
+    const tag = await getGithubTagLatest();
+    info.tag.newTag=tag
+    info.tag.newTag.dockerImagePull=`docker pull ${info.tag.newTag.dockerImage}:${info.tag.newTag.name}`
+  } catch (e) {
+    ElMessage.error('检查更新失败')
+  } finally {
+    checkingUpdate.value = false
+  }
+}
+
+
+/**
+ * 解析语义化版本号（忽略构建元数据）
+ * 返回 { major, minor, patch, prerelease } 或 null
+ */
+function parseSemVer(version) {
+  const re = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
+  const match = version.match(re);
+  if (!match) return null;
+  return {
+    major: parseInt(match[1], 10),
+    minor: parseInt(match[2], 10),
+    patch: parseInt(match[3], 10),
+    prerelease: match[4] || null,  // null 表示正式版
+  };
+}
+
+/**
+ * 比较预发布标识符（符合 SemVer 2.0）
+ */
+function comparePrerelease(a, b) {
+  const aParts = a.split('.');
+  const bParts = b.split('.');
+  const len = Math.max(aParts.length, bParts.length);
+  for (let i = 0; i < len; i++) {
+    const ap = aParts[i] || '';
+    const bp = bParts[i] || '';
+    if (ap === bp) continue;
+    const aNum = /^\d+$/.test(ap) ? parseInt(ap, 10) : null;
+    const bNum = /^\d+$/.test(bp) ? parseInt(bp, 10) : null;
+    if (aNum !== null && bNum !== null) return aNum - bNum;
+    if (aNum !== null) return -1;  // 数字 < 字符串
+    if (bNum !== null) return 1;
+    return ap.localeCompare(bp);
+  }
+  return 0;
+}
+
+/**
+ * 比较两个版本号
+ * 返回值：负数(v1 < v2) / 0(相等) / 正数(v1 > v2)
+ */
+function compareVersions(v1, v2) {
+  const p1 = parseSemVer(v1);
+  const p2 = parseSemVer(v2);
+  if (!p1 || !p2) throw new Error(`Invalid version: ${!p1 ? v1 : v2}`);
+
+  for (const key of ['major', 'minor', 'patch']) {
+    if (p1[key] !== p2[key]) return p1[key] - p2[key];
+  }
+
+  // 数字部分相同，比较预发布
+  if (p1.prerelease === null && p2.prerelease === null) return 0;
+  if (p1.prerelease === null) return 1;   // 正式版 > 预发布
+  if (p2.prerelease === null) return -1;  // 预发布 < 正式版
+  return comparePrerelease(p1.prerelease, p2.prerelease);
+}
+
+// 当前版本是否为预发布（测试版）
+const isCurrentPrerelease = computed(() => {
+  const parsed = parseSemVer(info.tag.currentTag);
+  return parsed && parsed.prerelease !== null;
+})
+// 计算：是否已是最新版本（当前版本 === 远程版本）
+const isLatestVersion = computed(() => {
+  //(测试版)currentTag:v0.1.6-aloha.1  (只会加载正式版)newTag.name:v0.1.5
+  // return info.tag.newTag.name !== 'unknown' && info.tag.newTag.name === info.tag.currentTag
+  const remote = info.tag.newTag.name;
+  if (remote === 'unknown') return false;
+  try {
+    return compareVersions(info.tag.currentTag, remote) >= 0;
+  } catch {
+    return false;
+  }
+})
+
+// 计算：是否有可用更新（远程版本存在 且 不等于当前版本）
+const hasUpdateAvailable = computed(() => {
+  return info.tag.newTag.name !== 'unknown' && info.tag.newTag.name !== info.tag.currentTag
+})
+
+// 格式化文件大小（字节 -> KB/MB）
+const formatFileSize = (bytes) => {
+  if (!bytes) return ''
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
+
+// 表格行样式（给更新文件行添加微妙的背景）
+const tableRowClass = ({ rowIndex }) => {
+  return rowIndex % 2 === 0 ? 'row-light' : 'row-dark'
+}
+
+// 打开外部链接
+const openLink = (url) => {
+  window.open(url, '_blank')
+}
 // 在 script 中添加跳转逻辑
 const goToHome = async () => {
   // router.push('/'); // 假设主页路径是 '/'
@@ -596,6 +740,7 @@ onMounted(async () => {
   await loadTokenInfo();
   await loadSystemInfo();
   info.user.username = await getCurrentUserName()
+  info.tag.currentTag = 'v'+await getLocalVersion()
 })
 onUnmounted(() => {
   if (refreshTimer) {
@@ -756,7 +901,16 @@ onUnmounted(() => {
               <span class="edit-hint">点击操作</span>
             </div>
           </div>
-
+          <div class="setting-card" @click="dialogVisible.tag = true">
+            <div class="card-header">
+              <h3 class="card-title">系统版本</h3>
+              <div class="card-icon">🔄</div>
+            </div>
+            <div class="card-summary">
+              <span>当前版本：{{ info.tag.currentTag || 'unknown' }}</span>
+              <span class="edit-hint">检查更新</span>
+            </div>
+          </div>
 
         </div>
       </div>
@@ -810,6 +964,170 @@ onUnmounted(() => {
       </template>
     </el-dialog>
 
+    <el-dialog
+        v-model="dialogVisible.tag"
+        title="系统更新"
+        style="min-width: 500px;max-width: 800px; "
+        :close-on-click-modal="false"
+        @opened="checkUpdate"
+        custom-class="version-dialog"
+        destroy-on-close
+    >
+      <!-- 加载中状态 -->
+      <div v-if="checkingUpdate" class="loading-box">
+        <div class="loading-content">
+          <el-icon class="loading-spin" :size="48">
+            <Loading />
+          </el-icon>
+          <p class="loading-text">正在检查最新版本…</p>
+        </div>
+      </div>
+      <!-- 正常内容 -->
+      <template v-else>
+        <!-- 版本对比卡片（带动画） -->
+        <div class="version-cards">
+          <div class="version-card current">
+            <div class="card-badge">当前</div>
+            <div class="card-version">{{ info.tag.currentTag }}</div>
+            <div class="card-desc">本地运行版本</div>
+          </div>
+          <div class="version-separator">
+            <div class="compare-icon-wrapper">
+              <el-icon :size="28" :color="`${((isLatestVersion&&isCurrentPrerelease)||info.tag.currentTag===info.tag.newTag.name)?'rgba(152,152,152,0.15)':'#409eff'}`"><Right /></el-icon>
+            </div>
+          </div>
+          <div class="version-card latest" :class="{ 'is-latest': isLatestVersion }">
+            <div class="card-badge">
+              <template v-if="isLatestVersion">
+                最新正式版
+              </template>
+              <template v-else>可更新</template>
+            </div>
+            <div class="card-version">
+              {{ info.tag.newTag.name === 'unknown' ? '获取中…' : info.tag.newTag.name }}
+            </div>
+            <div class="card-desc">
+              {{
+                info.tag.newTag.name === 'unknown'
+                    ? '获取中…'
+                    : isLatestVersion
+                        ? (isCurrentPrerelease ? '已是最新测试版' : '已是最新')
+                        : '远程发行版本'
+              }}
+            </div>
+          </div>
+        </div>
+        <!-- 最新 Docker 镜像拉取（单行命令 + 复制） -->
+        <div v-if="info.tag.newTag.dockerImage" class="docker-pull-area">
+          <span class="docker-icon">🐳</span>
+          <span class="docker-label">拉取最新Docker镜像</span>
+          <code class="docker-pull-command">{{ info.tag.newTag.dockerImagePull }}</code>
+          <el-button
+              size="small"
+              type="primary"
+              round
+              class="copy-btn"
+              @click="CopyToClipboard(info.tag.newTag.dockerImagePull)"
+          >
+            <el-icon><CopyDocument /></el-icon> 复制
+          </el-button>
+        </div>
+        <!-- 有新版本时 → 文件列表区 -->
+        <div v-if="hasUpdateAvailable || showCurrentVersionFiles" class="update-file-section">
+          <div class="section-header">
+            <span class="section-icon">📦</span>
+            <span class="section-title">{{ hasUpdateAvailable ? '本次更新文件' : `${info.tag.newTag.name}版本文件` }}</span>
+            <el-tag v-if="hasUpdateAvailable" size="small" round effect="plain" type="warning">
+              {{ info.tag.newTag.gitHubFileList.length }} 个文件
+            </el-tag>
+            <el-button v-else size="small" type="info" round @click="showCurrentVersionFiles = false">
+              收起文件列表
+            </el-button>
+          </div>
+
+          <div class="file-table-wrapper">
+            <el-table
+                :data="info.tag.newTag.gitHubFileList"
+                style="width: 100%"
+                :show-header="false"
+                size="small"
+                :row-class-name="tableRowClass"
+            >
+              <el-table-column width="40">
+                <template #default>
+                  <el-icon color="#e6a23c"><Document /></el-icon>
+                </template>
+              </el-table-column>
+              <el-table-column min-width="200" label="文件名">
+                <template #default="{ row }">
+                  <div class="file-name-row">
+                    <el-tooltip :content="row.name" placement="top" :disabled="!row.name || row.name.length < 20">
+                      <span class="file-name-text">{{ row.name }}</span>
+                    </el-tooltip>
+                    <span v-if="row.size" class="file-size-text">{{ formatFileSize(row.size) }}</span>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column label="下载"  align="center">
+                <template #default="{ row }">
+                  <div class="download-actions">
+                    <!-- 直接下载 -->
+                    <el-button
+                        v-if="row.downloadUrl"
+                        size="small"
+                        round
+                        class="download-btn default-btn"
+                        @click="openLink(row.downloadUrl)"
+                    >
+                      <el-icon><Download /></el-icon>
+                      <span>直接</span>
+                    </el-button>
+
+                    <!-- 代理下载 -->
+                    <el-button
+                        v-if="row.proxyDownloadUrl"
+                        type="primary"
+                        size="small"
+                        round
+                        class="download-btn primary-btn"
+                        @click="openLink(row.proxyDownloadUrl)"
+                    >
+                      <el-icon><Download /></el-icon>
+                      <span>代理</span>
+                    </el-button>
+
+                    <!-- 无任何下载链接 -->
+                    <span v-if="!row.downloadUrl && !row.proxyDownloadUrl" class="no-download">无下载</span>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </div>
+
+        <!-- 已是最新版本时的空状态 -->
+        <div v-else class="latest-tip-box">
+          <div class="latest-check-icon">✅</div>
+          <el-button link type="primary" @click="showCurrentVersionFiles = true">
+            查看最新版本文件列表
+          </el-button>
+          <p class="latest-message">当前已是最新版本</p>
+          <el-button
+              type="primary"
+              round
+              @click="checkUpdate"
+              :loading="checkingUpdate"
+              class="recheck-btn"
+          >
+            重新检查
+          </el-button>
+        </div>
+      </template>
+
+      <template #footer>
+        <el-button round @click="dialogVisible.tag = false">关 闭</el-button>
+      </template>
+    </el-dialog>
     <!-- 备份恢复弹窗 -->
     <el-dialog
         v-model="dialogVisible.backup"
@@ -1009,6 +1327,288 @@ onUnmounted(() => {
 
 <style scoped>
 @import "@css/settings.css";
+
+/* ===============================
+   版本更新弹窗 - 全新美化样式
+   =============================== */
+.version-dialog :deep(.el-dialog__body) {
+  padding: 24px 28px;
+}
+
+/* 加载动画 */
+.loading-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 240px;
+}
+.loading-content {
+  text-align: center;
+}
+.loading-spin {
+  animation: spin 1.2s linear infinite;
+  color: #409eff;
+  margin-bottom: 16px;
+}
+.loading-text {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* 版本对比卡片区 */
+.version-cards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0 24px;
+}
+.version-card {
+  flex: 1;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 18px 12px;
+  text-align: center;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  transition: all 0.3s ease;
+  position: relative;
+  border: 1px solid #e5e7eb;
+}
+.version-card.latest {
+  background: linear-gradient(145deg, #f0fdf4, #e8f5e9);
+  border-color: #a5d6a7;
+}
+.version-card.latest.is-latest {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+.card-badge {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+.card-version {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: 'Fira Code', monospace;
+  color: #111827;
+  margin-bottom: 6px;
+  word-break: break-all;
+}
+.card-desc {
+  font-size: 12px;
+  color: #9ca3af;
+}
+.version-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+.compare-icon-wrapper {
+  background: #eff6ff;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.15);
+}
+
+/* 更新文件区域 */
+.update-file-section {
+  margin-top: 8px;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.section-icon {
+  font-size: 18px;
+}
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+}
+.file-table-wrapper {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.file-name {
+  font-weight: 500;
+  color: #2c3e50;
+}
+.file-size {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-left: 6px;
+}
+
+
+/* 表格行样式 */
+:deep(.row-light) {
+  background-color: #ffffff;
+}
+:deep(.row-dark) {
+  background-color: #f9fafb;
+}
+
+/* 已是最新版本的提示 */
+.latest-tip-box {
+  text-align: center;
+  padding: 20px 0 10px;
+  margin-top: 16px;
+}
+.latest-check-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+.latest-message {
+  font-size: 16px;
+  color: #059669;
+  font-weight: 500;
+  margin: 0 0 20px;
+}
+.recheck-btn {
+  width: 160px;
+}
+
+/* 动画复用 */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ========== 下载按钮美化 ========== */
+.download-actions {
+  display: flex;
+  gap: 0px;
+  justify-content: center;
+  align-items: center;
+}
+
+.download-btn {
+  padding: 2px 6px !important;  /* 让按钮更紧凑 */
+  font-size: 12px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.download-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* 直接下载按钮 - 淡色边框风格 */
+.default-btn {
+  border-color: #dcdfe6;
+  color: #606266;
+  background: #fafbfc;
+}
+.default-btn:hover {
+  background: #ecf5ff;
+  border-color: #c6e2ff;
+  color: #409eff;
+}
+.default-btn .el-icon {
+  color: #409eff;
+}
+
+/* 代理下载按钮 - 渐变主色 */
+.primary-btn {
+  background: linear-gradient(135deg, #409eff, #66b1ff);
+  border: none;
+  color: white;
+}
+.primary-btn:hover {
+  background: linear-gradient(135deg, #66b1ff, #409eff);
+  border: none;
+  color: white;
+  filter: brightness(1.05);
+}
+
+/* 无下载状态 */
+.no-download {
+  color: #c0c4cc;
+  font-size: 12px;
+}
+
+/* 文件名行左右对齐 */
+.file-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.file-name-text {
+  flex: 1;
+  min-width: 0;                 /* 防止弹性溢出 */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: #2c3e50;
+  margin-right: 8px;
+}
+
+.file-size-text {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #909399;
+  background: #f4f4f5;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* ========== 拉取 Docker 最新镜像卡片 ========== */
+.docker-pull-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 0 20px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.08);
+}
+
+.docker-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.docker-pull-command {
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 14px;
+  background: #ffffff;
+  padding: 6px 14px;
+  border-radius: 10px;
+  color: #000000;               /* 指定黑色 */
+  border: 1px solid #bae6fd;
+  word-break: break-all;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.copy-btn {
+  flex-shrink: 0;
+}
 
 .card-summary {
   display: flex;
