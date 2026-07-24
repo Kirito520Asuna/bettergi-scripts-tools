@@ -870,7 +870,8 @@ onUnmounted(() => {
           <div class="setting-card" @click="dialogVisible.user = true">
             <div class="card-header">
               <h3 class="card-title">用户账号设置</h3>
-              <div class="card-icon">👤</div>
+              <div class="card-icon">👤 <el-icon><User /></el-icon></div>
+
             </div>
             <div class="card-summary">
               <span>当前用户：{{ info.user.username || '未设置' }}</span>
@@ -1020,7 +1021,7 @@ onUnmounted(() => {
         <!-- 最新 Docker 镜像拉取（单行命令 + 复制） -->
         <div v-if="info.tag.newTag.dockerImage" class="docker-pull-area">
           <span class="docker-icon">🐳</span>
-          <span class="docker-label">拉取最新Docker镜像</span>
+          <span class="docker-label">Docker 镜像</span>
           <code class="docker-pull-command">{{ info.tag.newTag.dockerImagePull }}</code>
           <el-button
               size="small"
@@ -1033,14 +1034,14 @@ onUnmounted(() => {
           </el-button>
         </div>
         <!-- 有新版本时 → 文件列表区 -->
-        <div v-if="hasUpdateAvailable || showCurrentVersionFiles" class="update-file-section">
+        <div v-if="(isLatestVersion&&!isCurrentPrerelease) || showCurrentVersionFiles" class="update-file-section">
           <div class="section-header">
             <span class="section-icon">📦</span>
-            <span class="section-title">{{ hasUpdateAvailable ? '本次更新文件' : `${info.tag.newTag.name}版本文件` }}</span>
-            <el-tag v-if="hasUpdateAvailable" size="small" round effect="plain" type="warning">
+            <span class="section-title">{{ (info.tag.currentTag===info.tag.newTag.name) ? '本次更新文件' : `${info.tag.newTag.name} 版本文件` }}</span>
+            <el-tag v-if="info.tag.newTag.gitHubFileList.length>0" size="small" round effect="plain" type="warning">
               {{ info.tag.newTag.gitHubFileList.length }} 个文件
             </el-tag>
-            <el-button v-else size="small" type="info" round @click="showCurrentVersionFiles = false">
+            <el-button v-if="!(isLatestVersion&&!isCurrentPrerelease)" size="small" type="info" round @click="showCurrentVersionFiles = false">
               收起文件列表
             </el-button>
           </div>
@@ -1053,12 +1054,12 @@ onUnmounted(() => {
                 size="small"
                 :row-class-name="tableRowClass"
             >
-              <el-table-column width="40">
+              <el-table-column width="20" align="center">
                 <template #default>
                   <el-icon color="#e6a23c"><Document /></el-icon>
                 </template>
               </el-table-column>
-              <el-table-column min-width="200" label="文件名">
+              <el-table-column  label="文件名">
                 <template #default="{ row }">
                   <div class="file-name-row">
                     <el-tooltip :content="row.name" placement="top" :disabled="!row.name || row.name.length < 20">
@@ -1080,7 +1081,7 @@ onUnmounted(() => {
                         @click="openLink(row.downloadUrl)"
                     >
                       <el-icon><Download /></el-icon>
-                      <span>直接</span>
+                      <span>直接下载</span>
                     </el-button>
 
                     <!-- 代理下载 -->
@@ -1093,7 +1094,7 @@ onUnmounted(() => {
                         @click="openLink(row.proxyDownloadUrl)"
                     >
                       <el-icon><Download /></el-icon>
-                      <span>代理</span>
+                      <span>代理下载</span>
                     </el-button>
 
                     <!-- 无任何下载链接 -->
@@ -1109,9 +1110,9 @@ onUnmounted(() => {
         <div v-else class="latest-tip-box">
           <div class="latest-check-icon">✅</div>
           <el-button link type="primary" @click="showCurrentVersionFiles = true">
-            查看最新版本文件列表
+            查看最新正式版文件列表
           </el-button>
-          <p class="latest-message">当前已是最新版本</p>
+          <p class="latest-message">当前已是最新正式版</p>
           <el-button
               type="primary"
               round
@@ -1493,7 +1494,8 @@ onUnmounted(() => {
 .download-actions {
   display: flex;
   gap: 0px;
-  justify-content: center;
+  /*justify-content: center;*/
+  justify-content: flex-end;   /* 改为右对齐 */
   align-items: center;
 }
 
