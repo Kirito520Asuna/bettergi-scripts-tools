@@ -306,6 +306,9 @@ const findDomains = async (confirm = true) => {
       if (autoStygianOnslaught?.bossNum === null) {
         autoStygianOnslaught.bossNum = undefined
       }
+      if (config?.autoBoss && config.autoBoss.timeout == null) { // 仅 null/undefined
+        config.autoBoss.timeout = 240;
+      }
     })
   } catch (error) {
     console.error('请求失败:', error);
@@ -339,7 +342,7 @@ const showResultDrawer = ref(false)
 // 排序状态：false 降序，true 升序
 const orderSortConfigs = ref(true)
 const uid = ref("")
-const defaultConfig={
+const defaultConfig = {
   order: 1,
   // day: undefined,
   days: [],
@@ -484,18 +487,19 @@ const domainMap = computed(() => {
 })
 const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 const changSortConfigs = () => {
-   let compareFn = (a, b) => {
-    if (a?.cultivate !== b?.cultivate){
-      return (a?.cultivate ? 1 : 0)-(b?.cultivate ? 1 : 0);
+  let compareFn = (a, b) => {
+    if (a?.cultivate !== b?.cultivate) {
+      return (a?.cultivate ? 1 : 0) - (b?.cultivate ? 1 : 0);
     }
     return (a?.order ?? 0) - (b?.order ?? 0)
   };
   if (orderSortConfigs.value) {
     compareFn = (a, b) => {
-      if (a?.cultivate !== b?.cultivate){
-        return (b?.cultivate ? 1 : 0)-(a?.cultivate ? 1 : 0);
+      if (a?.cultivate !== b?.cultivate) {
+        return (b?.cultivate ? 1 : 0) - (a?.cultivate ? 1 : 0);
       }
-      return (b?.order ?? 0) - (a?.order ?? 0)};
+      return (b?.order ?? 0) - (a?.order ?? 0)
+    };
   }
   configs.value = [...configs.value].sort(compareFn);
 }
@@ -570,9 +574,10 @@ watchEffect(
           } else {
             config.autoFight.sundaySelectedValue = config.autoFight.sundaySelectedValue || undefined
           }
-        }
-        else if (config.runType===runTypesDefault()[3]){
-          config.autoBoss.timeout ??= 240;
+        } else if (config.runType === runTypesDefault()[3]) {
+          if (config?.autoBoss && config.autoBoss.timeout == null) { // 仅 null/undefined
+            config.autoBoss.timeout = 240;
+          }
         }
         handleSundaySelection(config)
         changShowDaysButton(config);
