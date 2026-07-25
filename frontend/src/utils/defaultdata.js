@@ -4889,7 +4889,7 @@ export const bossListDefault=
             "country": "纳塔"
         },
         {
-            "name": "秘源机兵·统型械",
+            "name": "秘源机兵·统御械",
             "country": "纳塔"
         },
         {

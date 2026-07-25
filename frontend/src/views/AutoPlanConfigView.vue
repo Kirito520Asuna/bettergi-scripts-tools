@@ -337,90 +337,93 @@ const goToBack = async () => {
 }
 const showResultDrawer = ref(false)
 // 排序状态：false 降序，true 升序
-const orderSortConfigs = ref(false)
+const orderSortConfigs = ref(true)
 const uid = ref("")
+const defaultConfig={
+  order: 1,
+  // day: undefined,
+  days: [],
+  runType: runTypesDefault()[0],//先写死 预留地脉类型
+  enable: true,
+  record: false,
+  cultivate: false,
+  dayName: undefined,
+  showDaysSelector: false,   // ← 新增
+  showPhysicalSelector: false,   // ← 新增
+  showDaysButton: true,   // ← 新增
+  // daysName: [],
+  selectedType: undefined, // 新增字段
+  autoFight: {
+    physical: [
+      {order: 0, name: "浓缩树脂", open: true},
+      {order: 1, name: "原粹树脂", open: true},
+      {order: 2, name: "须臾树脂", open: false},
+      {order: 3, name: "脆弱树脂", open: false}
+    ],
+    domainName: undefined,
+    partyName: undefined,
+    sundaySelectedValue: undefined,
+    sundaySelectedDomain: undefined,
+    domainRoundNum: 1
+  },
+  // 新增：地脉专用字段（默认值）
+  autoLeyLineOutcrop: {
+    count: 1,                        // 刷几次（0=自动/无限）
+    country: countryListDefault()[0],                     // 国家地区
+    leyLineOutcropType: leyLineOutcropTypeNamesDefault()[0], // 需映射为经验/摩拉
+    useAdventurerHandbook: false,    // 是否使用冒险之证
+    friendshipTeam: "",              // 好感队伍ID
+    team: "",                        // 主队伍ID
+    timeout: 120,                      // 超时时间（秒）
+    isGoToSynthesizer: false,        // 是否前往合成台
+    useFragileResin: false,          // 使用脆弱树脂
+    useTransientResin: false,        // 使用须臾树脂（须臾=Transient）
+    isNotification: false            // 是否通知
+  },
+  // 新添加幽境
+  autoStygianOnslaught: {
+    physical: [
+      {order: 0, name: "浓缩树脂", open: true, count: 1},
+      {order: 1, name: "原粹树脂", open: true, count: 1},
+      {order: 2, name: "须臾树脂", open: false, count: 1},
+      {order: 3, name: "脆弱树脂", open: false, count: 1}
+    ],
+    specifyResinUse: false,// 是否指定使用
+    bossNum: undefined,
+    fightTeamName: "",
+  },
+  autoBoss: {
+    /** 需要讨伐的 Boss 名称。*/
+    bossName: "",
+    /** UI 中选择的战斗策略名称；当没有自定义策略路径时会同步更新 <see cref="CombatStrategyPath"/>。*/
+    strategyName: "",
+    /** 实际用于解析自动战斗脚本的路径。JS 可直接设置该路径来覆盖 UI 选择。*/
+    combatStrategyPath: "",
+    /** 讨伐前需要切换到的队伍名称；为空时保持当前队伍。*/
+    teamName: "",
+    /** 是否启用“指定讨伐次数”模式；关闭时刷取至原粹树脂耗尽。*/
+    specifyRunCount: true,
+    /** 指定模式下成功领取奖励的目标次数。*/
+    runCount: 1,
+    /** 指定讨伐次数模式下，原粹树脂不足时是否允许使用须臾树脂补充。*/
+    useTransientResin: false,
+    /** 指定讨伐次数模式下，原粹树脂不足时是否允许使用脆弱树脂补充。*/
+    useFragileResin: false,
+    /** 检测到角色死亡后，回神像恢复并重试当前首领讨伐的最大次数。*/
+    reviveRetryCount: 3,
+    /** 每轮领奖后是否先返回七天神像，再重新前往 Boss。*/
+    returnToStatueAfterEachRound: true,
+    /** 是否启用奖励名称识别。默认关闭。*/
+    rewardRecognitionEnabled: false,
+    /** 战斗超时 */
+    timeout: 240,
+  }
+}
 // 新增一条空白配置
 const addConfig = (config = undefined) => {
   let newConfig;
   if (!config) {
-    newConfig = {
-      order: 1,
-      // day: undefined,
-      days: [],
-      runType: runTypesDefault()[0],//先写死 预留地脉类型
-      enable: true,
-      record: false,
-      cultivate: false,
-      dayName: undefined,
-      showDaysSelector: false,   // ← 新增
-      showPhysicalSelector: false,   // ← 新增
-      showDaysButton: true,   // ← 新增
-      // daysName: [],
-      selectedType: undefined, // 新增字段
-      autoFight: {
-        physical: [
-          {order: 0, name: "浓缩树脂", open: true},
-          {order: 1, name: "原粹树脂", open: true},
-          {order: 2, name: "须臾树脂", open: false},
-          {order: 3, name: "脆弱树脂", open: false}
-        ],
-        domainName: undefined,
-        partyName: undefined,
-        sundaySelectedValue: undefined,
-        sundaySelectedDomain: undefined,
-        domainRoundNum: 1
-      },
-      // 新增：地脉专用字段（默认值）
-      autoLeyLineOutcrop: {
-        count: 1,                        // 刷几次（0=自动/无限）
-        country: countryListDefault()[0],                     // 国家地区
-        leyLineOutcropType: leyLineOutcropTypeNamesDefault()[0], // 需映射为经验/摩拉
-        useAdventurerHandbook: false,    // 是否使用冒险之证
-        friendshipTeam: "",              // 好感队伍ID
-        team: "",                        // 主队伍ID
-        timeout: 120,                      // 超时时间（秒）
-        isGoToSynthesizer: false,        // 是否前往合成台
-        useFragileResin: false,          // 使用脆弱树脂
-        useTransientResin: false,        // 使用须臾树脂（须臾=Transient）
-        isNotification: false            // 是否通知
-      },
-      // 新添加幽境
-      autoStygianOnslaught: {
-        physical: [
-          {order: 0, name: "浓缩树脂", open: true, count: 1},
-          {order: 1, name: "原粹树脂", open: true, count: 1},
-          {order: 2, name: "须臾树脂", open: false, count: 1},
-          {order: 3, name: "脆弱树脂", open: false, count: 1}
-        ],
-        specifyResinUse: false,// 是否指定使用
-        bossNum: undefined,
-        fightTeamName: "",
-      },
-      autoBoss: {
-        /** 需要讨伐的 Boss 名称。*/
-        bossName: "",
-        /** UI 中选择的战斗策略名称；当没有自定义策略路径时会同步更新 <see cref="CombatStrategyPath"/>。*/
-        strategyName: "",
-        /** 实际用于解析自动战斗脚本的路径。JS 可直接设置该路径来覆盖 UI 选择。*/
-        combatStrategyPath: "",
-        /** 讨伐前需要切换到的队伍名称；为空时保持当前队伍。*/
-        teamName: "",
-        /** 是否启用“指定讨伐次数”模式；关闭时刷取至原粹树脂耗尽。*/
-        specifyRunCount: true,
-        /** 指定模式下成功领取奖励的目标次数。*/
-        runCount: 1,
-        /** 指定讨伐次数模式下，原粹树脂不足时是否允许使用须臾树脂补充。*/
-        useTransientResin: false,
-        /** 指定讨伐次数模式下，原粹树脂不足时是否允许使用脆弱树脂补充。*/
-        useFragileResin: false,
-        /** 检测到角色死亡后，回神像恢复并重试当前首领讨伐的最大次数。*/
-        reviveRetryCount: 3,
-        /** 每轮领奖后是否先返回七天神像，再重新前往 Boss。*/
-        returnToStatueAfterEachRound: true,
-        /** 是否启用奖励名称识别。默认关闭。*/
-        rewardRecognitionEnabled: false,
-      }
-    };
+    newConfig = {...defaultConfig};
   } else {
     // 深拷贝现有配置
     newConfig = JSON.parse(JSON.stringify(config));
@@ -471,7 +474,7 @@ const removeConfigMultiple = () => {
 }
 const filteredDomainsType = ((selectedType) => {
   if (!selectedType) return [];
-  return domains.value.filter(d => d.type === selectedType);
+  return domains.value.filter(d => d?.type === selectedType);
 });
 // 为每一条配置找到对应的秘境对象（用 Map 优化查找性能）
 const domainMap = computed(() => {
@@ -502,7 +505,7 @@ function getFilteredMaterials(config) {
   if (!config || !config.selectedType) {
     return materialsALL.value || [];
   }
-  return materialsALL.value.filter(e => e.type === config.selectedType);
+  return materialsALL.value.filter(e => e?.type === config.selectedType);
 }
 
 function handleSundaySelection(config) {
@@ -752,6 +755,8 @@ const getFinalConfigsToKey = () => {
       key += (autoBoss.returnToStatueAfterEachRound || "")
       key += "|"
       key += (autoBoss.rewardRecognitionEnabled || "")
+      key += "|"
+      key += (autoBoss.timeout || "240")
     }
     key += ","
   })
@@ -1828,6 +1833,7 @@ const editPlanGlobalInfo = async (show = true) => {
                 <label style="display: block; margin-bottom: 4px; font-weight: 600;">复活重试次数：</label>
                 <el-input-number
                     v-model="currentConfig.autoBoss.reviveRetryCount"
+                    :default-value="3"
                     :min="0"
                     :max="10"
                     style="width: 120px"
@@ -1835,6 +1841,16 @@ const editPlanGlobalInfo = async (show = true) => {
                 <span style="color: red; margin-left: 8px;">
       角色死亡后回神像恢复并重试
     </span>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 600;">战斗超时(秒)：</label>
+                <el-input-number
+                    v-model="currentConfig.autoBoss.timeout"
+                    :default-value="240"
+                    :min="0"
+                    style="width: 120px"
+                />
               </div>
 
               <div class="form-group switch">
