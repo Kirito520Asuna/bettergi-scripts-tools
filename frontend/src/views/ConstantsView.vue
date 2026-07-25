@@ -181,7 +181,7 @@ const constantsCategories = ref([
         icon: '✅',
         async click() {
           const category = currentSelectedCategory.value
-          await category?.method?.submit(cache.value.country.list)
+          await category?.method?.submit(cache.value.boss.list)
         }
       }
     },
@@ -194,7 +194,7 @@ const constantsCategories = ref([
       },
       async getAll() {
         let list = []
-        const defaultBossList = bossListDefault
+        const defaultBossList = [...bossListDefault]
         try {
           const BossList = await getBaseBossListJsonAll()
           list = BossList
