@@ -1,35 +1,25 @@
 ### 版本变更详情
 
 #### ✨ 新功能
-- 系统版本更新检查
-    前端新增“系统版本”卡片，对接 GitHub 最新发行版信息，支持展示版本对比、文件列表（含大小、直接/代理下载）以及 Docker 镜像拉取命令。
-    涉及：ApplicationController.githubLatest、GitHubUtils、GitHubTag 等。
-- 异步任务线程池
-    新增 ThreadPoolTaskExecutorConfig，根据 CPU 核心数动态配置线程池参数，为定时任务（上报在线、清理过期数据）添加异常处理，提升稳定性。
-    涉及：Seconds3Job、Seconds30Job。
-- GitHub API 集成（OkHttp）
-    新增 GitHubUtils 工具类，封装 OkHttp 单例客户端，支持获取仓库最新 Release、Tag 信息以及指定 workflow 的最新运行记录。原有 HttpURLConnection 调用已迁移。
-- MyBatis-Plus 自动填充重构
-    重构实体字段自动填充机制，引入 AutoEntity、AuthUserService，统一管理创建时间、更新时间、创建人、更新人等字段的插入/更新填充。
-    涉及：AbsEntityHandler、UserEntityHandler。
+- 系统版本更新检查：前端新增“系统版本”卡片，对接 GitHub 最新发行版，支持版本对比、文件列表（直接/代理下载）以及 Docker 镜像拉取命令。后端新增 `ApplicationController.githubLatest` 接口，使用 OkHttp 封装的 `GitHubUtils` 获取版本信息。
+- 异步任务线程池：新增 `ThreadPoolTaskExecutorConfig`，根据 CPU 核心数动态配置线程池。定时任务改用 `CompletableFuture.supplyAsync` 并添加异常处理，提升任务执行稳定性。
+- GitHub API 集成（OkHttp）：新增 `GitHubUtils` 工具类，封装 OkHttp 单例客户端，获取仓库最新 Release、Tag 信息及指定 workflow 运行记录，替代原有 HttpURLConnection 调用。
+- 自动战斗配置完善：为秘境、地脉花、幽境危战、首领讨伐等模块新增完整默认配置对象（`defaultConfig`），支持树脂类型选择、自定义队伍、超时设置、好感队伍等。
 
 #### 🐛 修复
-- GitHub Actions 下载链接格式
-    修复发版信息中 Gh-Proxy 下载链接缺失的问题，增加 Windows.zip、exe、jar 的代理下载地址。
-- 前端密码验证逻辑
-    修复密码修改时未充分处理空值导致的“密码不一致”误报，增加 (formData.password || formData.password1) 判断。
-- 开发环境日志文件清理
-    修复因文件占用导致清理失败的问题，在关闭时主动停止日志文件 Appender、强制释放文件句柄并增加延时等待，确保 dev 环境临时目录可正常删除。
-    涉及：RunnerTools.forceReleaseLogFiles。
+- 修复提交首领列表时的错误并防止默认列表引用副作用。
+- 修正自动计划默认排序方向，修复秘境/材料筛选逻辑，补充缺失的首领名称。
+- 修复密码修改时因空值导致的“密码不一致”误报，增加空值判断。
+- 修复 GitHub Actions 发布信息中 Gh-Proxy 下载链接格式缺失的问题，补充 Windows.zip、exe、jar 的代理下载地址。
+- 修复开发环境关闭时因日志文件占用导致清理失败的问题，增加主动释放日志文件句柄和延时等待机制。
+- 修复系统版本文件列表按钮文本显示不正确的问题。
 
 #### 🔧 改进与重构
-- 应用生命周期解耦
-    创建 AbstractApplicationListener 和 StartApplicationListener，将启动初始化与销毁清理逻辑从 BgiToolsApplication 中分离，提高可维护性。
-- 日志系统优化
-    在 application.yml 和 logback-spring.xml 中抽象日志文件路径、名称和后缀变量，方便定制；优化日志输出格式，增加 TraceId 着色显示。
-- 实体处理器配置优化
-    移除 EntityHandler 的硬编码方式，改为基于 ConditionalOnMissingBean 灵活注入；将用户 ID 获取逻辑提取到 AuthUserServiceImpl，便于扩展。
-- 构建与工程杂项
-    为所有 Maven profile（dev/test/prod）统一定义 UTF-8 编码属性。
-    注释掉 npm-version 执行步骤，避免构建干扰。
-    代码格式化与魔法数字消除，提升可读性。
+- 应用生命周期解耦：创建 `AbstractApplicationListener` 和 `StartApplicationListener`，将初始化与销毁逻辑从 `BgiToolsApplication` 中分离，提升可维护性。
+- 日志系统优化：抽象日志路径变量，支持 TraceId 着色显示；开发环境关闭时强制释放文件句柄，确保临时目录正常删除。
+- 实体字段自动填充重构：引入 `AutoEntity`、`AuthUserService` 及 `UserEntityHandler`，统一管理创建/更新时间与创建/更新人的自动填充；`BaseEntity.updateBy` 填充策略调整为 INSERT_UPDATE。
+- 封禁管理器重构：优化 `BanManager` 与 `SimpleBanManager` 的方法顺序，提高可读性。
+- 系统日志切面优化：调整请求参数输出顺序，规范响应日志格式。
+- 前端 UI 与代码优化：用户设置页面增加图标与布局调整；版本文件列表支持展开/收起；优化下载按钮样式、文件名和文件大小格式化；新增语义化版本比较功能。
+- 构建与工程杂项：所有 Maven profile 统一 UTF-8 编码；注释 `npm-version` 执行步骤；`rebel.xml` 加入 `.gitignore`。
+- 工具类整合：将 `CacheRunner` 合并到 `RunnerTools`，统一缓存目录创建和开发环境清理逻辑。
