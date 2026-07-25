@@ -571,6 +571,9 @@ watchEffect(
             config.autoFight.sundaySelectedValue = config.autoFight.sundaySelectedValue || undefined
           }
         }
+        else if (config.runType===runTypesDefault()[3]){
+          config.autoBoss.timeout ??= 240;
+        }
         handleSundaySelection(config)
         changShowDaysButton(config);
       })
