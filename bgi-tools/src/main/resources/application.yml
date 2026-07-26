@@ -2,18 +2,19 @@ api:
   #authorization: Authorization
   authorization: ${auth.token-name}
   common:
-    version: 3.0.0
-    title: SecuityAPI
-    description: SecuityAPI
-    termsOfService:
+    version: v${bgi-tools.version}
+    name: BetterGI 工具集
+    title: ${api.common.name} API文档
+    description: ${api.common.name} 接口文档
+    termsOfService: ${api.common.name} 未经许可不得转载
     license: 未经许可不得转载
-    licenseUrl: xxx.license.com
-    externalDocDesc:
-    externalDocUrl:
+    licenseUrl: xxx.license.com licenseUrl
+    externalDocDesc: externalDocDesc
+    externalDocUrl: externalDocUrl
     contact:
       name: kirito-asuna
-      url:
-      email:
+      url: https://github.com/kirito-asuna
+      email: doutianmianxia@qq.com
 
 springdoc:
   api-docs:
