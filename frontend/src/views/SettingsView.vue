@@ -1033,15 +1033,32 @@ onUnmounted(() => {
             <el-icon><CopyDocument /></el-icon> 复制
           </el-button>
         </div>
+        <div v-if="isLatestVersion&&!showCurrentVersionFiles" class="latest-tip-box">
+          <div class="latest-check-icon">✅</div>
+          <el-button link type="primary" @click="showCurrentVersionFiles = true">
+            查看最新正式版文件列表
+          </el-button>
+          <p class="latest-message">当前已是最新正式版</p>
+          <el-button
+              type="primary"
+              round
+              @click="checkUpdate"
+              :loading="checkingUpdate"
+              class="recheck-btn"
+          >
+            重新检查
+          </el-button>
+        </div>
+
         <!-- 有新版本时 → 文件列表区 -->
-        <div v-if="(isLatestVersion&&!isCurrentPrerelease) || showCurrentVersionFiles" class="update-file-section">
+        <div v-else-if="(isLatestVersion&&!isCurrentPrerelease) || showCurrentVersionFiles" class="update-file-section">
           <div class="section-header">
             <span class="section-icon">📦</span>
             <span class="section-title">{{ (info.tag.currentTag===info.tag.newTag.name) ? '本次更新文件' : `${info.tag.newTag.name} 版本文件` }}</span>
             <el-tag v-if="info.tag.newTag.gitHubFileList.length>0" size="small" round effect="plain" type="warning">
               {{ info.tag.newTag.gitHubFileList.length }} 个文件
             </el-tag>
-            <el-button v-if="!(isLatestVersion&&!isCurrentPrerelease)" size="small" type="info" round @click="showCurrentVersionFiles = false">
+            <el-button v-if="!(isLatestVersion&&!showCurrentVersionFiles)" size="small" type="info" round @click="showCurrentVersionFiles = false">
               收起文件列表
             </el-button>
           </div>
@@ -1106,23 +1123,6 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- 已是最新版本时的空状态 -->
-        <div v-else class="latest-tip-box">
-          <div class="latest-check-icon">✅</div>
-          <el-button link type="primary" @click="showCurrentVersionFiles = true">
-            查看最新正式版文件列表
-          </el-button>
-          <p class="latest-message">当前已是最新正式版</p>
-          <el-button
-              type="primary"
-              round
-              @click="checkUpdate"
-              :loading="checkingUpdate"
-              class="recheck-btn"
-          >
-            重新检查
-          </el-button>
-        </div>
       </template>
 
       <template #footer>
