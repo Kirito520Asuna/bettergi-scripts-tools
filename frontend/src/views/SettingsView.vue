@@ -1033,12 +1033,12 @@ onUnmounted(() => {
             <el-icon><CopyDocument /></el-icon> 复制
           </el-button>
         </div>
-        <div v-if="isLatestVersion&&!showCurrentVersionFiles" class="latest-tip-box">
+        <div v-if="(!showCurrentVersionFiles)" class="latest-tip-box">
           <div class="latest-check-icon">✅</div>
           <el-button link type="primary" @click="showCurrentVersionFiles = true">
             查看最新正式版文件列表
           </el-button>
-          <p class="latest-message">当前已是最新正式版</p>
+          <p  class="latest-message">{{isLatestVersion?('当前已是最新'+(isCurrentPrerelease?'测试版': '正式版')):''}}</p>
           <el-button
               type="primary"
               round
@@ -1051,7 +1051,7 @@ onUnmounted(() => {
         </div>
 
         <!-- 有新版本时 → 文件列表区 -->
-        <div v-else-if="(isLatestVersion&&!isCurrentPrerelease) || showCurrentVersionFiles" class="update-file-section">
+        <div v-else class="update-file-section">
           <div class="section-header">
             <span class="section-icon">📦</span>
             <span class="section-title">{{ (info.tag.currentTag===info.tag.newTag.name) ? '本次更新文件' : `${info.tag.newTag.name} 版本文件` }}</span>
