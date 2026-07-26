@@ -1,0 +1,23 @@
+spring:
+  redis:
+    mode: none
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+    username:
+    password:
+
+db:
+  primary: SQLite
+  SQLite:
+    url: jdbc:sqlite:${local.cache.dir}/bgi-tools.db
+    username:
+    password:
+  MySQL:
+    url: jdbc:mysql://localhost:3306/bgi_tools?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: your_password
+  PgSQL:
+    url: jdbc:postgresql://localhost:5432/bgi_tools
+    username: postgres
+    password: your_password
