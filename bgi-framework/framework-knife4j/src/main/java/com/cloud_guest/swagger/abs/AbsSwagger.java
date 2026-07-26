@@ -8,8 +8,12 @@ import com.cloud_guest.swagger.properties.HeaderProperties;
 import com.cloud_guest.swagger.properties.domain.ApiHeader;
 import com.github.xiaoymin.knife4j.core.util.StrUtil;
 import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -425,9 +429,38 @@ public interface AbsSwagger {
         return parameter;
     }
 
+    default ExternalDocumentation buildExternalDocumentation() {
+        SwaggerConfiguration config = SpringUtil.getBean(SwaggerConfiguration.class);
+        ExternalDocumentation externalDocs = new ExternalDocumentation()
+                .description(defaultIfEmpty(config.getExternalDocDesc()))
+                .description(defaultIfEmpty(config.getExternalDocUrl()));
+        return externalDocs;
+    }
+    default Info buildInfo() {
+        SwaggerConfiguration config = SpringUtil.getBean(SwaggerConfiguration.class);
+        Contact contact = new Contact()
+                .name(defaultIfEmpty(config.getContactName()))
+                .url(defaultIfEmpty(config.getContactUrl()))
+                .email(defaultIfEmpty(config.getContactEmail()));
+
+        License license = new License()
+                .name(defaultIfEmpty(config.getLicense()))
+                .url(defaultIfEmpty(config.getLicenseUrl()));
+
+        Info info = new Info()
+                .title(defaultIfEmpty(config.getTitle()))
+                .description(defaultIfEmpty(config.getDescription()))
+                .version(defaultIfEmpty(config.getVersion()))
+                .contact(contact)
+                .termsOfService(defaultIfEmpty(config.getTermsOfService()))
+                .license(license);
+        return info;
+    }
+
     default OpenAPI buildOpenAPI() {
         String authorization = getAuthorization();
         OpenAPI api = new OpenAPI()
+                .info(buildInfo()).externalDocs(buildExternalDocumentation())
                 .addSecurityItem(new SecurityRequirement().addList(authorization))
                 .components(new Components()
                         .addSecuritySchemes(authorization, new SecurityScheme().name(authorization)
