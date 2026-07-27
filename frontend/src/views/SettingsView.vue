@@ -1067,7 +1067,7 @@ onUnmounted(() => {
             <el-table
                 :data="info.tag.newTag.gitHubFileList"
                 style="width: 100%"
-                :show-header="false"
+                :show-header="true"
                 size="small"
                 :row-class-name="tableRowClass"
             >
@@ -1076,16 +1076,22 @@ onUnmounted(() => {
                   <el-icon color="#e6a23c"><Document /></el-icon>
                 </template>
               </el-table-column>
-              <el-table-column  label="文件名">
+              
+              <el-table-column label="文件名" >
                 <template #default="{ row }">
-                  <div class="file-name-row">
-                    <el-tooltip :content="row.name" placement="top" :disabled="!row.name || row.name.length < 20">
-                      <span class="file-name-text">{{ row.name }}</span>
-                    </el-tooltip>
-                    <span v-if="row.size" class="file-size-text">{{ formatFileSize(row.size) }}</span>
-                  </div>
+                  <el-tooltip :content="row.name" placement="top" :disabled="!row.name || row.name.length < 20">
+                    <span class="file-name-text">{{ row.name }}</span>
+                  </el-tooltip>
                 </template>
               </el-table-column>
+
+              <el-table-column label="文件大小" width="120" align="center">
+                <template #default="{ row }">
+                  <span v-if="row.size" class="file-size-text">{{ formatFileSize(row.size) }}</span>
+                  <span v-else class="file-size-text">-</span>
+                </template>
+              </el-table-column>
+
               <el-table-column label="下载"  align="center">
                 <template #default="{ row }">
                   <div class="download-actions">
