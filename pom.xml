@@ -9,7 +9,7 @@
     <!--    <packaging>pom</packaging>-->
 
     <properties>
-        <project-module.version>v0.1.5</project-module.version>
+        <project-module.version>v0.1.6</project-module.version>
         <revision>${project-module.version}</revision>
 
         <java.version>21</java.version>

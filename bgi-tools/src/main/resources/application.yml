@@ -15,7 +15,6 @@ api:
       name: kirito-asuna
       url: https://github.com/kirito-asuna
       email: doutianmianxia@qq.com
-
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -59,7 +58,6 @@ knife4j:
     enable: ${auth.enabled:false}
     username: ${auth.users[0].username:root}
     password: ${auth.users[0].password:root}
-
 sign:
   api:
     name: ${spring.application.name}
@@ -84,40 +82,32 @@ sign:
     enable-double-symmetric-encryption: false
     encryption-as-name: X-Bgi-Tools-Encryption-Client-Public-Key
     id-as-name: X-Bgi-Tools-Encryption-Id
-
 server:
   port: 8081
   servlet:
     context-path: /bgi
-
   forward-headers-strategy: native # Spring Boot 2.2+ 支持，自动识别 X-Forwarded-* 头
   tomcat:
     remoteip:
       remote-ip-header: X-Forwarded-For
       protocol-header: X-Forwarded-Proto
       port-header: X-Forwarded-Port
-
 spring:
   application:
     name: bgi-tools
-
   servlet:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
-
   config:
     import:
       - optional:file:./application-prod.yml
       - optional:file:/app/application-prod.yml #docker加载异常处理
-
   profiles:
     active: dev
-
   quartz:
     auto-startup: false # 禁止自动启动调度器Delay
     startup-delay: 3s
-
   datasource:
     dynamic:
       primary: ${db.primary:SQLite}
@@ -165,7 +155,6 @@ spring:
     # Redisson 内嵌配置（关键部分）
     redisson:
       file: classpath:redisson/redisson-${spring.redis.mode:none}.yml
-
   data:
     redis:
       mode: ${spring.redis.mode:none} # none:不使用redis，single:使用单体,cluster:使用集群，sentinel:使用哨兵
@@ -186,12 +175,10 @@ spring:
       sentinel:
         master: ${spring.redis.sentinel.master:} # 主节点名称
         nodes: ${spring.redis.sentinel.nodes:} # 哨兵节点
-
 local:
   cache:
     dir: cache
     json-file-path: ${local.cache.dir}/bgi-tools.json
-
 db:
   primary: SQLite
   SQLite:
@@ -206,19 +193,15 @@ db:
     url: jdbc:postgresql://localhost:5432/bgi_tools
     username: postgres
     password: your_password
-
 #需要验证的接口设置token
 check:
   token: #注意：其中一项为空时将不会校验
     name: # token名称 默认为空
     value: # token值 默认为空
-
 bgi-tools:
-  version: 0.1.5
-
+  version: 0.1.6
 config:
   backup-path: backup
-
 #设置默认账号密码
 auth:
   enabled: true
@@ -229,7 +212,6 @@ auth:
   users:
     - username: bgi_tools
       password: bgi_tools
-
 logging:
   #自定义
   file-path: ./logs/
@@ -239,7 +221,6 @@ logging:
   file:
     path: ${logging.file-path}
     name: ${logging.file-path}${logging.file-simple-name}${logging.file-suffix-name}
-
   logback:
     rollingpolicy:
       #单个日志文件最大大小
@@ -259,12 +240,10 @@ logging:
     com.cloud_guest.mapper: off
     com.cloud_guest: debug
     org.springframework.web.servlet.DispatcherServlet: off
-
 management:
   endpoint:
     restart:
       enabled: true
-
 mybatis-plus:
   mapper-locations: classpath:mapper/**/*.xml
   configuration:
