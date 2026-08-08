@@ -280,7 +280,7 @@ const initConfigsId = () => {
       config => {
         if (!config.id) {
           //随机生成唯一id，防止重复
-          config.id = Date.now() + Math.random().toString(36).substr(2, 9);
+          config.id = Date.now() + Math.random().toString(36).substr(2, 8)+"T";
         }
       }
   )
