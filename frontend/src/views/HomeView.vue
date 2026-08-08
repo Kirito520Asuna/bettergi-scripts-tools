@@ -111,6 +111,7 @@ async function loadUi() {
   const list = [
     // {isLink: true, name: 'API 调试链接', value: 'API 调试链接'},
     {isSwagger: true, group: "系统", name: 'Swagger 文档入口', value: 'doc.html'},
+    {isLink: true, group: "系统", name: 'Bgi 仓库', value: 'https://bgi.sh'},
     // {isRote: true, name: '路由管理面板', value: '路由管理面板'},
     {name: '退出登录', group: "系统", value: 'Logout'},
     {name: '重启', group: "系统", value: 'Restart'},
@@ -262,7 +263,7 @@ const togo = async (item) => {
 
     window.open(`${basePath}${item.value}`, '_blank');
   } else if (item?.isLink) {
-    await ElMessageBox.confirm(`确定要访问外链接:${item.value}吗？`, '提示', {
+    await ElMessageBox.confirm(`确定要访问[${item.name}]:${item.value}吗？`, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'

@@ -49,25 +49,52 @@ const handleApi = async () => {
     tokenInfo.value = response.data.value || '';
   }
   let token = (tokenInfo?.name && tokenInfo?.value) ? tokenInfo?.name + "=" + tokenInfo?.value : "未设置,如需请前往设置配置";
+  const autoPlanJsUrl = 'https://bgi.sh/?type=js&path=AutoPlan'
   const list = [
     {
+      name: '体力计划JS',
+      auth_copy: false,
+      value: autoPlanJsUrl,
+      to: {
+        text: '前往bgi仓库订阅',
+        desc: '点击前往bgi仓库订阅体力计划JS',
+        value: autoPlanJsUrl,
+        click: async (value) => {
+          await ElMessageBox.confirm(
+              '确定前往bgi仓库订阅体力计划JS吗？',
+              '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning',
+              }
+          )
+          window.open(value, '_blank');
+        }
+      }
+    },
+    {
       name: '拉取配置API',
+      auth_copy: true,
       value: hostPrefix + 'auto/plan/json',
     },
     {
       name: '推送秘境常量API',
+      auth_copy: true,
       value: hostPrefix + 'auto/plan/domain/json/all',
     },
     {
       name: '推送国家常量API',
+      auth_copy: true,
       value: hostPrefix + 'auto/plan/country/json/all',
     },
     {
       name: '推送Boss常量API',
+      auth_copy: true,
       value: hostPrefix + 'auto/plan/boss/json/all',
     },
     {
       name: '授权Token',
+      auth_copy: true,
       value: token,
       to: {
         text: '前往设置',
@@ -1126,6 +1153,13 @@ const editPlanGlobalInfo = async (show = true) => {
     PlanGlobal.value.showPlanUidGlobalInfo = false
   }
 }
+
+const dialogWidth = computed(() => {
+  if (typeof window !== 'undefined') {
+    return window.innerWidth <= 768 ? '90%' : '680px'
+  }
+  return '680px'
+})
 </script>
 
 <template>
@@ -1166,7 +1200,7 @@ const editPlanGlobalInfo = async (show = true) => {
         <button @click="findDomains" class="btn btn-submit">☁️🔄加载云端配置</button>
         <button @click="removeConfigToBackend" class="btn danger">☁️🗑️移除云端配置</button>
         <button @click="removeConfigAll" class="btn danger">🗑️清除全部</button>
-        <button @click="handleApi" class="btn btn-submit">查看脚本配置API</button>
+        <button @click="handleApi" class="btn btn-submit">查看JS及配置API</button>
         <button @click="editPlanGlobalInfo" class="btn btn-submit">查看全局配置</button>
 
         <div class="control-card-sort">
@@ -1703,7 +1737,7 @@ const editPlanGlobalInfo = async (show = true) => {
         <el-dialog
             v-if="showDialogApi"
             v-model="showDialogApi"
-            width="480px"
+            :width="dialogWidth"
             :close-on-click-modal="false"
             append-to-body
             class="api-config-dialog"
@@ -1713,40 +1747,41 @@ const editPlanGlobalInfo = async (show = true) => {
               <el-icon>
                 <Connection/>
               </el-icon>
-              <span>脚本配置 API</span>
+              <span>JS 及配置 API</span>
             </div>
           </template>
           <div class="api-dialog-content">
-            <div class="api-item" v-for="(item,index) in ApiList" :key="index">
-              <div class="api-item-header">
-                <span class="api-name">{{ item.name }}</span>
-                <el-tag size="small" type="info">API {{ index + 1 }}</el-tag>
-              </div>
-              <div class="api-value-container">
-                <code class="api-value">{{ item.value }}</code>
-                <el-tooltip v-if="item.to" :content="item.to.desc" placement="top">
-                  <el-button
-                      v-if="item.to"
-                      type="primary"
-                      size="small"
-                      icon="DocumentCopy"
-                      @click="item.to.click(item.to.value)"
-                      class="copy-btn"
-                  >
-                    {{ item.to.text }}
-                  </el-button>
-                </el-tooltip>
-                <el-tooltip content="复制到剪贴板" placement="top">
-                  <el-button
-                      type="primary"
-                      size="small"
-                      icon="DocumentCopy"
-                      @click="copyToClipboard(item.value)"
-                      class="copy-btn"
-                  >
-                    复制
-                  </el-button>
-                </el-tooltip>
+            <div class="api-grid">
+              <div class="api-item" v-for="(item,index) in ApiList" :key="index">
+                <div class="api-item-header">
+                  <span class="api-name">{{ item.name }}</span>
+                  <el-tag size="small" type="info" effect="plain">API {{ index + 1 }}</el-tag>
+                </div>
+                <div class="api-value-container">
+                  <code class="api-value">{{ item.value }}</code>
+                </div>
+                <div class="api-actions" v-if="item.to || item.auth_copy">
+                  <el-tooltip v-if="item.to" :content="item.to.desc" placement="top">
+                    <el-button
+                        type="primary"
+                        size="small"
+                        icon="Link"
+                        @click="item.to.click(item.to.value)"
+                    >
+                      {{ item.to.text }}
+                    </el-button>
+                  </el-tooltip>
+                  <el-tooltip v-if="item.auth_copy" content="复制到剪贴板" placement="top">
+                    <el-button
+                        type="success"
+                        size="small"
+                        icon="DocumentCopy"
+                        @click="copyToClipboard(item.value)"
+                    >
+                      复制
+                    </el-button>
+                  </el-tooltip>
+                </div>
               </div>
             </div>
             <div v-if="!ApiList || ApiList.length === 0" class="empty-state">
@@ -2228,88 +2263,80 @@ const editPlanGlobalInfo = async (show = true) => {
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15) !important;
 }
 
-.api-config-dialog {
-  border-radius: 12px;
-}
-
-.dialog-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-}
-
-.dialog-header .el-icon {
-  font-size: 24px;
-  color: var(--el-color-primary);
-}
+/* ... existing code ... */
 
 .api-dialog-content {
-  padding: 8px 0;
+  padding: 4px 0;
+  max-height: calc(90vh - 200px);
+  overflow-y: auto;
+}
+
+.api-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .api-item {
   background: linear-gradient(135deg, var(--el-fill-color-light) 0%, var(--el-fill-color) 100%);
   border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 12px 12px 12px 16px;
   border: 1px solid var(--el-border-color-light);
+  border-left: 3px solid var(--el-color-primary);
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .api-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: var(--el-color-primary-light-7);
-}
-
-.api-item:last-child {
-  margin-bottom: 0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-left-color: var(--el-color-primary-light-3);
 }
 
 .api-item-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .api-name {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--el-text-color-primary);
 }
 
 .api-value-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   background: var(--el-bg-color);
   border-radius: 6px;
-  padding: 12px;
-  border: 1px solid var(--el-border-color);
+  padding: 10px 12px;
+  border: 1px solid var(--el-border-color-extra-light);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  margin-bottom: 10px;
 }
 
 .api-value {
-  flex: 1;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 13px;
+  font-size: 11px;
   color: var(--el-color-primary);
   word-break: break-all;
   line-height: 1.5;
 }
 
-.copy-btn {
-  flex-shrink: 0;
-  min-width: 80px;
+.api-actions {
+  display: flex;
+  gap: 8px;
 }
 
-/*.empty-state {
-  padding: 40px 0;
-  text-align: center;
-}*/
+.api-actions .el-button {
+  flex: 1;
+  min-width: 0;
+}
 
 .dialog-footer {
   display: flex;
@@ -2317,7 +2344,6 @@ const editPlanGlobalInfo = async (show = true) => {
   gap: 12px;
 }
 
-/* 滚动条美化 */
 .api-dialog-content::-webkit-scrollbar {
   width: 6px;
 }
@@ -2343,12 +2369,7 @@ const editPlanGlobalInfo = async (show = true) => {
   align-items: center;
   justify-content: center;
   color: #a0aec0;
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  animation: pulse 2s infinite;
+  padding: 24px 0;
 }
 
 @keyframes pulse {
@@ -2462,10 +2483,6 @@ const editPlanGlobalInfo = async (show = true) => {
   font-size: 13px;
 }
 
-.api-config-dialog {
-  border-radius: 12px;
-}
-
 /* 响应式设计 */
 @media (max-width: 768px) {
   .add-config-placeholder {
@@ -2479,6 +2496,49 @@ const editPlanGlobalInfo = async (show = true) => {
 
   .add-config-placeholder .placeholder-text {
     font-size: 1rem;
+  }
+
+  .api-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .api-item {
+    padding: 12px 12px 12px 14px;
+  }
+
+  .dialog-header {
+    font-size: 16px;
+  }
+
+  .dialog-header .el-icon {
+    font-size: 20px;
+  }
+
+  .api-dialog-content {
+    max-height: calc(95vh - 180px);
+  }
+}
+
+@media (max-width: 480px) {
+  .api-item {
+    padding: 10px 10px 10px 12px;
+  }
+
+  .api-name {
+    font-size: 13px;
+  }
+
+  .api-value {
+    font-size: 11px;
+  }
+
+  .api-actions .el-button {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .api-dialog-content {
+    max-height: calc(95vh - 160px);
   }
 }
 </style>
