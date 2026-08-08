@@ -43,21 +43,59 @@ public class DatabaseInitRunner {
 
     private static final List<DbScript> DB_SCRIPT_LIST = new ArrayList<>();
 
+    /**
+     * 数据库脚本
+     * @param dbType 数据库类型
+     * @param format 列脚本格式
+     * @param formatSize 列脚本格式个数
+     * @param remarkFormat 列注释格式
+     * @param remarkFormatSize 列注释格式个数
+     */
     record SqlFormat(String dbType, String format, int formatSize, String remarkFormat, int remarkFormatSize) {
     }
 
+    /**
+     * 数据库脚本
+     * @param dbType 数据库类型
+     * @param scriptFileName 脚本文件名
+     * @param scriptSqlList 脚本
+     */
     record DbScript(String dbType, String scriptFileName, List<ColumnSql> scriptSqlList) {
     }
 
+    /**
+     * 数据库脚本
+     * @param table 表名
+     * @param column 列名
+     * @param remark 列注释
+     * @param sql 列脚本
+     */
     record ColumnSql(String table, String column, String remark, String sql) {
     }
 
+    /**
+     * 数据库表脚本
+     * @param table 表名
+     * @param columns 列
+     */
     record SqlTable(String table, List<SqlColumn> columns) {
     }
 
+    /**
+     * 数据库表脚本
+     * @param column 列名
+     * @param remark 列注释
+     * @param types 数据库列类型
+     */
     record SqlColumn(String column, String remark, List<DbSqlType> types) {
     }
 
+    /**
+     * 数据库列类型
+     * @param db 数据库类型
+     * @param type 列类型
+     * @param columnDefault 列默认值
+     */
     record DbSqlType(String db, String type, String columnDefault) {
     }
 
