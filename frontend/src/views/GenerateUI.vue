@@ -5,16 +5,45 @@ import {CopyToClipboard} from "@utils/local.js";
 import {preview1RemoteBat, browseDir} from "@api/generate/generate.js";
 import {ElMessage} from "element-plus";
 import {useRoute} from "vue-router";
+import {getGithub1RemoteTags} from "@api/sys/sys.js";
 
 const activeMenuId = ref(0)
 const content = ref('')
 const loadingPreview = ref(false)
 const loadingDownload = ref(false)
 
+
+const loadingCustomButton = ref({
+  prop: undefined,
+  button_key: undefined,
+})
+
+const remoteTags = ref([])
+const loadingTags = ref(false)
+const selectedTag = ref(null)
+
+/** 打开自定义按钮弹窗 */
+const handleCustomButton = async (menuKey) => {
+  loadingCustomButton.value.button_key = menuKey
+  selectedTag.value = null
+  loadingTags.value = true
+  try {
+    remoteTags.value = await getGithub1RemoteTags()
+    if (remoteTags.value.length > 0) selectedTag.value = remoteTags.value[0]
+  } catch (e) {
+    ElMessage.error('获取版本信息失败')
+    remoteTags.value = []
+  } finally {
+    loadingTags.value = false
+  }
+}
+
+
 const list = ref([
   {
     menu_id: 0,
     menu: '生成1Remote Bat',
+    menu_key: '1Remote',
     formTitleList: [
       {
         label: '标题',
@@ -39,7 +68,7 @@ const list = ref([
         label: '起始Ulid',
         isText: true,
         prop: 'startUlid',
-        placeholder: '请输入ULID',
+        placeholder: '请输入ULID 例如:01Jxxxxxxxxxxxxx ',
       },
       {
         label: '等待时间',
@@ -58,12 +87,15 @@ const list = ref([
       title: '自启动本地1Remote远程',
       exeName: '1Remote.exe',
       seconds: 5,
-      startDir: '',
+      startDir: 'D:\\Apps\\1Remote',
       startUlid: '',
       fileName: 'startup.bat',
     },
     Business_Method: {
       async handleDownload(activeItem) {
+        if (!content.value) {
+         await this.handlePreview(activeItem)
+        }
         await activeItem.method.handleDownload(content.value, activeItem.form.fileName)
       },
       async handlePreview(activeItem) {
@@ -143,10 +175,17 @@ const selectFolder = async (prop) => {
 }
 
 const showDialogFolder = ref(false)
+const showUlidHelp = ref(false)
+const showFileNameHelp = ref(false)
 const folderDialogProp = ref('')
 const folderCurrentPath = ref('')
 const folderDirs = ref([])
-
+const folderDefault = {
+  showDialog:false,
+  dialogProp:'',
+  currentPath:'',
+  dirs:[]
+}
 
 /** 加载指定路径下的子目录 */
 const loadDir = async (path) => {
@@ -174,8 +213,24 @@ const folderConfirm = () => {
     ElMessage.warning('请选择一个文件夹')
     return
   }
-  activeItem.value.form[folderDialogProp.value] = folderCurrentPath.value
-  showDialogFolder.value = false
+  try {
+    activeItem.value.form[folderDialogProp.value] = folderCurrentPath.value
+    // showDialogFolder.value = false
+  }finally {
+    showDialogFolder.value = folderDefault.showDialog
+    folderDialogProp.value = folderDefault.dialogProp
+    folderCurrentPath.value = folderDefault.currentPath
+    folderDirs.value = folderDefault.dirs
+  }
+
+}
+
+// 格式化文件大小（字节 -> KB/MB）
+const formatFileSize = (bytes) => {
+  if (!bytes) return ''
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
 const route = useRoute()
@@ -224,6 +279,10 @@ onMounted(async () => {
             <div class="content-header">
               <h3>{{ activeItem?.menu }}</h3>
               <div class="content-actions">
+                  <!--todo:特制化 menu_key=='1Remote' 时加一个按键跳出弹窗, 弹窗加载 获取1Remote所有版本信息 接口 -->
+                <button v-if="activeItem.menu_key === '1Remote'" class="action-btn" @click="handleCustomButton(activeItem.menu_key)">
+                  1Remote 版本
+                </button>
                 <button class="action-btn" @click="handlePreviewMenu" :disabled="loadingPreview">
                   {{ loadingPreview ? '加载中...' : '预览' }}
                 </button>
@@ -240,7 +299,10 @@ onMounted(async () => {
                   v-for="item in activeItem.formTitleList"
                   :key="item.prop"
               >
-                <label class="form-label">{{ item.label }}</label>
+                <label class="form-label">{{ item.label }}
+                  <span v-if="item.prop === 'startUlid'" class="help-icon" @click="showUlidHelp = !showUlidHelp">?</span>
+                  <span v-else-if="item.prop === 'fileName'" class="help-icon" @click="showFileNameHelp = !showFileNameHelp">?</span>
+                </label>
                 <div style="display: flex; gap: 8px; flex: 1;">
                   <input v-if="item.isNumber"
                          class="form-input"
@@ -299,6 +361,84 @@ onMounted(async () => {
       </div>
     </div>
 
+    <div v-if="loadingCustomButton.button_key"
+         class="dialog-overlay" @click.self="loadingCustomButton.button_key = ''">
+      <div class="dialog-box dialog-split">
+        <div class="dialog-header">
+          <span>{{ loadingCustomButton.button_key }} 版本列表</span>
+          <button class="dialog-close" @click="loadingCustomButton.button_key = ''">×</button>
+        </div>
+        <div class="dialog-split-body">
+          <div class="dialog-split-left">
+            <div v-if="loadingTags" class="dir-empty">加载中...</div>
+            <div v-else-if="remoteTags.length === 0" class="dir-empty">暂无版本</div>
+            <div v-else v-for="tag in remoteTags" :key="tag.name"
+                 class="tag-item" :class="{ active: selectedTag?.name === tag.name }"
+                 @click="selectedTag = tag">
+              {{ tag.name }}
+            </div>
+          </div>
+          <div class="dialog-split-right">
+            <div v-if="!selectedTag" class="dir-empty">请选择左侧版本</div>
+            <div v-else-if="!selectedTag.gitHubFileList || selectedTag.gitHubFileList.length === 0" class="dir-empty">该版本无文件</div>
+            <div v-else v-for="file in selectedTag.gitHubFileList" :key="file.name" class="file-item">
+              <div class="file-icon">📦</div>
+              <div class="file-detail">
+                <div class="file-name" :title="file.name">{{ file.name }}</div>
+                <div class="file-actions">
+                  <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                  <button class="file-btn" @click="window.open(file.downloadUrl, '_blank')">直接下载</button>
+                  <button class="file-btn file-btn-proxy" @click="window.open(file.proxyDownloadUrl, '_blank')">代理下载</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <button class="action-btn" @click="loadingCustomButton.button_key = ''">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ULID 帮助弹窗 -->
+    <div v-if="showUlidHelp" class="dialog-overlay" @click.self="showUlidHelp = false">
+      <div class="dialog-box help-dialog">
+        <div class="dialog-header">
+          <span>ULID 获取步骤</span>
+          <button class="dialog-close" @click="showUlidHelp = false">×</button>
+        </div>
+        <div class="dialog-body">
+          <div class="help-steps">
+            <p style="margin:0 0 8px;color:rgba(255,255,255,0.6);font-size:13px;">无需额外操作，直接从已有的 1Remote 快捷方式中提取 ULID 及启动参数：</p>
+            <ol>
+              <li>在 1Remote 会话中创建桌面快捷方式；</li>
+              <li>找到你已创建的 1Remote 快捷方式（桌面或文件夹中）；</li>
+              <li>右键该快捷方式 → 点击「属性」；</li>
+              <li>在弹出的属性窗口中，切换到「快捷方式」选项卡，找到「目标(T)」输入框；</li>
+              <li>「目标」内容格式示例：<code>D:\1Remote\1.2.1\net9\x64\1Remote.exe ULID:01Jxxxxxxxxxxxxx \--start\--minimized</code>；</li>
+              <li>提取「目标」中 <code>ULID:xxx \--start\--minimized</code> 这一段（含 ULID 和最小化参数），复制备用。</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showFileNameHelp" class="dialog-overlay" @click.self="showFileNameHelp = false">
+      <div class="dialog-box help-dialog">
+        <div class="dialog-header">
+          <span>自启动步骤</span>
+          <button class="dialog-close" @click="showFileNameHelp = false">×</button>
+        </div>
+        <div class="dialog-body">
+          <div class="help-steps">
+            <ol>
+              <li>按下快捷键 <kbd>Win</kbd> + <kbd>R</kbd>，在弹出的运行窗口中输入 <code>shell:startup</code>，回车；</li>
+              <li>将 <code>{{ activeItem.form.fileName }}</code> 移动/复制到上一步打开的文件夹中</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="fixed-back">
       <button class="btn secondary" @click="goToBack">返回上一页</button>
@@ -451,6 +591,72 @@ onMounted(async () => {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.7);
   text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(102, 126, 234, 0.3);
+  color: rgba(102, 126, 234, 0.9);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.help-icon:hover {
+  background: rgba(102, 126, 234, 0.5);
+  color: #fff;
+}
+
+
+.help-dialog {
+  width: 520px;
+}
+
+.help-steps {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  line-height: 2;
+}
+
+.help-steps ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.help-steps li {
+  margin-bottom: 8px;
+}
+
+.help-steps kbd {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-family: inherit;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.help-steps code {
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(102, 126, 234, 0.15);
+  color: rgba(130, 150, 255, 0.95);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
 }
 
 .form-input {
@@ -589,6 +795,139 @@ onMounted(async () => {
   padding: 12px 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+.dialog-split {
+  width: 700px;
+  height: 500px;
+  max-height: 80vh;
+}
+
+.dialog-split-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dialog-split-left {
+  width: 220px;
+  min-width: 220px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.dialog-split-right {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 8px 16px;
+}
+
+.tag-item {
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tag-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.tag-item.active {
+  background: rgba(102, 126, 234, 0.2);
+  color: #fff;
+  font-weight: 600;
+  border-right: 2px solid rgba(102, 126, 234, 0.8);
+}
+
+.file-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background 0.2s;
+}
+
+.file-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.file-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.file-detail {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 6px;
+}
+
+.file-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.file-size {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.file-btn {
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.file-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.file-btn-proxy {
+  background: rgba(102, 126, 234, 0.2);
+  color: rgba(102, 126, 234, 0.9);
+}
+
+.file-btn-proxy:hover {
+  background: rgba(102, 126, 234, 0.35);
+  color: #fff;
+}
+
 
 
 @media (max-width: 1024px) {
