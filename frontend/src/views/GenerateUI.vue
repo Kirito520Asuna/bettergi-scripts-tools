@@ -178,7 +178,7 @@ const folderConfirm = () => {
   showDialogFolder.value = false
 }
 
-const route=useRoute()
+const route = useRoute()
 
 /** 复制到剪贴板 */
 const handleCopy = () => {
@@ -312,7 +312,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.title{
+.title {
   flex: 1;
   min-height: 0;
   text-align: center;

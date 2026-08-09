@@ -2,10 +2,9 @@ package com.cloud_guest.controller;
 
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.result.Result;
-import com.cloud_guest.utils.BatGenerator;
+import com.cloud_guest.utils.Generator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -73,7 +72,7 @@ public class GeneratorController {
                                      @RequestParam String exeName,
                                      @RequestParam int seconds
     ) {
-        return Result.ok(BatGenerator.generateStartBatContent(startDir, startUlid, title, exeName, seconds));
+        return Result.ok(Generator.generateStartBatContent(startDir, startUlid, title, exeName, seconds));
     }
 
 }

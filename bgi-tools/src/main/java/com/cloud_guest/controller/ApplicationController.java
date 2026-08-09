@@ -78,6 +78,7 @@ public class ApplicationController {
         }
         return Result.ok(systemInfo);
     }
+
     @SysLog
     @Operation(summary = "获取最新更新信息")
     @GetMapping("github/tag/latest")
@@ -85,6 +86,16 @@ public class ApplicationController {
         Map<String, String> headers = new HashMap<>();
         headers.put(Header.USER_AGENT.getValue(), userAgent);
         GitHubTag tagInfo = GitHubUtils.getBgiToolsLatestGitHubTagInfo(headers);
+        return Result.ok(tagInfo);
+    }
+
+    @SysLog
+    @Operation(summary = "获取1Remote所有版本信息")
+    @GetMapping("github/1Remote/tags")
+    public Result< List<GitHubTag>> github1RemoteTags(@RequestHeader("User-Agent") String userAgent) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Header.USER_AGENT.getValue(), userAgent);
+        List<GitHubTag> tagInfo = GitHubUtils.get1RemoteAllGitHubTagInfo(headers);
         return Result.ok(tagInfo);
     }
 /*    @Login

@@ -208,10 +208,11 @@
 
 
     <!-- 底部导航 -->
+    <div class="fixed-back">
+      <button class="btn secondary" @click="goToBack">返回上一页</button>
+    </div>
     <div class="fixed-footer">
-      <button @click="goToBack" class="btn secondary">返回上一页</button>
-
-      <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
+      <button class="btn secondary" @click="goToHome">🏠 返回主页</button>
     </div>
   </div>
 </template>

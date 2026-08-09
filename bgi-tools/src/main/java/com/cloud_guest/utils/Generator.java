@@ -6,7 +6,7 @@ package com.cloud_guest.utils;
  * @Date 2026/8/9 12:16:07
  * @Description
  */
-public class BatGenerator {
+public class Generator {
 
     /**
      * 生成1Remote自启动bat脚本

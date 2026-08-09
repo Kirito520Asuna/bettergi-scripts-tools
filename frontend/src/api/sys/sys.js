@@ -27,6 +27,10 @@ export async function getGithubTagLatest() {
     const {code,data} = await service.get('/jwt/application/github/tag/latest')
     return data
 }
+export async function getGithub1RemoteTags() {
+    const {code,data} = await service.get('/jwt/application/github/1Remote/tags')
+    return data
+}
 export {
     restartService,
     getApplicationIds,
