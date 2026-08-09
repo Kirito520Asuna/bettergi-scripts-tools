@@ -115,7 +115,7 @@ async function loadUi() {
   const list = [
     // {isLink: true, name: 'API 调试链接', value: 'API 调试链接'},
     {isSwagger: true, group: "系统", name: 'Swagger 文档入口', value: 'doc.html'},
-    {isLink: true, group: "系统", name: 'Bgi 仓库', value: 'https://bgi.sh'},
+    {isLink: true, group: "系统", name: 'BGI 仓库', value: 'https://bgi.sh'},
     // {isRote: true, name: '路由管理面板', value: '路由管理面板'},
     {name: '退出登录', group: "系统", value: 'Logout'},
     {name: '重启', group: "系统", value: 'Restart'},

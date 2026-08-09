@@ -91,7 +91,7 @@ const routes = [
         name: 'AutoPlanDomain',
         component: () => import('@views/AutoPlanDomainView.vue'),
         meta: {
-            group: 'JS扩展功能',
+            group: '配置分析',
             isRoot: true,
             title: '全部秘境',
             desc: '全部秘境',
