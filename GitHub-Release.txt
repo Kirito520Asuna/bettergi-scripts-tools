@@ -1,25 +1,22 @@
 ### 版本变更详情
 
 #### ✨ 新功能
-- 系统版本更新检查：前端新增“系统版本”卡片，对接 GitHub 最新发行版，支持版本对比、文件列表（直接/代理下载）以及 Docker 镜像拉取命令。后端新增 `ApplicationController.githubLatest` 接口，使用 OkHttp 封装的 `GitHubUtils` 获取版本信息。
-- 异步任务线程池：新增 `ThreadPoolTaskExecutorConfig`，根据 CPU 核心数动态配置线程池。定时任务改用 `CompletableFuture.supplyAsync` 并添加异常处理，提升任务执行稳定性。
-- GitHub API 集成（OkHttp）：新增 `GitHubUtils` 工具类，封装 OkHttp 单例客户端，获取仓库最新 Release、Tag 信息及指定 workflow 运行记录，替代原有 HttpURLConnection 调用。
-- 自动战斗配置完善：为秘境、地脉花、幽境危战、首领讨伐等模块新增完整默认配置对象（`defaultConfig`），支持树脂类型选择、自定义队伍、超时设置、好感队伍等。
-
+    - 生成器模块：新增 BAT 脚本生成功能，支持配置 1Remote 自启动脚本参数（标题、目录、ULID、等待时间等），并提供预览、下载和复制内容功能。
+    - 文件名与 ULID 帮助：在生成器界面为 fileName 和 startUlid 字段添加帮助图标，点击可查看自启动步骤说明和 ULID 获取步骤。
+    - 1Remote 版本管理：集成 GitHub 远程标签接口，在生成器页面新增“1Remote 版本”按钮，展示所有版本及文件列表，支持直接下载和代理下载。
+    - API 接口扩展：新增获取 1Remote 所有版本信息接口 /github/1Remote/tags；重构 GitHub 工具类，新增获取 workflows、runs、artifacts 以及所有 Release 信息的方法。
+    - 功能分组过滤：主页功能支持按环境（dev/prod）过滤分组显示，演示 分组仅在开发环境显示。
+    - 体力计划 JS 入口：在自动计划配置界面新增“体力计划 JS”项，提供前往 bgi 仓库订阅的快捷入口，并重构 API 列表为网格布局，优化移动端显示。
+    - 数据库初始化结构：定义数据库脚本相关的记录类（SqlFormat、DbScript、ColumnSql 等），为后续数据库初始化提供标准化数据结构。
+    - 首页快捷入口：系统分组中添加“BGI 仓库”外部链接，方便快速访问 bgi.sh。
 #### 🐛 修复
-- 修复提交首领列表时的错误并防止默认列表引用副作用。
-- 修正自动计划默认排序方向，修复秘境/材料筛选逻辑，补充缺失的首领名称。
-- 修复密码修改时因空值导致的“密码不一致”误报，增加空值判断。
-- 修复 GitHub Actions 发布信息中 Gh-Proxy 下载链接格式缺失的问题，补充 Windows.zip、exe、jar 的代理下载地址。
-- 修复开发环境关闭时因日志文件占用导致清理失败的问题，增加主动释放日志文件句柄和延时等待机制。
-- 修复系统版本文件列表按钮文本显示不正确的问题。
-
+    - 路由分组与名称：修正 AutoPlanDomain 页面的分组名称为“配置分析”，统一 Bgi 仓库 链接的大小写格式为“BGI 仓库”。
+    - 下载空内容问题：修复生成器下载时内容为空导致失败的问题，下载前若内容为空会自动调用预览获取内容。
+    - 配置 ID 重复：将随机 ID 生成算法从 9 位改为 8 位并添加 "T" 后缀，降低配置 ID 重复概率。
 #### 🔧 改进与重构
-- 应用生命周期解耦：创建 `AbstractApplicationListener` 和 `StartApplicationListener`，将初始化与销毁逻辑从 `BgiToolsApplication` 中分离，提升可维护性。
-- 日志系统优化：抽象日志路径变量，支持 TraceId 着色显示；开发环境关闭时强制释放文件句柄，确保临时目录正常删除。
-- 实体字段自动填充重构：引入 `AutoEntity`、`AuthUserService` 及 `UserEntityHandler`，统一管理创建/更新时间与创建/更新人的自动填充；`BaseEntity.updateBy` 填充策略调整为 INSERT_UPDATE。
-- 封禁管理器重构：优化 `BanManager` 与 `SimpleBanManager` 的方法顺序，提高可读性。
-- 系统日志切面优化：调整请求参数输出顺序，规范响应日志格式。
-- 前端 UI 与代码优化：用户设置页面增加图标与布局调整；版本文件列表支持展开/收起；优化下载按钮样式、文件名和文件大小格式化；新增语义化版本比较功能。
-- 构建与工程杂项：所有 Maven profile 统一 UTF-8 编码；注释 `npm-version` 执行步骤；`rebel.xml` 加入 `.gitignore`。
-- 工具类整合：将 `CacheRunner` 合并到 `RunnerTools`，统一缓存目录创建和开发环境清理逻辑。
+    - 生成器界面优化：重构文件夹选择对话框状态管理，使用 try-finally 确保状态正确重置；优化整体布局和响应式设计，适配移动端。
+    - GitHub 工具类重构：将 BatGenerator 重命名为 Generator；分离 GitHub API 请求逻辑，新增多个静态方法以支持 workflow、run、artifact 和全部 release 的查询与下载。
+    - 前端导航优化：在生成器和自动计划页面底部统一添加“返回上一页”和“返回主页”按钮，改善页面间跳转体验。
+    - API 展示界面重构：自动计划配置的 API 弹窗改为网格布局，增加权限控制（auth_copy）隐藏无权限项目的复制按钮，优化空状态提示和滚动条样式。
+    - 环境配置变量：新增 VITE_BASE_ENV 环境变量，用于控制功能分组在不同环境下的可见性。
+    - 代码注释完善：为数据库脚本相关记录类添加详细 JavaDoc 注释；移除未使用的导入和注解，优化代码格式。
