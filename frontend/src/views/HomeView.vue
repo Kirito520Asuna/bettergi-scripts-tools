@@ -103,9 +103,13 @@ const lightColors = [
 ];
 
 async function loadUi() {
-  const order_group_map = new Map([
-    ['JS扩展功能', 3], ['系统', 1],['演示', 4],['配置分析', 2]
+  const order_group_map_json = new Map([
+    ['JS扩展功能', {order:3,env:['prod','dev']}],
+    ['系统', {order:1,env: ['prod','dev']}],
+    ['演示', {order:4,env: ['dev']}],
+    ['配置分析', {order:2,env: ['prod','dev']}]
   ]);
+
   const group_list = new Array();
   let index = 1
   const list = [
@@ -145,8 +149,10 @@ async function loadUi() {
   });
   // console.log('group_list:'+JSON.stringify(group_list))
 
-  const group = [...new Set(group_list.map(item => item?.group).filter(item => item))].sort((a, b) => (order_group_map.get(a) || 999) - (order_group_map.get(b) || 999));
-  group.forEach((groupName) => {
+  const group = [...new Set(group_list.map(item => item?.group).filter(item => item))].sort((a, b) => {
+    return  (order_group_map_json.get(a).order || 999) - (order_group_map_json.get(b).order || 999)
+  });
+  group.filter(o => order_group_map_json.get(o).env.includes(import.meta.env.VITE_BASE_ENV)).forEach((groupName) => {
     let groupJson = {
       title: groupName,
       children: []
