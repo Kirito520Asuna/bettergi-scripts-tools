@@ -79,9 +79,9 @@ const routes = [
         meta: {
             group: 'JS扩展功能',
             isRoot: true,
-            title: '自动体力计划配置',
-            desc: '自动体力计划配置',
-            asSubParentTitle: '自动体力计划配置',
+            title: '自动体力计划',
+            desc: '自动体力计划',
+            asSubParentTitle: '自动体力计划',
             icon: 'Domain'
         },
     }
@@ -110,7 +110,7 @@ const routes = [
             // }
         ],
         meta: {
-            group: 'JS扩展功能',
+            group: '配置分析',
             isRoot: true,
             title: '语法配置',
             desc: '语法配置',
@@ -128,7 +128,7 @@ const routes = [
             // }
         ],
         meta: {
-            group: 'JS扩展功能',
+            group: '配置分析',
             isRoot: true,
             title: '常量配置',
             desc: '常量配置',
@@ -194,12 +194,26 @@ const routes = [
         name: 'BgiLogs',
         component: () => import('@views/BgiLogView.vue'),
         meta: {
-            group: '系统',
+            group: '配置分析',
             isRoot: true,
             title: 'BGI日志解析',
             desc: 'BGI日志解析',
             asSubParentTitle: 'BGI日志解析',
             icon: 'Logs',
+            isPublic: true
+        }
+    },
+    {
+        path: '/Generate',
+        name: 'Generate',
+        component: () => import('@views/GenerateUI.vue'),
+        meta: {
+            group: '配置分析',
+            isRoot: true,
+            title: '生成器',
+            desc: '生成器',
+            asSubParentTitle: '生成器',
+            icon: 'Generate',
             isPublic: true
         }
     },

@@ -104,7 +104,7 @@ const lightColors = [
 
 async function loadUi() {
   const order_group_map = new Map([
-    ['JS扩展功能', 2], ['系统', 1],['演示', 3]
+    ['JS扩展功能', 3], ['系统', 1],['演示', 4],['配置分析', 2]
   ]);
   const group_list = new Array();
   let index = 1
