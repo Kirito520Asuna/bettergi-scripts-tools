@@ -72,7 +72,7 @@ public class GeneratorController {
                                      @RequestParam String exeName,
                                      @RequestParam int seconds
     ) {
-        return Result.ok(Generator.generateStartBatContent(startDir, startUlid, title, exeName, seconds));
+        return Result.ok(Generator.generateStartBatContent(title,startDir, exeName, startUlid,  seconds));
     }
 
 }
