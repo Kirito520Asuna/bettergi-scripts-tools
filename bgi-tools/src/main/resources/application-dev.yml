@@ -24,3 +24,11 @@ db:
 
 bgi-tools:
   version: 0.1.5-alpha.5
+
+sign:
+  api:
+    name: ${spring.application.name}
+    ip-whitelist: #ip白名单
+      - 127.0.0.1
+      - localhost
+    ip-blacklist: #ip黑名单

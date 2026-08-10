@@ -1,4 +1,5 @@
 import service from "@utils/request.js";
+import {ApiService} from "@utils/ApiRequest.js";
 
 async function restartService(ids = []) {
     const re = await service.post('/jwt/application/restart', {
@@ -28,7 +29,7 @@ export async function getGithubTagLatest() {
     return data
 }
 export async function getGithub1RemoteTags() {
-    const {code,data} = await service.get('/jwt/application/github/1Remote/tags')
+    const {code,data} = await ApiService.get('/api/application/github/1Remote/tags')
     return data
 }
 export {
