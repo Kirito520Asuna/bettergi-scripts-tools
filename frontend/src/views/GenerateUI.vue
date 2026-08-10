@@ -63,7 +63,7 @@ const list = ref([
           desc: '',
           body: [
             {
-              content: `请选择<code>1Remote.exe</code>文件`,
+              content: `请选择<code style="color: #4e61b2;">1Remote.exe</code>文件`,
               replaces:[]
             },
             {
@@ -817,6 +817,27 @@ onMounted(async () => {
 }
 
 .help-steps code {
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(102, 126, 234, 0.15);
+  color: rgba(130, 150, 255, 0.95);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+}
+
+.help-steps :deep(kbd) {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-family: inherit;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.help-steps :deep(code) {
   padding: 2px 7px;
   border-radius: 4px;
   background: rgba(102, 126, 234, 0.15);
