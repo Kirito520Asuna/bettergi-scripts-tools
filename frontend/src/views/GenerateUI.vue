@@ -38,7 +38,6 @@ const handleCustomButton = async (menuKey) => {
   }
 }
 
-
 const list = ref([
   {
     menu_id: 0,
@@ -52,11 +51,27 @@ const list = ref([
         placeholder: '例如: 自启动本地1Remote远程', // 通过映射加入占位符
       },
       {
-        label: '起始目录',
+        label: '目录',
         prop: 'startDir',
         isText: true,
         isDir: true,
+        selectFile: true,
+        accept:'.exe',/*'.exe,.bat,.cmd,.lnk'*/
         placeholder: '例如: D:\\Apps\\1Remote', // 通过映射加入占位符
+        help: {
+          title: '1Remote目录',
+          desc: '',
+          body: [
+            {
+              content: `请选择<code>1Remote.exe</code>文件`,
+              replaces:[]
+            },
+            {
+              content: `当环境不支持获取完整路径时，请手动输入目录`,
+              replaces:[]
+            }
+          ]
+        },
       },
       {
         label: '执行文件',
@@ -65,10 +80,45 @@ const list = ref([
         placeholder: '例如: 1Remote.exe', // 通过映射加入占位符
       },
       {
-        label: '起始Ulid',
+        label: 'ULID',
         isText: true,
         prop: 'startUlid',
         placeholder: '请输入ULID 例如:01Jxxxxxxxxxxxxx ',
+        help: {
+          title: 'ULID 获取步骤',
+          desc: '无需额外操作，直接从已有的 1Remote 快捷方式中提取 ULID 及启动参数：',
+          body: [
+            {
+              content: `在 1Remote 会话中创建桌面快捷方式；`,
+              replaces:[
+              ]
+            },
+            {
+              content: `找到你已创建的 1Remote 快捷方式（桌面或文件夹中）；`,
+              replaces:[
+              ]
+            },
+            {
+              content: `右键该快捷方式 → 点击「属性」；`,
+              replaces:[
+              ]
+            },
+            {
+              content: `在弹出的属性窗口中，切换到「快捷方式」选项卡，找到「目标(T)」输入框；`,
+              replaces:[
+              ]
+            },
+            {
+              content: `「目标」内容格式示例：<code>D:\\1Remote\\1.2.1\\net9\\x64\\1Remote.exe ULID:01Jxxxxxxxxxxxxx \\--start\\--minimized</code>；`,
+              replaces:[
+              ]
+            },
+            {
+              content: `提取「目标」中 <code>ULID:xxx \\--start\\--minimized</code> 这一段（含 ULID 和最小化参数），复制备用。`,
+              replaces:[]
+            },
+          ]
+        },
       },
       {
         label: '等待时间',
@@ -77,10 +127,27 @@ const list = ref([
         placeholder: '请输入等待时间',
       },
       {
-        label: '文件名Bat',
+        label: '文件名(.bat)',
         isText: true,
         prop: 'fileName',
         placeholder: '例如: startup.bat', // 按需补充
+        help: {
+          title: '自启动步骤',
+          desc: '',
+          body: [
+            {
+              content: `按下快捷键 <kbd>Win</kbd> + <kbd>R</kbd>，在弹出的运行窗口中输入 <code>shell:startup</code>，回车；`,
+              replaces:[
+              ]
+            },
+            {
+              content: `将 <code>{fileName}</code> 移动/复制到上一步打开的文件夹中`,
+              replaces:[
+                {from: `/\\{fileName\\}/g`, toActiveItemProp: 'form.fileName'}
+              ]
+            }
+          ]
+        },
       },
     ],
     form: {
@@ -124,6 +191,7 @@ const activeItem = computed(() => {
   return list.value.find(item => item.menu_id === activeMenuId.value) || list.value[0]
 })
 
+
 const selectMenu = (id) => {
   activeMenuId.value = id
   content.value = ''
@@ -165,6 +233,54 @@ const handlePreviewMenu = async () => {
   }
 }
 
+// 文件选择器引用
+const fileInput = ref(null)
+
+/** 点击“选择文件”按钮时触发隐藏 input 的 click，支持限制文件类型
+ * @param {string} [accept] 可选，允许的文件类型，如 '.exe,.bat' 或 'image/*'，不传则无限制
+ */
+const handleSelectFile = (accept) => {
+  if (fileInput.value) {
+    // 动态设置 accept 属性
+    if (accept !== undefined) {
+      fileInput.value.accept = accept
+    } else {
+      fileInput.value.removeAttribute('accept') // 移除限制，允许所有文件
+    }
+    fileInput.value.click()
+  }
+}
+
+/** 文件选择后的处理：提取绝对路径，拆分为目录和文件名 */
+const onFileChange = (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+
+  // Electron 环境：file.path 为完整绝对路径
+  if (file.path) {
+    const fullPath = file.path
+    const lastBackslash = fullPath.lastIndexOf('\\')
+    const lastSlash = fullPath.lastIndexOf('/')
+    const splitIndex = Math.max(lastBackslash, lastSlash)
+
+    if (splitIndex > 0) {
+      activeItem.value.form.startDir = fullPath.substring(0, splitIndex)
+      activeItem.value.form.exeName = fullPath.substring(splitIndex + 1)
+    } else {
+      activeItem.value.form.startDir = ''
+      activeItem.value.form.exeName = fullPath
+    }
+  } else {
+    // 非 Electron 环境：仅能拿到文件名，提示用户手动输入起始目录
+    activeItem.value.form.exeName = file.name
+    activeItem.value.form.startDir = ''
+    ElMessage.warning('当前环境不支持获取完整路径，请手动输入目录')
+  }
+
+  // 清空 input，允许重复选择同一文件
+  event.target.value = ''
+}
+
 /** 选择本地文件夹 - 弹窗浏览 */
 const selectFolder = async (prop) => {
   folderDialogProp.value = prop
@@ -173,10 +289,65 @@ const selectFolder = async (prop) => {
   showDialogFolder.value = true
   await loadDir('')
 }
+const showHelp = ref(false)
+
+const HelpJson=ref({
+  title: '',
+  desc:'',
+  body:[
+  ]
+})
+const openGenericHelp = (helpData) => {
+  // 深拷贝
+  const processed = JSON.parse(JSON.stringify(helpData))
+  // 将 body 中每一项都处理成最终字符串
+  processed.body = processed.body.map(item => {
+    if (typeof item === 'string') return item
+    if (item.content) {
+      return applyReplaces(item.content, item.replaces || [], activeItem.value)
+    }
+    return item
+  })
+  HelpJson.value = {
+    title: processed.title,   // 注意顶层 title
+    desc: processed.desc || '',
+    body: processed.body
+  }
+  showHelp.value = true
+}
+/**
+ * 根据 replaces 配置替换模板中的占位符
+ * @param {string} template - 原始内容（包含占位符）
+ * @param {Array} replaces - 替换规则数组
+ * @param {Object} activeItem - 当前激活的菜单项
+ * @returns {string} 替换后的内容
+ */
+function applyReplaces(template, replaces, activeItem) {
+  if (!replaces || replaces.length === 0) return template
+
+  let result = template
+  replaces.forEach(rule => {
+    // 解析正则字符串 "/pattern/flags"
+    const match = rule.from.match(/^\/(.*)\/([gimsuy]*)$/)
+    if (!match) {
+      console.warn('无效的正则字符串:', rule.from)
+      return
+    }
+    const [, pattern, flags] = match
+    const regex = new RegExp(pattern, flags)
+
+    // 从 activeItem 中取替换值
+    const value = rule.toActiveItemProp
+        .split('.')
+        .reduce((obj, key) => obj?.[key], activeItem) ?? ''
+
+    // 执行替换
+    result = result.replace(regex, value)
+  })
+  return result
+}
 
 const showDialogFolder = ref(false)
-const showUlidHelp = ref(false)
-const showFileNameHelp = ref(false)
 const folderDialogProp = ref('')
 const folderCurrentPath = ref('')
 const folderDirs = ref([])
@@ -300,8 +471,7 @@ onMounted(async () => {
                   :key="item.prop"
               >
                 <label class="form-label">{{ item.label }}
-                  <span v-if="item.prop === 'startUlid'" class="help-icon" @click="showUlidHelp = !showUlidHelp">?</span>
-                  <span v-else-if="item.prop === 'fileName'" class="help-icon" @click="showFileNameHelp = !showFileNameHelp">?</span>
+                  <span v-if="item.help" class="help-icon" @click="openGenericHelp(item.help)">?</span>
                 </label>
                 <div style="display: flex; gap: 8px; flex: 1;">
                   <input v-if="item.isNumber"
@@ -315,12 +485,20 @@ onMounted(async () => {
                          v-model="activeItem.form[item.prop]"
                          :placeholder="item.placeholder || ''"
                   />
+                  <!-- 新增：仅为“起始目录”项显示“选择文件”按钮 -->
                   <el-button
-                      v-if="item.isDir"
+                      v-if="item.isDir&&item.selectFile&&item.prop === 'startDir'"
+                      @click="handleSelectFile(item.accept)"
+                      class="btn-folder"
+                      style="margin-left:4px;"
+                  >选择文件
+                  </el-button>
+<!--                  <el-button
+                      v-else-if="item.isDir"
                       @click="selectFolder(item.prop)"
                       class="btn-folder"
                   >选择
-                  </el-button>
+                  </el-button>-->
                 </div>
               </div>
             </div>
@@ -331,6 +509,13 @@ onMounted(async () => {
       </div>
     </div>
 
+    <!-- 隐藏的文件选择器，用于 startDir 路径提取 -->
+    <input
+        ref="fileInput"
+        type="file"
+        style="display: none;"
+        @change="onFileChange"
+    />
 
     <!-- 文件夹选择弹窗 -->
     <div v-if="showDialogFolder" class="dialog-overlay" @click.self="showDialogFolder = false">
@@ -399,41 +584,22 @@ onMounted(async () => {
         </div>
       </div>
     </div>
-
-    <!-- ULID 帮助弹窗 -->
-    <div v-if="showUlidHelp" class="dialog-overlay" @click.self="showUlidHelp = false">
+    <!-- 通用帮助弹窗 -->
+    <div v-if="showHelp" class="dialog-overlay" @click.self="showHelp = false">
       <div class="dialog-box help-dialog">
         <div class="dialog-header">
-          <span>ULID 获取步骤</span>
-          <button class="dialog-close" @click="showUlidHelp = false">×</button>
+          <span>{{ HelpJson.title }}</span>
+          <button class="dialog-close" @click="showHelp = false">×</button>
         </div>
         <div class="dialog-body">
           <div class="help-steps">
-            <p style="margin:0 0 8px;color:rgba(255,255,255,0.6);font-size:13px;">无需额外操作，直接从已有的 1Remote 快捷方式中提取 ULID 及启动参数：</p>
-            <ol>
-              <li>在 1Remote 会话中创建桌面快捷方式；</li>
-              <li>找到你已创建的 1Remote 快捷方式（桌面或文件夹中）；</li>
-              <li>右键该快捷方式 → 点击「属性」；</li>
-              <li>在弹出的属性窗口中，切换到「快捷方式」选项卡，找到「目标(T)」输入框；</li>
-              <li>「目标」内容格式示例：<code>D:\1Remote\1.2.1\net9\x64\1Remote.exe ULID:01Jxxxxxxxxxxxxx \--start\--minimized</code>；</li>
-              <li>提取「目标」中 <code>ULID:xxx \--start\--minimized</code> 这一段（含 ULID 和最小化参数），复制备用。</li>
-            </ol>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="showFileNameHelp" class="dialog-overlay" @click.self="showFileNameHelp = false">
-      <div class="dialog-box help-dialog">
-        <div class="dialog-header">
-          <span>自启动步骤</span>
-          <button class="dialog-close" @click="showFileNameHelp = false">×</button>
-        </div>
-        <div class="dialog-body">
-          <div class="help-steps">
-            <ol>
-              <li>按下快捷键 <kbd>Win</kbd> + <kbd>R</kbd>，在弹出的运行窗口中输入 <code>shell:startup</code>，回车；</li>
-              <li>将 <code>{{ activeItem.form.fileName }}</code> 移动/复制到上一步打开的文件夹中</li>
+            <p v-if="HelpJson.desc&&HelpJson.desc!==''" style="margin:0 0 8px;color:rgba(255,255,255,0.6);font-size:13px;">
+              {{ HelpJson.desc }}</p>
+            <ol v-if="HelpJson.body&&HelpJson.body.length>0">
+<!--              <li v-for="(item,index) in HelpJson.body" :key="index">{{ applyReplaces(item.content, item.replaces, activeItem) }}</li>-->
+              <li v-for="(htmlStr, index) in HelpJson.body" :key="index">
+                <span v-html="htmlStr"></span>
+              </li>
             </ol>
           </div>
         </div>
