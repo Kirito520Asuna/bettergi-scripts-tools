@@ -47,4 +47,7 @@ public class AutoBoss {
     /** 是否启用奖励名称识别。默认关闭。*/
     @Schema(description = "是否启用奖励名称识别。默认关闭。")
     private boolean rewardRecognitionEnabled;
+    /** 任务执行超时时间，单位为秒。默认 240 秒。*/
+    @Schema(description = "任务执行超时时间，单位为秒。默认 240 秒。")
+    private int timeout = 240;
 }
