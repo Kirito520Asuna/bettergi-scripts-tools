@@ -1,5 +1,6 @@
 package com.cloud_guest.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
@@ -286,7 +287,35 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
         });
 
         recoveryHandlers.put(autoPlanService.getSuffix(), json -> {
-            List<?> list = JSONUtil.toList(json, autoPlanService.getEntityClass());
+            List<JSONObject> listJson = JSONUtil.toList(json, JSONObject.class);
+            // 处理四个互斥字段：auto_fight、auto_ley_line_outcrop、auto_stygian_onslaught、auto_boss
+            // 将非空的那个值写入 COL_JSON，然后移除这些字段以保证实体类映射兼容性
+            for (JSONObject obj : listJson) {
+                Object value = obj.get(AutoPlanConfig.COL_JSON);
+                if (value == null) {
+                    value = obj.get(AutoPlanConfig.COL_AUTO_FIGHT);
+                }
+                if (value == null) {
+                    value = obj.get(AutoPlanConfig.COL_AUTO_LEY_LINE_OUTCROP);
+                }
+                if (value == null) {
+                    value = obj.get(AutoPlanConfig.COL_AUTO_STYGIAN_ONSLAUGHT);
+                }
+                if (value == null) {
+                    value = obj.get(AutoPlanConfig.COL_AUTO_BOSS);
+                }
+                // 即使 value 仍为 null 也写入，表示该对象无指定计划
+                obj.set(AutoPlanConfig.COL_JSON, value);
+
+                // 移除互斥键，避免序列化时出现冗余字段
+                obj.remove(AutoPlanConfig.COL_AUTO_FIGHT);
+                obj.remove(AutoPlanConfig.COL_AUTO_LEY_LINE_OUTCROP);
+                obj.remove(AutoPlanConfig.COL_AUTO_STYGIAN_ONSLAUGHT);
+                obj.remove(AutoPlanConfig.COL_AUTO_BOSS);
+            }
+            // 重新序列化为 JSON 字符串，供后续实体转换使用
+            json = JSONUtil.toJsonStr(listJson);
+            List<?> list  = JSONUtil.toList(json, autoPlanService.getEntityClass());
             autoPlanService.remove(Wrappers.lambdaQuery(autoPlanService.getEntityClass())
                     .ne(AutoPlanConfig::getId, null));
             autoPlanService.saveOrUpdateBatch((List) list);

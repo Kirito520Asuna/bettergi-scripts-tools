@@ -5,6 +5,8 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.cloud_guest.entitys.pojo.AutoPlanConfig;
 import com.cloud_guest.entitys.pojo.UidInfoConfig;
+import com.cloud_guest.entitys.vo.AutoPlanVo;
+import com.cloud_guest.service.AutoPlanService;
 import com.google.common.collect.Maps;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ import java.sql.Connection;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 数据库初始化器：在 @PostConstruct 阶段执行建表脚本，并在脚本完成后手动启动 Quartz 调度器。
@@ -145,6 +148,14 @@ public class DatabaseInitRunner {
                 autoPlanSQL = new SqlTable(
                         AutoPlanConfig.TABLE_NAME,
                         List.of(
+                                new SqlColumn(
+                                        AutoPlanConfig.COL_JSON, AutoPlanConfig.REMARK_COL_JSON,
+                                        List.of(
+                                                new DbSqlType(SQLite, "TEXT", "NULL"),
+                                                new DbSqlType(MySQL, "TEXT", "NULL"),
+                                                new DbSqlType(PostgreSQL, "TEXT", "NULL")
+                                        )
+                                ),
                                 new SqlColumn(
                                         AutoPlanConfig.COL_AUTO_BOSS, AutoPlanConfig.REMARK_COL_AUTO_BOSS,
                                         List.of(
@@ -354,6 +365,31 @@ public class DatabaseInitRunner {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+        //3.执行数据库字段兼容性处理
+        AutoPlanService planService = SpringUtil.getBean(AutoPlanService.class);
+        // 分页查询，每次处理 500 条
+        int pageSize = 500;
+        int page = 0;
+        long totalUpdated = 0;
+        List<AutoPlanConfig> pageRecords;
+        long start = System.currentTimeMillis();
+        do {
+            pageRecords = planService.lambdaQuery()
+                    // 可增加条件过滤已迁移的记录，例如只处理 json 为空的
+                    .isNull(AutoPlanConfig::getJson)
+                    .last("limit " + page * pageSize + "," + pageSize)
+                    .list();
+            List<AutoPlanConfig> updated = pageRecords.stream()
+                    .map(AutoPlanConfig::toVo)
+                    .map(AutoPlanVo::toConfig)
+                    .collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(updated)) {
+                planService.saveOrUpdateBatch(updated, pageSize); // 指定批次大小
+                totalUpdated += updated.size();
+            }
+            page++;
+        } while (CollUtil.isNotEmpty(pageRecords));
+        log.info("数据兼容性迁移耗时: {} ms，更新记录数: {}", System.currentTimeMillis() - start, totalUpdated);
     }
 
 

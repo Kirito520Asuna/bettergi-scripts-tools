@@ -1,5 +1,6 @@
 package com.cloud_guest.entitys.pojo;
 
+import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -10,8 +11,10 @@ import com.cloud_guest.entitys.common.auto_plan.AutoBoss;
 import com.cloud_guest.entitys.common.auto_plan.AutoFight;
 import com.cloud_guest.entitys.common.auto_plan.AutoLeyLineOutcrop;
 import com.cloud_guest.entitys.common.auto_plan.AutoStygianOnslaught;
+import com.cloud_guest.entitys.common.enums.AutoPlanType;
 import com.cloud_guest.mp.pojo.BaseEntity;
 import com.cloud_guest.entitys.vo.AutoPlanVo;
+import com.cloud_guest.utils.EnumUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -51,6 +54,10 @@ public class AutoPlanConfig extends BaseEntity {
     private Boolean cultivate = Boolean.FALSE;
     @TableField(value = COL_RECORD)
     private Boolean record = Boolean.FALSE;
+    @TableField(value = COL_JSON)
+    private String json;
+
+    //todo: 后续版本需要移除的字段-start
     @TableField(value = COL_AUTO_FIGHT)
     private String autoFight;
     @TableField(value = COL_AUTO_LEY_LINE_OUTCROP)
@@ -59,6 +66,7 @@ public class AutoPlanConfig extends BaseEntity {
     private String autoStygianOnslaught;
     @TableField(value = COL_AUTO_BOSS)
     private String autoBoss;
+    //todo: 后续版本需要移除的字段-end
 
 
     public static final String TABLE_NAME = "auto_plan_config";
@@ -72,12 +80,17 @@ public class AutoPlanConfig extends BaseEntity {
     public static final String COL_ENABLE = "enable";
     public static final String COL_CULTIVATE = "cultivate";
     public static final String COL_RECORD = "record";
+    public static final String COL_JSON = "json";
+    //todo: 后续版本需要移除的字段-start
     public static final String COL_AUTO_FIGHT = "auto_fight";
     public static final String COL_AUTO_LEY_LINE_OUTCROP = "auto_ley_line_outcrop";
     public static final String COL_AUTO_STYGIAN_ONSLAUGHT = "auto_stygian_onslaught";
     public static final String COL_AUTO_BOSS = "auto_boss";
-
+    //todo: 后续版本需要移除的字段-end
+    public static final String REMARK_COL_JSON = "JSON配置";
+    //todo: 后续版本需要移除的字段-start
     public static final String REMARK_COL_AUTO_BOSS = "自动Boss配置";
+    //todo: 后续版本需要移除的字段-end
     public static final String REMARK_COL_RECORD = "是否记录";
     public static final String REMARK_COL_CULTIVATE = "是培养计划";
 
@@ -94,11 +107,44 @@ public class AutoPlanConfig extends BaseEntity {
                 .setDays(StrUtil.isBlank(days) ? new ArrayList<>() : Arrays.stream(days.split(",")).map(Integer::valueOf).toList())
                 .setDayName(dayName)
                 .setOrder(orderSort)
-                .setAutoFight(StrUtil.isBlank(autoFight) ? null : JSONUtil.toBean(autoFight, AutoFight.class))
-                .setAutoLeyLineOutcrop(StrUtil.isBlank(autoLeyLineOutcrop) ? null : JSONUtil.toBean(autoLeyLineOutcrop, AutoLeyLineOutcrop.class))
-                .setAutoStygianOnslaught(StrUtil.isBlank(autoStygianOnslaught) ? null : JSONUtil.toBean(autoStygianOnslaught, AutoStygianOnslaught.class))
-                .setAutoBoss(StrUtil.isBlank(autoBoss) ? null : JSONUtil.toBean(autoBoss, AutoBoss.class))
         ;
+
+        AutoPlanType planType = EnumUtils.getEnumByPrivateFieldName(AutoPlanType.class, runType, "key");
+
+        switch (planType) {
+            case DOMAIN:
+                autoPlanVo.setAutoFight(parsePlanConfig(json, autoFight, AutoFight.class));
+                break;
+            case LEY_LINE_OUTCROP:
+                autoPlanVo.setAutoLeyLineOutcrop(parsePlanConfig(json, autoLeyLineOutcrop, AutoLeyLineOutcrop.class));
+                break;
+            case BOSS:
+                autoPlanVo.setAutoBoss(parsePlanConfig(json, autoBoss, AutoBoss.class));
+                break;
+            case SECRET:
+                autoPlanVo.setAutoStygianOnslaught(parsePlanConfig(json, autoStygianOnslaught, AutoStygianOnslaught.class));
+                break;
+            default:
+                break;
+        }
+
         return autoPlanVo;
+    }
+
+
+    // 在类中提取通用解析方法
+    private <T> T parsePlanConfig(String json, String fallbackJson, Class<T> clazz) {
+        // 优先使用新字段 json 反序列化
+        if (StrUtil.isNotBlank(json)) {
+            T result = JSONUtil.toBean(json, clazz);
+            if (result != null) {
+                return result;
+            }
+        }
+        // 新字段解析失败（对象为 null 或字段为空），使用旧字段兜底
+        if (StrUtil.isNotBlank(fallbackJson)) {
+            return JSONUtil.toBean(fallbackJson, clazz);
+        }
+        return null;
     }
 }

@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `auto_plan_config` (
     `enable`                 TINYINT(1)   DEFAULT 1 COMMENT '是否启用',
     `record`                 TINYINT(1)   DEFAULT 0 COMMENT '是否记录',
     `cultivate`                 TINYINT(1)   DEFAULT 0 COMMENT '是培养计划',
+    `json`             TEXT         DEFAULT NULL COMMENT 'JSON配置',
     `auto_fight`             TEXT         DEFAULT NULL COMMENT '秘境配置',
     `auto_ley_line_outcrop`  TEXT         DEFAULT NULL COMMENT '自动地脉花配置',
     `auto_stygian_onslaught` TEXT         DEFAULT NULL COMMENT '自动幽境配置',

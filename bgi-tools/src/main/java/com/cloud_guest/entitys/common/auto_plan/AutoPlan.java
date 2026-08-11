@@ -1,8 +1,10 @@
 package com.cloud_guest.entitys.common.auto_plan;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.entitys.pojo.AutoPlanConfig;
+import com.cloud_guest.utils.StrUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -77,10 +79,23 @@ public class AutoPlan {
         AutoPlanConfig planConfig = new AutoPlanConfig();
         planConfig.setId(id!=null?Long.parseLong(id):null);
         planConfig.setCultivate(this.cultivate);
-        planConfig.setAutoFight(JSONUtil.toJsonStr(this.autoFight));
-        planConfig.setAutoLeyLineOutcrop(JSONUtil.toJsonStr(this.autoLeyLineOutcrop));
-        planConfig.setAutoStygianOnslaught(JSONUtil.toJsonStr(this.autoStygianOnslaught));
-        planConfig.setAutoBoss(JSONUtil.toJsonStr(this.autoBoss));
+
+
+        String autoFight = JSONUtil.toJsonStr(this.autoFight);
+        String autoLeyLineOutcrop = JSONUtil.toJsonStr(this.autoLeyLineOutcrop);
+        String autoStygianOnslaught = JSONUtil.toJsonStr(this.autoStygianOnslaught);
+        String autoBoss = JSONUtil.toJsonStr(this.autoBoss);
+
+        //todo: 后续版本需要移除的字段-start
+        planConfig.setAutoFight(autoFight);
+        planConfig.setAutoLeyLineOutcrop(autoLeyLineOutcrop);
+        planConfig.setAutoStygianOnslaught(autoStygianOnslaught);
+        planConfig.setAutoBoss(autoBoss);
+        //todo: 后续版本需要移除的字段-end
+
+        String json =  CollUtil.newArrayList(autoFight, autoLeyLineOutcrop, autoStygianOnslaught, autoBoss)
+                .stream().filter(StrUtil::isNotBlank).findFirst().orElse(null);  // 安全兜底，避免 NoSuchElementException
+        planConfig.setJson(json);
 
         List<Integer> list = new ArrayList<>();
         if (CollUtil.isNotEmpty(this.days)) {

@@ -1,12 +1,17 @@
 package com.cloud_guest.entitys.dto;
 
+import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSON;
+import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.validator.NotEmptyList;
 import com.cloud_guest.entitys.common.auto_plan.AutoFight;
 import com.cloud_guest.entitys.common.auto_plan.AutoLeyLineOutcrop;
 import com.cloud_guest.entitys.common.auto_plan.AutoPlan;
+import com.cloud_guest.entitys.common.enums.AutoPlanType;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.entitys.pojo.AutoPlanConfig;
+import com.cloud_guest.utils.EnumUtils;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -44,31 +49,44 @@ public class AutoPlanDTO implements Serializable {
     private List<AutoPlan> autoPlanList = new ArrayList<>();
 
     public void checkValid() {
-        List<String> runTypes = Arrays.asList("秘境", "地脉","幽境","Boss");
+        List<AutoPlanType> planTypes = EnumUtils.getAllEnums(AutoPlanType.class);
         for (AutoPlan autoPlan : this.autoPlanList) {
-            if (!runTypes.contains(autoPlan.getRunType())) {
-                String runTypesStr = runTypes.stream().collect(Collectors.joining(","));
-                throw new GlobalException("runType参数错误,支持类型:" + runTypesStr);
-            } else if (ObjectUtils.equals(runTypes.get(0), autoPlan.getRunType())) {
-                //秘境效益
-                AutoFight autoFight = autoPlan.getAutoFight();
-                String domainName = autoFight.getDomainName();
-                if (StrUtil.isBlank(domainName)) {
-                    throw new GlobalException("秘境名称不能为空");
-                }
-            } else if (ObjectUtils.equals(runTypes.get(1), autoPlan.getRunType())) {
-                List<String> leyLineOutcropTypes = Arrays.asList("启示之花", "藏金之花");
-                //地脉效益
-                AutoLeyLineOutcrop autoLeyLineOutcrop = autoPlan.getAutoLeyLineOutcrop();
-                String country = autoLeyLineOutcrop.getCountry();
-                String leyLineOutcropType = autoLeyLineOutcrop.getLeyLineOutcropType();
-                if (!leyLineOutcropTypes.contains(leyLineOutcropType)) {
-                    throw new GlobalException("地脉类型错误,支持类型:" + leyLineOutcropTypes.stream().collect(Collectors.joining(",")));
-                }
-                if (StrUtil.isBlank(country)) {
-                    throw new GlobalException("国家地区不能为空");
-                }
+            AutoPlanType planType = EnumUtils.getEnumByPrivateFieldName(AutoPlanType.class, autoPlan.getRunType(), "key");
+            if (planType == null) {
+                throw new GlobalException("runType参数错误");
             }
+
+            switch (planType){
+                case DOMAIN:
+                    //秘境效益
+                    AutoFight autoFight = autoPlan.getAutoFight();
+                    String domainName = autoFight.getDomainName();
+                    if (StrUtil.isBlank(domainName)) {
+                        throw new GlobalException("秘境名称不能为空");
+                    }
+                    break;
+                case LEY_LINE_OUTCROP:
+                    List<String> leyLineOutcropTypes = Arrays.asList("启示之花", "藏金之花");
+                    //地脉效益
+                    AutoLeyLineOutcrop autoLeyLineOutcrop = autoPlan.getAutoLeyLineOutcrop();
+                    String country = autoLeyLineOutcrop.getCountry();
+                    String leyLineOutcropType = autoLeyLineOutcrop.getLeyLineOutcropType();
+                    if (!leyLineOutcropTypes.contains(leyLineOutcropType)) {
+                        throw new GlobalException("地脉类型错误,支持类型:" + leyLineOutcropTypes.stream().collect(Collectors.joining(",")));
+                    }
+                    if (StrUtil.isBlank(country)) {
+                        throw new GlobalException("国家地区不能为空");
+                    }
+                    break;
+                case BOSS:
+                    break;
+                case SECRET:
+                    break;
+                default:
+                    String runTypesStr = planTypes.stream().map(AutoPlanType::getKey).collect(Collectors.joining(","));
+                    throw new GlobalException("runType参数错误,支持类型:" + runTypesStr);
+            }
+
         }
     }
 
