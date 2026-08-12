@@ -304,6 +304,19 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
                 if (value == null) {
                     value = obj.get(AutoPlanConfig.COL_AUTO_BOSS);
                 }
+
+                if (value == null) {
+                    value = obj.get(StrUtils.toCamelCase(AutoPlanConfig.COL_AUTO_FIGHT));
+                }
+                if (value == null) {
+                    value = obj.get(StrUtils.toCamelCase(AutoPlanConfig.COL_AUTO_LEY_LINE_OUTCROP));
+                }
+                if (value == null) {
+                    value = obj.get(StrUtils.toCamelCase(AutoPlanConfig.COL_AUTO_STYGIAN_ONSLAUGHT));
+                }
+                if (value == null) {
+                    value = obj.get(StrUtils.toCamelCase(AutoPlanConfig.COL_AUTO_BOSS));
+                }
                 // 即使 value 仍为 null 也写入，表示该对象无指定计划
                 obj.set(AutoPlanConfig.COL_JSON, value);
 
@@ -312,6 +325,11 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
                 obj.remove(AutoPlanConfig.COL_AUTO_LEY_LINE_OUTCROP);
                 obj.remove(AutoPlanConfig.COL_AUTO_STYGIAN_ONSLAUGHT);
                 obj.remove(AutoPlanConfig.COL_AUTO_BOSS);
+
+                obj.remove(StrUtils.toCamelCase(AutoPlanConfig.COL_AUTO_FIGHT));
+                obj.remove(StrUtils.toCamelCase(AutoPlanConfig.COL_AUTO_LEY_LINE_OUTCROP));
+                obj.remove(StrUtils.toCamelCase(AutoPlanConfig.COL_AUTO_STYGIAN_ONSLAUGHT));
+                obj.remove(StrUtils.toCamelCase(AutoPlanConfig.COL_AUTO_BOSS));
             }
             // 重新序列化为 JSON 字符串，供后续实体转换使用
             json = JSONUtil.toJsonStr(listJson);
