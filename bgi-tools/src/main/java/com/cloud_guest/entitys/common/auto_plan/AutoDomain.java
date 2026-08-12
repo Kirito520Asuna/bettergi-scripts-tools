@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AutoFight {
+public class AutoDomain {
     //@Schema(description = "国家地区")
     //@JsonProperty("country")
     //public String country;

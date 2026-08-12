@@ -1,6 +1,5 @@
 package com.cloud_guest.entitys.pojo;
 
-import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -8,14 +7,13 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.cloud_guest.entitys.common.auto_plan.AutoBoss;
-import com.cloud_guest.entitys.common.auto_plan.AutoFight;
+import com.cloud_guest.entitys.common.auto_plan.AutoDomain;
 import com.cloud_guest.entitys.common.auto_plan.AutoLeyLineOutcrop;
 import com.cloud_guest.entitys.common.auto_plan.AutoStygianOnslaught;
 import com.cloud_guest.entitys.common.enums.AutoPlanType;
 import com.cloud_guest.mp.pojo.BaseEntity;
 import com.cloud_guest.entitys.vo.AutoPlanVo;
 import com.cloud_guest.utils.EnumUtils;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -58,12 +56,16 @@ public class AutoPlanConfig extends BaseEntity {
     private String json;
 
     //todo: 后续版本需要移除的字段-start
+    @Deprecated
     @TableField(value = COL_AUTO_FIGHT)
     private String autoFight;
+    @Deprecated
     @TableField(value = COL_AUTO_LEY_LINE_OUTCROP)
     private String autoLeyLineOutcrop;
+    @Deprecated
     @TableField(value = COL_AUTO_STYGIAN_ONSLAUGHT)
     private String autoStygianOnslaught;
+    @Deprecated
     @TableField(value = COL_AUTO_BOSS)
     private String autoBoss;
     //todo: 后续版本需要移除的字段-end
@@ -113,7 +115,7 @@ public class AutoPlanConfig extends BaseEntity {
 
         switch (planType) {
             case DOMAIN:
-                autoPlanVo.setAutoFight(parsePlanConfig(json, autoFight, AutoFight.class));
+                autoPlanVo.setAutoDomain(parsePlanConfig(json, autoFight, AutoDomain.class));
                 break;
             case LEY_LINE_OUTCROP:
                 autoPlanVo.setAutoLeyLineOutcrop(parsePlanConfig(json, autoLeyLineOutcrop, AutoLeyLineOutcrop.class));
@@ -121,7 +123,7 @@ public class AutoPlanConfig extends BaseEntity {
             case BOSS:
                 autoPlanVo.setAutoBoss(parsePlanConfig(json, autoBoss, AutoBoss.class));
                 break;
-            case SECRET:
+            case STYGIAN_ONSLAUGHT:
                 autoPlanVo.setAutoStygianOnslaught(parsePlanConfig(json, autoStygianOnslaught, AutoStygianOnslaught.class));
                 break;
             default:

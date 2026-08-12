@@ -383,7 +383,7 @@ const defaultConfig = {
   showDaysButton: true,   // ← 新增
   // daysName: [],
   selectedType: undefined, // 新增字段
-  autoFight: {
+  autoDomain: {
     physical: [
       {order: 0, name: "浓缩树脂", open: true},
       {order: 1, name: "原粹树脂", open: true},
@@ -540,16 +540,16 @@ function getFilteredMaterials(config) {
 }
 
 function handleSundaySelection(config) {
-  const selectedItem = config.autoFight.sundaySelectedDomain;
+  const selectedItem = config.autoDomain.sundaySelectedDomain;
   if (selectedItem) {
-    config.autoFight.sundaySelectedName = selectedItem.name;
-    config.autoFight.domainName = selectedItem.domain;
-    config.autoFight.sundaySelectedValue = selectedItem.index;
-    config.autoFight.sundaySelectedDomain = undefined
+    config.autoDomain.sundaySelectedName = selectedItem.name;
+    config.autoDomain.domainName = selectedItem.domain;
+    config.autoDomain.sundaySelectedValue = selectedItem.index;
+    config.autoDomain.sundaySelectedDomain = undefined
   } else {
-    config.autoFight.sundaySelectedName = undefined
-    config.autoFight.domainName = undefined
-    config.autoFight.sundaySelectedValue = undefined
+    config.autoDomain.sundaySelectedName = undefined
+    config.autoDomain.domainName = undefined
+    config.autoDomain.sundaySelectedValue = undefined
   }
 }
 
@@ -559,10 +559,10 @@ function changShowDaysButton(config) {
   } else if (config.days && config.days.length <= 0) {
     config.dayName = undefined
   }
-  const bool = runTypesDefault()[0] === config.runType && (!excludeDomainTypes.value.includes(config.selectedType)) && config.autoFight.sundaySelectedValue;
+  const bool = runTypesDefault()[0] === config.runType && (!excludeDomainTypes.value.includes(config.selectedType)) && config.autoDomain.sundaySelectedValue;
   if (bool) {
     // 实时监听 days 与 asDaysMap.get(sundaySelectedValue) 是否相同
-    const daysFromMap = asDaysMap.get(config.autoFight.sundaySelectedValue + "");
+    const daysFromMap = asDaysMap.get(config.autoDomain.sundaySelectedValue + "");
     if (daysFromMap && Array.isArray(daysFromMap)) {
       config.days.sort((a, b) => a - b)
       daysFromMap.sort((a, b) => a - b)
@@ -582,7 +582,7 @@ watchEffect(
     (newConfigs) => {
       newConfigs.forEach(config => {
         if (runTypesDefault()[0] === config.runType) {
-          let domainName = config.autoFight?.domainName
+          let domainName = config.autoDomain?.domainName
           if (!domainName) {
             return
           }
@@ -595,11 +595,11 @@ watchEffect(
 
           if (domain.hasOrder && domain.list?.length > 0) {
             // 自动选第一个（也可改为 undefined，让用户手动选）
-            if (!config.autoFight.sundaySelectedValue) {
-              config.autoFight.sundaySelectedValue = domain.list[0]
+            if (!config.autoDomain.sundaySelectedValue) {
+              config.autoDomain.sundaySelectedValue = domain.list[0]
             }
           } else {
-            config.autoFight.sundaySelectedValue = config.autoFight.sundaySelectedValue || undefined
+            config.autoDomain.sundaySelectedValue = config.autoDomain.sundaySelectedValue || undefined
           }
         } else if (config.runType === runTypesDefault()[3]) {
           if (config?.autoBoss && config.autoBoss.timeout == null) { // 仅 null/undefined
@@ -625,11 +625,11 @@ if (configs.value.length === 0) {
 // 获取最终用于保存/提交的数据
 const getFinalConfigs = () => {
   return configs.value.map(c => {
-    let autoFight = c?.autoFight
+    let autoDomain = c?.autoDomain
     let autoLeyLineOutcrop = c?.autoLeyLineOutcrop
     let autoStygianOnslaught = c?.autoStygianOnslaught
     let autoBoss = c?.autoBoss
-    // c.autoFight.physical.sort((a, b) => a.order - b.order)
+    // c.autoDomain.physical.sort((a, b) => a.order - b.order)
     changShowDaysButton(c)
     let id = c.id;
     //id 带非数字时 设置id=undefined
@@ -649,25 +649,25 @@ const getFinalConfigs = () => {
       // daysName: c.daysName,
       // physical: c.physical,
       selectedType: c?.selectedType, // 新增字段
-      autoFight: undefined,
+      autoDomain: undefined,
       autoLeyLineOutcrop: undefined,
       autoStygianOnslaught: undefined,
       autoBoss: undefined,
     };
 
     if (c?.runType === runTypesDefault()[0]) {
-      if (autoFight.domainName) {
-        const info = domainMap.value.get(autoFight.domainName);
+      if (autoDomain.domainName) {
+        const info = domainMap.value.get(autoDomain.domainName);
         let index = 1
         for (let item of info.list) {
-          if (autoFight.sundaySelectedValue === item) {
-            // autoFight.sundaySelectedName = autoFight.sundaySelectedValue
-            autoFight.sundaySelectedValue = index
+          if (autoDomain.sundaySelectedValue === item) {
+            // autoDomain.sundaySelectedName = autoDomain.sundaySelectedValue
+            autoDomain.sundaySelectedValue = index
           }
           index++
         }
       }
-      json.autoFight = autoFight
+      json.autoDomain = autoDomain
     } else if (c?.runType === runTypesDefault()[1]) {
       json.autoLeyLineOutcrop = autoLeyLineOutcrop
     } else if (c?.runType === runTypesDefault()[2]) {
@@ -715,17 +715,17 @@ const getFinalConfigsToKey = () => {
     key += "|"
     if (item.runType === runTypesDefault()[0]) {
       //"|队伍名称|秘境名称/刷取物品名称|刷几轮|限时/周日,..."
-      let autoFight = item.autoFight;
-      let physical = [...autoFight.physical];
+      let autoDomain = item.autoDomain;
+      let physical = [...autoDomain.physical];
       physical.sort((a, b) => a.order - b.order)
 
-      key += (autoFight.partyName || "")
+      key += (autoDomain.partyName || "")
       key += "|"
-      key += (autoFight.domainName)
+      key += (autoDomain.domainName)
       key += "|"
-      key += (autoFight.domainRoundNum || "")
+      key += (autoDomain.domainRoundNum || "")
       key += "|"
-      key += (autoFight.sundaySelectedValue || 1)
+      key += (autoDomain.sundaySelectedValue || 1)
       key += "|"
       key += (physical.filter(p => p.open).map(p => p.name).join('/') || "")
     } else if (item.runType === runTypesDefault()[1]) {
@@ -802,19 +802,19 @@ const getFinalConfigsToKey = () => {
 }
 const specifyDate = async (item) => {
   let pass = false
-  const autoFight = item.autoFight;
+  const autoDomain = item.autoDomain;
   // console.log("item:",JSON.stringify(item))
   if (!item.selectedType) {
     ElMessage({
       type: 'error',
       message: `请选择类型！`
     })
-  } else if (!autoFight.domainName) {
+  } else if (!autoDomain.domainName) {
     ElMessage({
       type: 'error',
       message: `请选择秘境！`
     })
-  } else if (!autoFight.sundaySelectedValue) {
+  } else if (!autoDomain.sundaySelectedValue) {
     ElMessage({
       type: 'error',
       message: `请选择材料！`
@@ -826,7 +826,7 @@ const specifyDate = async (item) => {
     //1--days 0,1,4
     //2--days 0,2,5
     //3--days 0,3,6
-    const days = asDaysMap.get(autoFight.sundaySelectedValue + "");
+    const days = asDaysMap.get(autoDomain.sundaySelectedValue + "");
     if (!days || !Array.isArray(days)) {
       ElMessage({type: 'error', message: '请选择正确的材料！'});
       return;
@@ -848,11 +848,11 @@ const specifyDate = async (item) => {
 }
 const updatePhysicalOrder = (config) => {
   if (config.runType === runTypesDefault()[1]) {
-    config.autoFight.physical.forEach((item, index) => {
+    config.autoDomain.physical.forEach((item, index) => {
       item.order = index;
     });
     // 至少保留一个启用
-    const enabledCount = config.autoFight.physical
+    const enabledCount = config.autoDomain.physical
         .filter(item => item.open).length
 
     if (enabledCount === 0) {
@@ -860,7 +860,7 @@ const updatePhysicalOrder = (config) => {
         type: 'error',
         message: '至少保留一个启用！'
       })
-      const fallback = config.autoFight.physical.find(
+      const fallback = config.autoDomain.physical.find(
           item => item.name === '原粹树脂'
       )
       if (fallback) fallback.open = true
@@ -934,7 +934,7 @@ const batchJson = ref({
     common: {
       enable: true,
     },
-    autoFight: {
+    autoDomain: {
       partyName: undefined,
     },
     autoLeyLineOutcrop: {
@@ -1082,13 +1082,13 @@ const batchUpdate = () => {
   const batch = batchJson.value.batch;
   const autoLeyLineOutcrop = batch.autoLeyLineOutcrop;
   const autoStygianOnslaught = batch.autoStygianOnslaught;
-  const autoFight = batch.autoFight;
+  const autoDomain = batch.autoDomain;
   configs.value.forEach(config => {
     if (batchJson.value.selectedConfigs.has(config.id)) {
       if (config?.runType === runTypesDefault()[0]) {
         //秘境
-        if (autoFight.partyName)
-          config.autoFight.partyName = autoFight.partyName
+        if (autoDomain.partyName)
+          config.autoDomain.partyName = autoDomain.partyName
       } else if (config?.runType === runTypesDefault()[1]) {
         //地脉
         if (autoLeyLineOutcrop.team)
@@ -1399,10 +1399,10 @@ const dialogWidth = computed(() => {
                 </el-select>
               </div>
               <!-- 秘境选择（根据 selectedType 过滤） -->
-              <div class="form-group domain" v-if="!config.autoFight.sundaySelectedDomain">
+              <div class="form-group domain" v-if="!config.autoDomain.sundaySelectedDomain">
                 <label>秘境：</label>
                 <el-select
-                    v-model="config.autoFight.domainName"
+                    v-model="config.autoDomain.domainName"
                     placeholder="请选择或输入秘境"
                     clearable
                     filterable
@@ -1419,7 +1419,7 @@ const dialogWidth = computed(() => {
               <div class="form-group domain" v-else>
                 <label>秘境：</label>
                 <el-select
-                    v-model="config.autoFight.domainName"
+                    v-model="config.autoDomain.domainName"
                     placeholder="请选择或输入秘境"
                     clearable
                     filterable
@@ -1435,15 +1435,15 @@ const dialogWidth = computed(() => {
               </div>
               <!-- 物品名称选择（根据 domainName 过滤） -->
               <div class="form-group domain"
-                   v-if="config.autoFight.domainName&&domainMap.get(config.autoFight.domainName)?.hasOrder">
+                   v-if="config.autoDomain.domainName&&domainMap.get(config.autoDomain.domainName)?.hasOrder">
                 <label>周日/限时材料：</label>
                 <el-select
-                    v-model="config.autoFight.sundaySelectedValue"
+                    v-model="config.autoDomain.sundaySelectedValue"
                     placeholder="请选择材料"
                     clearable style="width: 80%"
                 >
                   <el-option
-                      v-for="(item,index) in domainMap.get(config.autoFight.domainName)?.list || []"
+                      v-for="(item,index) in domainMap.get(config.autoDomain.domainName)?.list || []"
                       :key="item"
                       :label="item"
                       :value="index + 1"
@@ -1451,10 +1451,10 @@ const dialogWidth = computed(() => {
                 </el-select>
               </div>
               <div class="form-group domain"
-                   v-else-if="(!config.autoFight.domainName)&&config.selectedType&&!excludeDomainTypes.includes(config.selectedType)">
+                   v-else-if="(!config.autoDomain.domainName)&&config.selectedType&&!excludeDomainTypes.includes(config.selectedType)">
                 <label>周日/限时材料：</label>
                 <el-select
-                    v-model="config.autoFight.sundaySelectedDomain"
+                    v-model="config.autoDomain.sundaySelectedDomain"
                     @change="handleSundaySelection(config)"
                     placeholder="请选择或输入材料"
                     clearable
@@ -1472,11 +1472,11 @@ const dialogWidth = computed(() => {
               </div>
 
               <div
-                  v-else-if="excludeDomainTypes.includes(config.selectedType)&&(!domainMap.get(config.autoFight.domainName)?.hasOrder)&&(domainMap.get(config.autoFight.domainName)?.list?.length>0)"
+                  v-else-if="excludeDomainTypes.includes(config.selectedType)&&(!domainMap.get(config.autoDomain.domainName)?.hasOrder)&&(domainMap.get(config.autoDomain.domainName)?.list?.length>0)"
                   class="form-group domain">
                 <label>秘境圣遗物：</label>
                 <ul>
-                  <li v-for="item in domainMap.get(config.autoFight.domainName)?.list" :key="item">
+                  <li v-for="item in domainMap.get(config.autoDomain.domainName)?.list" :key="item">
                     {{ item }}
                   </li>
                 </ul>
@@ -1484,11 +1484,11 @@ const dialogWidth = computed(() => {
 
               <div class="form-group domain">
                 <label>队伍名称（可选）：</label>
-                <input class="limited-input" v-model="config.autoFight.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
+                <input class="limited-input" v-model="config.autoDomain.partyName" placeholder="队伍1 / 主C+副C+辅助"/>
               </div>
               <div class="form-group domain">
                 <label>副本轮数：</label>
-                <input class="limited-input" v-model.number="config.autoFight.domainRoundNum" type="number" min="1"
+                <input class="limited-input" v-model.number="config.autoDomain.domainRoundNum" type="number" min="1"
                        max="99"
                        placeholder="建议 1~10"/>
               </div>
@@ -1502,7 +1502,7 @@ const dialogWidth = computed(() => {
                 >
                 <span>
                   {{
-                    config.autoFight.physical
+                    config.autoDomain.physical
                         .filter(p => p.open)
                         .map(p => p.name)
                         .join(' → ') || '未选择'
@@ -1984,7 +1984,7 @@ const dialogWidth = computed(() => {
             <div class="selector-title">拖拽调整顺序</div>
             <draggable
                 v-if="currentConfig"
-                v-model="currentConfig.autoFight.physical"
+                v-model="currentConfig.autoDomain.physical"
                 item-key="name"
                 handle=".draggable-item"
                 @end="updatePhysicalOrder(currentConfig)"
@@ -2178,7 +2178,7 @@ const dialogWidth = computed(() => {
               </div>
               <div class="batch-item">
                 <label>队伍名称（可选）：</label>
-                <input class="limited-input" v-model="batchJson.batch.autoFight.partyName"
+                <input class="limited-input" v-model="batchJson.batch.autoDomain.partyName"
                        placeholder="队伍1 / 主C+副C+辅助"/>
               </div>
             </div>

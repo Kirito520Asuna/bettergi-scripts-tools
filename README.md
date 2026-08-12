@@ -443,7 +443,7 @@ export class BgiTools {
                                                  autoStygianOnslaught:{},
                                                  autoLeyLineOutcrop:{},
                                                  autoBoss:{},
-                                                 autoFight:{}
+                                                 autoDomain:{}
                                              }
                                          ]
                                        }, token = {name: "Authorization", value: ''}
@@ -482,7 +482,7 @@ export class BgiTools {
       "enable": true,
       "cultivate": true,
       "record": true,
-      "autoFight": {
+      "autoDomain": {
         "sundaySelectedName": "",
         "domainName": "",
         "sundaySelectedValue": 0,

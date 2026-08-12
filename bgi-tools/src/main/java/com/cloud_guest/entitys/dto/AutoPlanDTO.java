@@ -1,19 +1,14 @@
 package com.cloud_guest.entitys.dto;
 
-import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSON;
-import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.validator.NotEmptyList;
-import com.cloud_guest.entitys.common.auto_plan.AutoFight;
+import com.cloud_guest.entitys.common.auto_plan.AutoDomain;
 import com.cloud_guest.entitys.common.auto_plan.AutoLeyLineOutcrop;
 import com.cloud_guest.entitys.common.auto_plan.AutoPlan;
 import com.cloud_guest.entitys.common.enums.AutoPlanType;
 import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.entitys.pojo.AutoPlanConfig;
 import com.cloud_guest.utils.EnumUtils;
-import com.cloud_guest.utils.object.ObjectUtils;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -59,8 +54,8 @@ public class AutoPlanDTO implements Serializable {
             switch (planType){
                 case DOMAIN:
                     //秘境效益
-                    AutoFight autoFight = autoPlan.getAutoFight();
-                    String domainName = autoFight.getDomainName();
+                    AutoDomain autoDomain = autoPlan.getAutoDomain();
+                    String domainName = autoDomain.getDomainName();
                     if (StrUtil.isBlank(domainName)) {
                         throw new GlobalException("秘境名称不能为空");
                     }
@@ -80,7 +75,7 @@ public class AutoPlanDTO implements Serializable {
                     break;
                 case BOSS:
                     break;
-                case SECRET:
+                case STYGIAN_ONSLAUGHT:
                     break;
                 default:
                     String runTypesStr = planTypes.stream().map(AutoPlanType::getKey).collect(Collectors.joining(","));

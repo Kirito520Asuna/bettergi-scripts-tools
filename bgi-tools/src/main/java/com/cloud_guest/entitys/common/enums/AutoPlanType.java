@@ -1,7 +1,7 @@
 package com.cloud_guest.entitys.common.enums;
 
 import com.cloud_guest.entitys.common.auto_plan.AutoBoss;
-import com.cloud_guest.entitys.common.auto_plan.AutoFight;
+import com.cloud_guest.entitys.common.auto_plan.AutoDomain;
 import com.cloud_guest.entitys.common.auto_plan.AutoLeyLineOutcrop;
 import com.cloud_guest.entitys.common.auto_plan.AutoStygianOnslaught;
 import lombok.AllArgsConstructor;
@@ -16,8 +16,8 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum AutoPlanType {
-    DOMAIN("秘境", AutoFight.class), LEY_LINE_OUTCROP("地脉", AutoLeyLineOutcrop.class),
-    BOSS("Boss", AutoBoss.class), SECRET("幽境", AutoStygianOnslaught.class)
+    DOMAIN("秘境", AutoDomain.class), LEY_LINE_OUTCROP("地脉", AutoLeyLineOutcrop.class),
+    BOSS("Boss", AutoBoss.class), STYGIAN_ONSLAUGHT("幽境", AutoStygianOnslaught.class)
     ;
     String key;
     Class<?> clazz;
