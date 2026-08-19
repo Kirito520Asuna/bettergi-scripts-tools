@@ -71,6 +71,16 @@ export const domainsDefault = [
     }
     ,
     {
+        "name": "荒坠的圣迹",
+        "type": "天赋",
+        "hasOrder": true,
+        "list": [
+            "「慈爱」的哲学",
+            "「坚忍」的哲学",
+            "「荣光」的哲学"
+        ]
+    },
+    {
         "name": "失落的月庭",
         "type": "武器",
         "hasOrder": true,
@@ -138,6 +148,17 @@ export const domainsDefault = [
             "高塔孤王的碎梦",
             "凛风奔狼的怀乡",
             "狮牙斗士的理想"
+        ]
+    }
+    ,
+    {
+        "name": "妄念的创痕",
+        "type": "武器",
+        "hasOrder": true,
+        "list": [
+            "苍星军势的征服",
+            "藏窖灵浆的恣意",
+            "凛雪帝皇的辞决"
         ]
     }
     ,
@@ -319,6 +340,24 @@ export const domainsDefault = [
         "list": [
             "如雷的盛怒",
             "平息鸣雷的尊者"
+        ]
+    },
+    {
+        "name": "山风的荆冕",
+        "type": "圣遗物",
+        "hasOrder": false,
+        "list": [
+            "天之美赐",
+            "影中沉凝的幻灭"
+        ]
+    },
+    {
+        "name": "逆悬的冰河",
+        "type": "圣遗物",
+        "hasOrder": false,
+        "list": [
+            "血红之证",
+            "炉火融炼之心"
         ]
     }
 ]
@@ -4742,7 +4781,7 @@ export const leyLineOutcropTypesDefault = () => {
     return [{name:"启示之花",value:"经验书"},{name:"藏金之花",value:"摩拉"}];
 }
 export const countryListDefault = () => {
-    return ['蒙德', '璃月', '稻妻', '须弥', '枫丹', '纳塔','挪德卡莱'];
+    return ['蒙德', '璃月', '稻妻', '须弥', '枫丹', '纳塔','挪德卡莱','至冬'];
 }
 export const domainTypesDefault = () => {
     const domainTypes = [
@@ -4932,16 +4971,3 @@ export const bossListDefault=
             "country": "挪德卡莱"
         }
     ]
-
-
-// export {
-//     domainsDefault,
-//     iconAsMapDefault,
-//     selectedAsDaysMap,
-//     domainTypesDefault,
-//     excludeDomainTypesDefault,
-//     runTypesDefault,
-//     leyLineOutcropTypesDefault,
-//     leyLineOutcropTypeNamesDefault,
-//     countryListDefault,
-// }
