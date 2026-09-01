@@ -38,8 +38,9 @@ public class AuthProperties {
     @AllArgsConstructor
     public static class Jwt {
         public static final long JWT_TTL = 24 * 60 * 60 * 1000L;// 60 * 60 *1000  一个小时
+        public static final String DEFAULT_SECRET = "a2lyaXRvYXN1bkeyMbgi/toolskwMTIzNDjwtzg5MDEy";
         //public static final long LONG_JWT_TTL = 30 * JWT_TTL;
-        private String secret = "a2lyaXRvYXN1bkeyMbgi/toolskwMTIzNDjwtzg5MDEy";
+        private String secret = DEFAULT_SECRET;
         private long expirationMs = JWT_TTL;
     }
     @Data
