@@ -262,6 +262,8 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
     @Resource
     private UidService uidService;
     @Resource
+    private  UidTeamService uidTeamService;
+    @Resource
     private AutoPlanService autoPlanService;
     @Resource
     private DbKVService dbKVService;
@@ -344,6 +346,13 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
             autoPlanUidGlobalService.remove(Wrappers.lambdaQuery(autoPlanUidGlobalService.getEntityClass())
                     .ne(AutoPlanUidGlobalConfig::getUid, null));
             autoPlanUidGlobalService.saveOrUpdateBatch((List) list);
+        });
+
+
+        recoveryHandlers.put(uidTeamService.getSuffix(), json -> {
+            List<?> list = JSONUtil.toList(json, uidTeamService.getEntityClass());
+            uidTeamService.remove(Wrappers.lambdaQuery(uidTeamService.getEntityClass()));
+            uidTeamService.saveOrUpdateBatch((List) list);
         });
 
         Consumer<String> dbConsumer = json -> {

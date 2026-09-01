@@ -15,7 +15,29 @@ import java.util.Map;
 public class PageUtils {
     public static final String pageSize = "pageSize";
     public static final String pageNumber = "pageNumber";
+    public static Map<String,Object> buildPageMap(Object number, Object size){
+        Map<String,Object> map = new LinkedHashMap<>();
+        if (number instanceof Integer n && size instanceof Integer s){
+            map.put(pageSize,s);
+            map.put(pageNumber,n);
+        } else if (number instanceof Long n && size instanceof Long s){
+            map.put(pageSize,s.intValue());
+            map.put(pageNumber,n.intValue());
+        }else {
+            throw new IllegalArgumentException("分页参数必须为Integer或Long类型");
+        }
+        return map;
+    }
 
+    /**
+     * 分页
+     * @param pageNumber int|long
+     * @param pageSize int|long
+     */
+    public static void startPage(Object pageNumber, Object pageSize){
+        Map<String, Object> map = buildPageMap(pageNumber, pageSize);
+        startPage(map);
+    }
     /**
      * 分页  as_page_number 小驼峰自动转化 将新增一条 asPageNumber
      *

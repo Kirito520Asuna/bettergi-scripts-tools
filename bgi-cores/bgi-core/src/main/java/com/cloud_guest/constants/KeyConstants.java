@@ -19,6 +19,7 @@ public interface KeyConstants {
     String ws_proxy_access_key = "WS_PROXY_ACCESS:UID:";
     String bettergi_scripts_list = "BETTERGI_SCRIPTS_LIST:";
     String mapping_uid_key = "MAPPING:UID:";
+    String mapping_uid_team_key = "MAPPING:UID:TEAM:";
     String auto_plan_key = "AUTO_PLAN:UID:";
     String auto_plan_global_key = "AUTO_PLAN:UID:GLOBAL:";
     String auto_plan_key_uid_all = "AUTO_PLAN:UID:ALL";

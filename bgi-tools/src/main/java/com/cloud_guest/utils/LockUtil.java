@@ -114,7 +114,9 @@ public class LockUtil {
         localLock.unlock();
     }
 
-
+    public static void unlock(LockWrapper lock) {
+        lock.unlock();
+    }
 /*    public static void main(String[] args) {
         // 示例使用
         String lockKey = "test-lock-key";

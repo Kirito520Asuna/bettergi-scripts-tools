@@ -70,6 +70,21 @@ CREATE TABLE IF NOT EXISTS `uid_info_config`
     PRIMARY KEY (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='UID信息配置表';
 
+CREATE TABLE IF NOT EXISTS `uid_team_config` (
+                                                 `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID，自增',
+                                                 `uid`         VARCHAR(64)  DEFAULT NULL COMMENT '用户唯一标识',
+                                                 `team`        VARCHAR(255) DEFAULT NULL COMMENT '队伍名称',
+                                                 `team_type`   VARCHAR(32)  DEFAULT NULL COMMENT '队伍类型',
+                                                  -- 通用审计字段
+                                                 `create_by`   VARCHAR(64) DEFAULT NULL COMMENT '创建者',
+                                                 `create_time` TIMESTAMP   DEFAULT NULL COMMENT '创建时间',
+                                                 `update_by`   VARCHAR(64) DEFAULT NULL COMMENT '更新者',
+                                                 `update_time` TIMESTAMP   DEFAULT NULL COMMENT '更新时间',
+                                                 `remark`      TEXT        DEFAULT NULL COMMENT '备注',
+                                                 PRIMARY KEY (`id`),
+                                                 UNIQUE KEY `uk_uid_team_type` (`uid`, `team_type`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '用户-队伍配置表';
+
 CREATE TABLE IF NOT EXISTS `db_kv` (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `type`        VARCHAR(64)  DEFAULT NULL COMMENT '键值类型',

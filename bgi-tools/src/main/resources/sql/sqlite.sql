@@ -64,6 +64,20 @@ CREATE TABLE IF NOT EXISTS uid_info_config (
     remark      TEXT
     );
 
+CREATE TABLE IF NOT EXISTS uid_team_config (
+                                        id          INTEGER PRIMARY KEY AUTOINCREMENT,              -- 主键ID，自增
+                                        uid         TEXT ,                               -- 用户唯一标识
+                                        team        TEXT,
+                                        team_type   TEXT,
+                                        create_by   TEXT,
+                                        create_time TEXT DEFAULT (datetime('now','localtime')),
+                                        update_by   TEXT,
+                                        update_time TEXT DEFAULT (datetime('now','localtime')),
+                                        remark      TEXT
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uk_uid_team_type ON uid_team_config (uid, team_type);
+
 -- 通用键值对存储表
 CREATE TABLE IF NOT EXISTS db_kv (
                                      id          INTEGER PRIMARY KEY AUTOINCREMENT,              -- 主键ID，自增
@@ -118,3 +132,5 @@ CREATE TABLE IF NOT EXISTS backup_info (
                                            update_time   TEXT DEFAULT (datetime('now','localtime')),
                                            remark        TEXT
 );
+
+
