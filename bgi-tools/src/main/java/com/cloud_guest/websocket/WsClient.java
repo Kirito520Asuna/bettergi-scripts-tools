@@ -39,6 +39,11 @@ public class WsClient {
     @OnClose
     public void onClose() {
         CONNECTED.set(false);
+        try {
+            this.session.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         //System.out.println("[WS] closed");
     }
 
