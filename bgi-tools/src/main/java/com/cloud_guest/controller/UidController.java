@@ -46,14 +46,16 @@ public class UidController implements AbsPage {
 
     @SysLog
     @Token
-    @Operation(summary = "查询全部uid映射")
-    @GetMapping("all")
-    public Result<List<UidInfo>> all() {
-        List<UidInfo> uidAll = uidService.findUidAll().stream().map(UidInfoConfig::toUidInfo).map(o -> {
+    @Operation(summary = "查询分页uid映射")
+    @GetMapping("page")
+    public Result<ResultPage<UidInfo>> page(@Schema(description = "页码") @RequestParam long pageNumber,
+                                      @Schema(description = "每页数量") @RequestParam long pageSize) {
+        PageUtils.startPage(pageNumber, pageSize);
+        List<UidInfo> uidAll = uidService.list().stream().map(UidInfoConfig::toUidInfo).map(o -> {
             o.setPassword(null);
             return o;
         }).toList();
-        return Result.ok(uidAll);
+        return Result.ok(listToPage(uidAll));
     }
 
     @SysLog
@@ -91,14 +93,14 @@ public class UidController implements AbsPage {
     @Operation(summary = "[Team]-查询分页-uid映射队伍配置")
     @GetMapping("team/page")
     public Result<ResultPage<UidTeam>> teamList(
-            @Schema(description = "ID")  @RequestParam(required = false) String id,
-            @Schema(description = "UID")  @RequestParam(required = false) String uid,
-            @Schema(description = "类型")  @RequestParam(required = false) String type,
-            @Schema(description = "页码")  @RequestParam long page,
-            @Schema(description = "每页数量")  @RequestParam long size
-    ){
-        PageUtils.startPage(page, size);
-        List<UidTeam> uidTeam = uidTeamService.searchList(id,uid,type).stream().map(UidTeamConfig::toRecord).toList();
+            @Schema(description = "ID") @RequestParam(required = false) String id,
+            @Schema(description = "UID") @RequestParam(required = false) String uid,
+            @Schema(description = "类型") @RequestParam(required = false) String type,
+            @Schema(description = "页码") @RequestParam long pageNumber,
+            @Schema(description = "每页数量") @RequestParam long pageSize
+    ) {
+        PageUtils.startPage(pageNumber, pageSize);
+        List<UidTeam> uidTeam = uidTeamService.searchList(id, uid, type).stream().map(UidTeamConfig::toRecord).toList();
         return Result.ok(listToPage(uidTeam));
     }
 
@@ -106,7 +108,7 @@ public class UidController implements AbsPage {
     @Operation(summary = "[Team]-查询指定-uid映射队伍配置")
     @GetMapping("team")
     public Result<UidTeam> team(@Schema(description = "UID") @Validated @NotBlank @RequestParam String uid,
-                                @Schema(description = "类型") @Validated @NotBlank @RequestParam String type){
+                                @Schema(description = "类型") @Validated @NotBlank @RequestParam String type) {
         UidTeamConfig uidTeamConfig = uidTeamService.searchOne(uid, type);
         UidTeam record = uidTeamConfig != null ? uidTeamConfig.toRecord() : null;
         return Result.ok(record);
@@ -115,7 +117,7 @@ public class UidController implements AbsPage {
     @SysLog
     @Operation(summary = "[Team]-查询指定-uid映射队伍配置")
     @GetMapping("team/info")
-    public Result<UidTeam> teamInfo(@Schema(description = "ID") @Validated @NotBlank @RequestParam String id){
+    public Result<UidTeam> teamInfo(@Schema(description = "ID") @Validated @NotBlank @RequestParam String id) {
         UidTeamConfig uidTeamConfig = uidTeamService.getById(Long.parseLong(id));
         UidTeam record = uidTeamConfig != null ? uidTeamConfig.toRecord() : null;
         return Result.ok(record);
@@ -125,12 +127,12 @@ public class UidController implements AbsPage {
     @Token
     @Operation(summary = "[Team]-保存/修改-uid映射队伍配置")
     @PostMapping("team")
-    public Result<UidTeam> team(@RequestBody UidTeam uidTeam){
+    public Result<UidTeam> team(@RequestBody UidTeam uidTeam) {
         Valid.validate(UidTeam.class, uidTeam);
 
         UidTeamConfig config = new UidTeamConfig();
         boolean notId = StrUtils.isNotBlank(uidTeam.id());
-        if (notId){
+        if (notId) {
             config.setId(Long.parseLong(uidTeam.id()));
         }
         config.setUid(uidTeam.uid())
@@ -139,11 +141,12 @@ public class UidController implements AbsPage {
 
         return Result.ok(uidTeamService.saveOrUpdateById(config).toRecord());
     }
+
     @SysLog
     @Token
     @Operation(summary = "[Team]-批量移除-uid映射队伍配置")
     @DeleteMapping("team")
-    public Result<Boolean> team(@Schema(description = "UID") @Validated @NotBlank @RequestParam(value = "ids") String idStr){
+    public Result<Boolean> team(@Schema(description = "UID") @Validated @NotBlank @RequestParam(value = "ids") String idStr) {
         List<Long> ids = Arrays.stream(StrUtils.replace(idStr, "[^0-9,]", "").split(",")).map(Long::parseLong).toList();
         return Result.ok(uidTeamService.removeBatchByIds(ids));
     }

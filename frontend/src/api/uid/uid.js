@@ -5,8 +5,11 @@ import {ApiService} from "@utils/ApiRequest.js";
 /**
  * 查询全部 uid 映射
  */
-export async function getAllUid() {
-    const {code, data} = await service.get('/jwt/uid/all')
+export async function getPageUid(page={
+    pageNumber: 1,
+    pageSize: 10
+}) {
+    const {code, data} = await ApiService.get('/jwt/uid/page',{params: {...page}})
     if (code === 200) {
         ElMessage.success("加载成功");
     }
@@ -69,8 +72,7 @@ export async function getTeamInfoPage(search = {
   const {code, data} = await ApiService.get('/api/uid/team/page', {
         params: {
             ...search,
-            page: page.pageNumber,
-            size: page.pageSize
+            ...page
         }
     })
 

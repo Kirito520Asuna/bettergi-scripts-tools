@@ -2,7 +2,7 @@
 import {computed, onMounted, reactive, ref} from "vue"
 import {ElMessage, ElMessageBox} from "element-plus"
 import {
-  getAllUid,
+  getPageUid,
   saveUid,
   removeUidList,
   getUid,
@@ -29,6 +29,12 @@ const formData = reactive({
 
 // 表格数据
 const tableData = ref([])
+const tablePage = ref({
+  pageNumber: 1,// 当前页码
+  pageSize: 10,// 每页大小
+  pages: 1,// 总页数
+  total: 0// 总记录数
+})
 const loading = ref(false)
 const multipleSelection = ref(new Set())
 
@@ -48,8 +54,13 @@ const loadData = async () => {
   loading.value = true
   try {
     Object.keys(passwordMap).forEach(key => delete passwordMap[key]);
-    const response = await getAllUid()
-    tableData.value = response || []
+    const page = {pageNumber: tablePage.value.pageNumber, pageSize: tablePage.value.pageSize}
+    const {list, total, pages, pageSize, pageNumber} = await getPageUid(page)
+    tableData.value = list || []
+    // tablePage.value.pageSize = pageSize
+    // tablePage.value.pageNumber = pageNumber
+    tablePage.value.total = total
+    tablePage.value.pages = pages
   } catch (error) {
     console.error('获取 UID 列表失败:', error)
     ElMessage.error('获取 UID 列表失败')
@@ -57,7 +68,12 @@ const loadData = async () => {
     loading.value = false
   }
 }
-
+const handleSizeChange = async () => {
+  await loadData()
+}
+const handleCurrentChange = async () => {
+  await loadData()
+}
 // 打开新增对话框
 const handleAdd = () => {
   formData.edit = false
@@ -439,11 +455,12 @@ onMounted(() => {
           </el-button>
           <el-button type="primary" @click="openDialogTeamInfo" class="action-button">
             <span class="button-icon">🔍</span>
-            <span class="button-text">查看队伍信息</span>
+            <span class="button-text">查看绑定队伍</span>
           </el-button>
         </div>
 
         <div class="manager-context">
+          <!-- 表格容器：flex:1 占剩余高度 -->
           <div class="table-container" v-if="tableData.length > 0">
             <el-table
                 v-loading="loading"
@@ -480,8 +497,21 @@ onMounted(() => {
                   </el-button>
                 </template>
               </el-table-column>
+              <el-table-column label="绑定队伍" fixed="right">
+                <template #default="{ row }">
+                <el-button
+                    type="primary"
+                    size="small"
+                    @click="openDialogTeamInfo(row?.uid)"
+                    class="table-button"
+                >
+                  查看信息
+                </el-button>
+                </template>
+              </el-table-column>
               <el-table-column label="操作" fixed="right">
                 <template #default="{ row }">
+
                   <el-button
                       type="primary"
                       size="small"
@@ -489,14 +519,6 @@ onMounted(() => {
                       class="table-button"
                   >
                     ✏️ 编辑
-                  </el-button>
-                  <el-button
-                      type="primary"
-                      size="small"
-                      @click="openDialogTeamInfo(row?.uid)"
-                      class="table-button"
-                  >
-                    队伍信息
                   </el-button>
                   <el-button
                       type="danger"
@@ -510,14 +532,28 @@ onMounted(() => {
               </el-table-column>
             </el-table>
           </div>
-
+          <!-- 空提示：flex:1 垂直居中 -->
           <div class="empty-tip" v-else-if="!loading && tableData.length === 0">
             <div class="empty-icon">📭</div>
             <p class="empty-text">暂无 UID 映射数据</p>
             <el-button type="primary" @click="handleAdd">立即添加</el-button>
           </div>
+          <!-- 分页：flex-shrink:0 固定底部 -->
+          <div class="pagination-wrap">
+            <!-- 分页 -->
+            <el-pagination
+                style="margin-top: 15px; justify-content: flex-end;"
+                v-model:current-page="tablePage.pageNumber"
+                v-model:page-size="tablePage.pageSize"
+                :total="tablePage.total"
+                :page-sizes="[10, 20, 50, 100]"
+                append-size-to="#app"
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+            />
+          </div>
         </div>
-
       </div>
     </div>
 
@@ -582,6 +618,7 @@ onMounted(() => {
 
     <!-- 队伍信息列表对话框 -->
     <el-dialog
+        class="team-info"
         v-model="teamInfo.showDialog.info"
         title="队伍信息"
         width="80%" style="height: 80vh"
@@ -612,7 +649,8 @@ onMounted(() => {
             <el-button @click="openEditTeamInfo(false)">新增</el-button>
           </el-form-item>
         </el-form>
-
+        <!--表格容器 flex:1 吃掉中间全部剩余高度 -->
+        <div class="team-info-table-wrap">
         <!-- 队伍信息表格 -->
         <el-table :data="teamInfo.list" v-loading="loading" border>
           <el-table-column prop="id" label="ID" width="80"/>
@@ -630,20 +668,21 @@ onMounted(() => {
             </template>
           </el-table-column>
         </el-table>
-
-        <!-- 分页 -->
-        <el-pagination
-            style="margin-top: 15px; justify-content: flex-end;"
-            v-model:current-page="teamInfo.pageNumber"
-            v-model:page-size="teamInfo.pageSize"
-            :total="teamInfo.total"
-            :page-sizes="[10, 20, 50, 100]"
-
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleTeamInfoSizeChange"
-            @current-change="handleTeamInfoCurrentChange"
-        />
+        </div>
+        <!-- 分页：固定在容器底部，不会跟着表格滚动 -->
+        <div class="team-info-pagination-wrap">
+          <el-pagination
+              v-model:current-page="teamInfo.pageNumber"
+              v-model:page-size="teamInfo.pageSize"
+              :total="teamInfo.total"
+              :page-sizes="[10, 20, 50, 100]"
+              layout="total, sizes, prev, pager, next, jumper"
+              @size-change="handleTeamInfoSizeChange"
+              @current-change="handleTeamInfoCurrentChange"
+          />
+        </div>
       </div>
+
     </el-dialog>
 
     <!-- 新增/编辑队伍信息对话框 -->
@@ -703,12 +742,16 @@ onMounted(() => {
 
 .manager-context {
   text-align: center;
-  margin-top: 20px; /*设置与上一个元素的间隔*/
+
+  display: flex;
+  flex-direction: column;
   height: 58vh;
+  margin-top: 20px;
+  padding: 20px;
   background: #ffffff;
   border-radius: 15px;
-  padding: 20px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  gap: 12px;
 }
 
 .manager-title {
@@ -751,7 +794,11 @@ onMounted(() => {
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
 }
 
+/* 表格容器：吃掉中间全部高度，表格内部滚动 */
 .table-container {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .table-button {
@@ -761,11 +808,23 @@ onMounted(() => {
   font-size: 13px;
 }
 
+/* 空提示：占满剩余空间，内容居中 */
 .empty-tip {
-  text-align: center;
+  /*text-align: center;*/
   /*  background: #da7c7c;*/
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
-
+/* 分页：固定底部，不被压缩 */
+.pagination-wrap {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
 .empty-icon {
   font-size: 80px;
   margin-bottom: 20px;
@@ -815,6 +874,41 @@ onMounted(() => {
     transform: rotate(360deg);
   }
 }
+
+/* ==========队伍弹窗布局 start========== */
+/* dialog内部body高度控制，不修改el-dialog__body原生display */
+:deep(.team-info .el-dialog__body) {
+  height: calc(80vh - 110px);
+  padding: 20px;
+}
+
+.team-info-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap:12px;
+}
+
+.team-info-search {
+  flex-shrink: 0;
+}
+
+/* 表格容器：占剩余全部高度，el-table设置height="100%"实现内部滚动 */
+.team-info-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 分页容器：flex-shrink:0，固定在底部，不会被压缩 */
+.team-info-pagination-wrap {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding-top:8px;
+}
+/* ==========队伍弹窗布局 end========== */
 
 
 @media (max-width: 768px) {
