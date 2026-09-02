@@ -4,6 +4,7 @@ import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Token;
 import com.cloud_guest.entitys.Valid;
 import com.cloud_guest.entitys.domain.UidInfo;
+import com.cloud_guest.entitys.dto.UidTeamDto;
 import com.cloud_guest.entitys.pojo.UidInfoConfig;
 import com.cloud_guest.entitys.pojo.UidTeamConfig;
 import com.cloud_guest.entitys.records.UidTeam;
@@ -87,31 +88,37 @@ public class UidController implements AbsPage {
 
 
     @SysLog
-    @Operation(summary = "[Team]-查询全部-uid映射队伍配置")
-    @GetMapping("team/list")
+    @Operation(summary = "[Team]-查询分页-uid映射队伍配置")
+    @GetMapping("team/page")
     public Result<ResultPage<UidTeam>> teamList(
-            @Schema(description = "UID")  @RequestParam String uid,
-                                @Schema(description = "类型")  @RequestParam String type,
+            @Schema(description = "ID")  @RequestParam(required = false) String id,
+            @Schema(description = "UID")  @RequestParam(required = false) String uid,
+            @Schema(description = "类型")  @RequestParam(required = false) String type,
             @Schema(description = "页码")  @RequestParam long page,
             @Schema(description = "每页数量")  @RequestParam long size
     ){
         PageUtils.startPage(page, size);
-        List<UidTeam> uidTeam = uidTeamService.searchList(uid,type).stream().map(UidTeamConfig::toRecord).toList();
+        List<UidTeam> uidTeam = uidTeamService.searchList(id,uid,type).stream().map(UidTeamConfig::toRecord).toList();
         return Result.ok(listToPage(uidTeam));
     }
+
     @SysLog
     @Operation(summary = "[Team]-查询指定-uid映射队伍配置")
     @GetMapping("team")
     public Result<UidTeam> team(@Schema(description = "UID") @Validated @NotBlank @RequestParam String uid,
                                 @Schema(description = "类型") @Validated @NotBlank @RequestParam String type){
-        return Result.ok(uidTeamService.searchOne(uid,type).toRecord());
+        UidTeamConfig uidTeamConfig = uidTeamService.searchOne(uid, type);
+        UidTeam record = uidTeamConfig != null ? uidTeamConfig.toRecord() : null;
+        return Result.ok(record);
     }
 
     @SysLog
     @Operation(summary = "[Team]-查询指定-uid映射队伍配置")
     @GetMapping("team/info")
     public Result<UidTeam> teamInfo(@Schema(description = "ID") @Validated @NotBlank @RequestParam String id){
-        return Result.ok(uidTeamService.getById(Long.parseLong(id)).toRecord());
+        UidTeamConfig uidTeamConfig = uidTeamService.getById(Long.parseLong(id));
+        UidTeam record = uidTeamConfig != null ? uidTeamConfig.toRecord() : null;
+        return Result.ok(record);
     }
 
     @SysLog
@@ -136,7 +143,7 @@ public class UidController implements AbsPage {
     @Token
     @Operation(summary = "[Team]-批量移除-uid映射队伍配置")
     @DeleteMapping("team")
-    public Result team(@Schema(description = "UID") @Validated @NotBlank @RequestParam(value = "ids") String idStr){
+    public Result<Boolean> team(@Schema(description = "UID") @Validated @NotBlank @RequestParam(value = "ids") String idStr){
         List<Long> ids = Arrays.stream(StrUtils.replace(idStr, "[^0-9,]", "").split(",")).map(Long::parseLong).toList();
         return Result.ok(uidTeamService.removeBatchByIds(ids));
     }

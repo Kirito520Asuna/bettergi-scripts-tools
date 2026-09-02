@@ -1,12 +1,7 @@
 package com.cloud_guest.service.impl;
 
-import cn.hutool.core.lang.Assert;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.cloud_guest.exception.exceptions.GlobalException;
-import com.cloud_guest.utils.LockUtil;
 import com.cloud_guest.utils.StrUtils;
-import com.cloud_guest.wrappers.lock.LockWrapper;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cloud_guest.mapper.UidTeamMapper;
@@ -15,7 +10,6 @@ import com.cloud_guest.service.UidTeamService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @Author yan
@@ -27,15 +21,16 @@ public class UidTeamServiceImpl extends ServiceImpl<UidTeamMapper, UidTeamConfig
     @Override
     public UidTeamConfig searchOne(String uid, String type) {
         return getOne(
-                lambdaQuery()
+                lambdaQueryWrapper()
                         .eq(UidTeamConfig::getUid, uid)
                         .eq(UidTeamConfig::getTeamType, type));
     }
 
     @Override
-    public List<UidTeamConfig> searchList(String uid, String type) {
+    public List<UidTeamConfig> searchList(String id, String uid, String type) {
         return list(
-                lambdaQuery()
+                lambdaQueryWrapper()
+                        .eq(StrUtils.isNotBlank(id), UidTeamConfig::getId, id)
                         .eq(StrUtils.isNotBlank(uid), UidTeamConfig::getUid, uid)
                         .eq(StrUtils.isNotBlank(type), UidTeamConfig::getTeamType, type)
         );
@@ -44,16 +39,23 @@ public class UidTeamServiceImpl extends ServiceImpl<UidTeamMapper, UidTeamConfig
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UidTeamConfig saveOrUpdateById(UidTeamConfig config) {
+        boolean existsUidType = exists(lambdaQueryWrapper()
+                .eq(UidTeamConfig::getUid, config.getUid())
+                .eq(UidTeamConfig::getTeamType, config.getTeamType())
+        );
+        if (existsUidType) {
+            throw new GlobalException("记录已存在，uid = " + config.getUid() + ", type = " + config.getTeamType());
+        }
         Long id = config.getId();
         if (id == null) {
             save(config);
         } else {
             // 更新时，需要根据 id 判断是否存在
-            boolean exists = exists(lambdaQuery().eq(UidTeamConfig::getId, id));
+            boolean exists = exists(lambdaQueryWrapper().eq(UidTeamConfig::getId, id));
             if (!exists) {
                 throw new GlobalException("记录不存在或已被删除，id = " + id);
             }
-            update(config, lambdaUpdate()
+            update(config, lambdaUpdateWrapper()
                     .eq(UidTeamConfig::getId, id)
                     .set(UidTeamConfig::getUid, config.getUid())
                     .set(UidTeamConfig::getTeam, config.getTeam())

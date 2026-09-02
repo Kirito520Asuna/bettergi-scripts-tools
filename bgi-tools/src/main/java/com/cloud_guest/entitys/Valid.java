@@ -1,5 +1,6 @@
 package com.cloud_guest.entitys;
 
+import com.cloud_guest.entitys.dto.UidTeamDto;
 import com.cloud_guest.entitys.records.UidTeam;
 import com.cloud_guest.exception.exceptions.GlobalException;
 
