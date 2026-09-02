@@ -3,11 +3,12 @@ package com.cloud_guest.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloud_guest.entitys.pojo.SysJob;
+import com.cloud_guest.mp.service.IServicePlus;
 import org.quartz.Scheduler;
 
 import java.util.List;
 
-public interface SysJobService extends IService<SysJob> {
+public interface SysJobService extends IServicePlus<SysJob> {
     /**
      * 获取Scheduler
      * @return

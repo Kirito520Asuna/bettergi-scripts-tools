@@ -3,6 +3,7 @@ package com.cloud_guest.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.entitys.pojo.AutoPlanConfig;
+import com.cloud_guest.mp.service.IServicePlus;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ import java.util.Map;
  * @Date 2026/2/8 15:31:44
  * @Description
  */
-public interface AutoPlanService extends IService<AutoPlanConfig>, BaseService {
+public interface AutoPlanService extends IServicePlus<AutoPlanConfig>, BaseService {
     default String getSuffix() {
         return KeyConstants.auto_plan_key;
     }

@@ -3,6 +3,7 @@ package com.cloud_guest.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloud_guest.constants.KeyConstants;
 import com.cloud_guest.entitys.pojo.UidInfoConfig;
+import com.cloud_guest.mp.service.IServicePlus;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
  * @Date 2026/3/30 17:39:36
  * @Description
  */
-public interface UidService extends IService<UidInfoConfig>, BaseService {
+public interface UidService extends IServicePlus<UidInfoConfig>, BaseService {
     default String getSuffix() {
         return KeyConstants.mapping_uid_key;
     }

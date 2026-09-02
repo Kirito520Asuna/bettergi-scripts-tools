@@ -4,6 +4,7 @@ package com.cloud_guest.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloud_guest.entitys.pojo.BackupInfo;
+import com.cloud_guest.mp.service.IServicePlus;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ import java.util.concurrent.*;
  * @Date 2026/3/15 22:16:29
  * @Description
  */
-public interface DataBackupRecoveryService extends IService<BackupInfo> {
+public interface DataBackupRecoveryService extends IServicePlus<BackupInfo> {
     BackupInfo backup();
 
     boolean recovery(Map<String, Object> map);
