@@ -3,6 +3,7 @@ package com.cloud_guest.controller;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.log.SysLog;
+import com.cloud_guest.entitys.ClassConvert;
 import com.cloud_guest.entitys.domain.BackUp;
 import com.cloud_guest.entitys.dto.JsonDto;
 import com.cloud_guest.exception.exceptions.GlobalException;
@@ -12,6 +13,7 @@ import com.cloud_guest.result.Result;
 import com.cloud_guest.result.page.AbsPage;
 import com.cloud_guest.result.page.ResultPage;
 import com.cloud_guest.service.DataBackupRecoveryService;
+import com.cloud_guest.utils.StrUtils;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.google.common.collect.Maps;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,6 +41,18 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(value = {"/jwt/data/"})
 public class DataBackupRecoveryController implements AbsPage {
+
+    static {
+        // 备份信息
+        ClassConvert.register(BackupInfo.class, BackUp.class, info -> {
+            String id = ObjectUtils.isEmpty(info.getId()) ? null : String.valueOf(info.getId());
+            return new BackUp(id.toString(), info.getBackupName(), info.getBackupPath(), info.getBackupJson(), info.getBackupTime(), info.getBackupSize());
+        }, info -> {
+            String id = info.getId();
+            return new BackupInfo(StrUtils.isNotBlank(id) ? Long.valueOf(id) : null, info.getBackupName(), info.getBackupPath(), info.getBackupJson(), info.getBackupTime(), info.getBackupSize());
+        });
+    }
+
     @Resource
     private DataBackupRecoveryService dataBackupRecoveryService;
 
@@ -56,13 +70,12 @@ public class DataBackupRecoveryController implements AbsPage {
     @Operation(summary = "查询远程数据备份分页")
     @GetMapping("backup/page")
     public Result backupPage(@RequestParam Long pageNumber, @RequestParam Long pageSize) {
-        LinkedHashMap<String, Object> map = Maps.newLinkedHashMap();
-        map.put(PageUtils.pageNumber, pageNumber);
-        map.put(PageUtils.pageSize, pageSize);
-        PageUtils.startPage(map);
+        PageUtils.startPage(pageNumber, pageSize);
         List<BackupInfo> list = dataBackupRecoveryService.list();
         ResultPage<BackupInfo> data = listToPage(list);
-        List<BackUp> backUpList = data.getList().stream().map(BackupInfo::toBackUp).toList();
+        List<BackUp> backUpList = data.getList().stream()
+                .map(info-> ClassConvert.convert(BackupInfo.class, BackUp.class, info))
+                .toList();
         return Result.ok(pageToVoPage(data, backUpList));
     }
     @SneakyThrows
@@ -70,7 +83,7 @@ public class DataBackupRecoveryController implements AbsPage {
     @Operation(summary = "查询本地数据备份列表")
     @GetMapping("backup/local")
     public Result backupLocal() {
-        List<BackUp> list = dataBackupRecoveryService.localList().stream().map(BackupInfo::toBackUp).toList();
+        List<BackUp> list = dataBackupRecoveryService.localList().stream().map(info-> ClassConvert.convert(BackupInfo.class, BackUp.class, info)).toList();
         return Result.ok(list);
     }
     @SneakyThrows

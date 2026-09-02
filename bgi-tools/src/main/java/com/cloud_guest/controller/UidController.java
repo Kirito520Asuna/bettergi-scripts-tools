@@ -8,6 +8,7 @@ import com.cloud_guest.entitys.dto.UidTeamDto;
 import com.cloud_guest.entitys.pojo.UidInfoConfig;
 import com.cloud_guest.entitys.pojo.UidTeamConfig;
 import com.cloud_guest.entitys.records.UidTeam;
+import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.mp.utils.PageUtils;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.result.page.AbsPage;
@@ -39,6 +40,25 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = {"/uid/", "/api/uid/", "/jwt/uid/"})
 public class UidController implements AbsPage {
+
+    static {
+        // 注册 UidTeam 的校验器，lambda 参数类型会被编译器推断为 UidTeam
+        Valid.register(UidTeam.class, uidTeam -> {
+            String team = uidTeam.team();
+            String uid = uidTeam.uid();
+            String type = uidTeam.type();
+            if (team == null || team.isBlank()) {
+                throw new GlobalException("team 不能为空");
+            }
+            if (uid == null || uid.isBlank()) {
+                throw new GlobalException("uid 不能为空");
+            }
+            if (type == null || type.isBlank()) {
+                throw new GlobalException("type 不能为空");
+            }
+        });
+    }
+
     @Resource
     private UidService uidService;
     @Resource
