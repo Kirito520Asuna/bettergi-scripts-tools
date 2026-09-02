@@ -2,7 +2,6 @@ package com.cloud_guest.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloud_guest.constants.KeyConstants;
-import com.cloud_guest.entitys.domain.WsProxyAccess;
 import com.cloud_guest.entitys.pojo.WsProxyAccessConfig;
 import com.cloud_guest.mp.service.IServicePlus;
 
@@ -21,7 +20,6 @@ public interface WsProxyService  extends IServicePlus<WsProxyAccessConfig>, Base
 
     List<String> findUidAll();
 
-    WsProxyAccess find(String id);
 
-    List<WsProxyAccess> findAll();
+    List<WsProxyAccessConfig> searchList(String uid);
 }

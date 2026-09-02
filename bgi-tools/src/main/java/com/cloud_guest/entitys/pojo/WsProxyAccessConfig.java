@@ -3,7 +3,6 @@ package com.cloud_guest.entitys.pojo;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.cloud_guest.entitys.domain.WsProxyAccess;
 import com.cloud_guest.entitys.common.enums.ActionType;
 import com.cloud_guest.mp.pojo.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -56,7 +55,4 @@ public class WsProxyAccessConfig extends BaseEntity {
     public static final String COL_AT_LIST = "at_list";
     public static final String COL_USER_ID = "user_id";
     public static final String COL_GROUP_ID = "group_id";
-    public WsProxyAccess toWsProxyAccess(){
-        return new WsProxyAccess(action,url,proxyUrl,token,atList,userId,groupId,uid);
-    }
 }

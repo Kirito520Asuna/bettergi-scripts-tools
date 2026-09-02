@@ -1,13 +1,20 @@
 package com.cloud_guest.controller;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Login;
 import com.cloud_guest.aop.security.Token;
-import com.cloud_guest.entitys.domain.WsProxyAccess;
+import com.cloud_guest.entitys.ClassConvert;
+import com.cloud_guest.entitys.Valid;
+import com.cloud_guest.entitys.common.enums.ActionType;
+import com.cloud_guest.entitys.records.WsProxyAccess;
 import com.cloud_guest.entitys.dto.WsProxyDto;
 import com.cloud_guest.exception.exceptions.GlobalException;
+import com.cloud_guest.mp.utils.PageUtils;
+import com.cloud_guest.result.page.AbsPage;
+import com.cloud_guest.result.page.ResultPage;
 import com.cloud_guest.websocket.WsClientManager;
 import com.cloud_guest.entitys.pojo.WsProxyAccessConfig;
 import com.cloud_guest.result.Result;
@@ -38,7 +45,60 @@ import static com.cloud_guest.result.Result.ok;
 @Tag(name = "ws代理", description = "ws代理")
 @RestController
 @RequestMapping({"/ws-proxy/", "/api/ws-proxy/", "/jwt/ws-proxy/"})
-public class WsProxyController {
+public class WsProxyController implements AbsPage {
+    static {
+        ClassConvert.register(WsProxyAccess.class, WsProxyAccessConfig.class,
+                info -> {
+            if (info == null){
+                return null;
+            }
+            ActionType action = info.action();
+            String url = info.url();
+            String proxyUrl = info.proxyUrl();
+            String token = info.token();
+            String atList = info.atList();
+            String userId = info.userId();
+            String groupId = info.groupId();
+            String uid = info.uid();
+            WsProxyAccessConfig config = new WsProxyAccessConfig();
+            config.setAction(action);
+            config.setUrl(url);
+            config.setProxyUrl(proxyUrl);
+            config.setToken(token);
+            config.setAtList(atList);
+            config.setUserId(userId);
+            config.setGroupId(groupId);
+            config.setUid(uid);
+            return config;
+        },
+                info -> {
+            if (info == null){
+                return null;
+            }
+            ActionType action = info.getAction();
+            String url = info.getUrl();
+            String proxyUrl = info.getProxyUrl();
+            String token = info.getToken();
+            String atList = info.getAtList();
+            String userId = info.getUserId();
+            String groupId = info.getGroupId();
+            String uid = info.getUid();
+            return new WsProxyAccess(action, url, proxyUrl, token, atList, userId, groupId, uid);
+        });
+
+        Valid.register(WsProxyDto.class, info -> {
+            if (!TokenUtil.checkToken()) {
+                String uid = info.getUid();
+                if (StrUtil.isBlank(uid)) {
+                    throw new GlobalException("请输入 UID");
+                }
+                WsProxyAccessConfig accessConfig = SpringUtil.getBean(WsProxyService.class).getById(uid);
+                if (accessConfig == null) {
+                    throw new GlobalException("UID 未授权");
+                }
+            }
+        });
+    }
 
     @Resource
     private WsClientManager wsClientManager;
@@ -50,16 +110,7 @@ public class WsProxyController {
     @Operation(summary = "发送消息")
     @PostMapping("message/send")
     public Result send(@JsonView(BasicJsonView.WsProxyView.class) @Validated @RequestBody WsProxyDto wsProxy) {
-        if (!TokenUtil.checkToken()) {
-            String uid = wsProxy.getUid();
-            if (StrUtil.isBlank(uid)) {
-                throw new GlobalException("请输入 UID");
-            }
-            WsProxyAccess proxyAccess = wsProxyService.find(uid);
-            if (proxyAccess == null) {
-                throw new GlobalException("UID 未授权");
-            }
-        }
+        Valid.validate(WsProxyDto.class, wsProxy);
         wsClientManager.send(wsProxy);
         return Result.ok();
     }
@@ -69,16 +120,7 @@ public class WsProxyController {
     @Operation(summary = "发送消息v1")
     @PostMapping("message/send/v1")
     public Result sendV1(@JsonView(BasicJsonView.WsProxyViewV1.class) @Validated @RequestBody WsProxyDto wsProxyDto) {
-        if (!TokenUtil.checkToken()) {
-            String uid = wsProxyDto.getUid();
-            if (StrUtil.isBlank(uid)) {
-                throw new GlobalException("请输入 UID");
-            }
-            WsProxyAccess proxyAccess = wsProxyService.find(uid);
-            if (proxyAccess == null) {
-                throw new GlobalException("UID 未授权");
-            }
-        }
+        Valid.validate(WsProxyDto.class, wsProxyDto);
         Map<String, Object> bodyMap = wsProxyDto.getBodyMap();
         String url = wsProxyDto.getUrl();
         wsClientManager.buildUrl(url, wsProxyDto.getToken());
@@ -93,21 +135,31 @@ public class WsProxyController {
         List<String> uidList = wsProxyService.findUidAll();
         return ok(uidList);
     }
+
     @Token
     @SysLog
     @Operation(summary = "查询授权全部")
-    @GetMapping("access/all")
-    public Result<List<WsProxyAccess>> accessALL() {
-        List<WsProxyAccess> proxyAccessList = wsProxyService.findAll();
-        return ok(proxyAccessList);
+    @GetMapping("access/page")
+    public Result<ResultPage<WsProxyAccess>> accessPage(
+            @RequestParam(required = false) String uid,
+            @RequestParam long pageNumber,
+            @RequestParam long pageSize) {
+        PageUtils.startPage(pageNumber, pageSize);
+        List<WsProxyAccess> list = wsProxyService.searchList(uid)
+                .stream()
+                .map(info -> ClassConvert.convert(WsProxyAccessConfig.class, WsProxyAccess.class, info))
+                .toList();
+        return ok(listToPage(list));
     }
+
     @Token
     @SysLog
     @Operation(summary = "查询授权")
     @GetMapping("access")
     public Result<WsProxyAccess> access(@RequestParam String uid) {
-        WsProxyAccess proxyAccess = wsProxyService.find(uid);
-        return ok(proxyAccess);
+        WsProxyAccessConfig accessConfig = wsProxyService.getById(uid);
+        WsProxyAccess record =  ClassConvert.convert(WsProxyAccessConfig.class, WsProxyAccess.class, accessConfig);
+        return ok(record);
     }
 
     @Login
@@ -115,7 +167,7 @@ public class WsProxyController {
     @Operation(summary = "保存授权")
     @PostMapping("access")
     public Result access(@RequestBody WsProxyAccess wsProxyAccess) {
-        WsProxyAccessConfig config = wsProxyAccess.toConfig();
+        WsProxyAccessConfig config = ClassConvert.convert(WsProxyAccess.class, WsProxyAccessConfig.class, wsProxyAccess);
         wsProxyService.saveOrUpdate(config);
         return ok();
     }

@@ -8,10 +8,10 @@
         <div class="form-group search-layout">
           <label class="label">UID:</label>
           <input
-            v-model="searchUid"
-            class="input"
-            placeholder="输入 UID 搜索"
-            @keyup.enter="handleSearch"
+              v-model="searchUid"
+              class="input"
+              placeholder="输入 UID 搜索"
+              @keyup.enter="handleSearch"
           />
         </div>
         <div class="actions">
@@ -27,58 +27,89 @@
       <!-- 表格展示 -->
       <div class="card">
         <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>
-                  <input
-                    type="checkbox"
-                    :checked="isAllSelected"
-                    @change="toggleSelectAll"
-                  />
-                </th>
-                <th>UID</th>
-                <th>操作类型</th>
-                <th>WS 地址</th>
-                <th>代理地址</th>
-                <th>Token</th>
-                <th>AT 列表</th>
-                <th>用户 ID</th>
-                <th>群 ID</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, index) in filteredData" :key="item.uid" class="data-row">
-                <td>
-                  <input
-                    type="checkbox"
-                    :value="item.uid"
-                    v-model="selectedRows"
-                  />
-                </td>
-                <td>{{ item.uid }}</td>
-                <td>{{ actionMap.get(item.action)  || '-' }}</td>
-                <td>{{ item.ws_url || '-' }}</td>
-                <td>{{ item.ws_proxy_url || '-' }}</td>
-                <td>
-                  <span class="token-display">
-                    {{ item.ws_token ? item.ws_token.substring(0, 8) + '***' : '-' }}
-                  </span>
-                </td>
-                <td>{{ item.at_list|| '-' }}</td>
-                <td>{{ item.user_id || '-' }}</td>
-                <td>{{ item.group_id || '-' }}</td>
-                <td>
-                  <button @click="handleEdit(item)" class="btn-link edit">✏️ 编辑</button>
-                  <button @click="handleDelete(item.uid)" class="btn-link danger">🗑️ 删除</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div v-if="filteredData.length === 0" class="empty-data">
-            暂无数据
-          </div>
+          <el-table
+              :data="filteredData"
+              border
+              style="width:100%"
+              @selection-change="handleSelectionChange"
+          >
+            <!-- 多选框列 -->
+            <el-table-column type="selection" width="55"/>
+
+            <el-table-column prop="uid" label="UID"/>
+
+            <el-table-column label="操作类型">
+              <template #default="{ row }">
+                {{ actionMap.get(row.action) || '-' }}
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="ws_url" label="WS 地址">
+              <template #default="{ row }">
+                {{ row.ws_url || '-' }}
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="ws_proxy_url" label="代理地址">
+              <template #default="{ row }">
+                {{ row.ws_proxy_url || '-' }}
+              </template>
+            </el-table-column>
+
+            <el-table-column label="Token">
+              <template #default="{ row }">
+      <span class="token-display">
+        {{ row.ws_token ? row.ws_token.substring(0, 8) + '***' : '-' }}
+      </span>
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="at_list" label="AT 列表">
+              <template #default="{ row }">
+                {{ row.at_list || '-' }}
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="user_id" label="用户 ID">
+              <template #default="{ row }">
+                {{ row.user_id || '-' }}
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="group_id" label="群 ID">
+              <template #default="{ row }">
+                {{ row.group_id || '-' }}
+              </template>
+            </el-table-column>
+
+            <!-- 操作列固定右侧 -->
+            <el-table-column label="操作" fixed="right" width="180">
+              <template #default="{ row }">
+                <el-button link type="primary" @click="handleEdit(row)">✏️ 编辑</el-button>
+                <el-button link type="danger" @click="handleDelete(row.uid)">🗑️ 删除</el-button>
+              </template>
+            </el-table-column>
+
+            <!-- 空数据插槽，替代外面 empty‑data 容器 -->
+            <template #empty>
+              <div class="empty-data">暂无数据</div>
+            </template>
+          </el-table>
+        </div>
+
+        <div class="pagination-wrap">
+          <!-- 分页 -->
+          <el-pagination
+              style="margin-top: 15px; justify-content: flex-end;"
+              v-model:current-page="tablePage.pageNumber"
+              v-model:page-size="tablePage.pageSize"
+              :total="tablePage.total"
+              :page-sizes="[10, 20, 50, 100]"
+              append-size-to="#app"
+              layout="total, sizes, prev, pager, next, jumper"
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+          />
         </div>
       </div>
 
@@ -93,10 +124,10 @@
             <div class="form-group">
               <label class="label">UID <span class="required">*</span></label>
               <input
-                v-model="formData.uid"
-                class="input"
-                placeholder="请输入 UID"
-                :disabled="isEditMode"
+                  v-model="formData.uid"
+                  class="input"
+                  placeholder="请输入 UID"
+                  :disabled="isEditMode"
               />
             </div>
             <div class="form-group">
@@ -110,50 +141,50 @@
             <div class="form-group">
               <label class="label">WS 地址</label>
               <input
-                v-model="formData.ws_url"
-                class="input"
-                placeholder="例如：ws://127.0.0.1:8080/ws"
+                  v-model="formData.ws_url"
+                  class="input"
+                  placeholder="例如：ws://127.0.0.1:8080/ws"
               />
             </div>
             <div class="form-group">
               <label class="label">WS 代理地址</label>
               <input
-                v-model="formData.ws_proxy_url"
-                class="input"
-                placeholder="可选，代理服务器地址"
+                  v-model="formData.ws_proxy_url"
+                  class="input"
+                  placeholder="可选，代理服务器地址"
               />
             </div>
             <div class="form-group">
               <label class="label">授权 Token</label>
               <input
-                v-model="formData.ws_token"
-                class="input"
-                type="password"
-                placeholder="可选，用于身份验证"
+                  v-model="formData.ws_token"
+                  class="input"
+                  type="password"
+                  placeholder="可选，用于身份验证"
               />
             </div>
             <div class="form-group">
               <label class="label">AT 列表</label>
               <input
-                v-model="formData.at_list"
-                class="input"
-                placeholder="可选，AT 相关人员列表"
+                  v-model="formData.at_list"
+                  class="input"
+                  placeholder="可选，AT 相关人员列表"
               />
             </div>
             <div class="form-group">
               <label class="label">用户 ID</label>
               <input
-                v-model="formData.user_id"
-                class="input"
-                placeholder="可选，QQ 用户 ID"
+                  v-model="formData.user_id"
+                  class="input"
+                  placeholder="可选，QQ 用户 ID"
               />
             </div>
             <div class="form-group">
               <label class="label">群 ID</label>
               <input
-                v-model="formData.group_id"
-                class="input"
-                placeholder="可选，QQ 群 ID"
+                  v-model="formData.group_id"
+                  class="input"
+                  placeholder="可选，QQ 群 ID"
               />
             </div>
           </div>
@@ -174,20 +205,20 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
+import {ref, computed, onMounted} from 'vue';
+import {ElMessage} from 'element-plus';
 import router from '@router/router';
 import {goBack, toHomePage} from '@api/web/web.js';
 import {
-  getAccessAll,
-  getAccess,
+  getAccessPage,
   saveAccess,
   deleteAccess
 } from '@api/ws/wsProxy.js';
 import {getHostPrefix} from "@utils/ApiRequest.js";
-const actionMap=new Map([
-    ['send_private_msg','私聊'],
-    ['send_group_msg','群聊']
+
+const actionMap = new Map([
+  ['send_private_msg', '私聊'],
+  ['send_group_msg', '群聊']
 ])
 const currentRoute = ref(router.currentRoute)
 const tableData = ref([]);
@@ -195,7 +226,8 @@ const searchUid = ref('');
 const selectedRows = ref([]);
 const showDialog = ref(false);
 const isEditMode = ref(false);
-function getWsProxyHostPrefix(){
+
+function getWsProxyHostPrefix() {
   return getHostPrefix();
 }
 
@@ -203,7 +235,7 @@ const formData = ref({
   uid: '',
   action: '',
   ws_url: '',
-  ws_proxy_url: getWsProxyHostPrefix()+'ws-proxy/message/send',
+  ws_proxy_url: getWsProxyHostPrefix() + 'ws-proxy/message/send',
   ws_token: '',
   at_list: '',
   user_id: '',
@@ -213,28 +245,52 @@ const formData = ref({
 const filteredData = computed(() => {
   if (!searchUid.value) return tableData.value;
   return tableData.value.filter(item =>
-    item.uid.toLowerCase().includes(searchUid.value.toLowerCase())
+      item.uid.toLowerCase().includes(searchUid.value.toLowerCase())
   );
 });
 
+const tablePage = ref({
+  pageNumber: 1,// 当前页码
+  pageSize: 10,// 每页大小
+  pages: 1,// 总页数
+  total: 0// 总记录数
+})
+
 const isAllSelected = computed(() => {
   return tableData.value.length > 0 &&
-         selectedRows.value.length === tableData.value.length;
+      selectedRows.value.length === tableData.value.length;
 });
+
+
+// 表格选中变化回调
+const handleSelectionChange = (selection) => {
+  selectedRows.value = selection
+}
+
 
 onMounted(() => {
   fetchData();
 });
 
-const fetchData = async () => {
+const fetchData = async (search = {uid: undefined}) => {
   try {
-    const response = await getAccessAll();
-    tableData.value = Array.isArray(response) ? response : [];
+    const page = {pageNumber: tablePage.value.pageNumber, pageSize: tablePage.value.pageSize}
+    const {list, total, pages} = await getAccessPage(search, page);
+    tableData.value = Array.isArray(list) ? list : [];
+    tablePage.value.total = total;
+    tablePage.value.pages = pages;
   } catch (error) {
     console.error('获取数据失败:', error);
     ElMessage.error('获取数据失败：' + (error.message || '未知错误'));
   }
 };
+
+const handleSizeChange = async () => {
+  await fetchData()
+}
+const handleCurrentChange = async () => {
+  await fetchData()
+}
 
 const handleSearch = () => {
   // 使用 computed 属性自动过滤
@@ -258,7 +314,7 @@ const openAddDialog = () => {
     uid: '',
     action: '',
     ws_url: '',
-    ws_proxy_url: getWsProxyHostPrefix()+'ws-proxy/message/send',
+    ws_proxy_url: getWsProxyHostPrefix() + 'ws-proxy/message/send',
     ws_token: '',
     at_list: '',
     user_id: '',
@@ -269,7 +325,7 @@ const openAddDialog = () => {
 
 const handleEdit = (item) => {
   isEditMode.value = true;
-  formData.value = { ...item };
+  formData.value = {...item};
   showDialog.value = true;
 };
 
@@ -281,7 +337,7 @@ const handleSubmit = async () => {
   if (!formData.value.uid) {
     ElMessage.warning('请输入 UID');
     return;
-  }else if (!formData.value.action) {
+  } else if (!formData.value.action) {
     ElMessage.warning('请输入操作类型');
     return;
   }
@@ -315,7 +371,7 @@ const batchDelete = async () => {
   }
 
   try {
-    await deleteAccess(selectedRows.value.join(','));
+    await deleteAccess(selectedRows.value.map(item => item.uid).join(','));
     ElMessage.success(`成功删除 ${selectedRows.value.length} 条记录`);
     selectedRows.value = [];
     await fetchData();
@@ -345,7 +401,7 @@ const goToBack = async () => {
 .title {
   color: #11d8ea;
   font-size: 3rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 
   text-align: center;
   margin-bottom: 10px;
@@ -363,7 +419,7 @@ const goToBack = async () => {
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .form-group {
@@ -376,17 +432,20 @@ const goToBack = async () => {
   align-items: center;
   gap: 15px;
 }
+
 .label {
   width: 120px;
   flex-shrink: 0;
   font-weight: 600;
   color: #333;
 }
+
 .form-group.search-layout .label {
   width: auto;
   margin-bottom: 0;
   flex-shrink: 0;
 }
+
 .required {
   color: #ff4d4f;
   margin-left: 4px;
@@ -400,10 +459,12 @@ const goToBack = async () => {
   font-size: 14px;
   transition: all 0.3s;
 }
+
 .form-group.search-layout .input {
   flex: 1;
   min-width: 0;
 }
+
 .input:focus {
   border-color: #667eea;
   outline: none;
@@ -543,7 +604,7 @@ const goToBack = async () => {
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
 .modal-header {
@@ -595,252 +656,252 @@ const goToBack = async () => {
 
 
 @media (max-width: 768px) {
-    .container {
-        padding: 15px;
-        max-width: 100%;
-        width: 100vw;
-        height: auto;
-        min-height: 100vh;
-    }
+  .container {
+    padding: 15px;
+    max-width: 100%;
+    width: 100vw;
+    height: auto;
+    min-height: 100vh;
+  }
 
-    .title {
-        font-size: 1.8rem;
-        margin-bottom: 20px;
-        padding: 20px;
-        border-radius: 12px;
-    }
+  .title {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 12px;
+  }
 
-    .card {
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 15px;
-    }
+  .card {
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+  }
 
-    .form-group {
-        flex-direction: column;
-        gap: 8px;
-        margin-bottom: 12px;
-    }
+  .form-group {
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
 
-    .form-group.search-layout {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-    }
+  .form-group.search-layout {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
 
-    .label {
-        width: auto;
-        margin-bottom: 5px;
-        font-size: 13px;
-    }
+  .label {
+    width: auto;
+    margin-bottom: 5px;
+    font-size: 13px;
+  }
 
-    .form-group.search-layout .label {
-        width: auto;
-        margin-bottom: 0;
-    }
+  .form-group.search-layout .label {
+    width: auto;
+    margin-bottom: 0;
+  }
 
-    .input {
-        width: 100%;
-        font-size: 13px;
-        padding: 9px;
-    }
+  .input {
+    width: 100%;
+    font-size: 13px;
+    padding: 9px;
+  }
 
-    .actions {
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 12px;
-    }
+  .actions {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+  }
 
-    .container .btn {
-        width: 100%;
-        padding: 12px 16px;
-        font-size: 14px;
-    }
+  .container .btn {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
 
-    .container .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    }
+  .container .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
 
-    .table-container {
-        height: 50vh;
-        overflow-x: auto;
-    }
+  .table-container {
+    height: 50vh;
+    overflow-x: auto;
+  }
 
-    .data-table th,
-    .data-table td {
-        padding: 8px;
-        font-size: 13px;
-    }
+  .data-table th,
+  .data-table td {
+    padding: 8px;
+    font-size: 13px;
+  }
 
-    .btn-link {
-        padding: 4px 7px;
-        font-size: 12px;
-        margin-right: 4px;
-        border-radius: 3px;
-    }
+  .btn-link {
+    padding: 4px 7px;
+    font-size: 12px;
+    margin-right: 4px;
+    border-radius: 3px;
+  }
 
-    .empty-data {
-        padding: 30px;
-        font-size: 14px;
-    }
+  .empty-data {
+    padding: 30px;
+    font-size: 14px;
+  }
 
-    .token-display {
-        font-size: 12px;
-        padding: 2px 5px;
-    }
+  .token-display {
+    font-size: 12px;
+    padding: 2px 5px;
+  }
 
-    .modal-dialog {
-        width: 95%;
-        max-width: 90vw;
-        max-height: 85vh;
-        border-radius: 10px;
-    }
+  .modal-dialog {
+    width: 95%;
+    max-width: 90vw;
+    max-height: 85vh;
+    border-radius: 10px;
+  }
 
-    .modal-header {
-        padding: 15px;
-    }
+  .modal-header {
+    padding: 15px;
+  }
 
-    .modal-header h3 {
-        font-size: 1.3rem;
-    }
+  .modal-header h3 {
+    font-size: 1.3rem;
+  }
 
-    .close-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 22px;
-    }
+  .close-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 22px;
+  }
 
-    .modal-body {
-        padding: 15px;
-    }
+  .modal-body {
+    padding: 15px;
+  }
 
-    .modal-footer {
-        padding: 15px;
-        flex-direction: column;
-        gap: 10px;
-    }
+  .modal-footer {
+    padding: 15px;
+    flex-direction: column;
+    gap: 10px;
+  }
 
-    .modal-footer .btn {
-        width: 100%;
-    }
+  .modal-footer .btn {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
-    .container {
-        padding: 10px;
-        width: 100vw;
-    }
+  .container {
+    padding: 10px;
+    width: 100vw;
+  }
 
-    .title {
-        font-size: 1.4rem;
-        margin-bottom: 15px;
-        padding: 15px;
-        border-radius: 10px;
-    }
+  .title {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 10px;
+  }
 
-    .card {
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 12px;
-    }
+  .card {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
 
-    .form-group.search-layout {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
+  .form-group.search-layout {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
 
-    .label {
-        font-size: 12px;
-        margin-bottom: 4px;
-    }
+  .label {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
 
-    .input {
-        font-size: 12px;
-        padding: 8px;
-        border-radius: 5px;
-    }
+  .input {
+    font-size: 12px;
+    padding: 8px;
+    border-radius: 5px;
+  }
 
-    .actions {
-        gap: 8px;
-        margin-top: 10px;
-    }
+  .actions {
+    gap: 8px;
+    margin-top: 10px;
+  }
 
-    .container .btn {
-        padding: 10px 14px;
-        font-size: 13px;
-    }
+  .container .btn {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
 
-    .container .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.25);
-    }
+  .container .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.25);
+  }
 
-    .table-container {
-        height: 45vh;
-    }
+  .table-container {
+    height: 45vh;
+  }
 
-    .data-table th,
-    .data-table td {
-        padding: 6px;
-        font-size: 11px;
-    }
+  .data-table th,
+  .data-table td {
+    padding: 6px;
+    font-size: 11px;
+  }
 
-    .btn-link {
-        padding: 3px 5px;
-        font-size: 11px;
-        margin-right: 3px;
-    }
+  .btn-link {
+    padding: 3px 5px;
+    font-size: 11px;
+    margin-right: 3px;
+  }
 
-    .empty-data {
-        padding: 20px;
-        font-size: 12px;
-    }
+  .empty-data {
+    padding: 20px;
+    font-size: 12px;
+  }
 
-    .token-display {
-        font-size: 10px;
-        padding: 2px 4px;
-        border-radius: 2px;
-    }
+  .token-display {
+    font-size: 10px;
+    padding: 2px 4px;
+    border-radius: 2px;
+  }
 
-    .modal-overlay {
-        align-items: flex-end;
-    }
+  .modal-overlay {
+    align-items: flex-end;
+  }
 
-    .modal-dialog {
-        width: 100%;
-        max-width: 100vw;
-        max-height: 95vh;
-        border-radius: 12px 12px 0 0;
-    }
+  .modal-dialog {
+    width: 100%;
+    max-width: 100vw;
+    max-height: 95vh;
+    border-radius: 12px 12px 0 0;
+  }
 
-    .modal-header {
-        padding: 12px;
-    }
+  .modal-header {
+    padding: 12px;
+  }
 
-    .modal-header h3 {
-        font-size: 1.1rem;
-    }
+  .modal-header h3 {
+    font-size: 1.1rem;
+  }
 
-    .close-btn {
-        width: 26px;
-        height: 26px;
-        font-size: 20px;
-    }
+  .close-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 20px;
+  }
 
-    .modal-body {
-        padding: 12px;
-    }
+  .modal-body {
+    padding: 12px;
+  }
 
-    .modal-footer {
-        padding: 12px;
-        gap: 8px;
-    }
+  .modal-footer {
+    padding: 12px;
+    gap: 8px;
+  }
 
-    .modal-footer .btn {
-        padding: 10px;
-        font-size: 13px;
-    }
+  .modal-footer .btn {
+    padding: 10px;
+    font-size: 13px;
+  }
 }
 </style>

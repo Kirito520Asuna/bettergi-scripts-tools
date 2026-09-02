@@ -1,11 +1,12 @@
 import service from "@utils/request.js";
+import {ApiService} from "@utils/ApiRequest.js";
 
 /**
  * 查询所有授权
  * @returns {Promise} 返回所有授权列表
  */
-export async function getAccessAll() {
-    const {code,data} = await service.get('/jwt/ws-proxy/access/all');
+export async function getAccessPage(search={uid:undefined},page = {pageNumber: 1, pageSize: 99999}) {
+    const {code, data} = await ApiService.get('/jwt/ws-proxy/access/page', {params: {...search, ...page}});
     return data;
 }
 
@@ -15,7 +16,7 @@ export async function getAccessAll() {
  * @returns {Promise} 返回授权信息
  */
 export async function getAccess(uid) {
-    const {code,data} = await service.get('/jwt/ws-proxy/access', { params: { uid:uid } });
+    const {code, data} = await ApiService.get('/api/ws-proxy/access', {params: {uid: uid}});
     return data;
 }
 
@@ -25,7 +26,7 @@ export async function getAccess(uid) {
  * @returns {Promise} 返回操作结果
  */
 export async function saveAccess(wsProxyAccess) {
-    const {code,data} = await service.post('/jwt/ws-proxy/access', wsProxyAccess);
+    const {code, data} = await service.post('/jwt/ws-proxy/access', wsProxyAccess);
     return data;
 }
 
@@ -35,6 +36,6 @@ export async function saveAccess(wsProxyAccess) {
  * @returns {Promise} 返回操作结果
  */
 export async function deleteAccess(uids) {
-    const {code,data} = await service.delete('/jwt/ws-proxy/access', { params: { uids:uids } });
+    const {code, data} = await service.delete('/jwt/ws-proxy/access', {params: {uids: uids}});
     return data;
 }
