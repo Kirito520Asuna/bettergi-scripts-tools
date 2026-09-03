@@ -1,7 +1,14 @@
 package com.cloud_guest.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Token;
+import com.cloud_guest.entitys.ClassConvert;
+import com.cloud_guest.entitys.Valid;
+import com.cloud_guest.entitys.common.auto_plan.AutoDomain;
+import com.cloud_guest.entitys.common.auto_plan.AutoLeyLineOutcrop;
+import com.cloud_guest.entitys.common.auto_plan.AutoPlan;
+import com.cloud_guest.entitys.common.enums.AutoPlanType;
 import com.cloud_guest.entitys.domain.UidInfo;
 import com.cloud_guest.entitys.dto.AutoPlanDTO;
 import com.cloud_guest.entitys.dto.AutoPlanJsonDto;
@@ -9,10 +16,12 @@ import com.cloud_guest.entitys.pojo.AutoPlanConfig;
 import com.cloud_guest.entitys.pojo.AutoPlanUidGlobalConfig;
 import com.cloud_guest.entitys.pojo.UidInfoConfig;
 import com.cloud_guest.entitys.records.UidGlobalInfo;
+import com.cloud_guest.exception.exceptions.GlobalException;
 import com.cloud_guest.result.Result;
 import com.cloud_guest.service.AutoPlanService;
 import com.cloud_guest.service.AutoPlanUidGlobalService;
 import com.cloud_guest.service.UidService;
+import com.cloud_guest.utils.EnumUtils;
 import com.cloud_guest.utils.object.ObjectUtils;
 import com.cloud_guest.view.BasicJsonView;
 import com.cloud_guest.entitys.vo.AutoPlanVo;
@@ -42,6 +51,68 @@ import static com.cloud_guest.result.Result.ok;
 @RestController
 @RequestMapping(value = {"/auto/plan/", "/api/auto/plan/", "/jwt/auto/plan/"})
 public class AutoPlanController {
+
+    static {
+        // 注册转换
+        ClassConvert.register(
+                UidGlobalInfo.class, AutoPlanUidGlobalConfig.class,
+                info -> {
+                    if (ObjectUtils.isEmpty(info)) {
+                        throw new GlobalException("全局UID自动计划配置不能为空");
+                    }
+                    String uid = info.uid();
+                    if (StrUtil.isBlankIfStr(uid)) {
+                        throw new GlobalException("UID不能为空");
+                    }
+                    Boolean cultivate = Boolean.TRUE.equals(info.cultivate());
+                    return new AutoPlanUidGlobalConfig(uid, cultivate);
+                },
+                info -> new UidGlobalInfo(info.getUid(), info.getCultivate())
+        );
+        // 验证
+        Valid.register(AutoPlanDTO.class, info -> {
+            List<AutoPlanType> planTypes = EnumUtils.getAllEnums(AutoPlanType.class);
+            for (AutoPlan autoPlan : info.getAutoPlanList()) {
+                AutoPlanType planType = EnumUtils.getEnumByPrivateFieldName(AutoPlanType.class, autoPlan.getRunType(), "key");
+                if (planType == null) {
+                    throw new GlobalException("runType参数错误");
+                }
+
+                switch (planType) {
+                    case DOMAIN:
+                        //秘境效益
+                        AutoDomain autoDomain = autoPlan.getAutoDomain();
+                        String domainName = autoDomain.getDomainName();
+                        if (StrUtil.isBlank(domainName)) {
+                            throw new GlobalException("秘境名称不能为空");
+                        }
+                        break;
+                    case LEY_LINE_OUTCROP:
+                        List<String> leyLineOutcropTypes = Arrays.asList("启示之花", "藏金之花");
+                        //地脉效益
+                        AutoLeyLineOutcrop autoLeyLineOutcrop = autoPlan.getAutoLeyLineOutcrop();
+                        String country = autoLeyLineOutcrop.getCountry();
+                        String leyLineOutcropType = autoLeyLineOutcrop.getLeyLineOutcropType();
+                        if (!leyLineOutcropTypes.contains(leyLineOutcropType)) {
+                            throw new GlobalException("地脉类型错误,支持类型:" + leyLineOutcropTypes.stream().collect(Collectors.joining(",")));
+                        }
+                        if (StrUtil.isBlank(country)) {
+                            throw new GlobalException("国家地区不能为空");
+                        }
+                        break;
+                    case BOSS:
+                        break;
+                    case STYGIAN_ONSLAUGHT:
+                        break;
+                    default:
+                        String runTypesStr = planTypes.stream().map(AutoPlanType::getKey).collect(Collectors.joining(","));
+                        throw new GlobalException("runType参数错误,支持类型:" + runTypesStr);
+                }
+
+            }
+        });
+    }
+
     @Resource
     private AutoPlanUidGlobalService uidGlobalService;
     @Resource
@@ -129,8 +200,10 @@ public class AutoPlanController {
     @SysLog
     @Operation(summary = "查询UID全局体力配置")
     public Result<UidGlobalInfo> uidGlobalInfo(@RequestParam String uid) {
-        AutoPlanUidGlobalConfig uidGlobalConfig = uidGlobalService.getById(uid);
-        UidGlobalInfo data = ObjectUtils.isEmpty(uidGlobalConfig) ? null : uidGlobalConfig.toInfo();
+
+        UidGlobalInfo data = Optional.ofNullable(uidGlobalService.getById(uid))
+                .map(info -> ClassConvert.convert(AutoPlanUidGlobalConfig.class, UidGlobalInfo.class, info))
+                .orElse(null);
         return ok(data);
     }
 
@@ -139,17 +212,18 @@ public class AutoPlanController {
     @Token
     @Operation(summary = "[需要登录/授权token]存储UID全局体力配置")
     public Result uidGlobalInfo(@RequestBody UidGlobalInfo info) {
-        AutoPlanUidGlobalConfig globalConfig = AutoPlanUidGlobalConfig.toThis(info);
+        AutoPlanUidGlobalConfig globalConfig = ClassConvert.convert(UidGlobalInfo.class, AutoPlanUidGlobalConfig.class, info);
         uidGlobalService.saveOrUpdate(globalConfig);
         return ok();
     }
+
 
     @PostMapping("info")
     @SysLog
     @Token
     @Operation(summary = "[需要登录/授权token]存储UID体力计划")
     public Result<String> saveInfo(@Validated @RequestBody AutoPlanDTO dto) {
-        dto.checkValid();
+        Valid.validate(AutoPlanDTO.class, dto);
         List<AutoPlanConfig> configList = dto.toConfigList();
         //autoPlanService.save(dto.getUid(), JSONUtil.toJsonStr(dto.getAutoPlanList()));
         autoPlanService.saveOrUpdateBatchList(configList, dto.getRemoveCultivate());
@@ -165,7 +239,7 @@ public class AutoPlanController {
                                          @RequestParam(required = false, defaultValue = "true") Boolean order) {
 
         Stream<AutoPlanVo> stream = autoPlanService.find(uid, enable).stream().map(AutoPlanConfig::toVo);
-        if ("JS_API".equals(source)){
+        if ("JS_API".equals(source)) {
             AutoPlanUidGlobalConfig uidGlobalConfig = uidGlobalService.getById(uid);
             if (ObjectUtils.isNotEmpty(uidGlobalConfig) && Boolean.FALSE.equals(uidGlobalConfig.getCultivate())) {
                 stream = stream.filter(o -> !Boolean.TRUE.equals(o.getCultivate()));
@@ -204,7 +278,7 @@ public class AutoPlanController {
     @Operation(summary = "查询全部UID")
     @GetMapping("uid/all/mapping")
     public Result<List<UidInfo>> uidMappingALL() {
-        List<UidInfo> uidAll = uidService.findUidAll().stream().map(UidInfoConfig::toUidInfo).toList();
+        List<UidInfo> uidAll = uidService.findUidAll().stream().map(info -> ClassConvert.convert(UidInfoConfig.class, UidInfo.class, info)).toList();
         //去重
         List<UidInfo> list = new HashSet<UidInfo>(uidAll).stream().toList();
         return ok(list);

@@ -35,19 +35,4 @@ public class AutoPlanUidGlobalConfig extends BaseEntity {
     public static final String TABLE_NAME = "auto_plan_uid_global_config";
     public static final String COL_UID = "uid";
     public static final String COL_CULTIVATE = "cultivate";
-
-    public static AutoPlanUidGlobalConfig toThis(UidGlobalInfo info) {
-        if (ObjectUtils.isEmpty(info)) {
-            throw new GlobalException("全局UID自动计划配置不能为空");
-        }
-        String uid = info.uid();
-        if (StrUtil.isBlankIfStr(uid)) {
-            throw new GlobalException("UID不能为空");
-        }
-        Boolean cultivate = Boolean.TRUE.equals(info.cultivate());
-        return new AutoPlanUidGlobalConfig(uid, cultivate);
-    }
-    public UidGlobalInfo toInfo() {
-        return new UidGlobalInfo(uid, cultivate);
-    }
 }

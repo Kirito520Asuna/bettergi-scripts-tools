@@ -30,10 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.cloud_guest.result.Result.ok;
 
@@ -49,42 +46,38 @@ public class WsProxyController implements AbsPage {
     static {
         ClassConvert.register(WsProxyAccess.class, WsProxyAccessConfig.class,
                 info -> {
-            if (info == null){
-                return null;
-            }
-            ActionType action = info.action();
-            String url = info.url();
-            String proxyUrl = info.proxyUrl();
-            String token = info.token();
-            String atList = info.atList();
-            String userId = info.userId();
-            String groupId = info.groupId();
-            String uid = info.uid();
-            WsProxyAccessConfig config = new WsProxyAccessConfig();
-            config.setAction(action);
-            config.setUrl(url);
-            config.setProxyUrl(proxyUrl);
-            config.setToken(token);
-            config.setAtList(atList);
-            config.setUserId(userId);
-            config.setGroupId(groupId);
-            config.setUid(uid);
-            return config;
-        },
+                    if (info == null) return null;
+                    ActionType action = info.action();
+                    String url = info.url();
+                    String proxyUrl = info.proxyUrl();
+                    String token = info.token();
+                    String atList = info.atList();
+                    String userId = info.userId();
+                    String groupId = info.groupId();
+                    String uid = info.uid();
+                    WsProxyAccessConfig config = new WsProxyAccessConfig();
+                    config.setAction(action);
+                    config.setUrl(url);
+                    config.setProxyUrl(proxyUrl);
+                    config.setToken(token);
+                    config.setAtList(atList);
+                    config.setUserId(userId);
+                    config.setGroupId(groupId);
+                    config.setUid(uid);
+                    return config;
+                },
                 info -> {
-            if (info == null){
-                return null;
-            }
-            ActionType action = info.getAction();
-            String url = info.getUrl();
-            String proxyUrl = info.getProxyUrl();
-            String token = info.getToken();
-            String atList = info.getAtList();
-            String userId = info.getUserId();
-            String groupId = info.getGroupId();
-            String uid = info.getUid();
-            return new WsProxyAccess(action, url, proxyUrl, token, atList, userId, groupId, uid);
-        });
+                    if (info == null) return null;
+                    ActionType action = info.getAction();
+                    String url = info.getUrl();
+                    String proxyUrl = info.getProxyUrl();
+                    String token = info.getToken();
+                    String atList = info.getAtList();
+                    String userId = info.getUserId();
+                    String groupId = info.getGroupId();
+                    String uid = info.getUid();
+                    return new WsProxyAccess(action, url, proxyUrl, token, atList, userId, groupId, uid);
+                });
 
         Valid.register(WsProxyDto.class, info -> {
             if (!TokenUtil.checkToken()) {
@@ -158,7 +151,7 @@ public class WsProxyController implements AbsPage {
     @GetMapping("access")
     public Result<WsProxyAccess> access(@RequestParam String uid) {
         WsProxyAccessConfig accessConfig = wsProxyService.getById(uid);
-        WsProxyAccess record =  ClassConvert.convert(WsProxyAccessConfig.class, WsProxyAccess.class, accessConfig);
+        WsProxyAccess record = ClassConvert.convert(WsProxyAccessConfig.class, WsProxyAccess.class, accessConfig);
         return ok(record);
     }
 

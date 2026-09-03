@@ -1,18 +1,15 @@
 package com.cloud_guest.entitys.pojo;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.cloud_guest.entitys.domain.UidInfo;
 import com.cloud_guest.mp.pojo.BaseEntity;
 import com.cloud_guest.runner.EncryptPasswordRunner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.core.env.Environment;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
@@ -53,13 +50,6 @@ public class UidInfoConfig extends BaseEntity {
     public static final String REMARK_COL_USERNAME = "用户名";
     public static final String REMARK_COL_PASSWORD = "密码";
     public static final String REMARK_COL_SALT = "盐值";
-
-
-    @SneakyThrows
-    public UidInfo toUidInfo() {
-        String decryptedPassword = StrUtil.isBlankIfStr(password) ? password : decryptPassword(password, salt);
-        return new UidInfo(uid, asName, username, decryptedPassword);
-    }
 
     @SneakyThrows
     public UidInfoConfig(String uid, String asName, String username, String password) {

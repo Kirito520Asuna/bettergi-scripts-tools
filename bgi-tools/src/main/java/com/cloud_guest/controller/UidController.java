@@ -1,10 +1,12 @@
 package com.cloud_guest.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Token;
+import com.cloud_guest.entitys.ClassConvert;
 import com.cloud_guest.entitys.Valid;
 import com.cloud_guest.entitys.domain.UidInfo;
-import com.cloud_guest.entitys.dto.UidTeamDto;
+
 import com.cloud_guest.entitys.pojo.UidInfoConfig;
 import com.cloud_guest.entitys.pojo.UidTeamConfig;
 import com.cloud_guest.entitys.records.UidTeam;
@@ -42,6 +44,48 @@ import java.util.Optional;
 public class UidController implements AbsPage {
 
     static {
+        // 注册 UidInfo 的转换器
+        ClassConvert.register(UidInfoConfig.class, UidInfo.class,
+                info -> {
+                    if (info == null) return null;
+                    String uid = info.getUid();
+                    String asName = info.getAsName();
+                    String username = info.getUsername();
+                    String password = info.getPassword();
+                    String salt = info.getSalt();
+
+                    String decryptedPassword = null;
+                    try {
+                        decryptedPassword = StrUtil.isBlankIfStr(password) ? password : info.decryptPassword(password, salt);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    return new UidInfo(uid, asName, username, decryptedPassword);
+                },
+                info -> {
+                    if (info == null) return null;
+                    return new UidInfoConfig(info.getUid(), info.getAs(), info.getUsername(), info.getPassword());
+                }
+        );
+        // 注册 UidTeam 的转换器
+        ClassConvert.register(UidTeam.class, UidTeamConfig.class,
+                info -> {
+                    if (info == null) return null;
+                    Long id = null;
+                    boolean notId = StrUtils.isNotBlank(info.id());
+                    if (notId) {
+                        id = Long.parseLong(info.id());
+                    }
+                    return new UidTeamConfig(id, info.uid(), info.team(), info.type());
+
+                },
+                info -> {
+                    if (info == null) return null;
+                    String id = (info.getId() != null ? String.valueOf(info.getId()) : null);
+                    return new UidTeam(id, info.getUid(), info.getTeam(), info.getTeamType());
+                }
+        );
+
         // 注册 UidTeam 的校验器，lambda 参数类型会被编译器推断为 UidTeam
         Valid.register(UidTeam.class, uidTeam -> {
             String team = uidTeam.team();
@@ -69,12 +113,15 @@ public class UidController implements AbsPage {
     @Operation(summary = "查询分页uid映射")
     @GetMapping("page")
     public Result<ResultPage<UidInfo>> page(@Schema(description = "页码") @RequestParam long pageNumber,
-                                      @Schema(description = "每页数量") @RequestParam long pageSize) {
+                                            @Schema(description = "每页数量") @RequestParam long pageSize) {
         PageUtils.startPage(pageNumber, pageSize);
-        List<UidInfo> uidAll = uidService.list().stream().map(UidInfoConfig::toUidInfo).map(o -> {
-            o.setPassword(null);
-            return o;
-        }).toList();
+        List<UidInfo> uidAll = uidService.list()
+                .stream()
+                .map(info -> {
+                    UidInfo convert = ClassConvert.convert(UidInfoConfig.class, UidInfo.class, info);
+                    convert.setPassword(null);
+                    return convert;
+                }).toList();
         return Result.ok(listToPage(uidAll));
     }
 
@@ -83,10 +130,9 @@ public class UidController implements AbsPage {
     @Operation(summary = "查询uid映射")
     @GetMapping("info")
     public Result<UidInfo> getUid(@RequestParam String uid) {
-        UidInfo uidInfo = Optional.ofNullable(uidService.find(uid))
-                .map(UidInfoConfig::toUidInfo)
-                .orElse(null);   // 返回一个空的 UidInfo 对象（确保 UidInfo 有无参构造）
-        return Result.ok(uidInfo);
+        return Result.ok(Optional.ofNullable(uidService.find(uid))
+                .map(info -> ClassConvert.convert(UidInfoConfig.class, UidInfo.class, info))
+                .orElse(null));
     }
 
     @SysLog
@@ -94,7 +140,8 @@ public class UidController implements AbsPage {
     @Operation(summary = "新增uid映射")
     @PostMapping("info")
     public Result uid(@Validated @RequestBody UidInfo uidInfo) {
-        uidService.saveOrUpdate(uidInfo.toConfig());
+        UidInfoConfig config = ClassConvert.convert(UidInfo.class, UidInfoConfig.class, uidInfo);
+        uidService.saveOrUpdate(config);
         return Result.ok();
     }
 
@@ -120,7 +167,10 @@ public class UidController implements AbsPage {
             @Schema(description = "每页数量") @RequestParam long pageSize
     ) {
         PageUtils.startPage(pageNumber, pageSize);
-        List<UidTeam> uidTeam = uidTeamService.searchList(id, uid, type).stream().map(UidTeamConfig::toRecord).toList();
+        List<UidTeam> uidTeam = uidTeamService.searchList(id, uid, type)
+                .stream()
+                .map(info -> ClassConvert.convert(UidTeamConfig.class, UidTeam.class, info))
+                .toList();
         return Result.ok(listToPage(uidTeam));
     }
 
@@ -129,18 +179,18 @@ public class UidController implements AbsPage {
     @GetMapping("team")
     public Result<UidTeam> team(@Schema(description = "UID") @Validated @NotBlank @RequestParam String uid,
                                 @Schema(description = "类型") @Validated @NotBlank @RequestParam String type) {
-        UidTeamConfig uidTeamConfig = uidTeamService.searchOne(uid, type);
-        UidTeam record = uidTeamConfig != null ? uidTeamConfig.toRecord() : null;
-        return Result.ok(record);
+        return Result.ok(Optional.ofNullable(uidTeamService.searchOne(uid, type))
+                .map(info -> ClassConvert.convert(UidTeamConfig.class, UidTeam.class, info))
+                .orElse(null));
     }
 
     @SysLog
     @Operation(summary = "[Team]-查询指定-uid映射队伍配置")
     @GetMapping("team/info")
     public Result<UidTeam> teamInfo(@Schema(description = "ID") @Validated @NotBlank @RequestParam String id) {
-        UidTeamConfig uidTeamConfig = uidTeamService.getById(Long.parseLong(id));
-        UidTeam record = uidTeamConfig != null ? uidTeamConfig.toRecord() : null;
-        return Result.ok(record);
+        return Result.ok(Optional.ofNullable(uidTeamService.getById(Long.parseLong(id)))
+                .map(info -> ClassConvert.convert(UidTeamConfig.class, UidTeam.class, info))
+                .orElse(null));
     }
 
     @SysLog
@@ -149,17 +199,10 @@ public class UidController implements AbsPage {
     @PostMapping("team")
     public Result<UidTeam> team(@RequestBody UidTeam uidTeam) {
         Valid.validate(UidTeam.class, uidTeam);
-
-        UidTeamConfig config = new UidTeamConfig();
-        boolean notId = StrUtils.isNotBlank(uidTeam.id());
-        if (notId) {
-            config.setId(Long.parseLong(uidTeam.id()));
-        }
-        config.setUid(uidTeam.uid())
-                .setTeam(uidTeam.team())
-                .setTeamType(uidTeam.type());
-
-        return Result.ok(uidTeamService.saveOrUpdateById(config).toRecord());
+        UidTeamConfig config = ClassConvert.convert(UidTeam.class, UidTeamConfig.class, uidTeam);
+        return Result.ok(Optional.ofNullable(uidTeamService.saveOrUpdateById(config))
+                .map(info -> ClassConvert.convert(UidTeamConfig.class, UidTeam.class, info))
+                .orElse(null));
     }
 
     @SysLog

@@ -45,9 +45,11 @@ public class DataBackupRecoveryController implements AbsPage {
     static {
         // 备份信息
         ClassConvert.register(BackupInfo.class, BackUp.class, info -> {
+            if (info == null) return null;
             String id = ObjectUtils.isEmpty(info.getId()) ? null : String.valueOf(info.getId());
             return new BackUp(id.toString(), info.getBackupName(), info.getBackupPath(), info.getBackupJson(), info.getBackupTime(), info.getBackupSize());
         }, info -> {
+            if (info == null) return null;
             String id = info.getId();
             return new BackupInfo(StrUtils.isNotBlank(id) ? Long.valueOf(id) : null, info.getBackupName(), info.getBackupPath(), info.getBackupJson(), info.getBackupTime(), info.getBackupSize());
         });
