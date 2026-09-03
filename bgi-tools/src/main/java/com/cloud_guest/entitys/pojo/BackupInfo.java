@@ -55,9 +55,4 @@ public class BackupInfo extends BaseEntity {
     public static final String COL_BACKUP_PATH = "backup_path";
     public static final String COL_BACKUP_TIME = "backup_time";
     public static final String COL_BACKUP_SIZE = "backup_size";
-
-    public BackUp toBackUp() {
-        String id = ObjectUtils.isEmpty(this.id) ? null : String.valueOf(this.id);
-        return new BackUp(id, backupName, backupPath, backupJson, backupTime, backupSize);
-    }
 }

@@ -47,8 +47,4 @@ public class UidTeamConfig extends BaseEntity {
     public static final String COL_UID = "uid";
     public static final String COL_TEAM = "team";
     public static final String COL_TEAM_TYPE = "team_type";
-
-    public UidTeam toRecord() {
-        return new UidTeam(this.id.toString(), this.uid, this.team, this.teamType);
-    }
 }
