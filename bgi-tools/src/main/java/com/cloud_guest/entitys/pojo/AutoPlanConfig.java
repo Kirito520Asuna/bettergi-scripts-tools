@@ -6,20 +6,10 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.cloud_guest.entitys.common.auto_plan.AutoBoss;
-import com.cloud_guest.entitys.common.auto_plan.AutoDomain;
-import com.cloud_guest.entitys.common.auto_plan.AutoLeyLineOutcrop;
-import com.cloud_guest.entitys.common.auto_plan.AutoStygianOnslaught;
-import com.cloud_guest.entitys.common.enums.AutoPlanType;
 import com.cloud_guest.mp.pojo.BaseEntity;
-import com.cloud_guest.entitys.vo.AutoPlanVo;
-import com.cloud_guest.utils.EnumUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 
 /**
@@ -96,46 +86,8 @@ public class AutoPlanConfig extends BaseEntity {
     public static final String REMARK_COL_RECORD = "是否记录";
     public static final String REMARK_COL_CULTIVATE = "是培养计划";
 
-
-    public AutoPlanVo toVo() {
-        AutoPlanVo autoPlanVo = new AutoPlanVo();
-        autoPlanVo
-                .setId(id != null ? String.valueOf(id) : null)
-                .setRunType(runType)
-                .setCultivate(cultivate)
-                .setSelectedType(selectedType)
-                .setEnable(enable)
-                .setRecord(record)
-                .setDays(StrUtil.isBlank(days) ? new ArrayList<>() : Arrays.stream(days.split(",")).map(Integer::valueOf).toList())
-                .setDayName(dayName)
-                .setOrder(orderSort)
-        ;
-
-        AutoPlanType planType = EnumUtils.getEnumByPrivateFieldName(AutoPlanType.class, runType, "key");
-
-        switch (planType) {
-            case DOMAIN:
-                autoPlanVo.setAutoDomain(parsePlanConfig(json, autoFight, AutoDomain.class));
-                break;
-            case LEY_LINE_OUTCROP:
-                autoPlanVo.setAutoLeyLineOutcrop(parsePlanConfig(json, autoLeyLineOutcrop, AutoLeyLineOutcrop.class));
-                break;
-            case BOSS:
-                autoPlanVo.setAutoBoss(parsePlanConfig(json, autoBoss, AutoBoss.class));
-                break;
-            case STYGIAN_ONSLAUGHT:
-                autoPlanVo.setAutoStygianOnslaught(parsePlanConfig(json, autoStygianOnslaught, AutoStygianOnslaught.class));
-                break;
-            default:
-                break;
-        }
-
-        return autoPlanVo;
-    }
-
-
     // 在类中提取通用解析方法
-    private <T> T parsePlanConfig(String json, String fallbackJson, Class<T> clazz) {
+    public  <T> T parsePlanConfig(String json, String fallbackJson, Class<T> clazz) {
         // 优先使用新字段 json 反序列化
         if (StrUtil.isNotBlank(json)) {
             T result = JSONUtil.toBean(json, clazz);

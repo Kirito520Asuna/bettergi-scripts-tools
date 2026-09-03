@@ -519,12 +519,11 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
         // 从 key 中提取 uid（例如 AUTO_PLAN:UID:125607110）
         String uid = key.substring("AUTO_PLAN:UID:".length());
         List<AutoPlanConfig> planList = JSONUtil.toList(dataJson, AutoPlan.class).stream()
-                .map(AutoPlan::toConfig)
-                .map(o -> {
-                    o.setUid(uid);
-                    return o;
-                })
-                .toList();
+                .map(info->{
+                    AutoPlanConfig convert = ClassConvert.convert(AutoPlan.class, AutoPlanConfig.class, info);
+                    convert.setUid(uid);
+                    return convert;
+                }).toList();
         // 根据实际业务调用保存方法（此处假定有 saveByUid 方法）
         autoPlanService.saveOrUpdateBatch(planList);
         log.info("恢复自动计划成功，uid: {}", uid);
@@ -551,20 +550,6 @@ public class DataBackupRecoveryServiceImpl extends ServiceImpl<BackupMapper, Bac
     static final String WS_PROXY_CONFIG_KEY = "WS_PROXY_ACCESS:UID:";
     static final String MAPPING_CONFIG_KEY = "MAPPING:UID:";
     static {
-        ClassConvert.register(WS_PROXY_CONFIG_KEY, String.class, WsProxyAccess.class, str->{
-            JSONObject bean = JSONUtil.toBean(str, JSONObject.class);
-            ActionType actionType = bean.get("action", ActionType.class);
-            String url = bean.get("url", String.class);
-            String proxyUrl = bean.get("proxyUrl", String.class);
-            String token = bean.get("token", String.class);
-            String atList = bean.get("atList", String.class);
-            String userId = bean.get("userId", String.class);
-            String groupId = bean.get("groupId", String.class);
-            String uid = bean.get("uid", String.class);
-            return new WsProxyAccess(actionType, url, proxyUrl, token, atList, userId, groupId, uid);
-        });
-
-
         ClassConvert.register(WS_PROXY_CONFIG_KEY, String.class, WsProxyAccess.class, str->{
             JSONObject bean = JSONUtil.toBean(str, JSONObject.class);
             ActionType actionType = bean.get("action", ActionType.class);

@@ -3,6 +3,7 @@ package com.cloud_guest.runner;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.cloud_guest.entitys.ClassConvert;
 import com.cloud_guest.entitys.pojo.AutoPlanConfig;
 import com.cloud_guest.entitys.pojo.UidInfoConfig;
 import com.cloud_guest.entitys.vo.AutoPlanVo;
@@ -48,10 +49,11 @@ public class DatabaseInitRunner {
 
     /**
      * 数据库脚本
-     * @param dbType 数据库类型
-     * @param format 列脚本格式
-     * @param formatSize 列脚本格式个数
-     * @param remarkFormat 列注释格式
+     *
+     * @param dbType           数据库类型
+     * @param format           列脚本格式
+     * @param formatSize       列脚本格式个数
+     * @param remarkFormat     列注释格式
      * @param remarkFormatSize 列注释格式个数
      */
     record SqlFormat(String dbType, String format, int formatSize, String remarkFormat, int remarkFormatSize) {
@@ -59,26 +61,29 @@ public class DatabaseInitRunner {
 
     /**
      * 数据库脚本
-     * @param dbType 数据库类型
+     *
+     * @param dbType         数据库类型
      * @param scriptFileName 脚本文件名
-     * @param scriptSqlList 脚本
+     * @param scriptSqlList  脚本
      */
     record DbScript(String dbType, String scriptFileName, List<ColumnSql> scriptSqlList) {
     }
 
     /**
      * 数据库脚本
-     * @param table 表名
+     *
+     * @param table  表名
      * @param column 列名
      * @param remark 列注释
-     * @param sql 列脚本
+     * @param sql    列脚本
      */
     record ColumnSql(String table, String column, String remark, String sql) {
     }
 
     /**
      * 数据库表脚本
-     * @param table 表名
+     *
+     * @param table   表名
      * @param columns 列
      */
     record SqlTable(String table, List<SqlColumn> columns) {
@@ -86,17 +91,19 @@ public class DatabaseInitRunner {
 
     /**
      * 数据库表脚本
+     *
      * @param column 列名
      * @param remark 列注释
-     * @param types 数据库列类型
+     * @param types  数据库列类型
      */
     record SqlColumn(String column, String remark, List<DbSqlType> types) {
     }
 
     /**
      * 数据库列类型
-     * @param db 数据库类型
-     * @param type 列类型
+     *
+     * @param db            数据库类型
+     * @param type          列类型
      * @param columnDefault 列默认值
      */
     record DbSqlType(String db, String type, String columnDefault) {
@@ -321,7 +328,7 @@ public class DatabaseInitRunner {
                         continue;
                     }
                     try {
-                        log.info("[添加字段] `{}.{},备注:{}`", sql.table, sql.column,sql.remark);
+                        log.info("[添加字段] `{}.{},备注:{}`", sql.table, sql.column, sql.remark);
                         jdbcTemplate.execute(sql.sql);
                         //log.info("[字段添加成功] `{}.{}`", sql.table, sql.column);
                     } catch (Exception e) {
@@ -338,11 +345,11 @@ public class DatabaseInitRunner {
                 if (errorList.size() != sqlList.size()) {
                     log.info("====================================");
                 }
-                sqlList.stream().filter(sql -> !errorList.contains(sql)).forEach(sql -> log.info("[字段添加成功] `{}.{}`,备注:{}", sql.table, sql.column,sql.remark));
+                sqlList.stream().filter(sql -> !errorList.contains(sql)).forEach(sql -> log.info("[字段添加成功] `{}.{}`,备注:{}", sql.table, sql.column, sql.remark));
                 if (errorList.size() != sqlList.size() || CollUtil.isNotEmpty(errorList)) {
                     log.info("====================================");
                 }
-                errorList.stream().forEach(sql -> log.warn("[字段存在] `{}.{}`字段已存在，跳过添加 {}", sql.table, sql.column,sql.remark));
+                errorList.stream().forEach(sql -> log.warn("[字段存在] `{}.{}`字段已存在，跳过添加 {}", sql.table, sql.column, sql.remark));
                 log.info("====================================");
             } else {
                 log.info("数据库类型 {} 未配置对应脚本，跳过", dbType);
@@ -380,8 +387,8 @@ public class DatabaseInitRunner {
                     .last("limit " + page * pageSize + "," + pageSize)
                     .list();
             List<AutoPlanConfig> updated = pageRecords.stream()
-                    .map(AutoPlanConfig::toVo)
-                    .map(AutoPlanVo::toConfig)
+                    .map(info -> ClassConvert.convert(AutoPlanConfig.class, AutoPlanVo.class, info))
+                    .map(info -> ClassConvert.convert(AutoPlanVo.class, AutoPlanConfig.class, info))
                     .collect(Collectors.toList());
             if (CollUtil.isNotEmpty(updated)) {
                 planService.saveOrUpdateBatch(updated, pageSize); // 指定批次大小

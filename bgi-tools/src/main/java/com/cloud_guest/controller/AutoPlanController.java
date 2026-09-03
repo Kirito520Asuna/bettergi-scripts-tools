@@ -1,13 +1,13 @@
 package com.cloud_guest.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.cloud_guest.aop.log.SysLog;
 import com.cloud_guest.aop.security.Token;
 import com.cloud_guest.entitys.ClassConvert;
 import com.cloud_guest.entitys.Valid;
-import com.cloud_guest.entitys.common.auto_plan.AutoDomain;
-import com.cloud_guest.entitys.common.auto_plan.AutoLeyLineOutcrop;
-import com.cloud_guest.entitys.common.auto_plan.AutoPlan;
+import com.cloud_guest.entitys.common.auto_plan.*;
 import com.cloud_guest.entitys.common.enums.AutoPlanType;
 import com.cloud_guest.entitys.domain.UidInfo;
 import com.cloud_guest.entitys.dto.AutoPlanDTO;
@@ -69,6 +69,152 @@ public class AutoPlanController {
                 },
                 info -> new UidGlobalInfo(info.getUid(), info.getCultivate())
         );
+        // 注册转换
+        ClassConvert.register(AutoPlan.class,AutoPlanConfig.class,
+        info->{
+            String id = info.getId();
+            Boolean cultivate = info.getCultivate();
+            
+            AutoPlanConfig planConfig = new AutoPlanConfig();
+            planConfig.setId(id!=null?Long.parseLong(id):null);
+            planConfig.setCultivate(cultivate);
+
+            String autoDomain = JSONUtil.toJsonStr(info.getAutoDomain());
+            String autoLeyLineOutcrop = JSONUtil.toJsonStr(info.getAutoLeyLineOutcrop());
+            String autoStygianOnslaught = JSONUtil.toJsonStr(info.getAutoStygianOnslaught());
+            String autoBoss = JSONUtil.toJsonStr(info.getAutoBoss());
+
+            //todo: 后续版本需要移除的字段-start
+            planConfig.setAutoFight(autoDomain);
+            planConfig.setAutoLeyLineOutcrop(autoLeyLineOutcrop);
+            planConfig.setAutoStygianOnslaught(autoStygianOnslaught);
+            planConfig.setAutoBoss(autoBoss);
+            //todo: 后续版本需要移除的字段-end
+
+            String json =  CollUtil.newArrayList(autoDomain, autoLeyLineOutcrop, autoStygianOnslaught, autoBoss)
+                    .stream().filter(StrUtil::isNotBlank).findFirst().orElse(null);  // 安全兜底，避免 NoSuchElementException
+            planConfig.setJson(json);
+
+            List<Integer> list = new ArrayList<>();
+            List<Integer> days = info.getDays();
+            if (CollUtil.isNotEmpty(days)) {
+                list.addAll(days);
+            }
+            planConfig.setDays(list.stream().map(String::valueOf).collect(Collectors.joining(",")));
+
+            String dayName = info.getDayName();
+            Boolean enable = info.getEnable();
+            Boolean record = info.getRecord();
+            Integer order = info.getOrder();
+            String runType = info.getRunType();
+            String selectedType = info.getSelectedType();
+
+            planConfig.setDayName(dayName);
+            planConfig.setEnable(enable);
+            planConfig.setRecord(record);
+            planConfig.setOrderSort(order);
+            planConfig.setRunType(runType);
+            planConfig.setSelectedType(selectedType);
+            return planConfig;
+        });
+        ClassConvert.register(AutoPlanConfig.class,AutoPlanVo.class,
+                info->{
+                    Long id = info.getId();
+                    String runType = info.getRunType();
+                    Boolean cultivate = info.getCultivate();
+                    String selectedType = info.getSelectedType();
+                    Boolean enable = info.getEnable();
+                    Boolean record = info.getRecord();
+                    Integer orderSort = info.getOrderSort();
+                    String days = info.getDays();
+                    String dayName = info.getDayName();
+                    String json = info.getJson();
+                    String autoFight = info.getAutoFight();
+                    String autoLeyLineOutcrop = info.getAutoLeyLineOutcrop();
+                    String autoStygianOnslaught = info.getAutoStygianOnslaught();
+                    String autoBoss = info.getAutoBoss();
+
+                    AutoPlanVo autoPlanVo = new AutoPlanVo();
+                    autoPlanVo
+                            .setId(id != null ? String.valueOf(id) : null)
+                            .setRunType(runType)
+                            .setCultivate(cultivate)
+                            .setSelectedType(selectedType)
+                            .setEnable(enable)
+                            .setRecord(record)
+                            .setDays(StrUtil.isBlank(days) ? new ArrayList<>() : Arrays.stream(days.split(",")).map(Integer::valueOf).toList())
+                            .setDayName(dayName)
+                            .setOrder(orderSort)
+                    ;
+
+                    AutoPlanType planType = EnumUtils.getEnumByPrivateFieldName(AutoPlanType.class, runType, "key");
+
+                    switch (planType) {
+                        case DOMAIN:
+                            autoPlanVo.setAutoDomain(info.parsePlanConfig(json, autoFight, AutoDomain.class));
+                            break;
+                        case LEY_LINE_OUTCROP:
+                            autoPlanVo.setAutoLeyLineOutcrop(info.parsePlanConfig(json, autoLeyLineOutcrop, AutoLeyLineOutcrop.class));
+                            break;
+                        case BOSS:
+                            autoPlanVo.setAutoBoss(info.parsePlanConfig(json, autoBoss, AutoBoss.class));
+                            break;
+                        case STYGIAN_ONSLAUGHT:
+                            autoPlanVo.setAutoStygianOnslaught(info.parsePlanConfig(json, autoStygianOnslaught, AutoStygianOnslaught.class));
+                            break;
+                        default:
+                            break;
+                    }
+
+                    return autoPlanVo;
+                },
+                info->{
+                    String id = info.getId();
+                    Boolean cultivate = info.getCultivate();
+
+                    AutoPlanConfig planConfig = new AutoPlanConfig();
+                    planConfig.setId(id!=null?Long.parseLong(id):null);
+                    planConfig.setCultivate(cultivate);
+
+                    String autoDomain = JSONUtil.toJsonStr(info.getAutoDomain());
+                    String autoLeyLineOutcrop = JSONUtil.toJsonStr(info.getAutoLeyLineOutcrop());
+                    String autoStygianOnslaught = JSONUtil.toJsonStr(info.getAutoStygianOnslaught());
+                    String autoBoss = JSONUtil.toJsonStr(info.getAutoBoss());
+
+                    //todo: 后续版本需要移除的字段-start
+                    planConfig.setAutoFight(autoDomain);
+                    planConfig.setAutoLeyLineOutcrop(autoLeyLineOutcrop);
+                    planConfig.setAutoStygianOnslaught(autoStygianOnslaught);
+                    planConfig.setAutoBoss(autoBoss);
+                    //todo: 后续版本需要移除的字段-end
+
+                    String json =  CollUtil.newArrayList(autoDomain, autoLeyLineOutcrop, autoStygianOnslaught, autoBoss)
+                            .stream().filter(StrUtil::isNotBlank).findFirst().orElse(null);  // 安全兜底，避免 NoSuchElementException
+                    planConfig.setJson(json);
+
+                    List<Integer> list = new ArrayList<>();
+                    List<Integer> days = info.getDays();
+                    if (CollUtil.isNotEmpty(days)) {
+                        list.addAll(days);
+                    }
+                    planConfig.setDays(list.stream().map(String::valueOf).collect(Collectors.joining(",")));
+
+                    String dayName = info.getDayName();
+                    Boolean enable = info.getEnable();
+                    Boolean record = info.getRecord();
+                    Integer order = info.getOrder();
+                    String runType = info.getRunType();
+                    String selectedType = info.getSelectedType();
+
+                    planConfig.setDayName(dayName);
+                    planConfig.setEnable(enable);
+                    planConfig.setRecord(record);
+                    planConfig.setOrderSort(order);
+                    planConfig.setRunType(runType);
+                    planConfig.setSelectedType(selectedType);
+                    return planConfig;
+                }
+                );
         // 验证
         Valid.register(AutoPlanDTO.class, info -> {
             List<AutoPlanType> planTypes = EnumUtils.getAllEnums(AutoPlanType.class);
@@ -238,7 +384,7 @@ public class AutoPlanController {
                                          @RequestParam(required = false) Boolean enable,
                                          @RequestParam(required = false, defaultValue = "true") Boolean order) {
 
-        Stream<AutoPlanVo> stream = autoPlanService.find(uid, enable).stream().map(AutoPlanConfig::toVo);
+        Stream<AutoPlanVo> stream = autoPlanService.find(uid, enable).stream().map(info->ClassConvert.convert(AutoPlanConfig.class,AutoPlanVo.class,info));
         if ("JS_API".equals(source)) {
             AutoPlanUidGlobalConfig uidGlobalConfig = uidGlobalService.getById(uid);
             if (ObjectUtils.isNotEmpty(uidGlobalConfig) && Boolean.FALSE.equals(uidGlobalConfig.getCultivate())) {
