@@ -1,10 +1,29 @@
 ### 版本变更详情
-
 #### ✨ 新功能
-    -
-
+    - UID队伍信息管理增加批量删除功能，表格支持多选框、批量删除按钮
+    - 新增`ClassConvert`通用对象转换注册中心，统一实体VO/DTO转换逻辑，支持单向/双向转换器、组合键注册
+    - 新增`Valid`校验注册中心，支持组合键校验器注册、重复注册检测、完整异常抛出
+    - 新增`IServicePlus`增强MyBatis‑Plus服务接口，内置`lambdaQueryWrapper`/`lambdaUpdateWrapper`简化条件构造
+    - UID映射、队伍信息、WS代理管理页面全部改为分页表格组件，支持分页参数、搜索筛选
+    - WS‑代理模块重构，新增分页查询接口，前端Element‑Plus表格重构，移动端响应式适配
+    - 新增UID队伍配置完整CRUD能力，数据表`uid_team_config`，支持备份恢复、UID+type唯一性校验
+    - 新增任务抽象`Task`与`ThreadUtil`多线程工具，支持阻塞等待、异步回调、超时控制、任务异常捕获
+    - 应用启动安全基线检查`SecurityWarnRunner`，检测默认弱口令、JWT默认密钥、未鉴权开放接口并输出告警
+    - WebSocket客户端关闭增加异常捕获，避免session关闭异常导致程序崩溃
+    - 游戏资源数据更新：新增荒坠的圣迹、妄念的创痕、山风的荆冕、逆悬的冰河；国家列表增加至冬国
 #### 🐛 修复
-    -
-
+    - 修复ws‑proxy批量删除参数传递格式错误，改为uid数组传递
+    - 修复WebSocket连接关闭session关闭异常未捕获导致崩溃问题
+    - 修复校验器未注册时返回逻辑，改为抛出明确异常，消除布尔返回值歧义
+    - 修复多场景对象转换空值处理，增加null安全判断，防止NPE
 #### 🔧 改进与重构
-    -
+    - 大规模重构实体转换逻辑：移除各实体内部`toRecord/toVo/toBackUp`转换方法，全部迁移至`ClassConvert`注册方式
+    - 重构AutoPlan自动计划转换逻辑，移除实体内部`toVo()`，迁移至Controller静态代码块注册双向转换器
+    - 控制器采用静态代码块注册转换器与校验器，转换逻辑与实体解耦，实体类只保留字段定义
+    - UidTeam、BackupInfo、WsProxyAccess、AutoPlanUidGlobalConfig等实体清理内部业务转换方法，简化POJO结构
+    - 全部服务接口升级继承`IServicePlus`，消除大量重复`Wrappers.lambdaXXX`样板代码
+    - PageUtils分页工具增强，支持Long/Integer多类型分页参数，统一分页参数构建
+    - 前端管理页面表格布局重构为flex弹性布局，表格区域自动占满剩余高度，分页组件固定底部不滚动
+    - 前端按钮统一`action‑button`样式类，队伍信息表格列标题优化为“分组类型”
+    - 清理多处废弃导入、冗余工具依赖，优化日志输出，转换器/校验器增加重复注册日志提示（覆盖/抛弃）
+    - 数据备份恢复适配新的`ClassConvert`转换体系，适配uid_team队伍配置备份恢复处理器
