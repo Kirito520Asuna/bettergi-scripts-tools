@@ -31,27 +31,54 @@ onMounted(async () => {
     tokenInfo.value = response.data.value || '';
   }
   let token = (tokenInfo?.name && tokenInfo?.value) ? tokenInfo?.name + "=" + tokenInfo?.value : "未设置,如需请前往设置配置";
-  var auto_plan_json = {
+  const autoPlanJsUrl = 'https://bgi.sh/?type=js&path=AutoPlan'
+  const auto_plan_json = {
     name: "自动体力计划API",
     list: [
       {
+        name: '体力计划JS',
+        auth_copy: false,
+        value: autoPlanJsUrl,
+        to: {
+          text: '前往bgi仓库订阅',
+          desc: '点击前往bgi仓库订阅体力计划JS',
+          value: autoPlanJsUrl,
+          click: async (value) => {
+            await ElMessageBox.confirm(
+                '确定前往bgi仓库订阅体力计划JS吗？',
+                '提示', {
+                  confirmButtonText: '确定',
+                  cancelButtonText: '取消',
+                  type: 'warning',
+                }
+            )
+            window.open(value, '_blank');
+          }
+        }
+      },
+      {
         name: '拉取配置API',
+        auth_copy: true,
         value: hostPrefix + 'auto/plan/json',
       },
       {
         name: '推送秘境常量API',
+        auth_copy: true,
         value: hostPrefix + 'auto/plan/domain/json/all',
       },
       {
         name: '推送国家常量API',
+        auth_copy: true,
         value: hostPrefix + 'auto/plan/country/json/all',
       },
       {
         name: '推送Boss常量API',
+        auth_copy: true,
         value: hostPrefix + 'auto/plan/boss/json/all',
       },
       {
         name: '授权Token',
+        auth_copy: true,
         value: token,
         to: {
           text: '前往设置',
@@ -73,12 +100,34 @@ onMounted(async () => {
     ]
   };
   JsApiList.value.push(auto_plan_json)
-
+  const toolJsUrl = 'https://bgi.sh/?type=js&path=FullyAutoAndSemiAutoTools'
   let auto_tool_json = {
     name: "全自动或半自动工具箱API",
     list: [
       {
+        name: '全自动或半自动工具箱JS',
+        auth_copy: false,
+        value: toolJsUrl,
+        to: {
+          text: '前往bgi仓库订阅',
+          desc: '点击前往bgi仓库订阅全自动或半自动工具箱JS',
+          value: autoPlanJsUrl,
+          click: async (value) => {
+            await ElMessageBox.confirm(
+                '确定前往bgi仓库订阅全自动或半自动工具箱JS吗？',
+                '提示', {
+                  confirmButtonText: '确定',
+                  cancelButtonText: '取消',
+                  type: 'warning',
+                }
+            )
+            window.open(value, '_blank');
+          }
+        }
+      },
+      {
         name: "CD算法API",
+        auth_copy: true,
         value: hostPrefix + "cron/next-timestamp/all",
       }
     ]
@@ -176,7 +225,7 @@ const handleExpandModeChange = (mode) => {
                   <code class="api-value">{{ item.value }}</code>
                 </div>
 
-                <div class="api-actions">
+                <div class="api-actions" >
                   <el-tooltip v-if="item.to" :content="item.to.desc" placement="top">
                     <el-button
                         type="success"
@@ -189,7 +238,7 @@ const handleExpandModeChange = (mode) => {
                     </el-button>
                   </el-tooltip>
 
-                  <el-tooltip content="复制到剪贴板" placement="top">
+                  <el-tooltip v-if="item.auth_copy" content="复制到剪贴板" placement="top">
                     <el-button
                         type="primary"
                         size="small"
@@ -248,7 +297,7 @@ const handleExpandModeChange = (mode) => {
               </el-button>
             </el-tooltip>
 
-            <el-tooltip content="复制到剪贴板" placement="top">
+            <el-tooltip v-if="item.auth_copy" content="复制到剪贴板" placement="top">
               <el-button
                   type="primary"
                   size="small"
