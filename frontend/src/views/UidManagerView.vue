@@ -387,14 +387,18 @@ const handleSubmitTeamInfo = async () => {
 }
 
 // 删除队伍信息
-const handleDeleteTeamInfo = async (row) => {
+const handleDeleteTeamInfo = async (all=false,ids=[]) => {
   try {
     await ElMessageBox.confirm(`确定要删除该队伍信息吗？`, '警告', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     })
-    await deleteTeamInfoIds([row.id])
+    if (all) {
+      ids=[...Array.from(selectedTeamRows.value).map(row => row.id)]
+    }
+    await deleteTeamInfoIds(ids)
+    await handleClearSelectionTeamInfo()
     ElMessage.success('删除成功')
     await loadTeamInfoList()
   } catch (error) {
@@ -403,6 +407,17 @@ const handleDeleteTeamInfo = async (row) => {
       ElMessage.error('删除失败')
     }
   }
+}
+const selectedTeamRows = ref(new Set());
+const teamInfoTableRef = ref()
+// 表格选中变化回调
+const handleSelectionChangeTeamInfo = (selection) => {
+  selectedTeamRows.value = new Set(selection)
+}
+const handleClearSelectionTeamInfo   = async () => {
+  selectedTeamRows.value.clear()
+  // 同步清除表格上的勾选高亮
+  teamInfoTableRef.value?.clearSelection()
 }
 //==========================================================
 
@@ -429,6 +444,7 @@ const goToBack = async () => {
 onMounted(() => {
   loadData()
 })
+
 </script>
 
 <template>
@@ -644,25 +660,38 @@ onMounted(() => {
             />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="loadTeamInfoList">搜索</el-button>
-            <el-button @click="resetTeamInfoSearch">重置</el-button>
-            <el-button @click="openEditTeamInfo(false)">新增</el-button>
+            <el-button type="primary" class="action-button" @click="loadTeamInfoList">搜索</el-button>
+            <el-button class="action-button" @click="resetTeamInfoSearch">重置</el-button>
+            <el-button  class="action-button" @click="openEditTeamInfo(false)">新增</el-button>
+            <el-button
+                type="danger"
+                :disabled="selectedTeamRows.size === 0"
+                @click="handleDeleteTeamInfo(true)"
+                class="action-button"
+            >
+             批量删除
+            </el-button>
           </el-form-item>
         </el-form>
         <!--表格容器 flex:1 吃掉中间全部剩余高度 -->
         <div class="team-info-table-wrap">
         <!-- 队伍信息表格 -->
-        <el-table :data="teamInfo.list" v-loading="loading" border>
+        <el-table :data="teamInfo.list" v-loading="loading" border
+                  ref="teamInfoTableRef"
+                  @selection-change="handleSelectionChangeTeamInfo"
+        >
+          <!-- 多选框列 -->
+          <el-table-column type="selection" width="55"/>
           <el-table-column prop="id" label="ID" width="80"/>
           <el-table-column prop="uid" label="UID" min-width="120"/>
-          <el-table-column prop="type" label="类型" min-width="100"/>
+          <el-table-column prop="type" label="分组类型" min-width="100"/>
           <el-table-column prop="team" label="队伍" min-width="150"/>
           <el-table-column label="操作" width="150" fixed="right">
             <template #default="{ row }">
               <el-button type="primary" size="small" @click="openEditTeamInfo(true, row)">
                 编辑
               </el-button>
-              <el-button type="danger" size="small" @click="handleDeleteTeamInfo(row)">
+              <el-button type="danger" size="small" @click="handleDeleteTeamInfo(false,[row.id])">
                 删除
               </el-button>
             </template>
@@ -705,7 +734,7 @@ onMounted(() => {
         <el-form-item label="UID" prop="uid">
           <el-input v-model="teamInfo.info.uid" placeholder="请输入 UID"/>
         </el-form-item>
-        <el-form-item label="类型" prop="type">
+        <el-form-item label="分组类型" prop="type">
           <el-input v-model="teamInfo.info.type" placeholder="请输入类型"/>
         </el-form-item>
         <el-form-item label="队伍" prop="team">
