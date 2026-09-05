@@ -21,7 +21,7 @@
         <spring-cloud.version>2023.0.0</spring-cloud.version>
         <spring-cloud-alibaba.version>2023.0.0.0-RC1</spring-cloud-alibaba.version>
 
-        <hutool.version>5.8.27</hutool.version>
+        <hutool.version>5.8.47</hutool.version>
         <lombok.version>1.18.30</lombok.version>
         <slf4j-api.version>2.0.12</slf4j-api.version>
 
