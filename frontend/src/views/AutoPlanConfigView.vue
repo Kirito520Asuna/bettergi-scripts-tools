@@ -401,14 +401,14 @@ const defaultConfig = {
     count: 1,                        // 刷几次（0=自动/无限）
     country: countryListDefault()[0],                     // 国家地区
     leyLineOutcropType: leyLineOutcropTypeNamesDefault()[0], // 需映射为经验/摩拉
-    useAdventurerHandbook: false,    // 是否使用冒险之证
+    //useAdventurerHandbook: false,    // 是否使用冒险之证
     friendshipTeam: "",              // 好感队伍ID
     team: "",                        // 主队伍ID
     timeout: 120,                      // 超时时间（秒）
     isGoToSynthesizer: false,        // 是否前往合成台
     useFragileResin: false,          // 使用脆弱树脂
     useTransientResin: false,        // 使用须臾树脂（须臾=Transient）
-    isNotification: false            // 是否通知
+    //isNotification: false            // 是否通知
   },
   // 新添加幽境
   autoStygianOnslaught: {
@@ -747,10 +747,10 @@ const getFinalConfigsToKey = () => {
       key += (autoLeyLineOutcrop.useTransientResin || "")
       key += "|"
       key += (autoLeyLineOutcrop.isGoToSynthesizer || "")
-      key += "|"
-      key += (autoLeyLineOutcrop.useAdventurerHandbook || "")
-      key += "|"
-      key += (autoLeyLineOutcrop.isNotification || "")
+      // key += "|"
+      // key += (autoLeyLineOutcrop.useAdventurerHandbook || "")
+      // key += "|"
+      // key += (autoLeyLineOutcrop.isNotification || "")
       key += "|"
       key += (autoLeyLineOutcrop.timeout || "")
     } else if (item.runType === runTypesDefault()[2]) {
@@ -1824,11 +1824,11 @@ const dialogWidth = computed(() => {
               </div>
 
               <div class="checkbox-grid">
-                <div class="checkbox-grid-item">
+<!--                <div class="checkbox-grid-item">
                   <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.useAdventurerHandbook">
                     使用冒险之证
                   </el-checkbox>
-                </div>
+                </div>-->
                 <div class="checkbox-grid-item">
                   <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.useFragileResin">
                     使用脆弱树脂
@@ -1844,11 +1844,11 @@ const dialogWidth = computed(() => {
                     合成浓缩树脂
                   </el-checkbox>
                 </div>
-                <div class="checkbox-grid-item">
+<!--                <div class="checkbox-grid-item">
                   <el-checkbox v-model="currentConfig.autoLeyLineOutcrop.isNotification">
                     完成后通知
                   </el-checkbox>
-                </div>
+                </div>-->
               </div>
             </template>
 
