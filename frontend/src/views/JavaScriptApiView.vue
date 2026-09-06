@@ -111,7 +111,7 @@ onMounted(async () => {
         to: {
           text: '前往bgi仓库订阅',
           desc: '点击前往bgi仓库订阅全自动或半自动工具箱JS',
-          value: autoPlanJsUrl,
+          value: toolJsUrl,
           click: async (value) => {
             await ElMessageBox.confirm(
                 '确定前往bgi仓库订阅全自动或半自动工具箱JS吗？',
