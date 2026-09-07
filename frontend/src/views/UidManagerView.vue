@@ -14,6 +14,9 @@ import {goBack, toHomePage} from "@api/web/web.js"
 import router from "@router/router.js";
 import {CopyDocument} from '@element-plus/icons-vue'
 import {CopyToClipboard} from "@utils/local.js";
+import {getHostPrefix} from "@utils/ApiRequest.js";
+import {getTokenInfo} from "@api/auth/token.js";
+import {init} from "node-forge/lib/xhr.js";
 
 const currentRoute = ref(router.currentRoute)
 // 表单数据
@@ -224,6 +227,76 @@ const handleFetchPassword = async (row) => {
 }
 
 //==========================================================
+const SwitchPartyJsonApiList = ref([])
+const initSwitchPartyJson = async () => {
+  const hostPrefix = getHostPrefix();
+  const SwitchPartyJsUrl = 'https://bgi.sh/?type=js&path=SwitchParty'
+
+  const response = await getTokenInfo()
+  let tokenInfo = {
+    name: undefined,
+    value: undefined,
+  }
+  if (response.code === 200) {
+    tokenInfo.name = response.data.name || '';
+    tokenInfo.value = response.data.value || '';
+  }
+  let token = (tokenInfo?.name && tokenInfo?.value) ? tokenInfo?.name + "=" + tokenInfo?.value : "未设置,如需请前往设置配置";
+
+  const list = [
+    {
+      name: '切换队伍(BgiTools版)JS',
+      auth_copy: false,
+      value: SwitchPartyJsUrl,
+      to: {
+        text: '前往bgi仓库订阅',
+        desc: '点击前往bgi仓库订阅切换队伍(BgiTools版)JS',
+        value: SwitchPartyJsUrl,
+        click: async (value) => {
+          await ElMessageBox.confirm(
+              '确定前往bgi仓库订阅切换队伍(BgiTools版)JS吗？',
+              '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning',
+              }
+          )
+          window.open(value, '_blank');
+        }
+      }
+    },
+    {
+      name: '拉取配置API',
+      auth_copy: true,
+      value: hostPrefix + 'uid/team',
+    },
+    {
+      name: '授权Token',
+      auth_copy: true,
+      value: token,
+      to: {
+        text: '前往设置',
+        desc: '点击前往设置授权Token',
+        value: 'settings',
+        click: async (value) => {
+          await ElMessageBox.confirm(
+              '确定前往设置吗？',
+              '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning',
+              }
+          )
+          await router.push({name: value})
+        }
+      }
+    },
+  ]
+
+  SwitchPartyJsonApiList.value = list
+}
+
+
 const teamInfoDefault = {
   search: {
     id: undefined,
@@ -234,6 +307,7 @@ const teamInfoDefault = {
     info: false,// 队伍信息对话框是否显示
     add: false,// 新增对话框是否显示
     edit: false,// 编辑对话框是否显示
+    api: false,// API对话框是否显示
   },
   info: {id: undefined, uid: undefined, type: undefined, team: undefined},// 队伍信息 新增/编辑
   list: [],// 队伍信息列表
@@ -248,7 +322,7 @@ const openEditTeamInfo = async (edit, info = {id: undefined, uid: undefined, typ
   teamInfo.value.showDialog.edit = edit
   teamInfo.value.showDialog.add = !edit
   teamInfo.value.info = {...info}
-  if (!teamInfo.value.info.uid){
+  if (!teamInfo.value.info.uid) {
     teamInfo.value.info.uid = teamInfo.value.search.uid
   }
 }
@@ -271,6 +345,7 @@ const openDialogTeamInfo = async (uid) => {
     teamInfo.value.info.uid = undefined
   }
   await loadTeamInfoList()
+  await initSwitchPartyJson()
 }
 
 const closeDialogTeamInfo = async () => {
@@ -339,7 +414,7 @@ const checkTeamInfoUnique = async () => {
     console.log('TeamInfo:', {id, uid, type})
     if (currentId) {
       //编辑场景
-      return !(currentId !== id &&uid === currentUid && type === currentType)
+      return !(currentId !== id && uid === currentUid && type === currentType)
     } else {
       // 新增场景：已经存在记录说明重复
       return !(uid === currentUid && type === currentType)
@@ -387,7 +462,7 @@ const handleSubmitTeamInfo = async () => {
 }
 
 // 删除队伍信息
-const handleDeleteTeamInfo = async (all=false,ids=[]) => {
+const handleDeleteTeamInfo = async (all = false, ids = []) => {
   try {
     await ElMessageBox.confirm(`确定要删除该队伍信息吗？`, '警告', {
       confirmButtonText: '确定',
@@ -395,7 +470,7 @@ const handleDeleteTeamInfo = async (all=false,ids=[]) => {
       type: 'warning'
     })
     if (all) {
-      ids=[...Array.from(selectedTeamRows.value).map(row => row.id)]
+      ids = [...Array.from(selectedTeamRows.value).map(row => row.id)]
     }
     await deleteTeamInfoIds(ids)
     await handleClearSelectionTeamInfo()
@@ -414,7 +489,7 @@ const teamInfoTableRef = ref()
 const handleSelectionChangeTeamInfo = (selection) => {
   selectedTeamRows.value = new Set(selection)
 }
-const handleClearSelectionTeamInfo   = async () => {
+const handleClearSelectionTeamInfo = async () => {
   selectedTeamRows.value.clear()
   // 同步清除表格上的勾选高亮
   teamInfoTableRef.value?.clearSelection()
@@ -515,14 +590,14 @@ onMounted(() => {
               </el-table-column>
               <el-table-column label="绑定队伍" fixed="right">
                 <template #default="{ row }">
-                <el-button
-                    type="primary"
-                    size="small"
-                    @click="openDialogTeamInfo(row?.uid)"
-                    class="table-button"
-                >
-                  查看信息
-                </el-button>
+                  <el-button
+                      type="primary"
+                      size="small"
+                      @click="openDialogTeamInfo(row?.uid)"
+                      class="table-button"
+                  >
+                    查看信息
+                  </el-button>
                 </template>
               </el-table-column>
               <el-table-column label="操作" fixed="right">
@@ -662,41 +737,43 @@ onMounted(() => {
           <el-form-item>
             <el-button type="primary" class="action-button" @click="loadTeamInfoList">搜索</el-button>
             <el-button class="action-button" @click="resetTeamInfoSearch">重置</el-button>
-            <el-button  class="action-button" @click="openEditTeamInfo(false)">新增</el-button>
+            <el-button class="action-button" @click="openEditTeamInfo(false)">新增</el-button>
             <el-button
                 type="danger"
                 :disabled="selectedTeamRows.size === 0"
                 @click="handleDeleteTeamInfo(true)"
                 class="action-button"
             >
-             批量删除
+              批量删除
+            </el-button>
+            <el-button type="primary" class="action-button" @click="teamInfo.showDialog.api=true">查看JS及配置API
             </el-button>
           </el-form-item>
         </el-form>
         <!--表格容器 flex:1 吃掉中间全部剩余高度 -->
         <div class="team-info-table-wrap">
-        <!-- 队伍信息表格 -->
-        <el-table :data="teamInfo.list" v-loading="loading" border
-                  ref="teamInfoTableRef"
-                  @selection-change="handleSelectionChangeTeamInfo"
-        >
-          <!-- 多选框列 -->
-          <el-table-column type="selection" width="55"/>
-          <el-table-column prop="id" label="ID" width="80"/>
-          <el-table-column prop="uid" label="UID" min-width="120"/>
-          <el-table-column prop="type" label="分组类型" min-width="100"/>
-          <el-table-column prop="team" label="队伍" min-width="150"/>
-          <el-table-column label="操作" width="150" fixed="right">
-            <template #default="{ row }">
-              <el-button type="primary" size="small" @click="openEditTeamInfo(true, row)">
-                编辑
-              </el-button>
-              <el-button type="danger" size="small" @click="handleDeleteTeamInfo(false,[row.id])">
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+          <!-- 队伍信息表格 -->
+          <el-table :data="teamInfo.list" v-loading="loading" border
+                    ref="teamInfoTableRef"
+                    @selection-change="handleSelectionChangeTeamInfo"
+          >
+            <!-- 多选框列 -->
+            <el-table-column type="selection" width="55"/>
+            <el-table-column prop="id" label="ID" width="80"/>
+            <el-table-column prop="uid" label="UID" min-width="120"/>
+            <el-table-column prop="type" label="分组类型" min-width="100"/>
+            <el-table-column prop="team" label="队伍" min-width="150"/>
+            <el-table-column label="操作" width="150" fixed="right">
+              <template #default="{ row }">
+                <el-button type="primary" size="small" @click="openEditTeamInfo(true, row)">
+                  编辑
+                </el-button>
+                <el-button type="danger" size="small" @click="handleDeleteTeamInfo(false,[row.id])">
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </div>
         <!-- 分页：固定在容器底部，不会跟着表格滚动 -->
         <div class="team-info-pagination-wrap">
@@ -713,7 +790,66 @@ onMounted(() => {
       </div>
 
     </el-dialog>
-
+    <!-- 弹窗 -->
+    <el-dialog
+        v-if="teamInfo.showDialog.api"
+        v-model="teamInfo.showDialog.api"
+        :close-on-click-modal="false"
+        append-to-body
+        class="api-config-dialog"
+    >
+      <template #header>
+        <div class="dialog-header">
+          <el-icon>
+            <Connection/>
+          </el-icon>
+          <span>JS 及配置 API</span>
+        </div>
+      </template>
+      <div class="api-dialog-content">
+        <div class="api-grid">
+          <div class="api-item" v-for="(item,index) in SwitchPartyJsonApiList" :key="index">
+            <div class="api-item-header">
+              <span class="api-name">{{ item.name }}</span>
+              <el-tag size="small" type="info" effect="plain">API {{ index + 1 }}</el-tag>
+            </div>
+            <div class="api-value-container">
+              <code class="api-value">{{ item.value }}</code>
+            </div>
+            <div class="api-actions" v-if="item.to || item.auth_copy">
+              <el-tooltip v-if="item.to" :content="item.to.desc" placement="top">
+                <el-button
+                    type="primary"
+                    size="small"
+                    icon="Link"
+                    @click="item.to.click(item.to.value)"
+                >
+                  {{ item.to.text }}
+                </el-button>
+              </el-tooltip>
+              <el-tooltip v-if="item.auth_copy" content="复制到剪贴板" placement="top">
+                <el-button
+                    type="success"
+                    size="small"
+                    icon="DocumentCopy"
+                    @click="copyToClipboard(item.value)"
+                >
+                  复制
+                </el-button>
+              </el-tooltip>
+            </div>
+          </div>
+        </div>
+        <div v-if="!SwitchPartyJsonApiList || SwitchPartyJsonApiList.length === 0" class="empty-state">
+          <el-empty description="暂无可用 API" :image-size="80"/>
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="teamInfo.showDialog.api = false">关闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
     <!-- 新增/编辑队伍信息对话框 -->
     <el-dialog
         v-model="teamInfoEditVisible"
@@ -847,6 +983,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
 }
+
 /* 分页：固定底部，不被压缩 */
 .pagination-wrap {
   flex-shrink: 0;
@@ -854,6 +991,7 @@ onMounted(() => {
   justify-content: flex-end;
   padding-top: 8px;
 }
+
 .empty-icon {
   font-size: 80px;
   margin-bottom: 20px;
@@ -916,7 +1054,7 @@ onMounted(() => {
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  gap:12px;
+  gap: 12px;
 }
 
 .team-info-search {
@@ -935,7 +1073,103 @@ onMounted(() => {
   flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
-  padding-top:8px;
+  padding-top: 8px;
+}
+.api-dialog-content {
+  padding: 4px 0;
+  max-height: calc(90vh - 200px);
+  overflow-y: auto;
+}
+
+.api-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.api-item {
+  background: linear-gradient(135deg, var(--el-fill-color-light) 0%, var(--el-fill-color) 100%);
+  border-radius: 8px;
+  padding: 12px 12px 12px 16px;
+  border: 1px solid var(--el-border-color-light);
+  border-left: 3px solid var(--el-color-primary);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.api-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-left-color: var(--el-color-primary-light-3);
+}
+
+.api-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.api-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.api-value-container {
+  background: var(--el-bg-color);
+  border-radius: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--el-border-color-extra-light);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.api-value {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--el-color-primary);
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.api-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.api-actions .el-button {
+  flex: 1;
+  min-width: 0;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.api-dialog-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.api-dialog-content::-webkit-scrollbar-track {
+  background: var(--el-fill-color-lighter);
+  border-radius: 3px;
+}
+
+.api-dialog-content::-webkit-scrollbar-thumb {
+  background: var(--el-color-info-light-5);
+  border-radius: 3px;
+}
+
+.api-dialog-content::-webkit-scrollbar-thumb:hover {
+  background: var(--el-color-info);
 }
 /* ==========队伍弹窗布局 end========== */
 

@@ -7,7 +7,9 @@ import {zhCn} from "element-plus/es/locale/index";
 import '@css/main.css';
 import {getVersion} from "@api/sys/sys.js";
 import {getLocalVersion, setLocalVersion} from "@api/web/web.js";
-
+import $ from 'jquery'
+// 将 jQuery 挂载到全局，兼容 $ 和 jQuery 两种写法
+window.$ = window.jQuery = $
 // 动态设置 favicon（使用 Vite 的 BASE_URL）
 function setupFavicon() {
     const link = document.querySelector("link[rel~='icon']");
