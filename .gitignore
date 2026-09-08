@@ -18,7 +18,8 @@
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
-
+/.proxyai/
+PROXYAI.md
 # Package Files #
 *.jar
 *.war
