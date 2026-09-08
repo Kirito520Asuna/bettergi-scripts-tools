@@ -7,6 +7,7 @@ const routes = [
         path: '/',
         name: 'home',
         meta: {
+            isHome: true, // 首页
             excludeInMenu: true,
             isRoot: true,
             title: '首页',
@@ -36,6 +37,7 @@ const routes = [
         name: 'login',
         component: () => import('@views/Login.vue'),
         meta: {
+            isLogin: true, // 登录页
             excludeInMenu: true,
             isRoot: true,
             title: '登录',
@@ -232,27 +234,29 @@ router.beforeEach(async (to, from, next) => {
     // if (import.meta.env.VITE_SERVER_PORT) {
     //     return next()
     // }
+    const login = routes.find(route => route.meta.isLogin);
+    const login_path = login.path;
     let token;
     try {
         token = await getLocalToken();
     } catch {
-        return next('/login');
+        return next(login_path);
     }
 
     const isAuthenticated = !!token;
 
-
+    const home = routes.find(route => route.meta.isHome);
+    const home_path = home.path;
     // 登录页特殊处理：已登录用户访问登录页自动跳转首页
-    if (to.path === '/login') {
-        return isAuthenticated ? next('/') : next();
+    if (to.path === login_path) {
+        return isAuthenticated ? next(home_path) : next();
     }
-
 
     // 已登录 或 目标页面是公开页面 → 放行
     if (isAuthenticated || to.meta?.isPublic) {
         next();
     } else {
-        next('/login');
+        next(login_path);
     }
 })
 

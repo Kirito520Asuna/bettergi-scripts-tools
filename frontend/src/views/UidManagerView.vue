@@ -832,7 +832,7 @@ onMounted(() => {
                     type="success"
                     size="small"
                     icon="DocumentCopy"
-                    @click="copyToClipboard(item.value)"
+                    @click="CopyToClipboard(item.value)"
                 >
                   复制
                 </el-button>

@@ -1,6 +1,6 @@
 import {ElMessage} from "element-plus";
 
-const CopyToClipboard = async (text) => {
+export const CopyToClipboard = async (text) => {
 
     try {
         // 强制将 text 转换为字符串
@@ -31,7 +31,3 @@ const CopyToClipboard = async (text) => {
         });
     }
 };
-
-export {
-    CopyToClipboard
-}
