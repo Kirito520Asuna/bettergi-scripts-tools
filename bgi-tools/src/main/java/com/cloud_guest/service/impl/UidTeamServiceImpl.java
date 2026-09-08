@@ -39,14 +39,18 @@ public class UidTeamServiceImpl extends ServiceImpl<UidTeamMapper, UidTeamConfig
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UidTeamConfig saveOrUpdateById(UidTeamConfig config) {
+        Long id = config.getId();
+        String uid = config.getUid();
+        String teamType = config.getTeamType();
+
         boolean existsUidType = exists(lambdaQueryWrapper()
-                .eq(UidTeamConfig::getUid, config.getUid())
-                .eq(UidTeamConfig::getTeamType, config.getTeamType())
+                .eq(UidTeamConfig::getUid, uid)
+                .eq(UidTeamConfig::getTeamType, teamType)
+                .ne(id != null, UidTeamConfig::getId, id)
         );
         if (existsUidType) {
-            throw new GlobalException("记录已存在，uid = " + config.getUid() + ", type = " + config.getTeamType());
+            throw new GlobalException("记录已存在，uid = " + uid + ", type = " + teamType);
         }
-        Long id = config.getId();
         if (id == null) {
             save(config);
         } else {
@@ -57,9 +61,9 @@ public class UidTeamServiceImpl extends ServiceImpl<UidTeamMapper, UidTeamConfig
             }
             update(config, lambdaUpdateWrapper()
                     .eq(UidTeamConfig::getId, id)
-                    .set(UidTeamConfig::getUid, config.getUid())
+                    .set(UidTeamConfig::getUid, uid)
                     .set(UidTeamConfig::getTeam, config.getTeam())
-                    .set(UidTeamConfig::getTeamType, config.getTeamType()));
+                    .set(UidTeamConfig::getTeamType, teamType));
         }
         return config;
 
