@@ -41,10 +41,11 @@ public interface AbsSysLog extends AbsAop {
         String traceId = ThreadMdcUtil.getTraceId();
         //获取是否有注解
         SysLog sysLog = getSysLog(joinPoint);
+        if (ObjectUtil.isEmpty(sysLog)) return AbsAop.super.around(joinPoint);
         /**
          * 开启请求日志
          */
-        boolean openRequestLog = ObjectUtil.isNotEmpty(sysLog) && sysLog.flag();
+        boolean openRequestLog = sysLog.flag();
         if (openRequestLog) {
             // 接收到请求，记录请求内容
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -96,7 +97,7 @@ public interface AbsSysLog extends AbsAop {
             around = AbsAop.super.around(joinPoint);
             return around;
         } finally {
-            boolean openResultLog = ObjectUtil.isNotEmpty(sysLog) && sysLog.result();
+            boolean openResultLog = sysLog.result();
             if (openResultLog) {
                 long end = System.currentTimeMillis();
                 long totalMilliseconds = end - start;
@@ -104,13 +105,13 @@ public interface AbsSysLog extends AbsAop {
                 String resultStr = around == null ? "返回值为空" : JSONUtil.toJsonStr(around, JSON_CONFIG);
 
                 log().info(new StringBuffer()
-                        .append("\n====================================响应内容====================================")
-                        .append("\n==>TRACE_ID : {} <==")
-                        .append("\n==>耗时 : {} <==")
-                        .append("\n==>响应 : {} <==")
-                        .append("\n================================================================================")
-                        .toString()
-                , traceId, timeFormat, resultStr);
+                                .append("\n====================================响应内容====================================")
+                                .append("\n==>TRACE_ID : {} <==")
+                                .append("\n==>耗时 : {} <==")
+                                .append("\n==>响应 : {} <==")
+                                .append("\n================================================================================")
+                                .toString()
+                        , traceId, timeFormat, resultStr);
             }
         }
     }
