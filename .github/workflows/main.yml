@@ -390,117 +390,10 @@ jobs:
           name: windows-exes
           path: ${{env.TMP_EXTRACTED_EXES}}/*.exe
 
-
-  build-and-push-docker:
-    runs-on: ubuntu-latest
-    needs: build-jar-linux  # 添加依赖关系
-    permissions:
-      contents: read
-      packages: write
-      actions: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      # 下载之前工作流的构建产物
-      - name: Download JAR artifacts
-        uses: actions/download-artifact@v8
-        with:
-          name: jar-files
-          path: ./
-
-      - name: List downloaded files
-        run: ls -la ./
-
-      - name: 配置
-        run: |
-          java_version=${{ needs.build-jar-linux.outputs.java_version }}
-          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
-          createDockerfile "${java_version}"
-
-      # 设置 Docker Buildx
-      - name: 设置 Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      # 登录到 GitHub Container Registry
-      - name: 登录 Log in to Container Registry
-        if: ${{ needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
-        #if: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # 提取 Docker 镜像元数据
-      - name: 提取 Docker 镜像元数据
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ needs.build-jar-linux.outputs.tag_name||github.ref_name }}
-            type=raw,value=latest
-      
-
-      # 构建并推送 Docker 镜像
-      - name: 构建并推送 Docker image
-        uses: docker/build-push-action@v7
-        #if: ${{ needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
-        #if: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
-        with:
-          context: .
-          file: ./${{ env.DOCKER_FILE_NAME}}
-          push: ${{ needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
-          #push: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
-          load: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            JAVA_VERSION=${{needs.build-jar-linux.outputs.java_version}}
-            JAR_FILE_PATH=./*.jar
-
-      # 验证构建的镜像
-      - name: 验证构建 Docker image
-        run: |
-          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
-          # 获取预期的镜像标签
-          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)
-          validateBuildDockerImage "$IMAGE_TAG" 30
-
-      # ============ 新增：保存并上传 Docker 镜像 ============
-      - name: 保存 Docker 镜像为 tar 文件
-        run: |
-          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
-          saveDockerImage "${{ steps.meta.outputs.tags }}" "${{ needs.build-jar-linux.outputs.tag_name }}"
-
-      # 创建使用说明 Markdown 文件
-      - name: 创建 Docker 使用说明文档 (README-Docker-Usage.md)
-        run: |
-          name=${{ github.event.repository.name }}
-          tag_name=${{ needs.build-jar-linux.outputs.tag_name}}
-          run_id=${{ github.run_id }}
-          tar_file_name=${{ env.TAR_FILE_NAME }}
-          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
-          createDockerUsageReadme "$name" "$tag_name" "$run_id" "$tar_file_name"
-
-      - name: 上传 Docker 镜像 tar 文件为 Artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: docker-image-artifact
-          path: |
-            ${{ env.TAR_FILE_NAME }}
-            README-Docker-Usage.md
-          # retention-days: 5 # 设置保留天数为5天
-
-
   # 发布到 GitHub Release
   push-release:
     runs-on: ubuntu-latest
-    needs: [ build-jar-linux, build-exe ]
+    needs: [build-exe]
     if: ${{ needs.build-jar-linux.outputs.push_to_github_release == 'true' }}
     steps:
       - uses: actions/checkout@v5
@@ -611,3 +504,302 @@ jobs:
           prerelease: ${{ github.event.inputs.prerelease || false }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============ 只构建 Docker 镜像，不推送 ============
+  build-docker:
+    runs-on: ubuntu-latest
+    needs: build-jar-linux  # 添加依赖关系
+    permissions:
+      contents: read
+      packages: write
+      actions: read
+    outputs:
+      tag_name: ${{ needs.build-jar-linux.outputs.tag_name }}
+      java_version: ${{ needs.build-jar-linux.outputs.java_version }}
+      push_to_docker_registry: ${{ needs.build-jar-linux.outputs.push_to_docker_registry }}
+      image_tags: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      # 下载之前工作流的构建产物
+      - name: Download JAR artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: jar-files
+          path: ./
+
+      - name: List downloaded files
+        run: ls -la ./
+
+      - name: 配置
+        run: |
+          java_version=${{ needs.build-jar-linux.outputs.java_version }}
+          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
+          createDockerfile "${java_version}"
+
+      # 设置 Docker Buildx
+      - name: 设置 Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # 提取 Docker 镜像元数据
+      - name: 提取 Docker 镜像元数据
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ needs.build-jar-linux.outputs.tag_name||github.ref_name }}
+            type=raw,value=latest,enable=${{ needs.build-jar-linux.outputs.push_to_github_release == 'true' && needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
+
+      # 构建 Docker 镜像（只构建并加载到本地，不推送）
+      - name: 构建 Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./${{ env.DOCKER_FILE_NAME}}
+          push: false
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            JAVA_VERSION=${{needs.build-jar-linux.outputs.java_version}}
+            JAR_FILE_PATH=./*.jar
+
+      # 验证构建的镜像
+      - name: 验证构建 Docker image
+        run: |
+          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
+          # 获取预期的镜像标签
+          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)
+          validateBuildDockerImage "$IMAGE_TAG" 30
+
+      # 保存 Docker 镜像为 tar 文件
+      - name: 保存 Docker 镜像为 tar 文件
+        run: |
+          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
+          saveDockerImage "${{ steps.meta.outputs.tags }}" "${{ needs.build-jar-linux.outputs.tag_name }}"
+
+      # 创建使用说明 Markdown 文件
+      - name: 创建 Docker 使用说明文档 (README-Docker-Usage.md)
+        run: |
+          name=${{ github.event.repository.name }}
+          tag_name=${{ needs.build-jar-linux.outputs.tag_name}}
+          run_id=${{ github.run_id }}
+          tar_file_name=${{ env.TAR_FILE_NAME }}
+          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
+          createDockerUsageReadme "$name" "$tag_name" "$run_id" "$tar_file_name"
+
+      - name: 上传 Docker 镜像 tar 文件为 Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: docker-image-artifact
+          path: |
+            ${{ env.TAR_FILE_NAME }}
+            README-Docker-Usage.md
+          # retention-days: 5 # 设置保留天数为5天
+
+  # ============ 推送 Docker 镜像到镜像仓库 ============
+  push-docker:
+    runs-on: ubuntu-latest
+    needs: [build-docker ]
+    if: ${{ needs.build-docker.outputs.push_to_docker_registry == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      # 下载上一个 job 产出的镜像 tar 包
+      - name: 下载 Docker 镜像 tar Artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: docker-image-artifact
+          path: ./
+
+      # ✅ 新增：下载 JAR 产物，作为重新构建的上下文
+      - name: 下载 JAR Artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: jar-files
+          path: ./
+
+      - name: List downloaded files
+        run: ls -la ./
+
+      # 设置 Docker Buildx
+      - name: 设置 Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # 登录到 GitHub Container Registry
+      - name: 登录 Log in to Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 重新生成 Dockerfile（跨 job 后 DOCKER_FILE_NAME/Dockerfile 都不存在）
+      - name: 配置
+        run: |
+          java_version=${{ needs.build-docker.outputs.java_version }}
+          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
+          createDockerfile "${java_version}"
+
+      - name: Load tar docker image
+        id: load_image
+        run: |
+          TAR_FILE=$(ls *.tar | head -n 1)
+          if [ -z "$TAR_FILE" ]; then
+            echo "❌ 未找到任何 tar 镜像文件"
+            exit 1
+          fi
+          echo "🚀 加载镜像文件：$TAR_FILE"
+          docker load -i "$TAR_FILE"
+          docker images
+          # 过滤本地存在的标签，输出到 github outputs
+          VALID_TAGS=$(echo "${{ needs.build-docker.outputs.image_tags }}" | while read -r tag; do
+            if [ -n "$tag" ] && docker image inspect "$tag" >/dev/null 2>&1; then
+              echo "$tag"
+            fi
+          done | tr '\n' ',')
+          echo "valid_tags=${VALID_TAGS%,}" >> $GITHUB_OUTPUT
+
+      # 提取 Docker 镜像元数据
+      - name: 提取 Docker 镜像元数据
+        id: meta
+        if: steps.load_image.outputs.valid_tags != ''
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ needs.build-jar-linux.outputs.tag_name||github.ref_name }}
+            type=raw,value=latest,enable=${{ needs.build-jar-linux.outputs.push_to_github_release == 'true' && needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
+
+      - name: Push Docker Images
+        if: steps.load_image.outputs.valid_tags != ''
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./${{ env.DOCKER_FILE_NAME }}
+          push: true
+          tags: ${{ steps.load_image.outputs.valid_tags }}
+          load: false
+          # 复用 build-docker 写入的 gha 缓存，命中后几乎瞬间完成
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            JAVA_VERSION=${{ needs.build-docker.outputs.java_version }}
+            JAR_FILE_PATH=./*.jar
+
+
+#  build-and-push-docker:
+#    runs-on: ubuntu-latest
+#    needs: build-jar-linux  # 添加依赖关系
+#    permissions:
+#      contents: read
+#      packages: write
+#      actions: read
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v5
+#
+#      # 下载之前工作流的构建产物
+#      - name: Download JAR artifacts
+#        uses: actions/download-artifact@v8
+#        with:
+#          name: jar-files
+#          path: ./
+#
+#      - name: List downloaded files
+#        run: ls -la ./
+#
+#      - name: 配置
+#        run: |
+#          java_version=${{ needs.build-jar-linux.outputs.java_version }}
+#          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
+#          createDockerfile "${java_version}"
+#
+#      # 设置 Docker Buildx
+#      - name: 设置 Docker Buildx
+#        uses: docker/setup-buildx-action@v4
+#
+#      # 登录到 GitHub Container Registry
+#      - name: 登录 Log in to Container Registry
+#        if: ${{ needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
+#        #if: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
+#        uses: docker/login-action@v4
+#        with:
+#          registry: ${{ env.REGISTRY }}
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
+#
+#      # 提取 Docker 镜像元数据
+#      - name: 提取 Docker 镜像元数据
+#        id: meta
+#        uses: docker/metadata-action@v6
+#        with:
+#          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+#          tags: |
+#            type=raw,value=${{ needs.build-jar-linux.outputs.tag_name||github.ref_name }}
+#            type=raw,value=latest
+#
+#
+#      # 构建并推送 Docker 镜像
+#      - name: 构建并推送 Docker image
+#        uses: docker/build-push-action@v7
+#        #if: ${{ needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
+#        #if: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
+#        with:
+#          context: .
+#          file: ./${{ env.DOCKER_FILE_NAME}}
+#          push: ${{ needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
+#          #push: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
+#          load: true
+#          tags: ${{ steps.meta.outputs.tags }}
+#          labels: ${{ steps.meta.outputs.labels }}
+#          cache-from: type=gha
+#          cache-to: type=gha,mode=max
+#          build-args: |
+#            JAVA_VERSION=${{needs.build-jar-linux.outputs.java_version}}
+#            JAR_FILE_PATH=./*.jar
+#
+#      # 验证构建的镜像
+#      - name: 验证构建 Docker image
+#        run: |
+#          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
+#          # 获取预期的镜像标签
+#          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)
+#          validateBuildDockerImage "$IMAGE_TAG" 30
+#
+#      # ============ 新增：保存并上传 Docker 镜像 ============
+#      - name: 保存 Docker 镜像为 tar 文件
+#        run: |
+#          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
+#          saveDockerImage "${{ steps.meta.outputs.tags }}" "${{ needs.build-jar-linux.outputs.tag_name }}"
+#
+#      # 创建使用说明 Markdown 文件
+#      - name: 创建 Docker 使用说明文档 (README-Docker-Usage.md)
+#        run: |
+#          name=${{ github.event.repository.name }}
+#          tag_name=${{ needs.build-jar-linux.outputs.tag_name}}
+#          run_id=${{ github.run_id }}
+#          tar_file_name=${{ env.TAR_FILE_NAME }}
+#          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
+#          createDockerUsageReadme "$name" "$tag_name" "$run_id" "$tar_file_name"
+#
+#      - name: 上传 Docker 镜像 tar 文件为 Artifact
+#        uses: actions/upload-artifact@v7
+#        with:
+#          name: docker-image-artifact
+#          path: |
+#            ${{ env.TAR_FILE_NAME }}
+#            README-Docker-Usage.md
+#          # retention-days: 5 # 设置保留天数为5天
