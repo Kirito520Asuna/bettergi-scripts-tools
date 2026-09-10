@@ -10,6 +10,8 @@ import com.cloud_guest.entitys.vo.AutoPlanVo;
 import com.cloud_guest.service.AutoPlanService;
 import com.google.common.collect.Maps;
 import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -22,7 +24,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.stereotype.Component;
 
-
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.time.Duration;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 /**
  * 数据库初始化器：在 @PostConstruct 阶段执行建表脚本，并在脚本完成后手动启动 Quartz 调度器。
  * 通过 @DependsOn("dataSource") 确保数据源已就绪。
+ * 改造：执行ADD COLUMN前先判断表&字段是否存在，消除依赖异常判断逻辑
  */
 @Slf4j
 @Component
@@ -109,13 +111,12 @@ public class DatabaseInitRunner {
     record DbSqlType(String db, String type, String columnDefault) {
     }
 
+    static final String SQLite = "SQLite", MySQL = "MySQL", PostgreSQL = "PostgreSQL";
+    static final SqlFormat SQLiteFormat = new SqlFormat(SQLite, "ALTER TABLE %s ADD COLUMN %s %s DEFAULT %s", 4, StrUtil.EMPTY, 0),
+            MySQLFormat = new SqlFormat(MySQL, "ALTER TABLE %s ADD COLUMN %s %s DEFAULT %s COMMENT '%s' AFTER `remark`", 5, StrUtil.EMPTY, 0),
+            PostgreSQLFormat = new SqlFormat(PostgreSQL, "ALTER TABLE %s ADD COLUMN %s %s DEFAULT %s", 4, "COMMENT ON COLUMN %s.%s IS '%s'", 3);
+
     static {
-        String SQLite = "SQLite", MySQL = "MySQL", PostgreSQL = "PostgreSQL";
-
-        SqlFormat SQLiteFormat = new SqlFormat(SQLite, "ALTER TABLE %s ADD COLUMN %s %s DEFAULT %s", 4, StrUtil.EMPTY, 0),
-                MySQLFormat = new SqlFormat(MySQL, "ALTER TABLE %s ADD COLUMN %s %s DEFAULT %s COMMENT '%s' AFTER `remark`", 5, StrUtil.EMPTY, 0),
-                PostgreSQLFormat = new SqlFormat(PostgreSQL, "ALTER TABLE %s ADD COLUMN %s %s DEFAULT %s", 4, "COMMENT ON COLUMN %s.%s IS '%s'", 3);
-
         Map<String, SqlFormat> SqlFormatMap = Maps.newLinkedHashMap();
 
         SqlFormatMap.put(SQLite, SQLiteFormat);
@@ -235,14 +236,11 @@ public class DatabaseInitRunner {
                     }
                     List<ColumnSql> SqlScriptList = SqlScriptMap.get(db);
                     SqlScriptList.addAll(sqlList);
-                    //SqlScriptList.add(StrUtil.EMPTY);
                     SqlScriptMap.put(db, SqlScriptList);
                 });
             });
         });
         //=================================================================================================================
-
-
         DB_SCRIPT_LIST.add(
                 new DbScript(SQLite, "classpath:sql/sqlite.sql", SQLiteScripts)
         );
@@ -256,7 +254,6 @@ public class DatabaseInitRunner {
         );
     }
 
-
     public DatabaseInitRunner(DataSource dataSource, ResourceLoader resourceLoader, Scheduler scheduler, JdbcTemplate jdbcTemplate) {
         this.dataSource = dataSource;
         this.resourceLoader = resourceLoader;
@@ -265,7 +262,7 @@ public class DatabaseInitRunner {
     }
 
     /**
-     * 检查异常消息中是否包含指定的关键字，以判断是否为列已存在的错误
+     * 检查异常消息中是否包含指定的关键字，以判断是否为列已存在的错误（保留，用于兜底异常捕获）
      *
      * @param e    捕获的异常对象
      * @param keys 需要检查的关键字集合
@@ -291,14 +288,84 @@ public class DatabaseInitRunner {
         return false;
     }
 
+    // ===================== 新增：元数据判断方法 =====================
+    /**
+     * 判断表是否存在
+     */
+    private boolean isTableExist(String dbType, String tableName) {
+        String sql;
+        switch (dbType) {
+            case SQLite -> sql = "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?";
+            case PostgreSQL -> sql = "SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = current_schema() AND TABLE_NAME = ? LIMIT 1";
+            default -> sql = "SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? LIMIT 1";
+        }
+
+        try {
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, tableName);
+            return count != null;
+        } catch (org.springframework.dao.EmptyResultDataAccessException ex) {
+            return false;
+        } catch (Exception ex) {
+            log.warn("检查表{}存在性异常:{}", tableName, ex.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 判断字段是否存在
+     */
+    private boolean isColumnExist(String dbType, String tableName, String columnName) {
+        switch (dbType) {
+            case SQLite -> {
+                // sqlite pragma 无法预编译参数
+                List<Map<String, Object>> list = jdbcTemplate.queryForList("PRAGMA table_info(" + escapeIdentifier(tableName) + ")");
+                return list.stream().anyMatch(row -> columnName.equalsIgnoreCase(String.valueOf(row.get("name"))));
+            }
+            case PostgreSQL -> {
+                String sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS " +
+                        "WHERE TABLE_SCHEMA = current_schema() AND TABLE_NAME = ? AND COLUMN_NAME = ? LIMIT 1";
+                try {
+                    Integer cnt = jdbcTemplate.queryForObject(sql, Integer.class, tableName, columnName);
+                    return cnt != null;
+                } catch (org.springframework.dao.EmptyResultDataAccessException ex) {
+                    return false;
+                } catch (Exception e) {
+                    log.warn("检查字段{}.{}存在性异常:{}", tableName, columnName, e.getMessage());
+                    return false;
+                }
+            }
+            default -> { // MySQL
+                String sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS " +
+                        "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ? LIMIT 1";
+                try {
+                    Integer cnt = jdbcTemplate.queryForObject(sql, Integer.class, tableName, columnName);
+                    return cnt != null;
+                } catch (org.springframework.dao.EmptyResultDataAccessException ex) {
+                    return false;
+                } catch (Exception e) {
+                    log.warn("检查字段{}.{}存在性异常:{}", tableName, columnName, e.getMessage());
+                    return false;
+                }
+            }
+        }
+    }
+
+    /**
+     * SQLite标识符转义，改用双引号（SQL标准）
+     */
+    private String escapeIdentifier(String name) {
+        // SQLite 标准使用双引号，不再使用反引号
+        return "\"" + name.replace("\"", "\"\"") + "\"";
+    }
+
+    // ==============================================================
+
     @PostConstruct
     public void init() {
         // 1. 检测数据库类型并执行脚本
         log.info("====================================");
         String dbType = detectDatabaseType();
         if (dbType != null) {
-            //log.info("数据库类型：{}", dbType);
-
             DbScript dbScript = DB_SCRIPT_LIST.stream()
                     .filter(script -> script.dbType().equals(dbType))
                     .findFirst()
@@ -319,37 +386,53 @@ public class DatabaseInitRunner {
                 } else {
                     log.info("脚本文件 {} 不存在，跳过执行", location);
                 }
-                List<ColumnSql> errorList = CollUtil.newArrayList();
+                List<ColumnSql> skipList = CollUtil.newArrayList();
+                List<ColumnSql> successList = CollUtil.newArrayList();
                 List<ColumnSql> sqlList = dbScript.scriptSqlList();
-                log.info("正在添加字段：{} Size", sqlList.size());
-                for (ColumnSql sql : sqlList) {
-                    if (StrUtil.isBlank(sql.sql)) {
-                        //log.warn("SQL 语句为空，跳过执行");
+                log.info("准备处理字段迁移，待处理SQL数量：{}", sqlList.size());
+
+                for (ColumnSql columnSql : sqlList) {
+                    String table = columnSql.table();
+                    String column = columnSql.column();
+                    String sqlText = columnSql.sql();
+
+                    if (StrUtil.isBlank(sqlText)) {
                         continue;
                     }
+
+                    // ----------------核心改造：先判断再执行----------------
+                    boolean tableExists = isTableExist(dbType, table);
+                    if (!tableExists) {
+                        log.warn("[跳过] 表 `{}` 不存在，不执行SQL:{}", table, sqlText);
+                        skipList.add(columnSql);
+                        continue;
+                    }
+                    // COMMENT ON COLUMN语句不需要判断字段，直接执行
+                    boolean isCommentSql = sqlText.startsWith("COMMENT ON COLUMN");
+                    if (!isCommentSql && isColumnExist(dbType, table, column)) {
+                        //log.warn("[跳过] `{}.{}` 字段已存在", table, column);
+                        skipList.add(columnSql);
+                        continue;
+                    }
+                    // ------------------------------------------------------
+
                     try {
-                        log.info("[添加字段] `{}.{},备注:{}`", sql.table, sql.column, sql.remark);
-                        jdbcTemplate.execute(sql.sql);
-                        //log.info("[字段添加成功] `{}.{}`", sql.table, sql.column);
+                        log.info("[执行DDL] `{}.{}`,备注:{},sql:{}", table, column, columnSql.remark(), sqlText);
+                        jdbcTemplate.execute(sqlText);
+                        successList.add(columnSql);
                     } catch (Exception e) {
-                        String msg = e.getMessage();
+                        // 兜底捕获，防止极端情况
                         if (isColumnAlreadyExistsError(e, List.of("duplicate column", "Duplicate column", "duplicate column name", "already exists", "column already exists"))) {
-                            //log.warn("[字段存在]`{}.{}`字段已存在，跳过添加", sql.table, sql.column);
-                            errorList.add(sql);
-                            //log.debug("{}", msg);
+                            skipList.add(columnSql);
                         } else {
-                            log.warn("执行迁移脚本失败: {}", sql.sql, e);
+                            log.warn("执行迁移脚本失败: {}", sqlText, e);
                         }
                     }
                 }
-                if (errorList.size() != sqlList.size()) {
-                    log.info("====================================");
-                }
-                sqlList.stream().filter(sql -> !errorList.contains(sql)).forEach(sql -> log.info("[字段添加成功] `{}.{}`,备注:{}", sql.table, sql.column, sql.remark));
-                if (errorList.size() != sqlList.size() || CollUtil.isNotEmpty(errorList)) {
-                    log.info("====================================");
-                }
-                errorList.stream().forEach(sql -> log.warn("[字段存在] `{}.{}`字段已存在，跳过添加 {}", sql.table, sql.column, sql.remark));
+
+                successList.forEach(sql -> log.info("[字段执行成功] `{}.{}`,备注:{}", sql.table, sql.column, sql.remark));
+                skipList.forEach(sql -> log.warn("[已跳过] `{}.{}`", sql.table, sql.column));
+
                 log.info("====================================");
             } else {
                 log.info("数据库类型 {} 未配置对应脚本，跳过", dbType);
@@ -370,6 +453,7 @@ public class DatabaseInitRunner {
         } catch (SchedulerException e) {
             log.error("启动 Quartz 调度器失败", e);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         }
         //3.执行数据库字段兼容性处理
@@ -387,18 +471,18 @@ public class DatabaseInitRunner {
                     .last("limit " + page * pageSize + "," + pageSize)
                     .list();
             List<AutoPlanConfig> updated = pageRecords.stream()
-                    .map(info -> ClassConvert.convert(AutoPlanConfig.class, AutoPlanVo.class, info))
-                    .map(info -> ClassConvert.convert(AutoPlanVo.class, AutoPlanConfig.class, info))
-                    .collect(Collectors.toList());
+                    .map(info -> {
+                        AutoPlanVo convert = ClassConvert.convert(AutoPlanConfig.class, AutoPlanVo.class, info);
+                        return ClassConvert.convert(AutoPlanVo.class, AutoPlanConfig.class, convert);
+                    }).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(updated)) {
                 planService.saveOrUpdateBatch(updated, pageSize); // 指定批次大小
                 totalUpdated += updated.size();
             }
             page++;
         } while (CollUtil.isNotEmpty(pageRecords));
-        log.info("数据兼容性迁移耗时: {} ms，更新记录数: {}", System.currentTimeMillis() - start, totalUpdated);
+        if (totalUpdated > 0) log.info("数据兼容性迁移耗时: {} ms，更新记录数: {}", System.currentTimeMillis() - start, totalUpdated);
     }
-
 
     /**
      * 检测数据库类型的方法
@@ -433,5 +517,4 @@ public class DatabaseInitRunner {
         // 如果无法确定数据库类型，返回null
         return null;
     }
-
 }
