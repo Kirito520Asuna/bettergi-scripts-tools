@@ -7,7 +7,130 @@ JARS_ZIP=${JARS_ZIP:-jars.zip}
 
 BGI_TOOLS_YML="bgi-tools/src/main/resources/application.yml"
 FRONTEND_ENV="frontend/.env.prod"
+set_env_args(){
+         # 初始化默认值
+         local TAG_NAME=$1
+         # 处理布尔值（inputs 为字符串，需要转换）
+         local SKIP_TESTS=$2
+         local JAVA_VERSION=$3
+         local JAR_DIR_PREFIX=$4
+         local DRAFT=$5
+         local PRERELEASE=$6
 
+         local EVENT_NAME=$7
+         local PUSH_DOCKER_REGISTRY=$8
+         local PUSH_GITHUB_RELEASE=$9
+          if [[ "$SKIP_TESTS" == "true" || "$SKIP_TESTS" == "1" ]]; then
+            SKIP_TESTS=true
+          else
+            SKIP_TESTS=false
+          fi
+          # 默认值
+          AUTO=false
+          PUSH_TO_DOCKER_REGISTRY=false
+          PUSH_TO_GITHUB_RELEASE=false
+
+          # 读取指定文件获取环境变量
+          echo "::group::🔍 从 POM 读取配置"
+
+          # 方法 1: 直接从 XML 解析（更可靠）
+          echo "正在解析 pom.xml 文件..."
+          JAVA_VERSION_XML=$(grep -oP '<java\.version>\K[^<]+' pom.xml | head -1)
+          echo "✓ pom.xml 中的 java.version: $JAVA_VERSION_XML"
+
+          # 方法 2: Maven 命令读取
+          #JAVA_VERSION_MVN=$(mvn help:evaluate -Dexpression=java.version -q -DforceStdout || echo "")
+          #echo "✓ Maven 读取的 java.version: $JAVA_VERSION_MVN"
+
+          #echo "正在执行：mvn help:evaluate -Dexpression=project.version"
+          #TAG_NAME_MVN=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "正在执行：mvnd help:evaluate -Dexpression=project.version"
+          TAG_NAME_MVN=$(mvnd help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "✓ 项目版本读取结果：$TAG_NAME_MVN"
+
+          echo "::endgroup::"
+
+          # 核心判断：自动发布或手动发布
+          if [[ "$EVENT_NAME" == "push" ]] && [[ "$TAG_NAME" == v* ]]; then
+            AUTO=true
+            # 读取指定文件获取环境变量
+            JAVA_VERSION=$JAVA_VERSION_XML
+            # ✅ 4. 关键优化：只有从 POM 读到的版本非空时才覆盖 TAG_NAME
+            if [[ -n "$TAG_NAME_MVN" ]]; then
+              echo "✅ 使用 pom.xml 中的版本号覆盖：'$TAG_NAME_MVN'"
+              TAG_NAME="$TAG_NAME_MVN"
+            else
+              echo "⚠️ pom.xml 中未读取到有效版本号，回退使用 Git ref 名称：'$TAG_NAME'"
+            fi
+
+            PUSH_TO_DOCKER_REGISTRY=true
+            PUSH_TO_GITHUB_RELEASE=true
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            [[ "$PUSH_DOCKER_REGISTRY" == "true" ]] && PUSH_TO_DOCKER_REGISTRY=true
+            [[ "$PUSH_GITHUB_RELEASE" == "true" ]] && PUSH_TO_GITHUB_RELEASE=true
+          fi
+            # ---- 1. 写 GITHUB_ENV（供同 Job 后续步骤用 $TAG_NAME、$JAVA_VERSION）----
+            {
+              echo "AUTO=$AUTO"
+              echo "TAG_NAME=$TAG_NAME"
+              echo "SKIP_TESTS=$SKIP_TESTS"
+              echo "JAVA_VERSION=$JAVA_VERSION"
+              echo "JAR_DIR_PREFIX=$JAR_DIR_PREFIX"
+              echo "DRAFT=$DRAFT"
+              echo "PRERELEASE=$PRERELEASE"
+              echo "EVENT_NAME=$EVENT_NAME"
+              echo "PUSH_DOCKER_REGISTRY=$PUSH_TO_DOCKER_REGISTRY"
+              echo "PUSH_GITHUB_RELEASE=$PUSH_TO_GITHUB_RELEASE"
+            } >> "$GITHUB_ENV"
+
+            # ---- 2. 写 GITHUB_OUTPUT（供跨 Job 的 needs.build-jar.outputs.* 使用）----
+            # 如果没有这一段，push-release 里 outputs.tag_name 永远是空
+            {
+              echo "tag_name=$TAG_NAME"
+              echo "skip_tests=$SKIP_TESTS"
+              echo "java_version=$JAVA_VERSION"
+              echo "jar_dir_prefix=$JAR_DIR_PREFIX"
+              echo "draft=$DRAFT"
+              echo "prerelease=$PRERELEASE"
+              echo "push_to_docker_registry=$PUSH_TO_DOCKER_REGISTRY"
+              echo "push_to_github_release=$PUSH_TO_GITHUB_RELEASE"
+            } >> "$GITHUB_OUTPUT"
+
+          echo "═══════════════════════════════════════════"
+          echo "最终设置值："
+          echo "  AUTO                   : $AUTO"
+          echo "  TAG_NAME               : $TAG_NAME"
+          echo "  SKIP_TESTS             : $SKIP_TESTS"
+          echo "  JAVA_VERSION           : $JAVA_VERSION"
+          echo "  JAR_DIR_PREFIX         : $JAR_DIR_PREFIX"
+          echo "  DRAFT                  : $DRAFT"
+          echo "  PRERELEASE             : $PRERELEASE"
+          echo "  PUSH_TO_DOCKER_REGISTRY: $PUSH_TO_DOCKER_REGISTRY"
+          echo "  PUSH_TO_GITHUB_RELEASE : $PUSH_TO_GITHUB_RELEASE"
+          echo "═══════════════════════════════════════════"
+}
+
+check_tag(){
+  local TAG_NAME=$1
+  echo "当前版本号: $TAG_NAME"
+  if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+    echo "❌ 错误：版本格式必须符合 SemVer 规范"
+    exit 1
+  fi
+  echo "版本号验证通过"
+}
+
+install_Maven_Daemon() {
+      echo "🚀 安装 mvnd (Maven Daemon)"
+      local MVND_VERSION=${1:-"1.0.5"}
+      wget -q "https://github.com/apache/maven-mvnd/releases/download/$MVND_VERSION/maven-mvnd-$MVND_VERSION-linux-amd64.zip" -O /tmp/mvnd.zip
+      unzip -q /tmp/mvnd.zip -d /tmp/
+      cd /tmp/ && ls
+      sudo mv /tmp/maven-mvnd-$MVND_VERSION-linux-amd64 /opt/mvnd
+      sudo ln -sf /opt/mvnd/bin/mvnd /usr/local/bin/mvnd
+      mvnd --version
+      echo "✅ mvnd 安装完成"
+}
 maven_build() {
   local SKIP_TESTS=${1:-false}
 
@@ -50,37 +173,11 @@ rename_jar_files() {
     while IFS= read -r file; do
       jar_files+=("$file")
     done < <(find . -type f \( -path "*/target/*.jar" \))
-#    find . -type f -path "*/target/*.jar" -exec bash -c '
-#      for jar_file; do
-#        [ -f "$jar_file" ] || continue
-#        base_name=$(basename "$jar_file" .jar)
-#        #new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
-#        #new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+.*$//"
-#        # 匹配：-v1.2.3, -1.2.3, -v0.0.7-dev3.2 等（从最后一个连字符后的版本号开始）
-#        new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9._-]+)*$//")
-#        new_path="$TMP_RENAMED_JARS/${new_name}.jar"
-#        echo "处理：$jar_file -> $new_path"
-#        cp "$jar_file" "$new_path"
-#      done
-#    ' _ {} +
   else
     echo "查找匹配的 JAR 文件 (*/${JAR_DIR_PREFIX}/*/target/*.jar, */${JAR_DIR_PREFIX}/target/*.jar):"
     while IFS= read -r file; do
       jar_files+=("$file")
     done < <(find . -type f \( -path "*/${JAR_DIR_PREFIX}/*/target/*.jar" -o -path "*/${JAR_DIR_PREFIX}/target/*.jar" \))
-#    find . -type f \( -path "*/${JAR_DIR_PREFIX}/*/target/*.jar" -o -path "*/${JAR_DIR_PREFIX}/target/*.jar" \) -exec bash -c '
-#      for jar_file; do
-#        [ -f "$jar_file" ] || continue
-#        base_name=$(basename "$jar_file" .jar)
-#        #new_name=$(echo "$base_name" | sed -E "s/-v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9]+)*$//")
-#        #new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+.*$//"
-#        # 匹配：-v1.2.3, -1.2.3, -v0.0.7-dev3.2 等（从最后一个连字符后的版本号开始）
-#        new_name=$(echo "$base_name" | sed -E "s/-[vV]?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9._-]+)*$//")
-#        new_path="$TMP_RENAMED_JARS/${new_name}.jar"
-#        echo "处理：$jar_file -> $new_path"
-#        cp "$jar_file" "$new_path"
-#      done
-#    ' _ {} +
   fi
   echo "找到 ${#jar_files[@]} 个 JAR 文件"
 
@@ -287,6 +384,19 @@ ws:
 EOF
     echo "✅ 使用默认配置文件"
   fi
+  cat > "${REPO_NAME}/shellUp.bat" << 'EOF'
+@echo off
+chcp 65001 >nul
+set "bat_dir=%~dp0"
+cd /d "%bat_dir%"
+
+echo 正在启动程序...
+"%bat_dir%jre\bin\java.exe" -jar bgi_tools.jar
+
+echo.
+echo 程序已退出，按任意键关闭窗口
+pause >nul
+EOF
   # 生成使用说明 README.md
   echo "📄 生成使用说明 README.md..."
   cat > "${REPO_NAME}/README.md" << EOF
@@ -378,9 +488,9 @@ EOF
 download_windows_jre() {
   local JAVA_VERSION=$1
 
-  local API_URL="https://api.adoptium.net/v3/assets/latest/${JAVA_VERSION}/hotspot?image_type=jdk&os=windows&arch=x64&vendor=adoptium"
+  local API_URL="https://api.adoptium.net/v3/assets/latest/$JAVA_VERSION/hotspot?image_type=jdk&os=windows&arch=x64&vendor=adoptium"
 
-  echo " 下载 Windows JRE (Java ${JAVA_VERSION})"
+  echo " 下载 Windows JRE (Java $JAVA_VERSION)"
   echo "API: $API_URL"
 
   local RESPONSE=$(curl -s --fail -L "$API_URL" || { echo "❌ API 请求失败"; exit 1; })
@@ -411,7 +521,7 @@ download_windows_jre() {
 
   mkdir -p "$TMP_EXTRACTED_JARS/jre"
 
-  if [[ "${JAVA_VERSION}" == "8" ]]; then
+  if [[ "$JAVA_VERSION" == "8" ]]; then
     if [ -d "$JDK_ROOT/jre" ]; then
       cp -r "$JDK_ROOT/jre/"* "$TMP_EXTRACTED_JARS/jre/"
     else

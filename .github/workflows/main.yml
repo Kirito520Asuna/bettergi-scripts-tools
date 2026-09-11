@@ -83,7 +83,7 @@ env:
   JARS_ZIP: bgi-tools-jars.zip
 jobs:
   # 在 Linux 上构建 JAR 并打包为 ZIP
-  build-jar-linux:
+  build-jar:
     runs-on: ubuntu-latest
     outputs:
       tag_name: ${{ steps.set_vars.outputs.tag_name }}
@@ -119,120 +119,35 @@ jobs:
 
       - name: 4. 安装 mvnd (Maven Daemon)
         run: |
-          echo "🚀 安装 mvnd (Maven Daemon)"
+          source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
           MVND_VERSION="1.0.5"
-          wget -q "https://github.com/apache/maven-mvnd/releases/download/${MVND_VERSION}/maven-mvnd-${MVND_VERSION}-linux-amd64.zip" -O /tmp/mvnd.zip 
-          unzip -q /tmp/mvnd.zip -d /tmp/
-          cd /tmp/ && ls
-          sudo mv /tmp/maven-mvnd-${MVND_VERSION}-linux-amd64 /opt/mvnd
-          sudo ln -sf /opt/mvnd/bin/mvnd /usr/local/bin/mvnd
-          mvnd --version
-          echo "✅ mvnd 安装完成"  
+          install_Maven_Daemon "$MVND_VERSION"
+        
 
       - name: 5. 设置输入参数和环境变量
         id: set_vars
         run: |
           # 初始化默认值
           TAG_NAME="${{ github.event.inputs.tag_name || github.ref_name || 'v-manual' }}"
-
           # 处理布尔值（inputs 为字符串，需要转换）
           SKIP_TESTS="${{ inputs.skip_tests || 'false' }}"
-          if [[ "$SKIP_TESTS" == "true" || "$SKIP_TESTS" == "1" ]]; then
-            SKIP_TESTS=true
-          else
-            SKIP_TESTS=false
-          fi
-
           JAVA_VERSION="${{ inputs.java_version || secrets.JAVA_VERSION || '21' }}"
           JAR_DIR_PREFIX="${{ inputs.jar_dir_prefix || 'bgi-tools' }}"
           DRAFT="${{ inputs.draft || 'false' }}"
           PRERELEASE="${{ inputs.prerelease || 'false' }}"
 
           EVENT_NAME="${{ github.event_name }}"
-
-          # 默认值
-          AUTO=false
-          PUSH_TO_DOCKER_REGISTRY=false
-          PUSH_TO_GITHUB_RELEASE=false
+          PUSH_DOCKER_REGISTRY="${{ inputs.push_to_docker_registry || 'false' }}"
+          PUSH_GITHUB_RELEASE="${{ inputs.push_to_github_release || 'false' }}"
           
-          # 读取指定文件获取环境变量
-          echo "::group::🔍 从 POM 读取配置"
-          
-          # 方法 1: 直接从 XML 解析（更可靠）
-          echo "正在解析 pom.xml 文件..."
-          JAVA_VERSION_XML=$(grep -oP '<java\.version>\K[^<]+' pom.xml | head -1)
-          echo "✓ pom.xml 中的 java.version: $JAVA_VERSION_XML"
-          
-          # 方法 2: Maven 命令读取
-          #JAVA_VERSION_MVN=$(mvn help:evaluate -Dexpression=java.version -q -DforceStdout || echo "")
-          #echo "✓ Maven 读取的 java.version: $JAVA_VERSION_MVN"
-          
-          #echo "正在执行：mvn help:evaluate -Dexpression=project.version"
-          #TAG_NAME_MVN=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "正在执行：mvnd help:evaluate -Dexpression=project.version"
-          TAG_NAME_MVN=$(mvnd help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "✓ 项目版本读取结果：$TAG_NAME_MVN"
-          
-          echo "::endgroup::"  
-
-          # 核心判断：自动发布或手动发布
-          if [[ "$EVENT_NAME" == "push" ]] && [[ "$TAG_NAME" == v* ]]; then
-            AUTO=true
-            # 读取指定文件获取环境变量
-            JAVA_VERSION=$JAVA_VERSION_XML
-            # ✅ 4. 关键优化：只有从 POM 读到的版本非空时才覆盖 TAG_NAME
-            if [[ -n "$TAG_NAME_MVN" ]]; then
-              echo "✅ 使用 pom.xml 中的版本号覆盖：'$TAG_NAME_MVN'"
-              TAG_NAME="$TAG_NAME_MVN"
-            else
-              echo "⚠️ pom.xml 中未读取到有效版本号，回退使用 Git ref 名称：'$TAG_NAME'"
-            fi
-          
-            PUSH_TO_DOCKER_REGISTRY=true
-            PUSH_TO_GITHUB_RELEASE=true
-          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
-            [[ "${{ inputs.push_to_docker_registry }}" == "true" ]] && PUSH_TO_DOCKER_REGISTRY=true
-            [[ "${{ inputs.push_to_github_release }}" == "true" ]] && PUSH_TO_GITHUB_RELEASE=true
-          fi
-          # 写入环境变量
-          echo "AUTO=$AUTO" >> $GITHUB_ENV
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
-          echo "SKIP_TESTS=$SKIP_TESTS" >> $GITHUB_ENV
-          echo "JAVA_VERSION=$JAVA_VERSION" >> $GITHUB_ENV
-          echo "JAR_DIR_PREFIX=$JAR_DIR_PREFIX" >> $GITHUB_ENV
-          echo "DRAFT=$DRAFT" >> $GITHUB_ENV
-          echo "PRERELEASE=$PRERELEASE" >> $GITHUB_ENV
-          echo "PUSH_TO_DOCKER_REGISTRY=$PUSH_TO_DOCKER_REGISTRY" >> $GITHUB_ENV
-          echo "PUSH_TO_GITHUB_RELEASE=$PUSH_TO_GITHUB_RELEASE" >> $GITHUB_ENV
-
-          # 设置 job 输出
-          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-          echo "java_version=$JAVA_VERSION" >> $GITHUB_OUTPUT
-          echo "jar_dir_prefix=$JAR_DIR_PREFIX" >> $GITHUB_OUTPUT
-          echo "push_to_docker_registry=$PUSH_TO_DOCKER_REGISTRY" >> $GITHUB_OUTPUT
-          echo "push_to_github_release=$PUSH_TO_GITHUB_RELEASE" >> $GITHUB_OUTPUT
-
-          echo "═══════════════════════════════════════════"
-          echo "最终设置值："
-          echo "  AUTO                   : $AUTO"
-          echo "  TAG_NAME               : $TAG_NAME"
-          echo "  SKIP_TESTS             : $SKIP_TESTS"
-          echo "  JAVA_VERSION           : $JAVA_VERSION"
-          echo "  JAR_DIR_PREFIX         : $JAR_DIR_PREFIX"
-          echo "  DRAFT                  : $DRAFT"
-          echo "  PRERELEASE             : $PRERELEASE"
-          echo "  PUSH_TO_DOCKER_REGISTRY: $PUSH_TO_DOCKER_REGISTRY"
-          echo "  PUSH_TO_GITHUB_RELEASE : $PUSH_TO_GITHUB_RELEASE"
-          echo "═══════════════════════════════════════════"
+          source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
+          set_env_args "$TAG_NAME" "$SKIP_TESTS" "$JAVA_VERSION" "$JAR_DIR_PREFIX" "$DRAFT" "$PRERELEASE" "$EVENT_NAME" "$PUSH_DOCKER_REGISTRY" "$PUSH_GITHUB_RELEASE"
+         
 
       - name: 6. 验证版本号格式
         run: |
-          echo "当前版本号: $TAG_NAME"
-          if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
-            echo "❌ 错误：版本格式必须符合 SemVer 规范"
-            exit 1
-          fi
-          echo "版本号验证通过"
+          source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
+          check_tag "$TAG_NAME"
 
       - name: 修改 pom.xml 文件和 yml version
         run: |
@@ -245,12 +160,6 @@ jobs:
           update_salt 
           update_check_token
           update_config
-
-#      - name: 6. 设置 Java 环境
-#        uses: actions/setup-java@v4
-#        with:
-#          java-version: ${{ env.JAVA_VERSION }}
-#          distribution: 'temurin'
 
       - name: 7. 缓存 Maven 依赖
         uses: actions/cache@v5
@@ -300,12 +209,17 @@ jobs:
   # 新 Job: 在 Linux 上生成 Windows EXE（使用 Wine + MinGW）
   build-exe:
     runs-on: ubuntu-latest
-    needs: build-jar-linux
+    needs: build-jar
+    outputs:
+      tag_name: ${{ needs.build-jar.outputs.tag_name }}
+      java_version: ${{ needs.build-jar.outputs.java_version }}
+      push_to_docker_registry: ${{ needs.build-jar.outputs.push_to_docker_registry }}
+      push_to_github_release: ${{ needs.build-jar.outputs.push_to_github_release }}
     permissions:
       contents: write
     env:
-      TAG_NAME: ${{ needs.build-jar-linux.outputs.tag_name }}
-      JAVA_VERSION: ${{ needs.build-jar-linux.outputs.java_version }}
+      TAG_NAME: ${{ needs.build-jar.outputs.tag_name }}
+      JAVA_VERSION: ${{ needs.build-jar.outputs.java_version }}
       ICON_PATH: ${{ github.event.inputs.icon_path || 'frontend/public/logo.ico' }}
     steps:
       - name: 1. 检出代码（用于图标和可能需要的资源）
@@ -327,34 +241,11 @@ jobs:
         run: |
           source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
           install_mingw_wine
-#        run: |
-          #          sudo dpkg --add-architecture i386
-          #          sudo apt-get update -y
-          #          sudo apt-get install -y \
-          #            wine-stable wine32 \
-          #            mingw-w64 binutils-mingw-w64-i686 gcc-mingw-w64-i686 g++-mingw-w64-i686 \
-          #            jq unzip curl wget zip
 
       - name: 5. 下载并配置 Launch4j（Linux 版）
         run: |
           source $GITHUB_WORKSPACE/.github/workflows/bash/github.sh
           setup_launch4j
-          #        run: |                     
-          #          wget -O launch4j.tgz "https://sourceforge.net/projects/launch4j/files/launch4j-3/3.50/launch4j-3.50-linux-x64.tgz/download"
-          #          #https://onboardcloud.dl.sourceforge.net/project/launch4j/launch4j-3/3.50/launch4j-3.50-linux-x64.tgz?viasf=1
-          #          tar -xzf launch4j.tgz -C /tmp
-          #          chmod +x /tmp/launch4j/launch4j
-          #
-          #          # 强制使用系统 windres/ld（避免 launch4j 自带工具问题）
-          #          mkdir -p /tmp/launch4j/bin
-          #          ln -sf /usr/bin/i686-w64-mingw32-windres /tmp/launch4j/bin/windres
-          #          ln -sf /usr/bin/i686-w64-mingw32-ld     /tmp/launch4j/bin/ld
-          #          ln -sf /usr/bin/i686-w64-mingw32-ar     /tmp/launch4j/bin/ar
-          #
-          #          # 测试
-          #          /tmp/launch4j/bin/windres --version || exit 1
-          #          echo "/tmp/launch4j/ 文件："
-          #          ls -lh /tmp/launch4j/ || echo "没有文件"
 
       - name: 6. 下载 Windows JRE 并捆绑（2026 年兼容版）
         run: |
@@ -394,7 +285,7 @@ jobs:
   push-release:
     runs-on: ubuntu-latest
     needs: [build-exe]
-    if: ${{ needs.build-jar-linux.outputs.push_to_github_release == 'true' }}
+    if: ${{ needs.build-exe.outputs.push_to_github_release == 'true' }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -447,7 +338,7 @@ jobs:
           echo "最终设置值："
           echo "  DESC           : $DESC"
           echo "  GITHUB_RELEASE : $GitHub_Release"
-          echo "  tag_name : ${{ needs.build-jar-linux.outputs.tag_name }}"
+          echo "  tag_name : ${{ needs.build-exe.outputs.tag_name }}"
           echo "═══════════════════════════════════════════"
 
 
@@ -468,8 +359,8 @@ jobs:
       - name: 4. 创建 Release 并上传文件
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ needs.build-jar-linux.outputs.tag_name }}
-          name: ${{ needs.build-jar-linux.outputs.tag_name }}
+          tag_name: ${{ needs.build-exe.outputs.tag_name }}
+          name: ${{ needs.build-exe.outputs.tag_name }}
           files: |
             ${{ github.workspace }}/artifacts/${{env.JARS_ZIP}}/*.zip
             ${{ github.workspace }}/artifacts/jar-files/*.jar
@@ -477,14 +368,15 @@ jobs:
             ${{ github.workspace }}/artifacts/windows-standalone/*.zip
           body: |
             **下载地址**
-            Github: https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-jar-linux.outputs.tag_name }}
-            Gh-Proxy Github: 
-             -${{ github.event.repository.name }}-Windows.zip ==> https://cdn.gh-proxy.org/github.com/${{ github.repository }}/releases/download/${{ needs.build-jar-linux.outputs.tag_name }}/${{ github.event.repository.name }}-Windows.zip
-             -${{ github.event.repository.name }}.exe ==> https://cdn.gh-proxy.org/github.com/${{ github.repository }}/releases/download/${{ needs.build-jar-linux.outputs.tag_name }}/${{ github.event.repository.name }}.exe
-             -${{ github.event.repository.name }}.jar ==> https://cdn.gh-proxy.org/github.com/${{ github.repository }}/releases/download/${{ needs.build-jar-linux.outputs.tag_name }}/${{ github.event.repository.name }}.jar
+            |文件名|GitHub Releases|直接地址|代理地址|
+            |:--:|:--:|:--:|:--:|
+            |${{ github.event.repository.name }}-Windows.zip|[github](https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-exe.outputs.tag_name }})|[download](https://github.com/${{ github.repository }}/releases/download/${{ needs.build-exe.outputs.tag_name }}/${{ github.event.repository.name }}-Windows.zip)|[download](https://cdn.gh-proxy.org/github.com/${{ github.repository }}/releases/download/${{ needs.build-exe.outputs.tag_name }}/${{ github.event.repository.name }}-Windows.zip)|
+            |${{ github.event.repository.name }}.exe|[github](https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-exe.outputs.tag_name }})|[download](https://github.com/${{ github.repository }}/releases/download/${{ needs.build-exe.outputs.tag_name }}/${{ github.event.repository.name }}.exe)|[download](https://cdn.gh-proxy.org/github.com/${{ github.repository }}/releases/download/${{ needs.build-exe.outputs.tag_name }}/${{ github.event.repository.name }}.exe)|
+            |${{ github.event.repository.name }}.jar|[github](https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-exe.outputs.tag_name }})|[download](https://github.com/${{ github.repository }}/releases/download/${{ needs.build-exe.outputs.tag_name }}/${{ github.event.repository.name }}.jar)|[download](https://cdn.gh-proxy.org/github.com/${{ github.repository }}/releases/download/${{ needs.build-exe.outputs.tag_name }}/${{ github.event.repository.name }}.jar)|
+            
             **发布信息**
-            - 标签：${{ needs.build-jar-linux.outputs.tag_name }}
-            - Java 版本：${{ needs.build-jar-linux.outputs.java_version }}
+            - 标签：${{ needs.build-exe.outputs.tag_name }}
+            - Java 版本：${{ needs.build-exe.outputs.java_version }}
             
             ### 🏆 推荐下载（完全独立运行，无需安装 Java）
             ${{ github.event.repository.name }}-Windows.zip  
@@ -505,24 +397,34 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 重置GitHub_Release
+        run: |
+          # 初始化默认值
+          GitHub_Release_Text_Path="${{ github.event.inputs.gitHub_release_text_path || 'GitHub-Release.txt' }}"
+          # 移除可能存在的前导斜杠
+          GitHub_Release_Text_Path="${GitHub_Release_Text_Path#/}"
+          # 构造文件路径（使用正确的仓库路径）
+          GitHub_Release_Path="${{ github.workspace }}/$GitHub_Release_Text_Path"
+          source $GITHUB_WORKSPACE/.github/workflows/bash/update-version.sh
+          restart_github_release "${{ needs.build-exe.outputs.tag_name }}" "$GitHub_Release_Path"
+
   # ============ 只构建 Docker 镜像，不推送 ============
   build-docker:
     runs-on: ubuntu-latest
-    needs: build-jar-linux  # 添加依赖关系
+    needs: build-jar # 添加依赖关系
     permissions:
       contents: read
       packages: write
       actions: read
     outputs:
-      tag_name: ${{ needs.build-jar-linux.outputs.tag_name }}
-      java_version: ${{ needs.build-jar-linux.outputs.java_version }}
-      push_to_docker_registry: ${{ needs.build-jar-linux.outputs.push_to_docker_registry }}
+      tag_name: ${{ needs.build-jar.outputs.tag_name }}
+      java_version: ${{ needs.build-jar.outputs.java_version }}
+      push_to_docker_registry: ${{ needs.build-jar.outputs.push_to_docker_registry }}
+      push_to_github_release: ${{ needs.build-jar.outputs.push_to_github_release }}
       image_tags: ${{ steps.meta.outputs.tags }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-
       # 下载之前工作流的构建产物
       - name: Download JAR artifacts
         uses: actions/download-artifact@v8
@@ -535,14 +437,12 @@ jobs:
 
       - name: 配置
         run: |
-          java_version=${{ needs.build-jar-linux.outputs.java_version }}
+          java_version=${{ needs.build-jar.outputs.java_version }}
           source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
           createDockerfile "${java_version}"
-
       # 设置 Docker Buildx
       - name: 设置 Docker Buildx
         uses: docker/setup-buildx-action@v4
-
       # 提取 Docker 镜像元数据
       - name: 提取 Docker 镜像元数据
         id: meta
@@ -550,9 +450,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ needs.build-jar-linux.outputs.tag_name||github.ref_name }}
-            type=raw,value=latest,enable=${{ needs.build-jar-linux.outputs.push_to_github_release == 'true' && needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
-
+            type=raw,value=${{ needs.build-jar.outputs.tag_name||github.ref_name }}
+            type=raw,value=latest,enable=${{ needs.build-jar.outputs.push_to_github_release == 'true' && needs.build-jar.outputs.push_to_docker_registry == 'true' }}
       # 构建 Docker 镜像（只构建并加载到本地，不推送）
       - name: 构建 Docker image
         uses: docker/build-push-action@v7
@@ -566,9 +465,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            JAVA_VERSION=${{needs.build-jar-linux.outputs.java_version}}
+            JAVA_VERSION=${{needs.build-jar.outputs.java_version}}
             JAR_FILE_PATH=./*.jar
-
       # 验证构建的镜像
       - name: 验证构建 Docker image
         run: |
@@ -576,18 +474,16 @@ jobs:
           # 获取预期的镜像标签
           IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)
           validateBuildDockerImage "$IMAGE_TAG" 30
-
       # 保存 Docker 镜像为 tar 文件
       - name: 保存 Docker 镜像为 tar 文件
         run: |
           source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
-          saveDockerImage "${{ steps.meta.outputs.tags }}" "${{ needs.build-jar-linux.outputs.tag_name }}"
-
+          saveDockerImage "${{ steps.meta.outputs.tags }}" "${{ needs.build-jar.outputs.tag_name }}"
       # 创建使用说明 Markdown 文件
       - name: 创建 Docker 使用说明文档 (README-Docker-Usage.md)
         run: |
           name=${{ github.event.repository.name }}
-          tag_name=${{ needs.build-jar-linux.outputs.tag_name}}
+          tag_name=${{ needs.build-jar.outputs.tag_name}}
           run_id=${{ github.run_id }}
           tar_file_name=${{ env.TAR_FILE_NAME }}
           source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
@@ -601,28 +497,29 @@ jobs:
             ${{ env.TAR_FILE_NAME }}
             README-Docker-Usage.md
           # retention-days: 5 # 设置保留天数为5天
-
   # ============ 推送 Docker 镜像到镜像仓库 ============
   push-docker:
     runs-on: ubuntu-latest
-    needs: [build-docker ]
+    needs: [build-docker]
     if: ${{ needs.build-docker.outputs.push_to_docker_registry == 'true' }}
     permissions:
       contents: read
       packages: write
       actions: read
-
+    outputs:
+      tag_name: ${{ needs.build-docker.outputs.tag_name }}
+      java_version: ${{ needs.build-docker.outputs.java_version }}
+      push_to_docker_registry: ${{ needs.build-docker.outputs.push_to_docker_registry }}
+      push_to_github_release: ${{ needs.build-docker.outputs.push_to_github_release }}   # ✅ 新增
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-
       # 下载上一个 job 产出的镜像 tar 包
       - name: 下载 Docker 镜像 tar Artifact
         uses: actions/download-artifact@v8
         with:
           name: docker-image-artifact
           path: ./
-
       # ✅ 新增：下载 JAR 产物，作为重新构建的上下文
       - name: 下载 JAR Artifact
         uses: actions/download-artifact@v8
@@ -632,11 +529,15 @@ jobs:
 
       - name: List downloaded files
         run: ls -la ./
-
+      # 重新生成 Dockerfile（跨 job 后 DOCKER_FILE_NAME/Dockerfile 都不存在）
+      - name: 配置
+        run: |
+          java_version=${{ needs.build-docker.outputs.java_version }}
+          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
+          createDockerfile "${java_version}"
       # 设置 Docker Buildx
       - name: 设置 Docker Buildx
         uses: docker/setup-buildx-action@v4
-
       # 登录到 GitHub Container Registry
       - name: 登录 Log in to Container Registry
         uses: docker/login-action@v4
@@ -644,52 +545,23 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      # 重新生成 Dockerfile（跨 job 后 DOCKER_FILE_NAME/Dockerfile 都不存在）
-      - name: 配置
-        run: |
-          java_version=${{ needs.build-docker.outputs.java_version }}
-          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
-          createDockerfile "${java_version}"
-
-      - name: Load tar docker image
-        id: load_image
-        run: |
-          TAR_FILE=$(ls *.tar | head -n 1)
-          if [ -z "$TAR_FILE" ]; then
-            echo "❌ 未找到任何 tar 镜像文件"
-            exit 1
-          fi
-          echo "🚀 加载镜像文件：$TAR_FILE"
-          docker load -i "$TAR_FILE"
-          docker images
-          # 过滤本地存在的标签，输出到 github outputs
-          VALID_TAGS=$(echo "${{ needs.build-docker.outputs.image_tags }}" | while read -r tag; do
-            if [ -n "$tag" ] && docker image inspect "$tag" >/dev/null 2>&1; then
-              echo "$tag"
-            fi
-          done | tr '\n' ',')
-          echo "valid_tags=${VALID_TAGS%,}" >> $GITHUB_OUTPUT
-
       # 提取 Docker 镜像元数据
-      - name: 提取 Docker 镜像元数据
-        id: meta
-        if: steps.load_image.outputs.valid_tags != ''
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ needs.build-jar-linux.outputs.tag_name||github.ref_name }}
-            type=raw,value=latest,enable=${{ needs.build-jar-linux.outputs.push_to_github_release == 'true' && needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
-
+#      - name: 提取 Docker 镜像元数据
+#        id: meta
+#        uses: docker/metadata-action@v6
+#        with:
+#          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+#          tags: |
+#            type=raw,value=${{ needs.build-jar.outputs.tag_name||github.ref_name }}
+#            type=raw,value=latest,enable=${{ needs.build-jar.outputs.push_to_github_release == 'true' && needs.build-jar.outputs.push_to_docker_registry == 'true' }}
+      # 构建和推送 Docker 镜像
       - name: Push Docker Images
-        if: steps.load_image.outputs.valid_tags != ''
         uses: docker/build-push-action@v7
         with:
           context: .
           file: ./${{ env.DOCKER_FILE_NAME }}
           push: true
-          tags: ${{ steps.load_image.outputs.valid_tags }}
+          tags: ${{ needs.build-docker.outputs.image_tags }} # ✅ 复用上游算好的标签！
           load: false
           # 复用 build-docker 写入的 gha 缓存，命中后几乎瞬间完成
           cache-from: type=gha
@@ -701,7 +573,7 @@ jobs:
 
 #  build-and-push-docker:
 #    runs-on: ubuntu-latest
-#    needs: build-jar-linux  # 添加依赖关系
+#    needs: build-jar  # 添加依赖关系
 #    permissions:
 #      contents: read
 #      packages: write
@@ -723,7 +595,7 @@ jobs:
 #
 #      - name: 配置
 #        run: |
-#          java_version=${{ needs.build-jar-linux.outputs.java_version }}
+#          java_version=${{ needs.build-jar.outputs.java_version }}
 #          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
 #          createDockerfile "${java_version}"
 #
@@ -733,7 +605,7 @@ jobs:
 #
 #      # 登录到 GitHub Container Registry
 #      - name: 登录 Log in to Container Registry
-#        if: ${{ needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
+#        if: ${{ needs.build-jar.outputs.push_to_docker_registry == 'true' }}
 #        #if: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
 #        uses: docker/login-action@v4
 #        with:
@@ -748,19 +620,19 @@ jobs:
 #        with:
 #          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 #          tags: |
-#            type=raw,value=${{ needs.build-jar-linux.outputs.tag_name||github.ref_name }}
+#            type=raw,value=${{ needs.build-jar.outputs.tag_name||github.ref_name }}
 #            type=raw,value=latest
 #
 #
 #      # 构建并推送 Docker 镜像
 #      - name: 构建并推送 Docker image
 #        uses: docker/build-push-action@v7
-#        #if: ${{ needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
+#        #if: ${{ needs.build-jar.outputs.push_to_docker_registry == 'true' }}
 #        #if: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
 #        with:
 #          context: .
 #          file: ./${{ env.DOCKER_FILE_NAME}}
-#          push: ${{ needs.build-jar-linux.outputs.push_to_docker_registry == 'true' }}
+#          push: ${{ needs.build-jar.outputs.push_to_docker_registry == 'true' }}
 #          #push: ${{ github.event_name == 'push' || inputs.push_to_docker_registry == true }}
 #          load: true
 #          tags: ${{ steps.meta.outputs.tags }}
@@ -768,7 +640,7 @@ jobs:
 #          cache-from: type=gha
 #          cache-to: type=gha,mode=max
 #          build-args: |
-#            JAVA_VERSION=${{needs.build-jar-linux.outputs.java_version}}
+#            JAVA_VERSION=${{needs.build-jar.outputs.java_version}}
 #            JAR_FILE_PATH=./*.jar
 #
 #      # 验证构建的镜像
@@ -783,13 +655,13 @@ jobs:
 #      - name: 保存 Docker 镜像为 tar 文件
 #        run: |
 #          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh
-#          saveDockerImage "${{ steps.meta.outputs.tags }}" "${{ needs.build-jar-linux.outputs.tag_name }}"
+#          saveDockerImage "${{ steps.meta.outputs.tags }}" "${{ needs.build-jar.outputs.tag_name }}"
 #
 #      # 创建使用说明 Markdown 文件
 #      - name: 创建 Docker 使用说明文档 (README-Docker-Usage.md)
 #        run: |
 #          name=${{ github.event.repository.name }}
-#          tag_name=${{ needs.build-jar-linux.outputs.tag_name}}
+#          tag_name=${{ needs.build-jar.outputs.tag_name}}
 #          run_id=${{ github.run_id }}
 #          tar_file_name=${{ env.TAR_FILE_NAME }}
 #          source $GITHUB_WORKSPACE/.github/workflows/bash/docker.sh

@@ -90,7 +90,10 @@ update_version(){
 
     # 添加变更文件
     git add "${PARENT_POM_XML_PATH}" "${BGI_TOOLS_YML}" "${FRONTEND_PACKAGE_JSON}"
-
+    if git diff --cached --quiet; then
+      echo "⏭️  文件无变更，跳过提交"
+      return 0
+    fi
     # 提交
     git commit -m "chore: release version ${TAG_NAME} [skip ci]"
 
@@ -124,3 +127,40 @@ update_version(){
 }
 
 #update_version "$1"
+
+restart_github_release(){
+  local TAG_NAME=$1
+  local GitHub_Release_Path=${2:-"GitHub-Release.txt"}
+  cat > "$GitHub_Release_Path" <<EOF
+### 版本变更详情
+#### ✨ 新功能
+    -
+#### 🐛 修复
+    -
+#### 🔧 改进与重构
+    -
+EOF
+    echo ""
+    echo "🎯 正式版版本变更，提交到仓库..."
+
+    # 配置 Git 用户信息
+    git config --global user.name "GitHub Actions"
+    git config --global user.email "actions@github.com"
+
+    # 添加变更文件
+    git add "$GitHub_Release_Path"
+    if git diff --cached --quiet; then
+      echo "⏭️  文件无变更，跳过提交"
+      return 0
+    fi
+    # 提交
+    git commit -m "chore: restart github release $TAG_NAME [skip ci]"
+
+    # 推送（使用 GITHUB_TOKEN）
+    if ! git push https://${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:${GITHUB_REF}; then
+      echo "⚠️ Git 推送失败，但版本更新已完成"
+    else
+      echo "✅ Git 提交并推送成功"
+    fi
+
+}
