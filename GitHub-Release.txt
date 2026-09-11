@@ -1,7 +1,26 @@
 ### 版本变更详情
 #### ✨ 新功能
-    -
+    - 队伍管理页面新增切换队伍API配置弹窗，展示JS订阅地址、拉取配置API、授权Token，支持复制与跳转
+    - 为团队相关接口增加令牌鉴权 `@Token` 校验，保障接口访问安全
+    - Windows打包流程新增 `shellUp.bat` 一键启动脚本
 #### 🐛 修复
-    -
+    - 修复队伍配置保存时唯一性校验BUG：编辑记录时不再与自身ID冲突，避免更新时报重复异常
+    - 修复SQLite标识符转义问题，改用SQL标准双引号
+    - 修复路由硬编码路径问题，登录页/首页路径变更会导致鉴权跳转失效
 #### 🔧 改进与重构
-    -
+    - **GitHub Actions 工作流大规模重构**
+      1. `build-jar-linux` 重命名为 `build-jar`，统一作业命名
+      2. 抽离公共脚本函数：`install_Maven_Daemon`、`set_env_args`、`check_tag`
+      3. 增加SemVer版本号校验，自动从pom.xml读取项目版本
+      4. Docker构建拆分为独立 `build-docker`（构建+保存镜像tar包）与 `push-docker`（加载镜像并推送）两个Job，构建失败不触发推送
+      5. 清理重复Java环境配置，全链路通过Job outputs传递版本、标签、发布开关等参数
+    - **数据库初始化器重构**
+      1. 新增多库元数据检查：`isTableExist` / `isColumnExist`，支持SQLite / MySQL / PostgreSQL
+      2. DDL迁移逻辑改为**先检查表/字段是否存在，再执行ALTER**，从根源规避字段已存在异常，异常捕获仅作为兜底
+      3. 增加Lombok注解，优化日志输出，区分跳过、成功、失败的迁移记录
+    - **前端路由重构**
+      1. 路由元数据增加 `isHome` / `isLogin` 标记，鉴权守卫动态查找首页、登录页路径，移除硬编码 `/login`、`/`
+      2. `CopyToClipboard` 改为全局导出工具函数，统一组件调用方式
+      3. jQuery改为npm包依赖，移除index.html CDN，挂载到window全局兼容旧代码
+    - 代码优化：队伍服务提取局部变量，减少重复getter调用，提升可读性
+    - 配置清理：移除应用配置中通知、冒险者手册相关配置项，精简配置结构
