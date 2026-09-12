@@ -386,17 +386,21 @@ EOF
   fi
   cat > "${REPO_NAME}/shellUp.bat" << 'EOF'
 @echo off
-chcp 65001 >nul
-set "bat_dir=%~dp0"
-cd /d "%bat_dir%"
-
-echo 正在启动程序...
-"%bat_dir%jre\bin\java.exe" -jar bgi_tools.jar
-
+chcp 65001 >nul 2>&1
+set bat_dir=%~dp0
+cd /d %bat_dir%
+::echo Starting...
+jre\bin\java -jar bgi-tools.jar
 echo.
-echo 程序已退出，按任意键关闭窗口
+::echo Exit, press any key to close.
 pause >nul
 EOF
+
+# LF → CRLF
+sed -i 's/$/\r/' "${REPO_NAME}/shellUp.bat"
+# 删除BOM
+sed -i '1s/^\xEF\xBB\xBF//' "${REPO_NAME}/shellUp.bat"
+
   # 生成使用说明 README.md
   echo "📄 生成使用说明 README.md..."
   cat > "${REPO_NAME}/README.md" << EOF
