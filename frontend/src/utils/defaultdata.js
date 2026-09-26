@@ -4969,5 +4969,17 @@ export const bossListDefault=
         {
             "name": "重拳出击鸭",
             "country": "挪德卡莱"
-        }
+        },
+         {
+             "name": "不灭衍生造物",
+             "country": "至冬"
+         },
+         {
+             "name": "嵌合翼骏狮",
+             "country": "至冬"
+         },
+         {
+             "name": "游雪的护刃",
+             "country": "至冬"
+         }
     ]
