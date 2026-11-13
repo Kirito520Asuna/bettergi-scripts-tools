@@ -3,7 +3,7 @@ import {onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {getCurrentUserName, updateUserInfo} from "@api/auth/login.js";
 import {getTokenInfo, updateToken} from "@api/auth/token.js";
-import {getAllSystemInfo, getLocalVersion, goBack, removeLocalToken, restart, toHomePage} from "@api/web/web.js";
+import {getAllSystemInfo, getLocalVersion, removeLocalToken, restart, toHomePage} from "@api/web/web.js";
 import {
   backup,
   backupDownload, deleteBatchBackup, deleteBatchBackupLocal,
@@ -16,6 +16,8 @@ import {getGithubTagLatest} from "@api/sys/sys.js";
 import { Loading, Right, Download, Document, CopyDocument } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 import {CopyToClipboard} from "@utils/local.js";
+import Fixed from "@component/Fixed.vue";
+
 const dialogVisible = reactive(
     {
       upload:false,
@@ -727,14 +729,6 @@ const tableRowClass = ({ rowIndex }) => {
 const openLink = (url) => {
   window.open(url, '_blank')
 }
-// 在 script 中添加跳转逻辑
-const goToHome = async () => {
-  // router.push('/'); // 假设主页路径是 '/'
-  await toHomePage()
-}
-const goToBack = async () => {
-  await goBack();
-}
 // 组件挂载时加载Token信息
 onMounted(async () => {
   await loadTokenInfo();
@@ -1322,13 +1316,7 @@ onUnmounted(() => {
         重启系统
       </el-button>
     </div>
-    <div class="fixed-back">
-      <button @click="goToBack" class="btn secondary">返回上一页</button>
-    </div>
-    <!-- 在 template 最后添加 -->
-    <div class="fixed-footer">
-      <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
-    </div>
+    <Fixed/>
   </div>
 </template>
 

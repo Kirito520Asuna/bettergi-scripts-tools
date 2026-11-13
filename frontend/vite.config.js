@@ -17,6 +17,7 @@ export default defineConfig(({mode}) => {
         resolve: {
             alias: {
                 '@views': path.resolve(__dirname, 'src/views'), // 添加 @views 别名指向 views 目录
+                '@component': path.resolve(__dirname, 'src/views/component'), // 添加 @views 别名指向 views 目录
                 '@style': path.resolve(__dirname, 'src/assets/style'), // 添加 @views 别名指向 views 目录
                 '@css': path.resolve(__dirname, 'src/assets/style/css'), // 添加 @css 别名指向 css 目录
                 '@scss': path.resolve(__dirname, 'src/assets/style/scss'), // 添加 @scss 别名指向 css/scss 目录

@@ -142,13 +142,7 @@
         </div>
       </div>
     </div>
-
-    <div class="fixed-back">
-      <button @click="goToBack" class="btn secondary">返回上一页</button>
-    </div>
-    <div class="fixed-footer">
-      <button @click="goToHome" class="btn secondary"> 返回主页</button>
-    </div>
+    <Fixed/>
   </div>
 </template>
 
@@ -157,15 +151,7 @@ import {ref, computed, onMounted} from 'vue';
 import {domainsDefault} from "@utils/defaultdata.js";
 import {getBaseJsonAll, saveBaseJsonAll} from "@api/auto_plan/autoPlan.js";
 import {ElMessage} from "element-plus";
-import {goBack, toHomePage} from "@api/web/web.js";
-
-const goToHome = async () => {
-  await toHomePage();
-};
-
-const goToBack = async () => {
-  await goBack();
-};
+import Fixed from "@component/Fixed.vue";
 
 const domainData = ref([]);
 const selectedTypeItems = ref([]);

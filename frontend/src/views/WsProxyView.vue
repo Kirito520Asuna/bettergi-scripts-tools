@@ -195,12 +195,8 @@
         </div>
       </div>
     </div>
-    <div class="fixed-back">
-      <button @click="goToBack" class="btn secondary">返回上一页</button>
-    </div>
-    <div class="fixed-footer">
-      <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
-    </div>
+
+    <Fixed/>
   </div>
 </template>
 
@@ -215,6 +211,7 @@ import {
   deleteAccess
 } from '@api/ws/wsProxy.js';
 import {getHostPrefix} from "@utils/ApiRequest.js";
+import Fixed from "@component/Fixed.vue";
 
 const actionMap = new Map([
   ['send_private_msg', '私聊'],
@@ -381,12 +378,6 @@ const batchDelete = async () => {
   }
 };
 
-const goToHome = async () => {
-  await toHomePage();
-};
-const goToBack = async () => {
-  await goBack();
-};
 </script>
 
 <style scoped>

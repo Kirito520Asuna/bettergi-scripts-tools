@@ -1,12 +1,11 @@
 <script setup>
 import {nextTick, onMounted, reactive, ref} from "vue";
-import {goBack, toHomePage} from "@api/web/web.js";
 import {useRoute} from "vue-router";
 import {analysisBgiLog, BgiLog} from "@api/log/log.js";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {computed, watch} from 'vue'
 import {Loading} from '@element-plus/icons-vue'
-
+import Fixed from "@component/Fixed.vue";
 const route = useRoute()
 const TimeUnitsList = [
   {label: '毫秒', value: 1},
@@ -462,12 +461,6 @@ onMounted(() => {
     if (autoLoadTimer) clearInterval(autoLoadTimer)
   })
 })
-const goToHome = async () => {
-  await toHomePage();
-};
-const goToBack = async () => {
-  await goBack();
-};
 </script>
 
 <template>
@@ -621,12 +614,7 @@ const goToBack = async () => {
       </template>
     </el-dialog>
 
-    <div class="fixed-back">
-      <button @click="goToBack" class="btn secondary">返回上一页</button>
-    </div>
-    <div class="fixed-footer">
-      <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
-    </div>
+    <Fixed/>
   </div>
 </template>
 

@@ -1,21 +1,13 @@
 <script setup>
-import {goBack, toHomePage} from "@api/web/web.js";
 import router from "@router/router.js";
 import {computed, onMounted, ref} from "vue";
 import {ElMessageBox} from "element-plus";
 import {CopyToClipboard} from "@utils/local.js";
 import {getHostPrefix} from "@utils/ApiRequest.js";
 import {getTokenInfo} from "@api/auth/token.js";
+import Fixed from "@component/Fixed.vue";
 
 const currentRoute = ref(router.currentRoute)
-const goToHome = async () => {
-  await toHomePage()
-}
-
-const goToBack = async () => {
-  await goBack()
-}
-
 const hostPrefix = getHostPrefix();
 const JsApiList = ref([])
 const expandMode = ref('dialog'/*click,dialog*/)
@@ -316,13 +308,7 @@ const handleExpandModeChange = (mode) => {
         </div>
       </div>
     </el-dialog>
-
-    <div class="fixed-back">
-      <button @click="goToBack" class="btn secondary">返回上一页</button>
-    </div>
-    <div class="fixed-footer">
-      <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
-    </div>
+    <Fixed/>
   </div>
 </template>
 

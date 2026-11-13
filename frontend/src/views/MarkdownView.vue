@@ -32,12 +32,7 @@
       <div v-if="loading" class="loading">读取文件中...</div>
       <div v-if="error" class="error">{{ error }}</div>
     </div>
-    <div class="fixed-back">
-      <button @click="goToBack" class="btn secondary">返回上一页</button>
-    </div>
-    <div class="fixed-footer">
-      <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
-    </div>
+    <Fixed/>
   </div>
 
 </template>
@@ -49,16 +44,7 @@ import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.min.css'
 import mermaid from 'mermaid'
-import router from "@router/router.js";
-import {goBack, toHomePage} from "@api/web/web.js";
-// 在 script 中添加跳转逻辑
-const goToHome = async () => {
-  // router.push('/'); // 假设主页路径是 '/'
-  await toHomePage()
-};
-const goToBack = async () => {
-  await goBack();
-}
+import Fixed from "@component/Fixed.vue";
 
 // ================== Markdown 配置 ==================
 const md = new MarkdownIt({

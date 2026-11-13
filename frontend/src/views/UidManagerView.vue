@@ -10,13 +10,12 @@ import {
   deleteTeamInfoIds,
   updateTeamInfo, getTeamInfo
 } from "@api/uid/uid.js"
-import {goBack, toHomePage} from "@api/web/web.js"
 import router from "@router/router.js";
 import {CopyDocument} from '@element-plus/icons-vue'
 import {CopyToClipboard} from "@utils/local.js";
 import {getHostPrefix} from "@utils/ApiRequest.js";
 import {getTokenInfo} from "@api/auth/token.js";
-import {init} from "node-forge/lib/xhr.js";
+import Fixed from "@component/Fixed.vue";
 
 const currentRoute = ref(router.currentRoute)
 // 表单数据
@@ -506,16 +505,6 @@ const copyPassword = async (uid) => {
   await CopyToClipboard(pwd)
 }
 
-// 跳转主页
-const goToHome = async () => {
-  await toHomePage()
-}
-
-// 返回上一页
-const goToBack = async () => {
-  await goBack()
-}
-
 onMounted(() => {
   loadData()
 })
@@ -884,12 +873,7 @@ onMounted(() => {
     </el-dialog>
 
     <!-- 底部按钮 -->
-    <div class="fixed-back">
-      <button @click="goToBack" class="btn secondary">返回上一页</button>
-    </div>
-    <div class="fixed-footer">
-      <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
-    </div>
+    <Fixed/>
   </div>
 </template>
 

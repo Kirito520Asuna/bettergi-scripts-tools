@@ -1,5 +1,4 @@
 <script setup>
-import {goBack, toHomePage} from "@api/web/web.js";
 import {computed, ref} from "vue";
 import {ElMessage} from "element-plus";
 import {
@@ -9,14 +8,8 @@ import {
   saveBaseCountryJsonAll
 } from "@api/auto_plan/autoPlan.js";
 import {bossListDefault, countryListDefault} from "@utils/defaultdata.js";
+import Fixed from "@component/Fixed.vue";
 
-const goToHome = async () => {
-  await toHomePage()
-}
-
-const goToBack = async () => {
-  await goBack()
-}
 const cache = ref({
   country: {
     list: [],
@@ -473,12 +466,7 @@ const selectedCategory = computed(() => {
 
 
     <!-- 底部导航 -->
-    <div class="fixed-back">
-      <button class="btn secondary" @click="goToBack">返回上一页</button>
-    </div>
-    <div class="fixed-footer">
-      <button class="btn secondary" @click="goToHome">🏠 返回主页</button>
-    </div>
+    <Fixed/>
   </div>
 </template>
 

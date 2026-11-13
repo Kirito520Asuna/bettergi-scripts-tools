@@ -1,11 +1,11 @@
 <script setup>
 import {ref, computed, onMounted} from "vue";
-import {goBack, toHomePage} from "@api/web/web.js";
 import {CopyToClipboard} from "@utils/local.js";
 import {preview1RemoteBat, browseDir} from "@api/generate/generate.js";
 import {ElMessage} from "element-plus";
 import {useRoute} from "vue-router";
 import {getGithub1RemoteTags} from "@api/sys/sys.js";
+import Fixed from "@component/Fixed.vue";
 
 const activeMenuId = ref(0)
 const content = ref('')
@@ -415,13 +415,6 @@ const handleCopy = () => {
   }
 }
 
-const goToHome = async () => {
-  await toHomePage()
-}
-const goToBack = async () => {
-  await goBack()
-}
-
 onMounted(async () => {
   for (let i = 0; i < list.value.length; i++) {
     list.value[i].menu_id = i
@@ -606,12 +599,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div class="fixed-back">
-      <button class="btn secondary" @click="goToBack">返回上一页</button>
-    </div>
-    <div class="fixed-footer">
-      <button class="btn secondary" @click="goToHome">🏠 返回主页</button>
-    </div>
+    <Fixed/>
   </div>
 
 

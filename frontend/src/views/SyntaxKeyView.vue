@@ -208,12 +208,7 @@
 
 
     <!-- 底部导航 -->
-    <div class="fixed-back">
-      <button class="btn secondary" @click="goToBack">返回上一页</button>
-    </div>
-    <div class="fixed-footer">
-      <button class="btn secondary" @click="goToHome">🏠 返回主页</button>
-    </div>
+    <Fixed/>
   </div>
 </template>
 
@@ -222,6 +217,7 @@ import { ref, computed, onMounted } from 'vue'
 import { goBack, toHomePage } from '@api/web/web.js'
 import { ElMessage } from 'element-plus'
 import {CopyToClipboard} from "@utils/local.js";
+import Fixed from "@component/Fixed.vue";
 
 // 圣遗物类型定义
 const relicTypes = [

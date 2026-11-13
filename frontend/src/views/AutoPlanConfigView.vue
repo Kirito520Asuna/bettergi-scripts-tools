@@ -22,10 +22,10 @@ import {
 
 import draggable from 'vuedraggable'
 import {debounce} from 'lodash-es';
-import {getLocalToken, getLocalTokenName, goBack, toHomePage} from "@api/web/web.js";
 import {getTokenInfo} from "@api/auth/token.js";
 import router from "@router/router.js";
 import {getHostPrefix} from "@utils/ApiRequest.js";
+import Fixed from "@component/Fixed.vue";
 
 const cloud = ref({
   UidList: [],
@@ -357,14 +357,7 @@ onMounted(() => {
   initAllUid()
 
 })
-// 在 script 中添加跳转逻辑
-const goToHome = async () => {
-  // router.push('/'); // 假设主页路径是 '/'
-  await toHomePage()
-};
-const goToBack = async () => {
-  await goBack();
-}
+
 const showResultDrawer = ref(false)
 // 排序状态：false 降序，true 升序
 const orderSortConfigs = ref(true)
@@ -2233,13 +2226,7 @@ const dialogWidth = computed(() => {
       </div>
     </div>
     <!-- 在 template 最后添加 -->
-    <div class="fixed-back">
-      <button @click="goToBack" class="btn secondary">返回上一页</button>
-    </div>
-    <div class="fixed-footer">
-      <button @click="goToHome" class="btn secondary">🏠 返回主页</button>
-    </div>
-
+    <Fixed/>
   </div>
 </template>
 <style scoped>
