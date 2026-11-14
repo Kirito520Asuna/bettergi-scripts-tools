@@ -264,32 +264,24 @@ const getAvailableMainStats = (partType) => {
     return allStats.filter(stat => stat.value === 'atk')
   } else if (partType === 'goblet') {
     // 杯：元素伤害 + 精通，无双爆、无充能、无治疗
+    const availableStats = ['mastery','hp_percent','atk_percent','def_percent']
     return allStats.filter(stat =>
         elementDamageTypes.includes(stat.value) ||
-        stat.value === 'mastery' ||
-        stat.value === 'hp_percent' ||
-        stat.value === 'atk_percent' ||
-        stat.value === 'def_percent'
+        availableStats.includes(stat.value)
     )
   } else if (partType === 'crown') {
     // 冠：治疗 + 双爆 + 精通 + 生命%攻击%防御%，排除元素伤害和充能
+    const excludedStats = ['recharge', 'hp', 'atk', 'def']
     return allStats.filter(stat =>
         !elementDamageTypes.includes(stat.value) &&
-        stat.value !== 'recharge' &&
-        stat.value !== 'hp' &&
-        stat.value !== 'atk' &&
-        stat.value !== 'def'
+        !excludedStats.includes(stat.value)
     )
   } else {
     // 沙：生命%攻击%防御%精通充能，排除元素伤害、治疗、固定值、双爆
+    const excludedStats = ['recharge', 'hp', 'atk', 'def', 'crit_rate', 'crit_dmg']
     return allStats.filter(stat =>
         !elementDamageTypes.includes(stat.value) &&
-        stat.value !== 'heal' &&
-        stat.value !== 'hp' &&
-        stat.value !== 'atk' &&
-        stat.value !== 'def' &&
-        stat.value !== 'crit_rate' &&
-        stat.value !== 'crit_dmg'
+        !excludedStats.includes(stat.value)
     )
   }
 }
