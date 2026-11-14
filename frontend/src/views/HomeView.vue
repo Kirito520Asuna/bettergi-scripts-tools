@@ -21,34 +21,9 @@
       <img class="logo" src="@assets/logo.svg" alt="Logo"/>
       <h2 class="title">{{ currentRoute.meta.title || 'HOME' }}</h2>
       <p class="subtitle">欢迎使用扩展工具</p>
-<!--      <MonitorCard icon="22" main-title="cs" sub-title="sub" :column="3"
-                   :button-list="[
-                       {
-        key:'btn1',
-        disabled: false,
-        label: '按钮1',
-        icon: '🔍',
-        click: () => { console.log('按钮1点击') }
-      },
-                             {
-        key:'btn1',
-        disabled: false,
-        label: '按钮1',
-        icon: '🔍',
-        click: () => { console.log('按钮1点击') }
-      }
-      ,
-                             {
-        key:'btn1',
-        disabled: false,
-        label: '按钮1',
-        icon: '🔍',
-        click: () => { console.log('按钮1点击') }
-      }
-      ]"
-      />-->
       <!-- 外层结构遍历 -->
-      <div v-for="group in featureGroup" :key="group.title" class="feature-section">
+      <!--样式1-->
+      <div v-if="true" v-for="group in featureGroup" :key="group.title" class="feature-section">
         <h3 class="section-title" v-if="group.children.length > 0">{{ group.title }}</h3>
         <div class="feature-container">
           <!-- 左侧功能列表 -->
@@ -91,6 +66,28 @@
           </div>
         </div>
       </div>
+      <!--样式2-->
+      <div v-else v-for="group in featureGroup">
+        <MonitorCard v-if="group.children.length > 0" :main-title="group.title" :column="2" :button-list="group.children.map((item,index) =>{
+            let data={
+                name: item.name,
+                isUi: item.isUi,
+                isRote: item.isRote,
+                isLink: item.isLink,
+                isSwagger: item.isSwagger,
+                value: item.value
+              }
+             function handleClick() { data.isUi ? togo(data) :toClick(data) }
+          return {
+              key: `btn${index}`,
+              disabled: false,
+              label: item.name,
+              icon: item.icon,
+              click: () =>  handleClick()
+            }
+        }).filter(Boolean)" />
+      </div>
+
     </div>
     <router-view/>
   </div>

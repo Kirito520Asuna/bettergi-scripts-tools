@@ -37,7 +37,7 @@
 
 <script setup>
 import { defineProps, defineEmits } from 'vue'
-import {iconAsMapDefault} from "../../utils/defaultdata.js";
+import {iconAsMapDefault} from "@utils/defaultdata.js";
 // ✅ 核心：defineModel，自动双向绑定，handleToggle 直接改它
 const expand = defineModel({
   type: Boolean,
@@ -46,11 +46,11 @@ const expand = defineModel({
 const props = defineProps({
   icon:{
     type: String,
-    default: '🔍'
+    default: ''
   },
   mainTitle: {
     type: String,
-    default: '实时监测'
+    default: ''
   },
   subTitle: {
     type: String,
@@ -64,20 +64,20 @@ const props = defineProps({
   buttonList: {
     type: Array,
     default: () => [
-      {
-        key:'btn1',
-        disabled: false,
-        label: '按钮1',
-        icon: '🔍',
-        click: () => { console.log('按钮1点击') }
-      },
-      {
-        key:'btn2',
-        disabled: false,
-        label: '按钮2',
-        icon: '🔍',
-        click: () => { console.log('按钮2点击') }
-      }
+      // {
+      //   key:'btn1',
+      //   disabled: false,
+      //   label: '按钮1',
+      //   icon: '🔍',
+      //   click: () => { console.log('按钮1点击') }
+      // },
+      // {
+      //   key:'btn2',
+      //   disabled: false,
+      //   label: '按钮2',
+      //   icon: '🔍',
+      //   click: () => { console.log('按钮2点击') }
+      // }
     ]
   }
 })
