@@ -21,9 +21,23 @@
       <img class="logo" src="@assets/logo.svg" alt="Logo"/>
       <h2 class="title">{{ currentRoute.meta.title || 'HOME' }}</h2>
       <p class="subtitle">欢迎使用扩展工具</p>
+      <div style="display: flex; justify-content: flex-end;">
+<!--        <div v-if="!switchTheme">
+          <span :style="{color: '#3498db'}">菜单默认{{themeMeanExpand?'收起':'展开'}}</span>
+          <el-tooltip :content="themeMeanExpand?'收起':'展开'" placement="top">
+            <el-switch v-model="themeMeanExpand"/>
+          </el-tooltip>
+        </div>-->
+        <div>
+          <span :style="{color: '#3498db'}">切换展示样式</span>
+          <el-tooltip :content="switchTheme?'切换卡片样式':'切换表格样式'" placement="top">
+            <el-switch v-model="switchTheme"/>
+          </el-tooltip>
+        </div>
+      </div>
       <!-- 外层结构遍历 -->
       <!--样式1-->
-      <div v-if="true" v-for="group in featureGroup" :key="group.title" class="feature-section">
+      <div v-if="switchTheme" v-for="group in featureGroup" :key="group.title" class="feature-section">
         <h3 class="section-title" v-if="group.children.length > 0">{{ group.title }}</h3>
         <div class="feature-container">
           <!-- 左侧功能列表 -->
@@ -67,8 +81,8 @@
         </div>
       </div>
       <!--样式2-->
-      <div v-else v-for="group in featureGroup">
-        <MonitorCard v-if="group.children.length > 0" :main-title="group.title" :column="2" :button-list="group.children.map((item,index) =>{
+      <div v-else v-for="group in featureGroup" style="margin: 10px">
+        <MonitorCard v-if="group.children.length > 0" v-model:expand="themeMeanExpand" :main-title="group.title" :column="2" :button-list="group.children.map((item,index) =>{
             let data={
                 name: item.name,
                 isUi: item.isUi,
@@ -100,7 +114,8 @@ import {iconAsMapDefault} from "@utils/defaultdata.js";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {restart} from "@api/web/web.js";
 import MonitorCard from "./component/MonitorCard.vue";
-
+const switchTheme = ref(true)
+const themeMeanExpand = ref(true)
 let iconAsMap = iconAsMapDefault()
 
 const currentRoute = ref(router.currentRoute)
