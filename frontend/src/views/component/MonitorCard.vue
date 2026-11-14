@@ -38,12 +38,17 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue'
 import {iconAsMapDefault} from "@utils/defaultdata.js";
+const emit = defineEmits(['update:expand'])
 // ✅ 核心：defineModel，自动双向绑定，handleToggle 直接改它
-const expand = defineModel({
-  type: Boolean,
-  default: true
-})
+// const expand = defineModel({
+//   type: Boolean,
+//   default: true
+// })
 const props = defineProps({
+  expand: {
+    type: Boolean,
+    default: true
+  },
   icon:{
     type: String,
     default: ''
@@ -83,7 +88,8 @@ const props = defineProps({
 })
 // 切换展开收起
 const handleToggle = () => {
-  expand.value = !expand.value
+  // expand.value = !expand.value
+  emit('update:expand', !props.expand)
 }
 let iconAsMap = iconAsMapDefault()
 const lightColors = [
