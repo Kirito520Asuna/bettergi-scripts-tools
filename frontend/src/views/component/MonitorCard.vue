@@ -4,7 +4,7 @@
     <!-- 头部区域 -->
     <div class="card-header" @click="handleToggle">
       <div class="header-left">
-        <span class="icon" v-if="icon">{{ icon }}</span>
+        <span class="icon" v-html="getIcon({icon: icon})" v-if="icon"/>
         <span class="main-title">{{ mainTitle }}</span>
         <span v-if="subTitle" class="sub-title">{{ subTitle }}</span>
       </div>
@@ -19,14 +19,15 @@
             :style="{ gridTemplateColumns: `repeat(${column}, 1fr)` }"
         >
           <div
-              v-for="item in buttonList"
+              v-for="(item, index) in buttonList"
               :key="item.key"
               class="action-btn"
               :class="{ 'is-disabled': item.disabled }"
+              :style="{ backgroundColor: lightColors[index % lightColors.length] }"
               @click="item.click()"
           >
-            <span v-if="item.icon" v-html="getIcon(item)" class="icon"></span>
-            {{ item.label }}
+            <span v-if="item.icon" v-html="getIcon(item)" class="icon"/>
+            <div class="action-btn-label">{{ item.label }}</div>
           </div>
         </div>
       </div>
@@ -80,19 +81,19 @@ const props = defineProps({
     ]
   }
 })
-
-const emit = defineEmits(['click-btn'])
-
 // 切换展开收起
 const handleToggle = () => {
   expand.value = !expand.value
 }
-// 按钮点击
-const handleBtnClick = (item) => {
-  if (item.disabled) return
-  emit('click-btn', item)
-}
 let iconAsMap = iconAsMapDefault()
+const lightColors = [
+  '#f8d7da',
+  '#d1ecf1',
+  'rgba(116,181,181,0.56)',
+  '#e1c7ba',
+  'rgba(255,141,195,0.54)',
+  '#ced4da',
+];
 // 获取图标
 const getIcon = (item) => {
   // 优先使用 meta.icon，没有则根据类型给默认 emoji
@@ -134,13 +135,12 @@ const getIcon = (item) => {
 };
 
 </script>
-
 <style scoped lang="scss">
 .monitor-card {
   background-color: #ffffff;
   border-radius: 24px;
   padding: 14px;
-  box-shadow: 0 3px 14px rgba(255, 110, 170, 0.16);
+  box-shadow: 0 3px 14px rgba(110, 255, 233, 0.16);
   box-sizing: border-box;
 }
 
@@ -161,7 +161,7 @@ const getIcon = (item) => {
     }
     .main-title {
       font-size: 26px;
-      color: #ff4794;
+      color: #3498db;
       font-weight: bold;
     }
     .sub-title {
@@ -172,51 +172,71 @@ const getIcon = (item) => {
 
   .toggle-text {
     font-size: 22px;
-    color: #b5427d;
+    color: #3498db;
   }
 }
 
 .card-body {
   margin-top: 14px;
+  overflow: hidden;
+  max-height: 2000px;
+}
 
-  .btn-grid {
-    display: grid;
-    gap: 16px;
-  }
+.btn-grid {
+  display: grid;
+  gap: 16px;
+}
 
-  .action-btn {
-    background: linear-gradient(90deg, #ff76b4, #ff57a0);
-    color: #fff;
-    text-align: center;
-    padding: 20px 0;
-    border-radius: 999px;
-    font-size: 24px;
-    font-weight: bold;
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #222831;
+  padding: 20px 0;
+  border-radius: 999px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  user-select: none;
+  .action-btn-label {
+    border: none;
+    background: transparent;
+    color: #3498db;
     cursor: pointer;
-    transition: all 0.22s ease;
-    user-select: none;
+    font-weight: 500;
+  }
+  &:hover {
+    filter: brightness(1.08);
+    transform: translateY(-2px);
+  }
 
-    &:hover {
-      filter: brightness(1.1);
-      transform: translateY(-2px);
-    }
-
-    &.is-disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-      transform: none;
-      filter: none;
-    }
+  &.is-disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    filter: none;
+  }
+  .icon {
+    font-size: 22px;
+    color: #222831;
+  }
+  .icon-png {
+    height: 24px;
+    vertical-align: middle;
   }
 }
 
-/* 折叠过渡动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.28s ease;
+.slide-enter-active,
+.slide-leave-active {
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  overflow: hidden;
 }
-.fade-enter-from,
-.fade-leave-to {
+.slide-enter-from,
+.slide-leave-to {
+  max-height: 0;
   opacity: 0;
+  margin-top: 0;
 }
 </style>

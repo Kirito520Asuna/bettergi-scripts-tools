@@ -21,7 +21,32 @@
       <img class="logo" src="@assets/logo.svg" alt="Logo"/>
       <h2 class="title">{{ currentRoute.meta.title || 'HOME' }}</h2>
       <p class="subtitle">欢迎使用扩展工具</p>
-
+<!--      <MonitorCard icon="22" main-title="cs" sub-title="sub" :column="3"
+                   :button-list="[
+                       {
+        key:'btn1',
+        disabled: false,
+        label: '按钮1',
+        icon: '🔍',
+        click: () => { console.log('按钮1点击') }
+      },
+                             {
+        key:'btn1',
+        disabled: false,
+        label: '按钮1',
+        icon: '🔍',
+        click: () => { console.log('按钮1点击') }
+      }
+      ,
+                             {
+        key:'btn1',
+        disabled: false,
+        label: '按钮1',
+        icon: '🔍',
+        click: () => { console.log('按钮1点击') }
+      }
+      ]"
+      />-->
       <!-- 外层结构遍历 -->
       <div v-for="group in featureGroup" :key="group.title" class="feature-section">
         <h3 class="section-title" v-if="group.children.length > 0">{{ group.title }}</h3>
@@ -77,6 +102,7 @@ import router from "@router/router";
 import {iconAsMapDefault} from "@utils/defaultdata.js";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {restart} from "@api/web/web.js";
+import MonitorCard from "./component/MonitorCard.vue";
 
 let iconAsMap = iconAsMapDefault()
 
@@ -103,11 +129,13 @@ const lightColors = [
 ];
 
 async function loadUi() {
+  const env_all = ['prod', 'dev'];
+  const env_dev = 'dev';
   const order_group_map_json = new Map([
-    ['JS扩展功能', {order:3,env:['prod','dev']}],
-    ['系统', {order:1,env: ['prod','dev']}],
-    ['演示', {order:4,env: ['dev']}],
-    ['配置分析', {order:2,env: ['prod','dev']}]
+    ['JS扩展功能', {order:3,env:[...env_all]}],
+    ['系统', {order:1,env: [...env_all]}],
+    ['演示', {order:4,env: [env_dev]}],
+    ['配置分析', {order:2,env: [...env_all]}]
   ]);
 
   const group_list = new Array();
