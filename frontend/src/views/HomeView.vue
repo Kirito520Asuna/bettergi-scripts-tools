@@ -22,12 +22,12 @@
       <h2 class="title">{{ currentRoute.meta.title || 'HOME' }}</h2>
       <p class="subtitle">欢迎使用扩展工具</p>
       <div style="display: flex; justify-content: flex-end;">
-<!--        <div v-if="!switchTheme">
-          <span :style="{color: '#3498db'}">菜单默认{{themeMeanExpand?'收起':'展开'}}</span>
+        <div v-if="!switchTheme">
+          <span :style="{color: '#3498db'}">菜单默认{{themeMeanExpand?'展开':'收起'}}</span>
           <el-tooltip :content="themeMeanExpand?'收起':'展开'" placement="top">
-            <el-switch v-model="themeMeanExpand"/>
+            <el-switch v-model="themeMeanExpand" @change="handleThemeMeanExpandChange"/>
           </el-tooltip>
-        </div>-->
+        </div>
         <div>
           <span :style="{color: '#3498db'}">切换展示样式</span>
           <el-tooltip :content="switchTheme?'切换卡片样式':'切换表格样式'" placement="top">
@@ -82,7 +82,7 @@
       </div>
       <!--样式2-->
       <div v-else v-for="group in featureGroup" style="margin: 10px">
-        <MonitorCard v-if="group.children.length > 0" v-model:expand="themeMeanExpand" :main-title="group.title" :column="2" :button-list="group.children.map((item,index) =>{
+        <MonitorCard v-if="group.children.length > 0" v-model:expand="group.expand"  :main-title="group.title" :column="2" :button-list="group.children.map((item,index) =>{
             let data={
                 name: item.name,
                 isUi: item.isUi,
@@ -116,6 +116,7 @@ import {restart} from "@api/web/web.js";
 import MonitorCard from "./component/MonitorCard.vue";
 const switchTheme = ref(true)
 const themeMeanExpand = ref(true)
+
 let iconAsMap = iconAsMapDefault()
 
 const currentRoute = ref(router.currentRoute)
@@ -195,6 +196,7 @@ async function loadUi() {
   group.filter(o => order_group_map_json.get(o).env.includes(import.meta.env.VITE_BASE_ENV)).forEach((groupName) => {
     let groupJson = {
       title: groupName,
+      expand: true,
       children: []
     }
     let childIndex = 1
@@ -222,6 +224,9 @@ async function loadUi() {
   let colorIndex = 0;
 
   featureGroup.value.forEach((group) => {
+    if (group.expand !== undefined) {
+      group.expand = themeMeanExpand.value
+    }
     group.children.forEach((item) => {
       buttonBackgrounds.value[item.id] = lightColors[colorIndex % lightColors.length];
       colorIndex++;
@@ -232,7 +237,11 @@ async function loadUi() {
 onMounted(async () => {
   await loadUi();
 });
-
+const handleThemeMeanExpandChange = () => {
+  featureGroup.value.forEach((group) => {
+    group.expand = Boolean(themeMeanExpand.value)
+  })
+}
 // 获取图标
 const getIcon = (item) => {
   // 优先使用 meta.icon，没有则根据类型给默认 emoji
