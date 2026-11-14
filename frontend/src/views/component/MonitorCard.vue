@@ -69,6 +69,13 @@ const props = defineProps({
         label: '按钮1',
         icon: '🔍',
         click: () => { console.log('按钮1点击') }
+      },
+      {
+        key:'btn2',
+        disabled: false,
+        label: '按钮2',
+        icon: '🔍',
+        click: () => { console.log('按钮2点击') }
       }
     ]
   }
